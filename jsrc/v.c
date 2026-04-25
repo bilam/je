@@ -17,7 +17,7 @@ F1(jtnatoms){F12IP; A z; ARGCHK1(w); if(unlikely(ISSPARSE(AT(w))))R dfv1(z,shape
 
 // ,y and ,"r y - producing virtual blocks
 DFI1(jtravel){A a,c,q,x,y,y0,z;B*b;I f,j,m,*u,*v,*yv;P*wp,*zp;
-  IARG1CR F12IP;
+  IARG1CR F12IPG;
  f=wr-wcr; // r=effective rank (jt->rank is effective rank from irs1), f=frame
  if(likely(!ISSPARSE(AT(w)))){
   if(wcr==1)R RETARG(w);  // if we are enfiling 1-cells, there's nothing to do, return the input (note: AN of sparse array is always 1)
@@ -65,7 +65,7 @@ DFI1(jtravel){A a,c,q,x,y,y0,z;B*b;I f,j,m,*u,*v,*yv;P*wp,*zp;
 }
 
 FI1(jttable){A z,zz;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  // We accept the pristine calculations from ravel
  RZ(z=IRS1(jtravel,jtfg,w,wcr-((UI)wcr>0),0))  // perform ravel on items
  R wcr?z:IRS1(jtravel,jtfg,z,0L,0L);  // If we are raveling atoms, do it one more time on atoms
@@ -83,8 +83,8 @@ static A jtlr2(J jt,A afg,A wfg){
 } 
 
 // ][, with IRS.  Must not call EPILOG because the verb propagates WILLOPEN.  When rank is specified ]"n does not propagate
-FI2(jtleft2){IARG2 F12IP; if(likely((acr&wcr)==RMAX))RETF(RETARG(a)); RETF(jtlr2(jt,wfg,afg));}  // swap a & w, and their ranks
-DFI2(jtright2){IARG2 F12IP;if(likely((acr&wcr)==RMAX))RETF(RETARG(w)); RETF(jtlr2(jt,afg,wfg));}
+FI2(jtleft2){IARG2 F12IPG; if(likely((acr&wcr)==RMAX))RETF(RETARG(a)); RETF(jtlr2(jt,wfg,afg));}  // swap a & w, and their ranks
+DFI2(jtright2){IARG2 F12IPG;if(likely((acr&wcr)==RMAX))RETF(RETARG(w)); RETF(jtlr2(jt,afg,wfg));}
 
 F1(jtright1){F12IP;RETF(RETARG(w));} // no IRS
 // lev, dex, and ident - identity adverb/conjunction  (ident uses the same code as lev)
@@ -120,7 +120,7 @@ DF1(jtjico1){F12IP;A y,z;B b;D d,*v;I c,m,n;
 
 // _9: to 9: and _:, return the saved value.  If we can inplace the operation (i. e. 0:"0), do so for DIRECT types, preserving the existing precision
 DFI1(jtnum1){A z=0;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  A a=FAV(self)->fgh[2];  // fetch value to store: always an INT/boolean, but if boolean the high-order bytes are 0, so 0 is valid INT/FL and 1 a valid INT
  if(likely(wcr==wr))R a;  // at infinite rank, just return the value.  Because VFATOP[LR] puns with comparison flags,
    // it is possible that inplacing flags are set; so we must handle infinite rank before looking at inplacing

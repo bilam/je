@@ -53,7 +53,7 @@ void jtfillv0(J jt,I t){
 
 
 static FI2(jtrotsp){A q,x,y,z;B bx,by;I af,*av,d,k,m,n,p,*qv,*s,*v,wf;P*wp,*zp;
- IARG2CR F12IP; PROLOG(0071);
+ IARG2CR F12IPG; PROLOG(0071);
  ASSERT(!jt->fill,EVNONCE);
  af=ar-acr; p=acr?AS(a)[af]:1; wf=wr-wcr;
  if(1<acr||af)R df2(z,a,w,qq(qq(ds(CROT),v2(1L,wcr)),v2(acr,wcr)));  // wcr to force qq to create loop, as sparse needs
@@ -97,7 +97,7 @@ static FI2(jtrotsp){A q,x,y,z;B bx,by;I af,*av,d,k,m,n,p,*qv,*s,*v,wf;P*wp,*zp;
 #define ROTF(r) {UI ar=ABSUI(r); if(unlikely(ar>=(UI)n)){if(jt->fill)ar=n; else{r=r%n; ar=ABSUI(r);}} k=dk*ar; kd=e-k; ks=r<0?kd:0; jd=r<0?k:0; kd-=ks; js=k-jd;}   // UI in case ABS(IMIN)
 
 FI2(jtrotate){A z;C *u,*v;I af,d,k,m,n,p,*s,wf,wn;
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  if(unlikely(ISSPARSE(AT(w))))R rotsp(afg,wfg);
  A origw=w; af=ar-acr; p=acr?AS(a)[af]:1; wf=wr-wcr; // p=#axes to rotate
  RZ(a=vi(a));
@@ -179,7 +179,7 @@ FI2(jtrotate){A z;C *u,*v;I af,d,k,m,n,p,*s,wf,wn;
 }    /* a|.!.f"r w */
 
 static FI1(jtrevsp){A a,q,x,y,z;I c,f,k,m,n,*v;P*wp,*zp;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  ASSERT(!jt->fill,EVNONCE);
  f=wr-wcr; m=AS(w)[f]; wp=PAV(w);
  GASPARSE(z,AT(w),1,wr,AS(w)); zp=PAV(z);
@@ -196,7 +196,7 @@ static FI1(jtrevsp){A a,q,x,y,z;I c,f,k,m,n,*v;P*wp,*zp;
 }    /* |."r w on sparse arrays */
 
 DFI1(jtreverse){A z;C*wv,*zv;I f,k,m,n,nk,*v,*ws,wt;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  if(unlikely(ISSPARSE(AT(w))))R revsp(wfg);  // if sparse, process, preserving rank
  if(unlikely(jt->fill!=0))R rotate(num(-1),wfg);  // if fill, switch to shift, keeping rank
  f=wr-wcr; ws=AS(w); I *an=ws+f; an=wcr?an:&oneone[0]; n=*an;    // n=number of subitems of the cell to be reversed
@@ -293,7 +293,7 @@ static A jtreshapeblank(J jt, A a, A w, A rndfn, I nlens, I wcr){
 }
 
 DFI2(jtreshape){A z;B filling;C*wv,*zv;I c,k,m,n,p,q,r,*s,t,* RESTRICT u,wf,* RESTRICT ws,zn;
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  wf=wr-wcr; ws=AS(w);
  if((I)(1<acr)|(I )(acr<ar)){z=rank2ex(a,w,DUMMYSELF,MIN(acr,1),wcr,acr,wcr,jtreshape); PRISTCLRF(w) RETF(z);}  // multiple cells of a - w must lose pristinity
  // now a is an atom or a list.  w can have any rank
@@ -335,7 +335,7 @@ DFI2(jtreshape){A z;B filling;C*wv,*zv;I c,k,m,n,p,q,r,*s,t,* RESTRICT u,wf,* RE
 }    /* a ($,)"r w */
 
 FI2(jtreitem){A y,z;I an,r,*v;
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  r=wcr-1;
  if((I)(1<acr)|(I)(acr<ar)){z=rank2ex(a,w,DUMMYSELF,MIN(acr,1),wcr,acr,wcr,jtreitem); PRISTCLRF(w) RETF(z);}  // multiple cells - must lose pristinity  // We handle only single operations here, where a has rank<2
  // acr<=ar; ar<=acr; therefore ar==acr here
@@ -352,7 +352,7 @@ FI2(jtreitem){A y,z;I an,r,*v;
 
 // x $[!.n]!.v"r y or x ($,)[!.n]!.v"r y which uses fn v if needed to resolve _ in x
 DFI2(jtreshapeblankfn){I r;
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  if((I )(1<acr)|(I )(acr<ar)){A z=rank2ex(a,w,DUMMYSELF,MIN(acr,1),wcr,acr,wcr,jtreshapeblankfn); PRISTCLRF(w) RETF(z);}  // multiple cells - must lose pristinity
  A fs=FAV(self)->fgh[0]; AF reshapefn=FAV(fs)->valencefns[1];  // next routine to call, $ ($,) or !.n
  if(likely(AT(a)&FL)){  // if there might be _, check for it

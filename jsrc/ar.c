@@ -371,7 +371,7 @@ REDUCEPFX(  mininsX, X, X, XMIN, minXX, minXX  )
 // +/!.0"r, compensated summation
 static DF1(jtreduce);  // forward declaration
 DFI1(jtcompsum){
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  I *ws=AS(w);
  // Create  wcr: the cell rank; f: length of frame; n: # items in a CELL of w
  I f=wr-wcr; I n; SETICFR(w,f,wcr,n);
@@ -503,14 +503,14 @@ DFI1(jtcompsum){
 
 // w is an array with 0 items, self is f, result is frame $ ,: identity-verb cell-shape $ atom-of-type
 static DFI1(jtred0){A x,z;I f,*s;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  f=wr-wcr; s=AS(w);
  if(likely(!ISSPARSE(AT(w)))){GA(x,AT(w),0L,wcr,f+s);}else{GASPARSE(x,AT(w),1,wcr,f+s);}  // x exists only for type and shape
  R reitem(vec(INT,f,s),lamin1(dfv1(z,x,iden(self))));
 }    /* f/"r w identity case */
 
 // general reduce.  We inplace the results into the next iteration.  This routine cannot inplace its inputs.
-static DFI1(jtredg){IARG1CR F12IP;PROLOG(0020);A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; AD * RESTRICT a;I i,n;
+static DFI1(jtredg){IARG1CR F12IPG;PROLOG(0020);A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; AD * RESTRICT a;I i,n;
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);
  // loop over rank
  if(wcr<wr)R rank1ex(w,self,wcr,jtredg);
@@ -710,7 +710,7 @@ static A jtredsps(J jt,A w,A self,C id,VARPSF ado,I cv,I f,I r,I zt){A a,a1,e,sn
 }    /* f/"r w for sparse w, rank > 1, sparse axis */
 
 static DFI1(jtreducesp){A a,g,z;B b;I f,n,*v,wn,*ws,wt,zt;P*wp;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  f=wr-wcr; wn=AN(w); ws=AS(w); n=wcr?ws[f]:1;
  wt=AT(w); wt=wn?DTYPE(wt):B01;
  g=FAV(self)->fgh[0];  // g is the f in f/
@@ -815,7 +815,7 @@ TW3(B01X,CSTARCO)+TW3(LITX,CEQ)+TW3(LITX,CNE)+TW3(C2TX,CEQ)+TW3(C2TX,CNE)+TW3(C4
 TW3(INTX,CEQ)+TW3(INTX,CLT)+TW3(INTX,CLE)+TW3(INTX,CGT)+TW3(INTX,CGE)+TW3(INTX,CNE)+TW3(FLX, CEQ)+TW3(FLX, CLT)+TW3(FLX, CLE)+TW3(FLX, CGT)+TW3(FLX, CGE)+TW3(FLX, CNE)
 #endif
 static DFI1(jtreduce){A z;I d,f,m,n,t,*ws,zt;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  if(unlikely(ISSPARSE(AT(w))))RETF(reducesp(wfg,self));  // If sparse, go handle it, preserving rank
  // Create  r: the effective rank; f: length of frame; n: # items in a CELL of w
  ws=AS(w); f=wr-wcr; SETICFR(w,f,wcr,n);
@@ -919,7 +919,7 @@ A jtredcatcell(J jtfg,A w,I r){F12IP;A z;
 
 
 DFI1(jtredcat){A z;B b;I f,*s,*v;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  f=wr-wcr; s=AS(w);
  b=1==wcr&&1==s[f];  // special case: ,/ on last axis which has length 1: in that case, the rules say the axis disappears (because of the way ,/ works on length-1 lists)
  if(2>wcr&&!b)RCA(w);  // in all OTHER cases, result=input for ranks<2
@@ -936,7 +936,7 @@ DFI1(jtredcat){A z;B b;I f,*s,*v;
 }    /* ,/"r w */
 
 static DFI1(jtredsemi){I f,n;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  f=wr-wcr; SETICFR(w,f,wcr,n);   //    n=#items in a cell of w
  if(2>n){ASSERT(n!=0,EVDOMAIN); R tail(wfg);}  // pass IRS into tail
  if(BOX&AT(w))R jtredg(jt,wfg,self);  // the old way failed because it did not mimic scalar replication; revert to the long way.  ranks are still set
@@ -944,7 +944,7 @@ static DFI1(jtredsemi){I f,n;
 }    /* ;/"r w */
 
 static DFI1(jtredstitch){A c,y;I f,n,*s,*v;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  f=wr-wcr; s=AS(w); SETICFR(w,f,wcr,n);
  ASSERT(n!=0,EVDOMAIN);
  if(1==n)R IRS1(jthead,jt,w,wcr,0L);
@@ -962,7 +962,7 @@ static DFI1(jtredstitch){A c,y;I f,n,*s,*v;
   RETF(y);
 }}   /* ,./"r w */
 
-static DF1(jtredstiteach){F12IP;A*wv,y;I n,p,r,t;
+static DF1(jtredstiteach){F12IP0;A*wv,y;I n,p,r,t;
  ARGCHK1(w);
  n=AN(w);
  if(!(2<n&&1==AR(w)&&BOX&AT(w)))R reduce(w,self);
@@ -972,7 +972,7 @@ static DF1(jtredstiteach){F12IP;A*wv,y;I n,p,r,t;
 }    /* ,.&.>/ w */
 
 static DFI1(jtredcateach){A*u,*v,*wv,x,*xv,z,*zv;I m,mn,n,zm,zn;I n1=0,n2=0;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  I f=wr-wcr, *ws=AS(w); 
  SETICFR(w,f,wcr,n);
  if(!wcr||1>=n)R reshape(repeat(ne(sc(f),IX(wr)),shape(w)),n?w:ds(CACE));
@@ -1015,7 +1015,7 @@ A jtaslash1(J jt,C c,    A w){RZ(   w); A z; R dfv1(z,  w,qq(slash(ds(c)),zeroio
 A jtatab   (J jt,C c,A a,A w){ARGCHK2(a,w); A z; R dfv2(z,a,w,   slash(ds(c))     );}
 
 DFI1(jtmean){
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  I n=AS(w)[wr-wcr]; n=wcr?n:1;
  A sum=reduce(wfg,FAV(self)->fgh[0]);  // calculate +/"r
  RZ(sum);

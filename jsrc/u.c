@@ -378,6 +378,9 @@ I jtmaxtype(J jt,I s,I t){
 // Copy m bytes from w to z, repeating every n bytes if n<m
 // This overfetches from z and w, but does not overstore z
 void mvc(I m,void*z,I n,void*w){
+#if NORMAHN
+ if(m<0)SEGFAULT;
+#endif
  if(m<=n){if(m==SZI)*(I*)z=*(I*)w; else MC(z,w,m); R;}  // if no replication, use simple copy, which will be short
 #if C_AVX2 || EMU_AVX2
  PREFETCH(w);  /* start bringing in the start of data */ 
@@ -698,3 +701,66 @@ A jtfindnameinscript(J jt,C *script, C *name, I pos){
  }
  R 0;  // not found or wrong part of speech - error
 }
+
+#if MEMAUDIT&0x80
+void chkinchain(J jt,A x){
+ if(!x)R;
+ I i,j;
+ for(i=0;i<(PLIML-PMINL+1);i++){
+ A p=jt->mempool[i],p1=0;
+ j=0;
+  while(p){
+   if(j>1000000)SEGFAULT;
+   if(0x10000>(uintptr_t)p){ fprintf(stderr,"mempool "FMTI" index "FMTI" addr %p\n",i,j,p); SEGFAULT; }
+   if(p==x){ fprintf(stderr,"mempool "FMTI" index "FMTI" addr %p\n",i,j,x); SEGFAULT; }
+   p1=p; p=AFCHAIN(p);
+   j++;
+  }
+ }
+}
+
+void chkchain(A w){
+ if(!(w=QCWORD(w))) R;
+ I j=0;
+ A p=AFCHAIN(w);
+ while(p){
+  if(j>1000000)SEGFAULT;
+  if(0x10000>(uintptr_t)p){dump_ADheader(w);SEGFAULT;}
+  else {w=p; p=AFCHAIN(w);j++;}
+ }
+}
+#endif
+
+#if MEMAUDIT&0x80
+void chkapx(A w, int recur, int qcword, int mempool){
+ if(!w)R;
+#if SY_64
+ if(0x10000>((uintptr_t)w)||((uintptr_t)w)==0xdeadbeefdeadbeef||((uintptr_t)w)==0xfeeefeeefeeefeee)SEGFAULT;
+#else
+ if(0x10000>((uintptr_t)w)||((uintptr_t)w)==0xdeadbeef||((uintptr_t)w)==0xfeeefeee)SEGFAULT;
+#endif
+ w=qcword?QCWORD(w):w;
+ if(ACISPERM(AC(w)))R;
+ if(!AFLAG(w))R;          // faux block
+ if(AFLAG(w)&AFVIRTUAL)R;  // virtual block
+// if(ISSPARSE(AT(w)))R;
+// if(ISGMP(w))R;
+// if(AFHRH(w)==FHRHISGMP)R;
+ if(!AFHRH(w))R;
+ CHKORIGIN(w);
+#if NORMAHN>1
+ DO(NORMAHN-1,if(w->p[i]!=XHEADERFILL){dump_ADheader(w);SEGFAULT;})
+#endif
+ if(mempool){
+  if(!AFHRH(w)){dump_ADheader(w);SEGFAULT;}
+#if SY_64
+  if(AFCHAIN(w)&&((0x10000>((uintptr_t)AFCHAIN(w)))||((uintptr_t)AFCHAIN(w))==0xdeadbeefdeadbeef||((uintptr_t)AFCHAIN(w))==0xfeeefeeefeeefeee)){dump_ADheader(AFCHAIN(w));SEGFAULT;}
+#else
+  if(AFCHAIN(w)&&((0x10000>((uintptr_t)AFCHAIN(w)))||((uintptr_t)AFCHAIN(w))==0xdeadbeef||((uintptr_t)AFCHAIN(w))==0xfeeefeee)){dump_ADheader(AFCHAIN(w));SEGFAULT;}
+#endif
+  R;   // mempool block has no content
+ }
+ if((!AFLAG(w)&AFVIRTUAL)&&!(AFLAG(w)&AFNJA)&&(AFHRH(w)==0)){dump_ADheader(w);SEGFAULT;}  // pool number must be valid if not GMP block and not mem-mapped
+ if(recur&&AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w),chkapx(wv[i],recur,qcword,mempool);)}
+}
+#endif

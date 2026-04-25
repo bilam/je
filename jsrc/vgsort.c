@@ -439,7 +439,7 @@ static SF(jtsortd){F12JT;A x,y,z;B b;D*g,*h,*xu,*wv,*zu;I i,nneg;void *yv;
 // x /:"r y, not sparse
 // jt has the JTDESCEND flag, plus inplaceability
 FI2(jtgr2){A z=0;I api,d,f,m,n,*s,t; 
- IARG2CR F12IP;PROLOG(0076);
+ IARG2CR F12IPG;PROLOG(0076);
  t=AT(w); // ?cr= rank of the cells being sorted; t= type of w
  // Handle special reflexive cases, when the arguments are identical and the cells are also.  Only if cells have rank>0 and have atoms
  if(afg==wfg&&likely(wcr>0)&&likely(AN(a)!=0)&&likely(t&(B01+LIT+C2T+C4T+INT+INT2+INT4+FL+CMPX+QP))){  // tests after the first almost always succeed

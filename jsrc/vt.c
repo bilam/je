@@ -5,8 +5,8 @@
 
 #include "j.h"
 
-DFI1(jtbehead){F12IP; R jtdrop(jtfg,zeroionei(1),wfg,0);}  //  }. with IRS
-FI1(jtcurtail){F12IP; R jtdrop(jtfg,num(-1),wfg,0);}  // }: with IRS
+DFI1(jtbehead){F12IPG; R jtdrop(jtfg,zeroionei(1),wfg,0);}  //  }. with IRS
+FI1(jtcurtail){F12IPG; R jtdrop(jtfg,num(-1),wfg,0);}  // }: with IRS
 
 F1(jtshift1){F12IP;R drop(num(-1),over(zeroionei(1),w));}  // !.!.f, without IRS
 
@@ -153,7 +153,7 @@ endcopy:;
 
 // x {."r y, which allows infinities in x
 DFI2(jttake){A z;I n,*v;
- IARG2CR F12IP; I wt=AT(w);  // wt=type of w
+ IARG2CR F12IPG; I wt=AT(w);  // wt=type of w
  if(unlikely(ISSPARSE(AT(a))))RZ(a=denseit(a));  // force a to dense
  I wf=wr-wcr; I af=ar-acr;  // ?r=rank, ?cr=cell rank, ?f=length of frame
 
@@ -174,7 +174,7 @@ DFI2(jttake){A z;I n,*v;
 }
 
 DFI2(jtdrop){A z;I d,m,n,*u,*v;
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  RZ(a=vib(a));  // convert & audit a
  I af=ar-acr; I wf=wr-wcr;  // ?r=rank, ?cr=cell rank, ?f=length of frame
  I wt=AT(w);
@@ -195,7 +195,7 @@ DFI2(jtdrop){A z;I d,m,n,*u,*v;
 
 // create 1 cell of fill when head/tail of an array with no items (at the given rank)
 static FI1(jtrsh0){A x,y;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  I *ws=AS(w); I wf=wr-wcr;
  RZ(x=vec(INT,wr-1,ws)); MCISH(wf+AV(x),ws+wf+1,wcr-1);
  RZ(w=jtsetfv1(jt,w,AT(w))); GA00(y,AT(w),1,0); MC(AV0(y),jt->fillv,bpnoun(AT(w)));
@@ -205,7 +205,7 @@ static FI1(jtrsh0){A x,y;
 
 // {. y with IRS
 DFI1(jthead){
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  I wf=wr-wcr;
  if(unlikely(!wcr)){RETF(RETARG(w))  // {."0, a NOP
  }else if(likely(AS(w)[wf]!=0)){  // if cell is atom, or cell has items - which means it's safe to calculate the size of a cell
@@ -217,7 +217,7 @@ DFI1(jthead){
 
 // {: y with IRS
 DFI1(jttail){
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  I wf=wr-wcr;
  if(unlikely(!wcr)){RETF(RETARG(w))  // {:"0, a NOP
  }else if(likely(AS(w)[wf]!=0)){  // if cell is atom, or cell has items - which means it's safe to calculate the size of a cell

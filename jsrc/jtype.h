@@ -189,6 +189,19 @@ typedef I SI;
 #define JTALIGNBDY      MAX(8192,(MAXTHREADSRND<<LGTHREADBLKSIZE))  // jt is aligned on this boundary - all lower bits are 0 (the value is the size of an SDRAM page, to avoid row precharges while accessing jt)
 
 struct AD {
+#if NORMAHX==0
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin;  // 
+ S lock;   // can be used as a lock
+#else  // bigendian, not used
+ S lock;   // can be used as a lock
+ US origin;
+#endif
+#if NORMAHN>1
+ I p[NORMAHN-1];
+#endif
+#endif
  union {
   I k;  // 0
   A chain;   // used when block is on free chain
@@ -200,6 +213,19 @@ struct AD {
              // are changing the block address (i. e. not extending) you must take a system lock before freeing
   A global;      // for user JOB blocks, points to jt->global for the job
  } kchain;
+#if NORMAHX==1
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin;  // 
+ S lock;   // can be used as a lock
+#else  // bigendian, not used
+ S lock;   // can be used as a lock
+ US origin;
+#endif
+#if NORMAHN>1
+ I p[NORMAHN-1];
+#endif
+#endif
  FLAGT flag; // 1
  union { // 2
   I m;  // Multi-use field. (1) For NJA/SMM blocks, size of allocation. (2) in syncos, a credential to allow pthread calls
@@ -249,15 +275,19 @@ struct AD {
  RANKT r;  // 6 rank.  Used as flags in SYMB types (i. e. locales)
  UC filler;
  US h;   // reserved for allocator.  Not used for AFNJA memory
+#if !NORMAHN
 #if PYXES && SY_64
   // these two values initialized with a single store - must be in order
  US origin;  // 
  S lock;   // can be used as a lock
 #endif
+#endif
 #else  // bigendian, not used
+#if !NORMAHN
 #if PYXES && SY_64
  S lock;   // can be used as a lock
  US origin;
+#endif
 #endif
  US h;   // reserved for allocator.  Not used for AFNJA memory
  UC filler;
@@ -267,8 +297,25 @@ struct AD {
   // when AFUNIFORMITEMS is set, s[0] holds the number of items in the raze of the block
 };
 // header fits in 7 words
+#if NORMAHN
+#if NORMAHX==0
+_Static_assert(offsetof(AD,kchain.k)==NORMAHN*SZI,"NORMAHX");
+#endif
+#if NORMAHX==1
+_Static_assert(offsetof(AD,flag)==(1+NORMAHN)*SZI,"NORMAHX");
+#endif
+#endif
 
 /* Fields of type A                                                        */
+
+#if NORMAHN
+// NORMAHX only supports 0 .. 1
+#define AMOFFSET (NORMAHN+2)  // I* offset of AM field
+#define AROFFSET (NORMAHN+6)  // I* offset of AR field
+#else
+#define AMOFFSET (2)  // I* offset of AM field
+#define AROFFSET (6)  // I* offset of AR field
+#endif
 
 #define AK(x)           ((x)->kchain.k)        /* offset of ravel wrt x           */
 #define AKASA(x)        ((x)->kchain.chain)       // the AK field for synthetic self blocks
@@ -284,12 +331,84 @@ struct AD {
 #define AN(x)           ((x)->n)        /* # elements in ravel             */
 #define AR(x)           ((x)->r)        /* Rank                            */
 #define ARINIT(x,v)     *(US*)&((x)->r)=(v);       // Rank, clearing the high byte for initialization, and also clearing the lock.  Threadid is set at allocation and never changes
-#define SMMAH           (7L+0)   // number of header words in old-fashioned SMM alloc
-#define NORMAH          (7L+0)   // number of header words in new system
+#define SMMAH           (7L+NORMAHN)   // number of header words in old-fashioned SMM alloc
+#define NORMAH          (7L+NORMAHN)   // number of header words in new system
 #define AS(x)           ((x)->s)        // Because s is an array, AS(x) is a pointer to the shape, which is in s.  The shape is stored in the fixed position s.
 #if PYXES
 #define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
 #define ALOCK(x)        ((x)->lock)     /* thread lock                     */
+#endif
+
+#if NORMAHN>1 && MEMAUDIT&0x80
+#define APX(x)          ((x)->p[0]) // extra word in AD
+#if NORMAHN==2
+#define APINIT(x,v)     ((x)->p[0])=(v)
+#elif NORMAHN==3
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=(v)
+#elif NORMAHN==4
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=(v)
+#elif NORMAHN==5
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=(v)
+#elif NORMAHN==6
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=(v)
+#elif NORMAHN==7
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=(v)
+#elif NORMAHN==8
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=(v)
+#elif NORMAHN==9
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=(v)
+#elif NORMAHN==10
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=(v)
+#elif NORMAHN==11
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=((x)->p[9])=(v)
+#elif NORMAHN==12
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=((x)->p[9])=((x)->p[10])=(v)
+#elif NORMAHN==13
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=((x)->p[9])=((x)->p[10])=((x)->p[11])=(v)
+#elif NORMAHN==14
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=((x)->p[9])=((x)->p[10])=((x)->p[11])=((x)->p[12])=(v)
+#elif NORMAHN==15
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=((x)->p[9])=((x)->p[10])=((x)->p[11])=((x)->p[12])=((x)->p[13])=(v)
+#elif NORMAHN==16
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=((x)->p[9])=((x)->p[10])=((x)->p[11])=((x)->p[12])=((x)->p[13])=((x)->p[14])=(v)
+#elif NORMAHN==24
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=((x)->p[9])=((x)->p[10])=((x)->p[11])=((x)->p[12])=((x)->p[13])=((x)->p[14])=((x)->p[15])=((x)->p[16])=((x)->p[17])=((x)->p[18])=((x)->p[19])=((x)->p[20])=((x)->p[21])=((x)->p[22])=(v)
+#elif NORMAHN==32
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=((x)->p[9])=((x)->p[10])=((x)->p[11])=((x)->p[12])=((x)->p[13])=((x)->p[14])=((x)->p[15])=((x)->p[16])=((x)->p[17])=((x)->p[18])=((x)->p[19])=((x)->p[20])=((x)->p[21])=((x)->p[22])=((x)->p[23])=((x)->p[24])=((x)->p[25])=((x)->p[26])=((x)->p[27])=((x)->p[28])=((x)->p[29])=((x)->p[30])=(v)
+#elif NORMAHN==64
+#define APINIT(x,v)     ((x)->p[0])=((x)->p[1])=((x)->p[2])=((x)->p[3])=((x)->p[4])=((x)->p[5])=((x)->p[6])=((x)->p[7])=((x)->p[8])=((x)->p[9])=((x)->p[10])=((x)->p[11])=((x)->p[12])=((x)->p[13])=((x)->p[14])=((x)->p[15])=((x)->p[16])=((x)->p[17])=((x)->p[18])=((x)->p[19])=((x)->p[20])=((x)->p[21])=((x)->p[22])=((x)->p[23])=((x)->p[24])=((x)->p[25])=((x)->p[26])=((x)->p[27])=((x)->p[28])=((x)->p[29])=((x)->p[30])=((x)->p[31])=((x)->p[32])=((x)->p[33])=((x)->p[34])=((x)->p[35])=((x)->p[36])=((x)->p[37])=((x)->p[38])=((x)->p[39])=((x)->p[40])=((x)->p[41])=((x)->p[42])=((x)->p[43])=((x)->p[44])=((x)->p[45])=((x)->p[46])=((x)->p[47])=((x)->p[48])=((x)->p[49])=((x)->p[50])=((x)->p[51])=((x)->p[52])=((x)->p[53])=((x)->p[54])=((x)->p[55])=((x)->p[56])=((x)->p[57])=((x)->p[58])=((x)->p[59])=((x)->p[60])=((x)->p[61])=((x)->p[62])=(v)
+#endif
+#define CHKAPX(x)       chkapx(x,1,0,0)
+#define CHKAPX1(x)      chkapx(x,1,1,0)
+#define CHKPOOL         DO(PLIML-PMINL+1, A z1=jt->mempool[i]; while(z1){if(0x10000>(uintptr_t)z1)SEGFAULT;chkapx(z1,0,0,1);z1=AFCHAIN(z1);})
+#define CHKPOOL1        DO(PLIML-PMINL+1, chkapx(jt->mempool[i],0,0,1);)
+#else
+#if MEMAUDIT&0x80
+#define APINIT(x,v)
+#define CHKAPX(x)       chkapx(x,1,0,0)
+#define CHKAPX1(x)      chkapx(x,1,1,0)
+#define CHKPOOL         DO(PLIML-PMINL+1, A z1=jt->mempool[i]; while(z1){if(0x10000>(uintptr_t)z1)SEGFAULT;chkapx(z1,0,0,1);z1=AFCHAIN(z1);})
+#define CHKPOOL1        DO(PLIML-PMINL+1, chkapx(jt->mempool[i],0,0,1);)
+#else
+#define APINIT(x,v)
+#define CHKAPX(x)
+#define CHKAPX1(x)
+#define CHKPOOL
+#define CHKPOOL1
+#endif
+#endif
+#if MEMAUDIT&0x80
+#if PYXES
+#define CHKORIGIN(x) if((x)&&(!AORIGIN(x)||AORIGIN(x)>MAXTHREADS))SEGFAULT
+#else
+#if NORMAHN
+#define CHKORIGIN(x) if((x)&&(x)->origin)SEGFAULT
+#else
+#define CHKORIGIN(x)
+#endif
+#endif
+#else
+#define CHKORIGIN(x)
 #endif
 
 // The following fields are used for private communication between /. and ;. and inside ;. for the fret buffer.
@@ -302,9 +421,14 @@ struct AD {
 #define AKXR(x)         (SZI*(NORMAH+(x)))
 #define WP(t,n,r)       (SMMAH+ r   +(((t&NAME?sizeof(NM):0)+((n)<<bplg(t))+SZI-1)>>LGSZI))  // # I to allocate
 #else
+#if NORMAH & 1   // if NORMAH is odd
 #define AKXR(x)         (SZI*(NORMAH+((x)|1)))
 #define WP(t,n,r)       (SMMAH+(r|1)    +(((t&NAME?sizeof(NM):0)+((n)<<bplg(t))+SZI-1)>>LGSZI))
 /* r|1 to make sure array values are double-word aligned */
+#else
+#define AKXR(x)         (SZI*(NORMAH+(x)))
+#define WP(t,n,r)       (SMMAH+ r   +(((t&NAME?sizeof(NM):0)+((n)<<bplg(t))+SZI-1)>>LGSZI))  // # I to allocate
+#endif
 #endif
 #define AKX(x)          AKXR(AR(x))
 #define RCALIGN         1   // the rank to use to put the data on a cacheline boundary
@@ -884,6 +1008,7 @@ typedef DST* DC;
 // type of 0000 is reserved to indicate 'no value'; 1-11 are the type bits (following LASTNOUNX) in order
 // in the words of an explicit definition the words have QCNAMELKP semantics in bit 4-5:
 #define QCMASK 0x3fLL   // all the LSB flags
+#define QCALIGN(x) ((x + 7) & ~7) // round up to multiple of 8
 #define QCWORD(x) ((A)((I)(x)&~QCMASK))  // the word pointer part of the QC
 #define QCTYPE(x) ((I)(x)&QCMASK)  // the type-code part plus semantics-dependent bits
 #define QCPTYPE(x) ((I)(x)&0xf)  // the type-code part only, 0-15 for the syntax units including assignment
@@ -1342,16 +1467,19 @@ union{
 
 // layout of primitive, in the primtbl.  It is a memory header (shape 0) followed by a V
 typedef struct __attribute__((aligned(ABDY))) {I memhdr[AKXR(0)/SZI]; union { V primvb; I primint; UI8 primfl; } prim; } PRIM;  // two cachelines exactly in 64-bit
-
+//                    0               4            8             12
+// validitymask[16]={-1, -1,  0, 0,  -1, -1, 0, 0, -1, -1,  0,  0,0,0,0,0};  // !SY_64
+// validitymask[16]={-1, -1, -1, -1,  0,  0, 0, 0, -1, -1, -1, -1,0,0,0,0};  // C_AVX2 || EMU_AVX2
+// validitymask[16]={-1, -1,  0,  0, -1, -1, 0, 0, -1, -1,  0,  0,0,0,0,0};  // others
 // Canned blocks
 // NOTE: for fetching IDs we use the validitymask as a safe place to fetch 0s from.  We know that
 // validitymask[15] will be 0 on any platform
 #define NUMERIC0 ((C*)(validitymask+12))  // 0 0 0 0 for numeric fill
-#define FUNCTYPE0 ((A)(validitymask+12))  // 0 0 0 0, which has a 0 in the AT field
-#define FUNCID0 ((A)(validitymask-4*(!SY_64)))  // 0 in index [15] ([19] for 32-bit), which has a 0 in the id field of V
+#define FUNCTYPE0 ((A)(validitymask+12-NORMAHN))  // 0 0 0 0, which has a 0 in the AT field
+#define FUNCID0 ((A)(validitymask-4*(!SY_64)-NORMAHN))  // 0 in index [15] ([19] for 32-bit), which has a 0 in the id field of V
 #define SYMVAL0 ((L*)(validitymask+12))  // 0 0, which has a 0 in the val field of L
-#define AFLAG0 ((A)(validitymask+12))  // 0 0 0 0, which has a 0 in the flag field and type field of A
-#define ANLEN0 ((A)(validitymask+12-4))  // x x x x 0 0, which has a 0 in the AN field
+#define AFLAG0 ((A)(validitymask+12-NORMAHN))  // 0 0 0 0, which has a 0 in the flag field and type field of A
+#define ANLEN0 ((A)(validitymask+12-4-NORMAHN))  // x x x x 0 0, which has a 0 in the AN field
 #define ZAPLOC0 ((A*)(validitymask+12))  // 0 used as a pointer to a null tpop-stack value
 #define PSTK2NOTFINALASGN ((PSTK*)(validitymask+12)-2)  // 0 in position [2], signifying NOT final assignment (used for errors)
 #define BREAK0 ((C*)(validitymask+12))  // 0 to indicate no ATTN requested

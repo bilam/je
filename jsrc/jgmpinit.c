@@ -32,13 +32,13 @@ void jmpn_com (mp_ptr rp, mp_srcptr up, mp_size_t n)
 // see jgmp.h for some notes on type X
 //
 #if C_LE
- #if PYXES && SY_64
+ #if (PYXES && SY_64) && !NORMAHN
   #define Xrh 1,0,FHRHISGMP,0,0
  #else
   #define Xrh 1,0,FHRHISGMP
  #endif
 #else
- #if PYXES && SY_64
+ #if (PYXES && SY_64) && !NORMAHN
   #define Xrh 0,0,FHRHISGMP,0,1
  #else
   #define Xrh FHRHISGMP,0,1
@@ -47,28 +47,60 @@ void jmpn_com (mp_ptr rp, mp_srcptr up, mp_size_t n)
 
 #define XFIXED0(nam, typ,val) \
  struct AD __attribute__((aligned(ABDY))) B##nam= \
- {AKXR(0),typ,0,typ,ACPERMANENT,1,Xrh,(I)val}; \
+ {Xhrg0 AKXR(0),Xhrg1 typ,0,typ,ACPERMANENT,1,Xrh,(I)val}; \
  X nam= (X)&B##nam
 
 /* like struct AD but a data element */
 struct BDV1 {
- I k;I f;I m;I t;I c;I n;
+#if NORMAHX==0
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin;  // 
+ S lock;   // can be used as a lock
+#else  // bigendian, not used
+ S lock;   // can be used as a lock
+ US origin;
+#endif
+#if NORMAHN>1
+ I p[NORMAHN-1];
+#endif
+#endif
+ I k;
+#if NORMAHX==1
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin;  // 
+ S lock;   // can be used as a lock
+#else  // bigendian, not used
+ S lock;   // can be used as a lock
+ US origin;
+#endif
+#if NORMAHN>1
+ I p[NORMAHN-1];
+#endif
+#endif
+ I f;I m;I t;I c;
+ I n;
 #if C_LE
  RANKT r;UC filler;US h;
 #if PYXES && SY_64
+#if !NORMAHN
  US origin;S lock;
 #endif
+#endif
 #else
- #if PYXES && SY_64
+#if PYXES && SY_64
+#if !NORMAHN
  S lock;US origin;
- #endif
+#endif
+#endif
  US h;UC filler;RANKT r;
 #endif
  I s[1];UI d;};
 
 #define XFIXED1(nam, typ,sgn,val) \
  struct BDV1 __attribute__((aligned(ABDY))) B##nam= \
- {XHSZ,typ,0,typ,ACPERMANENT,1,Xrh,sgn,(UI)val}; \
+ {Xhrg0 XHSZ,Xhrg1 typ,0,typ,ACPERMANENT,1,Xrh,sgn,(UI)val}; \
  X nam= (X)&B##nam
 
 XFIXED1(X_1,LIT,-1,1);  // _1x (not an array)
@@ -191,7 +223,16 @@ void jgmpguard(X x) {
  */
 #if MEMAUDIT&8
  static I lfsr= 1;
- DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if (i!=(0+2)&&i!=(0+6))((I*)(XHSZ+(C*)z))[i]= lfsr;);
+// NOTE!! z[i] dependency on struct AD
+#if NORMAHN
+#if NORMAHX==0
+ DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if ((i>NORMAHN)&&i!=AMOFFSET&&i!=AROFFSET)((I*)(XHSZ+(C*)z))[i]= lfsr;);
+#elif NORMAHX==1
+ DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if (((i==0)||(i>1+NORMAHN))&&i!=AMOFFSET&&i!=AROFFSET)((I*)(XHSZ+(C*)z))[i]= lfsr;);
+#endif
+#else
+ DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if (i!=AMOFFSET&&i!=AROFFSET)((I*)(XHSZ+(C*)z))[i]= lfsr;);
+#endif
 #endif
  R CAV1(z);
 }
@@ -242,7 +283,15 @@ static void*jrealloc4gmp(void*ptr, size_t old, size_t new){
 #if MEMAUDIT&8
  static I lfsr= 1;
  if (new > old) {
-  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if (i!=(0+2)&&i!=(0+6))((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#if NORMAHN
+#if NORMAHX==0
+  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if ((i>NORMAHN)&&i!=AMOFFSET&&i!=AROFFSET)((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#elif NORMAHX==1
+  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if (((i==0)||(i>1+NORMAHN))&&i!=AMOFFSET&&i!=AROFFSET)((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#endif
+#else
+  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if (i!=AMOFFSET&&i!=AROFFSET)((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#endif
  }
 #endif
  R CAV1(z);
@@ -303,6 +352,8 @@ X jtXmpzcommon(J jt, mpz_t mpz, I numeric) {
  I sz= XHSZ+n;                      // bytes allocated
 #if PYXES
  AORIGIN(x)= THREADID1(jt);         // track thread which created this array
+#elif NORMAHN
+ (x)->origin= 0;
 #endif
  jt->bytes+= sz;                    // summarize the size of the new space
  jt->malloctotal+= sz;              // ditto

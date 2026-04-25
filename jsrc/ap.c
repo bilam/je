@@ -396,13 +396,13 @@ PREFIXPFX(bw1111pfxI, UI,UI, BW1111, bw1111II,R EVOK;)
 // This old prefix support is needed for sparse matrices
 
 static DFI1(jtprefix){A fs=FAV(self)->fgh[0];
- IARG1R F12IP;
+ IARG1R F12IPG;
  if(unlikely(wcr<wr)){R rank1ex(w,self,wr,jtprefix);}
  R eachl(apv(SETIC(w,wr),1L,1L),w,atop(fs,ds(CTAKE)));
 }    /* f\"r w for general f */
 
 static DFI1(jtgprefix){A h,*hv,z,*zv;I m,n,r;
- IARG1R F12IP;
+ IARG1R F12IPG;
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);
  if(unlikely(wcr<wr)){R rank1ex(w,self,wr,jtgprefix);}
  SETIC(w,n); 
@@ -493,7 +493,7 @@ static DF2(jtginfix){F12IP;A h,*hv,x,z,*zv;I d,m,n;
 #define STATESLASH2 BIT(STATESLASH2X)
 
 // prefix and infix: prefix if a is mark
-static DF2(jtinfixprefix2){F12IP;PROLOG(00202);A fs;I cger[128/SZI];
+static DF2(jtinfixprefix2){F12IP;PROLOG(00202);A fs;I __attribute__((aligned(ABDY))) cger[128/SZI+NORMAHN];
    I wt;
   ARGCHK1(w);
  F2RANKIP(0,RMAX,jtinfixprefix2,self);  // handle rank loop if needed
@@ -671,14 +671,14 @@ static DF2(jtinfixprefix2){F12IP;PROLOG(00202);A fs;I cger[128/SZI];
 
 // prefix, vectors to common processor.  Handles IRS.  Supports inplacing
 static DFI1(jtinfixprefix1){
- IARG1R F12IP;
+ IARG1R F12IPG;
  if(wcr<wr){R jtrank1ex(jtfg,w,self,wcr,jtinfixprefix1);}
  R jtinfixprefix2(jtfg,mark,w,self);
 }
 
 //  f/\"r y    w is y, fs is in self
 static DFI1(jtpscan){A z;I f,n,t,wn,*ws,wt;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  wt=AT(w);   // get type of w
  if(unlikely(ISSPARSE(wt)))R scansp(wfg,self,jtpscan);  // if sparse, go do it separately
  // wn = #atoms in w, wr=rank of w, r=effective rank, f=length of frame, ws->shape of w
