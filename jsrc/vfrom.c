@@ -53,7 +53,11 @@ static INLINE A jtget1cell(J jtfg,A w,I wcr,I j,I wt,I wr){F12IP; MEMCHK1(w);  A
 }
 
 // block used to hold axis info, leading axis first
-struct __attribute__((aligned(ABDY))) faxis {
+#if SY_64
+struct __attribute__((aligned(64))) faxis {
+#else
+struct __attribute__((aligned(32))) faxis {
+#endif
  I lenaxis;  // the length of the axes (including frame) represented by this faxis struct, in items
  I lencell;  // size of item of this axis in atoms
  I nsel;  // number of selectors.  If negative, axis is complementary; nsel has ~(# of items to move to result)
@@ -497,7 +501,15 @@ static FI2(jtafrom){
  I *cmbase;  // start of area we can use for complementary bitmasks
  UI naxesreq=AN(c)+!!wf;  // max # axes we might need
  if(likely(naxesreq<=sizeof(stataxes)/sizeof(stataxes[0]))){axes=stataxes; cmbase=(I*)&stataxes[naxesreq]; }
- else{A t; GATV0(t,INT,naxesreq*(sizeof(stataxes[0])>>LGSZI),1) axes=(struct faxis*)IAV1(t); cmbase=(I*)&stataxes[0];}  // rank 1 for alignment
+ else{A t;
+// axes MUST on 64/32 alignment, but IAV1 is not
+#if NORMAHN & 7
+ GATV0(t,INT,QCALIGN(NORMAHN)+naxesreq*(sizeof(stataxes[0])>>LGSZI),1) axes=(struct faxis*)((I*)t+8+QCALIGN(NORMAHN));
+#else
+ GATV0(t,INT,naxesreq*(sizeof(stataxes[0])>>LGSZI),1) axes=(struct faxis*)IAV1(t);
+#endif
+ if(((I)axes&(SY_64?63:31)))SEGFAULT;
+ cmbase=(I*)&stataxes[0];}  // rank 1 for alignment
   // In case user specified rank, we fill in a single axis for the frame.  If there is only 1 frame cell we will overwrite the axis
  I m; PROD(m,wf,ws);  // #wcr-cells in w: tells if we need frame
  axes[0].lenaxis=m; axes[0].nsel=m; axes[0].indsubx.ind=mtv;

@@ -221,6 +221,15 @@ else
  common="$common -DEMU_AVX2=0"
 fi
 
+NORMAHN="${NORMAHN:=0}"
+common="$common -DNORMAHN=${NORMAHN}"
+
+if [ $NORMAHN -eq 0 ]; then
+ case "$jplatform/$j64x" in
+  */j32) USE_PYXES=0 ;;
+ esac
+fi
+
 if [ $USE_PYXES -eq 1 ]; then
  case "$jplatform/$j64x" in
   windows/j32)

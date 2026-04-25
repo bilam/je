@@ -111,6 +111,7 @@ name##out: \
 // ac is # outer cells of a, asct=#items in 1 inner cell, wc is #outer search cells, wsct is #items to search for per outer cell
 // n is #atoms in a cell
 A jtiosc(J jt,I mode,I n,I asct,I wsct,I ac,I wc,A a,A w,A z){I j,p,q; void *u,*v,*zv;
+ MEMCHK2(a,w);
  p=ac>1?asct:0; q=REPSGN(1-(wc|wsct));  // q=1<wc||1<wsct; number of atoms to move between repeats p=*atoms of a to move between repeats
  zv=voidAV(z); u=voidAV(a); v=voidAV(w);
  // Create a pseudotype (XDX) for intolerant comparison.

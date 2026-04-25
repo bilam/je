@@ -75,9 +75,10 @@ errorwind:;  // here if there is an error in the result of calculating the selec
 // Result is a clone that is used to hold which gerund is next to execute
 // the gerund must not be empty
 A jtcreatecycliciterator(J jt, A z, A w){
+ MEMCHK1(w);
  // Create the (skeletal) clone, point it to come to the execution point, set the next-verb number (.gerx) to 0
  // AT is 0 to suppress eformat, as this 'verb' has invalid fgh
- ACFAUX(z,ACPERMANENT) AT(z)=0; FAV(z)->fgh[0]=FAV(w)->fgh[0]; FAV(z)->mr=FAV(w)->mr; FAV(z)->valencefns[0]=FAV(z)->valencefns[1]=jtexeccyclicgerund; FAV(z)->localuse.lu1.gercut.cgerx=0;
+ FAUXFILL(z) ACFAUX(z,ACPERMANENT) AT(z)=0; FAV(z)->fgh[0]=FAV(w)->fgh[0]; FAV(z)->mr=FAV(w)->mr; FAV(z)->valencefns[0]=FAV(z)->valencefns[1]=jtexeccyclicgerund; FAV(z)->localuse.lu1.gercut.cgerx=0;
  FAV(z)->flag2=0; FAV(z)->id=CCYCITER;   // clear flags, and give this verb a proper id so it can be checked for
  AFLAGFAUXAUDIT(z,0)  // in audit, flags must be valid
  RETF (z);
@@ -86,14 +87,15 @@ A jtcreatecycliciterator(J jt, A z, A w){
 // in this case gerx is the cell#, and will be used to step through the result selectors sequentially
 static A jtcreategerunditerator(J jt, A z, A w, A r){  // z is result area, w is self for h@.g, r is selector list
  // Convert the selectors to integer/boolean
+ MEMCHK2(w,r);
  if(!ISDENSETYPE(AT(r),(INT|B01)))RZ(r=cvt(INT,r));
  // Create the (skeletal) clone, point it to come to the execution point, set the next-verb number to 0
  // AT is 0 to suppress eformat, as this 'verb' has invalid fgh
- ACFAUX(z,ACPERMANENT) AT(z)=0; FAV(z)->fgh[0]=FAV(w)->fgh[0]; FAV(z)->fgh[1]=r; FAV(z)->mr=FAV(w)->mr;  // h->gerunds, g->values
+ FAUXFILL(z) ACFAUX(z,ACPERMANENT) AT(z)=0; FAV(z)->fgh[0]=FAV(w)->fgh[0]; FAV(z)->fgh[1]=r; FAV(z)->mr=FAV(w)->mr;  // h->gerunds, g->values
  FAV(z)->valencefns[0]=FAV(z)->valencefns[1]=AT(r)&INT?jtexecgerundcellI:jtexecgerundcellB; FAV(z)->localuse.lu1.gercut.cgerx=0;
  FAV(z)->localuse.lu0.gerundself=w;  // save the self for m@.v so we can call eformat with it
  FAV(z)->flag2=0;
- AFLAGFAUXAUDIT(z,0)  // in audit, flags must be valid
+ AFLAGFAUXAUDIT(z,0)   // in audit, flags must be valid
  RETF (z);
 }
 
@@ -114,8 +116,8 @@ A jtfxeachv(J jt,I r,A w){A*wv,x,z,*zv;I n;
 
 // self blocks to pass into every and thence into jtfx.  AK holds the parm into jtfx
 PRIM jtfxself[2]={
-{{0,0,0,0,0,0,0},{{.valencefns={jtfx,0},.fgh={0,0,0},.localuse=0,.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=0}}} ,
-{{1,0,0,0,0,0,0},{{.valencefns={jtfx,0},.fgh={0,0,0},.localuse=0,.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=0}}}
+{{Xhr0 0,0,0,0,0,0,0},{{.valencefns={jtfx,0},.fgh={0,0,0},.localuse=0,.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=0}}} ,
+{{Xhr0 1,0,0,0,0,0,0},{{.valencefns={jtfx,0},.fgh={0,0,0},.localuse=0,.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=0}}}
 };
 
 // run self on each box in w, turning AR into an A block. This is like every() but we do not convert verbs to ARs
@@ -166,7 +168,7 @@ F2(jttie){F12IP;ARGCHK2(a,w); MEMCHK2(a,w); I gflg; if(AT(a)&VERB){RZ(a=box(a)) 
 
 // m@.v y.  Execute the verbs at high rank
 // Bivalent entry point: called as (jt,w,self,self) or (jt,a,w,self)
-static DF2(jtcasei12){DF12IP;A vres,z;I __attribute__((aligned(ABDY))) gerit[128/SZI];I ZZFLAGWORD;
+static DF2(jtcasei12){DF12IP;A vres,z;I __attribute__((aligned(ABDY))) gerit[128/SZI+NORMAHN]; I ZZFLAGWORD;
  ARGCHK2(a,w); MEMCHK2(a,w);
  PROLOG(997);
  // see if we were called as monad or dyad.  If monad, fix up w and self

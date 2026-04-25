@@ -36,6 +36,9 @@ else
   COPTION := $(COPTION) $(OPTL)
  endif
 endif
+ifneq ($(NORMAHN),)
+ COPTION := $(COPTION) /DNORMAHN=$(NORMAHN)
+endif
 ifeq (1,$(USE_PYXES))
  ifeq (arm64,$(TARGET_CPU))
   ifneq ($(PTHREADS4WSRC),)
@@ -53,6 +56,11 @@ ifeq (1,$(USE_PYXES))
  COPTION := $(COPTION) /DPYXES=1
 else
  COPTION := $(COPTION) /DPYXES=0
+endif
+ifneq ($(NORMAHN),)
+ COPTION := $(COPTION) /DNORMAHN=$(NORMAHN)
+else
+ COPTION := $(COPTION) /DNORMAHN=0
 endif
 
 ifeq (arm64,$(TARGET_CPU))

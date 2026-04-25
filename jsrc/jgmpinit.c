@@ -32,13 +32,13 @@ void jmpn_com (mp_ptr rp, mp_srcptr up, mp_size_t n)
 // see jgmp.h for some notes on type X
 //
 #if C_LE
- #if (PYXES || (SY_64 && MEMAUDIT&0x80))
+ #if (PYXES || (SY_64 && MEMAUDIT&0x80)) && !NORMAHN
   #define Xrh 1,0,FHRHISGMP,0,0
  #else
   #define Xrh 1,0,FHRHISGMP
  #endif
 #else
- #if (PYXES || (SY_64 && MEMAUDIT&0x80))
+ #if (PYXES || (SY_64 && MEMAUDIT&0x80)) && !NORMAHN
   #define Xrh 0,0,FHRHISGMP,0,1
  #else
   #define Xrh FHRHISGMP,0,1
@@ -47,36 +47,66 @@ void jmpn_com (mp_ptr rp, mp_srcptr up, mp_size_t n)
 
 #define XFIXED0(nam, typ,val) \
  struct AD __attribute__((aligned(ABDY))) B##nam= \
- {AKXR(0),typ,0,typ,ACPERMANENT,1,Xrh,(I)val}; \
+ {Xhrg0 AKXR(0),typ,0,typ,ACPERMANENT,1,Xrh,(I)val}; \
  X nam= (X)&B##nam
 
 /* like struct AD but a data element */
 struct BDV1 {
- I k;I f;I m;I t;I c;I n;
+#if NORMAHN
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin;  // 
+ S lock;   // can be used as a lock
+#else  // bigendian, not used
+ S lock;   // can be used as a lock
+ US origin;
+#endif
+#if NORMAHN>1
+ I p[NORMAHN-1];
+#endif
+#endif
+ I k;
+ I f;I m;I t;I c;
+ I n;
 #if C_LE
  RANKT r;UC filler;US h;
-#if (PYXES || (SY_64 && MEMAUDIT&0x80))
+#if (PYXES || (SY_64 && MEMAUDIT&0x80)) && !NORMAHN
  US origin;S lock;
 #endif
 #else
-#if (PYXES || (SY_64 && MEMAUDIT&0x80))
+#if (PYXES || (SY_64 && MEMAUDIT&0x80)) && !NORMAHN
  S lock;US origin;
 #endif
  US h;UC filler;RANKT r;
 #endif
- I s[1];UI d;};
+ I s[1];
+#if !SY_64 && !(NORMAH & 1)
+ I filler0;
+#endif
+UI d;};
 
+#if !SY_64 && !(NORMAH & 1)
 #define XFIXED1(nam, typ,sgn,val) \
  struct BDV1 __attribute__((aligned(ABDY))) B##nam= \
- {XHSZ,typ,0,typ,ACPERMANENT,1,Xrh,sgn,(UI)val}; \
+ {Xhrg0 XHSZ,typ,0,typ,ACPERMANENT,1,Xrh,sgn,0,(UI)val}; \
  X nam= (X)&B##nam
+#else
+#define XFIXED1(nam, typ,sgn,val) \
+ struct BDV1 __attribute__((aligned(ABDY))) B##nam= \
+ {Xhrg0 XHSZ,typ,0,typ,ACPERMANENT,1,Xrh,sgn,(UI)val}; \
+ X nam= (X)&B##nam
+#endif
 
 XFIXED1(X_1,LIT,-1,1);  // _1x (not an array)
 XFIXED0(X0, LIT, 0);    //  0x (not an array)
 XFIXED1(X1, LIT, 1,1);  //  1x (not an array)
 XFIXED1(X2, LIT, 1,2);  //  2x (not an array
 
+#if !SY_64 && !(NORMAH & 1)   // AS(x) != AV1(x)-1
+mpz_t mpX1= {1,1,(mp_limb_t*)&BX1.s[2]};
+#else
 mpz_t mpX1= {1,1,(mp_limb_t*)&BX1.s[1]};
+#endif
 
 // one-off special case relying on X/A type pun, among other things
 // XFIXED0(AX1,XNUM,(X)&BX1);   // ''$1x
@@ -191,7 +221,12 @@ void jgmpguard(X x) {
  */
 #if MEMAUDIT&8
  static I lfsr= 1;
- DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if (i!=(0+2)&&i!=(0+6))((I*)(XHSZ+(C*)z))[i]= lfsr;);
+// NOTE!! z[i] dependency on struct AD
+#if NORMAHN
+ DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if ((i>NORMAHN)&&i!=AMOFFSET&&i!=AROFFSET)((I*)(XHSZ+(C*)z))[i]= lfsr;);
+#else
+ DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if (i!=AMOFFSET&&i!=AROFFSET)((I*)(XHSZ+(C*)z))[i]= lfsr;);
+#endif
 #endif
  R CAV1(z);
 }
@@ -242,7 +277,11 @@ static void*jrealloc4gmp(void*ptr, size_t old, size_t new){
 #if MEMAUDIT&8
  static I lfsr= 1;
  if (new > old) {
-  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if (i!=(0+2)&&i!=(0+6))((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#if NORMAHN
+  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if ((i>NORMAHN)&&i!=AMOFFSET&&i!=AROFFSET)((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#else
+  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if (i!=AMOFFSET&&i!=AROFFSET)((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#endif
  }
 #endif
  R CAV1(z);
@@ -305,10 +344,11 @@ X jtXmpzcommon(J jt, mpz_t mpz, I numeric) {
 #if PYXES
  AORIGIN(x)= THREADID1(jt);         // track thread which created this array
  ALOCK(x)= 0;
-#elif (SY_64 && MEMAUDIT&0x80)
+#elif (SY_64 && MEMAUDIT&0x80) || NORMAHN
  (x)->origin= 0x6b;
  (x)->lock= 0x7c;
 #endif
+ APINIT(x,XHEADERFILL);
 #endif
  jt->bytes+= sz;                    // summarize the size of the new space
  jt->malloctotal+= sz;              // ditto

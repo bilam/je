@@ -518,7 +518,7 @@ F1(jtcheckfreepool){F12IP; MEMCHK1(w);
   NOUNROLL while(Wx){
    if(FHRHPOOLBIN(AFHRH(Wx))!=(Wi-PMINL)){ecode=1; break;}  // will crash here if chain is corrupted
 #if MEMAUDIT&4
-   if(AC(Wx)!=(I)0xdeadbeefdeadbeefLL){ecode=3; break;}
+   if(AC(Wx)!=(I)DEADBEEF){ecode=3; break;}
 #endif
    if(Wj>0x10000000){ecode=4; break;}
 // debug   prevWx=Wx;
@@ -657,7 +657,7 @@ static D jtspfor1(J jt, A w){D tot=0.0;
  // done with contents; now get the size of w itself
  if(!ACISPERM(AC(w))) {  // permanent blocks add nothing to size
   if(AFNJA&AFLAG(w)) {  
-   if(BETWEENC(AK(w),0,AM(w)))tot += SZI*WP(AT(w),AN(w),64);  // for NJA allocations with contiguous header, the size is the header size (7+64 words) plus the data size. fixed rank of 64 in NJA memory
+   if(BETWEENC(AK(w),0,AM(w)))tot += SZI*WP(AT(w),AN(w),64);  // for NJA allocations with contiguous header, the size is the header size (NORMAH+64 words) plus the data size. fixed rank of 64 in NJA memory
    else{  // for NJA allocations with separate header, the size is the data size plus the size of the base block
     tot += SZI*((((AN(w)<<bplg(AT(w)))+SZI-1)>>LGSZI));  // data size only.  NJA must be DIRECT type, so not NAME
     tot += alloroundsize(w);  // add in the header
@@ -774,18 +774,18 @@ void jtspendtracking(J jt){I i;
  R;
 }
 
-#if BW==64 && MEMAUDIT&2
+#if SY64 && MEMAUDIT&2
 // Make sure all deletecounts start at 0
 static void auditsimverify0(J jt,A w){
  if(!w)R;
 #if !PYXES
  if(AFLAG(w)>>AFAUDITUCX){
-  fprintf(stderr, "auditsimverify0 w: %llx, AFLAG(w)>>AFUDITUCX: %llx, ", (UI)w, AFLAG(w)>>AFAUDITUCX);
-  fprintf(stderr,"AK(w): %llx (%lli), ", AK(w), AK(w));
-  fprintf(stderr,"AFLAG(w): %llx (%lli), ", AFLAG(w), AFLAG(w));
-  fprintf(stderr,"AT(w): %llx (%lli), ", AT(w), AT(w));
-  fprintf(stderr,"AC(w): %llx (%lli), ", AC(w), AC(w));
-  fprintf(stderr,"AN(w): %llx (%lli), ", AN(w), AN(w));
+  fprintf(stderr, "auditsimverify0 w: "FMTX", AFLAG(w)>>AFUDITUCX: "FMTX", ", (UI)w, AFLAG(w)>>AFAUDITUCX);
+  fprintf(stderr,"AK(w): "FMTX" ("FMTI"), ", AK(w), AK(w));
+  fprintf(stderr,"AFLAG(w): "FMTX" ("FMTI"), ", AFLAG(w), AFLAG(w));
+  fprintf(stderr,"AT(w): "FMTX" ("FMTI"), ", AT(w), AT(w));
+  fprintf(stderr,"AC(w): "FMTX" ("FMTI"), ", AC(w), AC(w));
+  fprintf(stderr,"AN(w): "FMTX" ("FMTI"), ", AN(w), AN(w));
   fprintf(stderr,"AR(w): %hhx (%hhu), ", AR(w), AR(w));
   fprintf(stderr,"AFHRH(w): %hx (%hi)\n", AFHRH(w), AFHRH(w));
   SEGFAULT;
@@ -811,7 +811,7 @@ static void auditsimverify0(J jt,A w){
 // recur on children if any.  If it produces a delete count higher than the use count in the block, abort
 static void auditsimdelete(J jt,A w){I delct=0;
  if(!w)R;
- if((UI)AN(w)==0xdeadbeefdeadbeef)SEGFAULT;
+ if(AN(w)==(I)DEADBEEF)SEGFAULT;
  if(ACISPERM(AC(w)))R;  // PERMANENT block may be referred to; don't touch it
 #if !PYXES
  if((delct=((AFLAG(w)+=AFAUDITUC)>>AFAUDITUCX))>ACUC(w))SEGFAULT;   // hang if too many deletes
@@ -895,7 +895,7 @@ R num(0);
 // nextpushp might start out on a boundary
 void audittstack(J jt){
  static B chkenabled= 0;
-#if BW==64 && MEMAUDIT&2
+#if SY_64 && MEMAUDIT&2
  if(JT(jt,audittstackdisabled)&1)R;
  A *ttop;
  // verify counts start clear
@@ -1071,13 +1071,22 @@ ASSERT(RMAX>=r,EVLIMIT);
   RETF (w);
  }else{
   // not self-virtual block: allocate a new one
+#if !SY_64
+ if((NORMAH+r)&1){
+  RZ(z=gafv(SZI*(1+NORMAH+r)-1));  // allocate the block
+ }else{
   RZ(z=gafv(SZI*(NORMAH+r)-1));  // allocate the block
+ }
+#else
+  RZ(z=gafv(SZI*(NORMAH+r)-1));  // allocate the block
+#endif
   AK(z)=(CAV(w)-(C*)z)+offset;
   AFLAGINIT(z,AFVIRTUAL | (wf & ((UI)wip>>(BW-1-AFPRISTINEX))) | (t&RECURSIBLE))  // flags: recursive, not UNINCORPABLE, not NJA.  If w is inplaceable, inherit its PRISTINE status
   A wback=ABACK(w); A *wzaploc=(A*)wback; wback=wf&AFVIRTUAL?wback:w; ABACK(z)=wback;  // wzaploc is AZAPLOC(w) in case it is to be zapped
   AT(z)=t;
   ACINIT(z,wip+ACUC1)   // transfer inplaceability from original block
   ARINIT(z,(RANKT)r);
+  VIRTFILL(z,w);
   // ra the backer.  It would be nice to transfer ownership to an abandoned block, but there is a possibility that there is a nonrecursive block N somewhere that got its data
   // from w which is higher in the stack than N.  In that case zapping w will lose the protection for N which is NOT abandoned.
   // The rule is that we can zap a result from something we called, but not a block passed in to us.
@@ -1102,6 +1111,7 @@ A jtrealize(J jt, A w){A z; I t;
  t=AT(w);
  AFLAGPRISTNO(ABACK(w))  // clear PRISTINE in the backer, since its contents are escaping
  I zr=AR(w); GA(z,t,AN(w),zr,AS(w));
+ VIRTFILL(z,w);
  // new block is not VIRTUAL, not RECURSIBLE
 // copy the contents.
  MC(AVn(zr,z),AV(w),AN(w)<<bplg(t));
@@ -1301,6 +1311,7 @@ static void jtfamftrav(J jt,AD* RESTRICT wd,I t){I n=AN(wd); MEMCHK1B(wd);
      PREFETCH((C*)np0);   // prefetch the next box while ra() is running
      // We now free virtual blocks in boxed nouns, as a step toward making it easier to return them to WILLOPEN
      if(likely((np=QCWORD(np))!=0)){  // value is 0 only if error filling boxed noun.  If the value is a parsed word, it may have low-order bit flags
+      MEMCHK1(np);
       if(likely(!(AFLAG(np)&AFVIRTUAL))){
        I Zc=AC(np); I tt=AT(np);
        if(likely(((Zc-2)|tt)<0) ||  // if sparse or count<2, go to free the block
@@ -1485,7 +1496,7 @@ void jttpop(J jt,A *old,A *pushp){A *endingtpushp;
    pushp=(A*)np; // move to the next block, whichever allocation it is in 
   } else {
    // The return point:
-#if MEMAUDIT&2
+#if SY_64 && MEMAUDIT&2
    audittstack(jt);   // one audit for each tpop.  Mustn't audit inside tpop loop, because that's inconsistent state
 #endif
    R;
@@ -1535,15 +1546,15 @@ __attribute__((noinline)) A jtgafallopool(J jt){
  // we visit them in back-to-front order so the first-allocated headers are in cache
 #if PYXES
 // the lock must always be cleared when the block is returned, so we can set it once.  The origin likewise doesn't change
-#define PYXMEMINIT(u) *(I4 *)&AORIGIN(u)=THREADID1(jt);  // init allocating thread# and clear the lock
-#elif (SY_64 && MEMAUDIT&0x80)
-#define PYXMEMINIT(u) (u)->origin=0x6b;(u)->lock=0x7c;
+#define PYXMEMINIT(u) *(I4 *)&AORIGIN(u)=THREADID1(jt);APINIT(u,XHEADERFILL);  // init allocating thread# and clear the lock
+#elif (SY_64 && MEMAUDIT&0x80) || NORMAHN
+#define PYXMEMINIT(u) APINIT(u,XHEADERFILL);(u)->origin=0x6b;(u)->lock=0x7c;
 #else
 #define PYXMEMINIT(u)
 #endif
  u=(A)((C*)z+PSIZE); chn=0; hrh=FHRHENDVALUE(1+blockx-PMINL); I n=2L<<blockx;
 #if MEMAUDIT&17
- DQ(PSIZE/2>>blockx, u=(A)((C*)u-n); AFCHAIN(u)=chn; chn=u; if(MEMAUDIT&4)AC(u)=(I)0xdeadbeefdeadbeefLL; hrh -= FHRHBININCR(1+blockx-PMINL); AFHRH(u)=hrh; PYXMEMINIT(u));   // chain blocks to each other; set chain of last block to 0
+ DQ(PSIZE/2>>blockx, u=(A)((C*)u-n); AFCHAIN(u)=chn; chn=u; if(MEMAUDIT&4)AC(u)=(I)DEADBEEF; hrh -= FHRHBININCR(1+blockx-PMINL); AFHRH(u)=hrh; PYXMEMINIT(u));   // chain blocks to each other; set chain of last block to 0
 #else
  DQ(PSIZE/2>>blockx, u=(A)((C*)u-n); AFCHAIN(u)=chn; chn=u; hrh -= FHRHBININCR(1+blockx-PMINL); AFHRH(u)=hrh; PYXMEMINIT(u));    // chain blocks to each other; set chain of last block to 0
 #endif
@@ -1599,6 +1610,7 @@ if((I)jt&3)SEGFAULT;
   // small block: allocate from pool
   z=jt->mempool[-PMINL+1+blockx];   // head of free list.  We wait till blockx is valid because an allo of 2^29 bytes could fetch out of JTT.  Rearranging could get to 2^33, not enough
   if(likely(z!=0)){         // allocate from a chain of free blocks
+// frompool:
    jt->mempool[-PMINL+1+blockx]=AFCHAIN(z);  // remove & use the head of the free chain
    // If the user is keeping track of memory high-water mark with 7!:2, figure it out & keep track of it.  Otherwise save the cycles.  All allo routines must do this
    if(unlikely((jt->memballo[-PMINL+1+blockx]&MFREEBCOUNTING)!=0)){
@@ -1621,15 +1633,29 @@ if((I)jt&3)SEGFAULT;
  }
 #if MEMAUDIT&8
 // NOTE!! z[i] dependency on struct AD
- I fv=lfsr++; DO((((I)1)<<(1+blockx-LGSZI)), if(i!=(0+2)&&i!=(0+6))((I*)z)[i]=fv;);   // fill block with garbage - but not the allocation word or zaploc
+#if NORMAHN
+ I fv=lfsr++; DO((((I)1)<<(1+blockx-LGSZI)), if((i>NORMAHN)&&i!=AMOFFSET&&i!=AROFFSET)((I*)z)[i]=fv;);   // fill block with garbage - but not the allocation word or zaploc
+#else
+ I fv=lfsr++; DO((((I)1)<<(1+blockx-LGSZI)), if(i!=AMOFFSET&&i!=AROFFSET)((I*)z)[i]=fv;);   // fill block with garbage - but not the allocation word or zaploc
+#endif
 #endif
 #if MEMAUDIT&1
  if(z->h==0)SEGFAULT;  // h field must be valid
 #endif
  // initialize the header fields.  To help with GAT (especially singletons), we init to an atomic FL block (0x38,0,tp,FL,inplaceable,1)
  A *tp=jt->tnextpushp;  // we will have to modify pushp
+#if NORMAHN
+ static I __attribute__ ((aligned (CACHELINESIZE))) inithdr[6+NORMAHN]={Xhr0 AKXR(0),0,0,FL,ACINPLACE+ACUC1,1};  // atomic header block, type FL.  Could put into JTT around tpushp, but takes too much space
+ memcpy((I*)z+NORMAHN,(I*)inithdr+NORMAHN,sizeof(inithdr)-NORMAHN*SZI);  AZAPLOC(z)=tp; // all blocks are born inplaceable, and point to their deletion entry in tpop
+#else
  static I __attribute__ ((aligned (CACHELINESIZE))) inithdr[6]={AKXR(0),0,0,FL,ACINPLACE+ACUC1,1};  // atomic header block, type FL.  Could put into JTT around tpushp, but takes too much space
  memcpy(z,inithdr,sizeof(inithdr));  AZAPLOC(z)=tp; // all blocks are born inplaceable, and point to their deletion entry in tpop
+#endif
+#if MEMAUDIT&0x80
+ PYXMEMINIT(z);
+ AR(z)=0;
+#endif
+// at this point AFCHAIN(z) is invalid and became AK(z)
       // Note: with AVX-512 it is better to insert pushp into the store register using _mm256_insert_epi64
    // Put the new block into the tpop stack and point the blocks to its zappable tpop slot.  We have to check for a new tpop stack block, and we cleverly
    // pass z into that function, which will return it unchanged, so that we don't have to push the value in this routine
@@ -1655,13 +1681,23 @@ RESTRICTF A jtgafv(J jt, I bytes){UI4 j;
 #if NORMAH*(SY_64?8:4)<(1LL<<(PMINL-1))
  bytes|=(I)1<<(PMINL-1);  // if the memory header itself doesn't meet the minimum buffer length, insert a minimum
 #endif
+#if NORMAHN
+ if (bytes<(1LL<<(PMINL-1))) bytes=((I)1<<(PMINL-1));
+#endif
  j=CTLZI((UI)bytes);  // 3 or 4 should return 2; 5 should return 3
+#if NORMAHN
+ if(0>-PMINL+1+(volatile int)j)SEGFAULT;
+#endif
  R jtgaf(jt,(I)j);
 }
 
 #if C_AVX2 || EMU_AVX2
 // fill an INDIRECT block with 0s, starting with s[0].  m is #bytes requested for allo-1, including header
+#if NORMAHN
+A zfillind(A w, I bytes){AS(w)[0]=0; if(0<((bytes+31)&-32)-(offsetof(AD,s[1])))mvc((((bytes+31)&-32)-(offsetof(AD,s[1]))),(C*)(AS(w)+1),MEMSET00LEN,MEMSET00); R w;}  // copy in 0s after the header, to the end of the block
+#else
 A zfillind(A w, I m){
+ _Static_assert(!(offsetof(AD,s[1-NORMAHN])&31),"zfillind avx mvc address 32-byte alignment");
  AS(w)[0]=0;  // the first shape atom by hand, i. e. the part after the header up to the first 64B.  The rest is aligned on 32-byte boundaries
  if((m=(m-64)&-32)>=0){   // get #32-byte sections - 1; if there are some to do...
   void *z=&AS(w)[1];   // point to cache-aligned result area
@@ -1697,6 +1733,7 @@ A zfillind(A w, I m){
  }
  R w;
 }
+#endif
 // like jtga, but don't copy shape or AN.   Never called for SPARSE type
 // We don't store AN, because that would take another push/pop and we hope the caller needs to preserve it anyway.
 RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
@@ -1705,26 +1742,54 @@ RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
  I bytes; if(likely(type&(BIT(LASTNOUNX+1)-1)))bytes=ALLOBYTESVSZLG(atoms,rank,bplg(type),(type)&C4T,0);else bytes=ALLOBYTESVSZ(atoms,rank,bpnonnoun(type),0,0);
  ASSERT((UI)rank<=(UI)RMAX,EVLIMIT) ASSERT((UI)atoms<=2147483647,EVLIMIT)   // verify size & rank are in limits
     // We never use GA for NAME types, so we don't need to check for it
+#if NORMAHN
+#if NORMAH*(SY_64?8:4)<(1LL<<(PMINL-1))
+ bytes|=(I)1<<(PMINL-1);  // if the memory header itself doesn't meet the minimum buffer length, insert a minimum
+#endif
+#if NORMAHN
+ if (bytes<(1LL<<(PMINL-1))) bytes=((I)1<<(PMINL-1));
+#endif
+ UI4 j=CTLZI((UI)bytes);  // 3 or 4 should return 2; 5 should return 3
+#if NORMAHN
+ if(0>-PMINL+1+(volatile int)j)SEGFAULT;
+#endif
+ RZ(z=jtgaf(jt, j));   // allocate the block, filling in AC AFLAG AM
+#else
  RZ(z=jtgaf(jt, CTLZI((UI)bytes)));   // allocate the block, filling in AC AFLAG AM
- AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank);
+#endif
+ AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank); AN(z)=atoms;
  // Clear data for non-DIRECT types in case of later error
  // Since we allocate powers of 2, we can make the memset a multiple of 32 bytes.
  if(unlikely(!((type&DIRECT)!=0))){z=zfillind(z,bytes);}  // unlikely is important!  compiler strains then to use one less temp reg
  RETF (z);
 }
 #else
-A zfillind(A w, I bytes){AS(w)[0]=0; mvc((bytes-(offsetof(AD,s[1])-32))&-32,(C*)(AS(w)+1),MEMSET00LEN,MEMSET00); R w;}  // copy in 0s after the header, to the end of the block
+#if NORMAHN
+A zfillind(A w, I bytes){AS(w)[0]=0; if(0<((bytes+31)&-32)-(offsetof(AD,s[1])))mvc((((bytes+31)&-32)-(offsetof(AD,s[1]))),(C*)(AS(w)+1),MEMSET00LEN,MEMSET00); R w;}  // copy in 0s after the header, to the end of the block
+#else
+A zfillind(A w, I bytes){_Static_assert(!(offsetof(AD,s[1-NORMAHN])&31),"zfillind mvc address 32-byte alignment"); AS(w)[0]=0; mvc((bytes-(offsetof(AD,s[1-NORMAHN])-32))&-32,(C*)(AS(w)+1-NORMAHN),MEMSET00LEN,MEMSET00); R w;}  // copy in 0s after the header, to the end of the block
+#endif
 RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
  I bytes; if(likely(type&(BIT(LASTNOUNX+1)-1)))bytes=ALLOBYTESVSZLG(atoms,rank,bplg(type),(type)&C4T,0);else bytes=ALLOBYTESVSZ(atoms,rank,bpnonnoun(type),0,0);
  ASSERT(((I)bytes>(I)(atoms)&&(I)(atoms)>=(I)0)&&!((rank)&~RMAX),EVLIMIT)
  RZ(z=jtgafv(jt, bytes));   // allocate the block, filling in AC and AFLAG
- AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank); // UI to prevent reusing the value from before the call
+ AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank); AN(z)=atoms; // UI to prevent reusing the value from before the call
  if(unlikely(!((type&DIRECT)>0))){z=zfillind(z,bytes);}
  RETF (z);
 }
 #endif
 
 // send expatriate blocks back home
+
+#if !SY_64 && (NORMAH & 1)
+#define REPATX (-1)
+#else
+#define REPATX (-4)
+#endif
+// #define REPATOLINK AAV0(repato)[REPATX]
+// #define WLINK AAV0(w)[REPATX]
+#define REPATOLINK ABACK(repato)
+#define WLINK ABACK(w)
 
 // move the repato list (whose blocks are known to be from a single jt) to the repatq for that jt, and signal repat in that jt if there is enough to process
 // We simply set sprepatneeded when we add to the repatq, with no interlock.  It is not vital to repat blocks immediately, and impossible anyway because they are
@@ -1735,7 +1800,9 @@ void jtrepatsend(J jt){
 #if PYXES
  A repato=jt->repato;
  if(!repato)R; // nothing to repatriate
- A tail=AAV0(repato)[0];  // extract tail
+ CHKORIGIN(repato);
+ A tail=REPATOLINK;  // extract tail
+ CHKORIGIN(tail);
  I origthread1=AORIGIN(repato);
  I allocsize=AN(repato);  // extract total length in repato
  jt->repato=0;  // clear repato to empty
@@ -1755,7 +1822,11 @@ void jtrepatrecv(J jt){
  __atomic_store_n(&jt->uflags.sprepatneeded,0,__ATOMIC_RELEASE);
  if(likely(p)){  // if anything to repat here...
   jt->bytes-=AN(p);  // remove repats from byte count.  Not worth testing whether counting enabled
-  A nextp; do{nextp=AFCHAIN(p); AC(p)=0; mf(p);}while(p=nextp);  // send the blocks to their various queues (clear AC to avoid audit failure)
+  A nextp; do{nextp=AFCHAIN(p); AC(p)=0;
+#if MEMAUDIT&0x80
+  AFLAG(p)=AM(p)=AT(p)=AN(p)=0; APINIT(p,XHEADERFILL);
+#endif
+  mf(p);}while(p=nextp);  // send the blocks to their various queues (clear AC to avoid audit failure)
  }
 #endif
 }
@@ -1763,14 +1834,18 @@ void jtrepatrecv(J jt){
 // repatriate a single block onto the outbound queue, flushing if there is a change of owner or too much data
 static void jtrepat1(J jt, A w, I allocsize){
 #if PYXES
+ CHKORIGIN(w);
+#if MEMAUDIT&0x80
+  if((I)DEADBEEF!=(I)AFCHAIN(w))SEGFAULT;
+#endif
  // repatriate a block allocated in another thread.  AN(jt->repato) holds the total allocated size of the blocks in repato  AAV0(repato)[0] is the tail pointer.  The tail has no AFCHAIN pointer
  A repato=jt->repato;
  if(common(repato&&AORIGIN(repato)==AORIGIN(w))){      // adding to existing repatriation queue
   allocsize+=AN(jt->repato);AN(jt->repato)=allocsize; // update allocated size
-  AFCHAIN(AAV0(repato)[0])=w; AAV0(repato)[0]=w;          // add block to chain
+  AFCHAIN(REPATOLINK)=w; REPATOLINK=w;          // add block to chain
  }else{
   if(repato)jtrepatsend(jt);                             // repatriation queue was not empty; flush it now (TODO could do better and buffer more)
-  jt->repato=w; AN(w)=allocsize; AAV0(w)[0]=w;             // queue now empty regardless; install w as both head and tail
+  jt->repato=w; AN(w)=allocsize; WLINK=w;             // queue now empty regardless; install w as both head and tail
  }
  if(uncommon(allocsize>=REPATOLIM))jtrepatsend(jt);    // allocsize now has total size of repato.  if size of chain exceeded limit, flush
 #endif
@@ -1818,13 +1893,28 @@ printf("%p-\n",w);
   jgmpguard(w);
 #endif
  }
-#if MEMAUDIT&17
-#endif
 #endif
  if(withprob(FHRHBINISPOOL(hrh),0.8)){   // allocated from subpool
 #if MEMAUDIT&4
-  I fv=frfillvalue++; DO((FHRHPOOLBINTOSIZE(blockx)>>LGSZI), if(i!=(0+6))((I*)w)[i]=fv;);   // wipe the block clean before we free it - but not the reserved area
+#if NORMAHN
+  I fv=frfillvalue++; DO((FHRHPOOLBINTOSIZE(blockx)>>LGSZI), if((i>NORMAHN)&&i!=AROFFSET)((I*)w)[i]=fv;);   // wipe the block clean before we free it - but not the reserved area
+#else
+  I fv=frfillvalue++; DO((FHRHPOOLBINTOSIZE(blockx)>>LGSZI), if(i!=AROFFSET)((I*)w)[i]=fv;);   // wipe the block clean before we free it - but not the reserved area
 #endif
+#endif
+#if MEMAUDIT&0x80
+  {I ar=((I*)w)[AROFFSET];
+#if SY_64 || NORMAHN
+   I4 ao=*(I4 *)&AORIGIN(w);
+#endif
+   mvc(FHRHPOOLBINTOSIZE(blockx),w,SZI,&deadbeef);
+   ((I*)w)[AROFFSET]=ar;
+#if SY_64 || NORMAHN
+   *(I4 *)&AORIGIN(w)=ao;
+#endif
+  }
+#endif
+  CHKORIGIN(w);
 #if PYXES
   if(unlikely(AORIGIN(w)!=(US)THREADID1(jt))){jtrepat1(jt,w,FHRHPOOLBINTOSIZE(blockx)); R;}  // if block was allocated from a different thread, pass it back to that thread where it can be garbage collected
 #endif
@@ -1839,7 +1929,11 @@ printf("%p-\n",w);
  }else{    // buffer allocated from malloc
   I allocsize=FHRHSYSSIZE(hrh);
 #if MEMAUDIT&4
-  I fv=frfillvalue++; DO((MEMAUDIT&1?8:(allocsize>>LGSZI)), if(i!=(0+6))((I*)w)[i]=fv;);   // wipe the block clean before we free it - but not the reserved area
+#if NORMAHN
+  I fv=frfillvalue++; DO((MEMAUDIT&1?(NORMAH+1):(allocsize>>LGSZI)), if((i>NORMAHN)&&i!=AROFFSET)((I*)w)[i]=fv;);   // wipe the block clean before we free it - but not the reserved area
+#else
+  I fv=frfillvalue++; DO((MEMAUDIT&1?(NORMAH+1):(allocsize>>LGSZI)), if(i!=AROFFSET)((I*)w)[i]=fv;);   // wipe the block clean before we free it - but not the reserved area
+#endif
 #endif
   allocsize+=TAILPAD+ALIGNTOCACHE*CACHELINESIZE;  // the actual allocation had a tail pad and boundary
 #if PYXES
@@ -1858,7 +1952,10 @@ printf("%p-\n",w);
   if(unlikely(jt->mfreegenallo&MFREEBCOUNTING))jt->bytes-=allocsize;  // keep track of total allocation, needed only if enabled
 #endif
 #if MEMAUDIT&4
- ((I*)w)[6]=(I)0xdeadbeefdeadbeefLL;   //  Reserved area in malloc blocks is not permanent
+ ((I*)w)[AROFFSET]=(I)DEADBEEF;   //  Reserved area in malloc blocks is not permanent
+#endif
+#if MEMAUDIT&0x80
+ mvc(NORMAH,w,SZI,&deadbeef);
 #endif
 
 #if ALIGNTOCACHE
@@ -1877,10 +1974,18 @@ auditmemchains();
 // as a backer for a virtual block.  It must be a noun
 RESTRICTF A jtgah(J jt,I r,A w){A z;
  ASSERT(RMAX>=r,EVLIMIT); 
+#if !SY_64
+ if((NORMAH+r)&1){
+  RZ(z=gafv(SZI*(1+NORMAH+r)-1));
+ }else{
+  RZ(z=gafv(SZI*(NORMAH+r)-1));
+ }
+#else
  RZ(z=gafv(SZI*(NORMAH+r)-1));
+#endif
  AT(z)=0;
  if(w){
-  AT(z)=AT(w); AN(z)=AN(w); ARINIT(z,(RANKT)r); AK(z)=CAV(w)-(C*)z; AC(z)=ACUC1;
+  AT(z)=AT(w); AN(z)=AN(w); ARINIT(z,(RANKT)r); AK(z)=CAV(w)-(C*)z; AC(z)=ACUC1; VIRTFILL(z,w);
   if(1==r)AS(z)[0]=AN(w);
  }
  RETF (z);
@@ -1911,6 +2016,7 @@ F1(jtca){F12IP;A z;P*wp,*zp;
   MC(zv,wv,(n*bpt)+(t&NAME?sizeof(NM):0));
   if(t&FUNC+NAME){AK(z)=AK(w); AN(z)=AN(w);}  // FUNC/NAME use AK/AN as localuse, preserve them
  }
+ VIRTFILL(z,w);
  RETF (z);
 }
 // clone block only if it is read-only
@@ -1934,6 +2040,7 @@ B jtspc(J jt){A z; RZ(z=MALLOC(1000)); FREECHK(z); R 1; }  // see if 1000 bytes 
 // We leave AM of the block to be available to the user
 A jtext(J jt,B b,A w){A z;I c,k,m,m1,t;
  ARGCHK1(w); MEMCHK1(w);                               /* assume AR(w)&&AN(w)    */
+ if(!AR(w))SEGFAULT;   // scaf
  m=AS(w)[0]; PROD(c,AR(w)-1,AS(w)+1);
  t=AT(w); I bpt=bp(t); k=c*bpt;
  I zr=AR(w); GA00(z,t,2*AN(w)+(AN(w)?0:c),zr);  // ensure we allocate SOMETHING to make progress

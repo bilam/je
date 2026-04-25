@@ -325,7 +325,13 @@ static GF(jtgrd){F1PREFJT;A x,y;int b;D*v,*wv;I *g,*h,nneg,*xv;US*u;void *yv;I c
  // choose bucket table size & function; allocate the bucket area
  I (*grcol)(I,I,void*,I,I*,I*,const I,US*,I);  // prototype for either size of buffer
  { I use4 = n>65535; grcol=use4?(I (*)(I,I,void*,I,I*,I*,const I,US*,I))grcol4:(I (*)(I,I,void*,I,I*,I*,const I,US*,I))grcol2; GATV0(y,INT,((65536*sizeof(US))>>LGSZI)<<use4,1); yv=AV1(y);}
+#if !SY_64 && !(NORMAH & 1)   // AS(x) != AV1(x)-1
+ GATV0(x,INT,1+n,1); xv=1+AV1(x);  // allocate a ping-pong buffer for the result
+ xv[-1]=n;
+#else
  GATV0(x,INT,n,1); xv=AV1(x);  // allocate a ping-pong buffer for the result
+ if(unlikely((AS(x)+1)!=AV1(x)))SEGFAULT;  // scaf
+#endif
  while(--m>=0){I colflags;  // loop over each cell of input
   u=(US*)wv+FPLSBWDX;   // point to LSB of input
   // count the number of negative values, call it nneg.  Set b to mean 'both negative and nonnegative are present'

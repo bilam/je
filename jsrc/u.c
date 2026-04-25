@@ -736,6 +736,9 @@ void chkmemchain(J jt,int blockx,I maxdepth,A addr){
 #endif 
   if(!AFHRH(w)){fprintf(stderr,"AFHRH %p AFHRH %d\n",w,AFHRH(w));SEGFAULT;}
   CHKORIGIN(w);
+#if NORMAHN>1
+  DO(NORMAHN-1,if((w->p[i]!=(I)XHEADERFILL)&&(w->p[i]!=(I)DEADBEEF)){fprintf(stderr,"NOT XHEADERFILL/DEADBEEF %p ",w);dump_ADheader(w);SEGFAULT;})
+#endif
   prev=w; w=AFCHAIN(w);
   j++;
  }
@@ -759,13 +762,24 @@ void chkapx(J jt, A w, int recur, int mode){
 #else
   if(AFCHAIN(w)&&((0x10000>((uintptr_t)AFCHAIN(w)))||(I)AFCHAIN(w)==(I)DEADBEEF)){fprintf(stderr,"ADDRESS %p\n",w);SEGFAULT;}
 #endif
+#if NORMAHN>1
+  DO(NORMAHN-1,if((w->p[i]!=(I)XHEADERFILL)&&(w->p[i]!=(I)DEADBEEF)){fprintf(stderr,"NOT XHEADERFILL/DEADBEEF %p ",w);dump_ADheader(w);SEGFAULT;})
+#endif
  } else {
   if((*(I*)w)==(I)DEADBEEF||AFLAG(w)==(I)DEADBEEF||AM(w)==(I)DEADBEEF||AT(w)==(I)DEADBEEF||AC(w)==(I)DEADBEEF||AN(w)==(I)DEADBEEF){fprintf(stderr,"MEMORY DISPOSED  %p\n",w);dump_ADheader(w);SEGFAULT;};
   if(!ACISPERM(AC(w))){
-  if(!AFLAG(w)&AFNJA)CHKORIGIN(w);  // AORGIN(w) is not preserved in createjmf_jmf_
+   if(NORMAHN||!AFLAG(w)&AFNJA)CHKORIGIN(w);  // if NORMAHN==0  AORGIN(w) is not preserved in createjmf_jmf_
+#if !SY_64 && NORMAHN
+   if((!AT(w)&SYMB)&&(NORMAH+AR(w))&1){
+    if(AS(w)[AR(w)]!=(I)DEADBEEF){fprintf(stderr,"!SY_64 ODD NORMAH AS(w)[AR(w)]  %p "FMT0X"\n",w,AS(w)[AR(w)]);dump_ADheader(w);SEGFAULT;};
+   }
+#endif
    if((!AFLAG(w)&AFVIRTUAL)&&!(AFLAG(w)&AFNJA)&&!(AFLAG(w)&ACUC1)&&(AFHRH(w)==0)){fprintf(stderr,"POOL NUMBER %p\n",w);dump_ADheader(w);SEGFAULT;}  // pool number must be valid if not GMP block and not mem-mapped
    if(jt)DO(PLIML-PMINL+1, chkmemchain(jt,i,3,w);)
   }
+#if NORMAHN>1
+  DO(NORMAHN-1,if(w->p[i]!=(I)XHEADERFILL){fprintf(stderr,"XHEADERFILL %p: ",w);dump_ADheader(w);SEGFAULT;})
+#endif
 //  if(ACISPERM(AC(w)))R; // permanent need not audit
   if(ISGMP(w))R;        // component not allocated by J
   if(AFLAG(w)&AFNJA)R;  // component not allocated by J
