@@ -83,7 +83,7 @@ DF1(jtcrcfixedleft){F12IP;A h,*hv;I n;UINT*t,z;UC*v;
 #ifndef CRC32L
 #define CRC32L(acc,in) (0xffffffff&((acc*15015)^(in)))   // if no hardware CRC (rare), mix the bits a little
 #endif
-DF2(jtqhash12){F12IP; I hsiz; UI crc;
+DF2(jtqhash12){F12IP0; I hsiz; UI crc;
  ARGCHK2(a,w);
  if(EPDYAD){hsiz=rei0(a);} else{w=a; hsiz=0;}  // fetch hashtable size; set w=data to hash
  ASSERT(hsiz>=0,EVDOMAIN);

@@ -728,7 +728,7 @@ static const S fnflags[]={  // 0 values reserved for small-range.  They turn off
 // mode indicates the type of operation, defined in j.h
 A jtindexofsub(J jtfg,I mode,AD * RESTRICT afg,AD * RESTRICT wfg){A h=0;fauxblockINT(zfaux,1,0);
     I ac,ak,datamin,f,f1,k,klg,n,r,*s,t,wc,wk,zn;UI c,m,p;
- IARG2CR F12IP;PROLOG(0079);
+ IARG2CR F12IPG;PROLOG(0079);
  // ?r=rank of argument, ?cr=rank the verb is applied at, ?f=length of frame, ?s->shape, ?t=type, ?n=#atoms
  // prehash is set if w argument is omitted (we are just prehashing the a arg)   note: mark is an atom
  I at=AT(a); I an=AN(a); I wt=AT(w); I wn=AN(w);
@@ -1209,19 +1209,19 @@ A jtindexofprehashed(J jtfg,A a,A w,A hs,A self){F12IP;A h,*hv,x,z;IFN fn;I ar,*
 }
 
 // x i. y, with IRS, supports inplacing (in subroutine)
-DFI2(jtindexof){IARG2CR F12IP;
+DFI2(jtindexof){IARG2CR F12IPG;
  if(unlikely(a==ds(CALP))&&likely(AT(w)&LIT)&&likely(acr==1)&&likely(!ISSPARSE(AT(w)))){R jtadotidot(jt,w);}  // catch special case of a. i. y
  R jtindexofsub(jtfg,IIDOT,afg,wfg);  // pass inplaceability through
 }
      /* a i."r w */
 
 // x i: y, with IRS, supports inplacing (in subroutine)
-FI2(jtjico2){IARG2 F12IP;R jtindexofsub(jtfg,IICO,afg,wfg);}  // pass inplaceability through
+FI2(jtjico2){IARG2 F12IPG;R jtindexofsub(jtfg,IICO,afg,wfg);}  // pass inplaceability through
      /* a i:"r w */
 
 // ~: y
 FI1(jtnubsieve){
- IARG1 F12IP;
+ IARG1 F12IPG;
  if(unlikely(ISSPARSE(AT(w))))R nubsievesp(wfg); 
  R indexofsub(INUBSV,wfg,wfg);   // not inplace
 }    /* ~:"r w */
@@ -1289,7 +1289,7 @@ errexit:;
 
 // x e. y with IRS
 FI2(jteps){
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  if(unlikely(ISSPARSE(AT(a)|AT(w))))R lt(irs2(w,a,0L,wcr,acr,(AF)jtindexof),sc(wcr?AS(w)[AR(w)-wcr]:1));  // for sparse, implement as (# cell of y) > y i. x
  R indexofsub(IEPS,wfg,afg);  // no inplacing.  swap args
 }    /* a e."r w */
@@ -1325,7 +1325,7 @@ DF2(jtepsind0){F12IP;A z;
 
 // x i.!.1 y - assumes xy -: /:~ xy (integer atoms only for now)
 FI2(jtsfu){
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  I type=ISFU+IIDOT; type=((NOUN|SPARSE)&~(INT))&(AT(a)|AT(w))?IIDOT:type; type=wcr!=1?IIDOT:type; // If the cells of a are not dense integer atoms, we revert to standard methods
  R indexofsub(type,afg,wfg);
 }    /* a i.!.1"r w */

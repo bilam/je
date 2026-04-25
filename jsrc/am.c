@@ -52,7 +52,7 @@ D*wd=(D*)wc,*zd=(D*)zc;
                        zv[i]=*(i+(T*)aa[j]);); break;}
 
 // Handle the case statement abc =: pqr} x,...,y,:z, with in-place operation if pqr is Boolean and abc appears on the right
-F1(jtcasev){F12IP;A b,*u,*v,w1,x,y,z;B*bv,p,q;I*aa,c,*iv,j,m,n,r,*s,t;
+F1(jtcasev){F12IP1;A b,*u,*v,w1,x,y,z;B*bv,p,q;I*aa,c,*iv,j,m,n,r,*s,t;
  ARGCHK1(w);
  RZ(w1=ca(w)); u=AAV(w1);   // make a copy of the input, point to its value
  // the input is a boxed list.  The last 3 values are (name pqr);(index in which abc appeared in the x,y,... or -1 if it didn't);(original sentence queue including flags)
@@ -583,7 +583,7 @@ exitra:
 // Execution of x m}"r y.  Split on sparse/dense, passing on the dense to merge2, including inplaceability
 A jtamendn2(J jtfg,A afg,A wfg,AD * RESTRICT ind,A self){A e,z; I atd,wtd,t,t1;P*p;
   // ind=m, the indexes to be modified
- IARG2CR ARGCHK1(ind); F12IP;PROLOG(0007);
+ IARG2CR ARGCHK1(ind); F12IPG;PROLOG(0007);
  I at=AT(a), wt=AT(w), indt=AT(ind);
  I cellframelen,cellx,indframe;  // for single-cell amend: frame of cell; its index; number of surplus leading axes of 1s in selector
  if(unlikely(ISSPARSE(wt|indt)))R rank2exip(a,w,self,acr,wcr,acr,wcr,jtamendn2sp);
@@ -773,7 +773,7 @@ indexforonecell:;  // cellframelen, wframelen (always 0), and ind0 must be set
  PRISTCLRF(w)
  EPILOG(z);
 }
-static DFI2(jtamendn2c){F12IP;R jtamendn2(jtfg,afg,wfg,FAV(self)->fgh[0],self);}  // entry point from normal compound, passes through
+static DFI2(jtamendn2c){F12IPG;R jtamendn2(jtfg,afg,wfg,FAV(self)->fgh[0],self);}  // entry point from normal compound, passes through
 
 // Execution of x u} y.  Call (x u y) to get the indices, convert to cell indexes, then
 // call merge2 to do the merge.  Pass inplaceability into merge2.
@@ -899,7 +899,7 @@ static A jtgadv(J jt,A w){A hs;I n;
 
 // Execution of x -@(|:){`[`]}"r y
 static DFI2(jtamnegate){
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  // if y is CMPX/FL/QP, execute markd x} y which means negate
  if(AT(w)&FL+CMPX+QP)R jtamendn2(jtfg,markd(PEXT0(AT(w),FLX,FL+CMPX>>FLX)),wfg,afg,self);
  // otherwise, revert to x -@(|:){`[`]}"r y, processed by jtgav2
