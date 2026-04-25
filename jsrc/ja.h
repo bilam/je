@@ -381,18 +381,18 @@
 #define fauxblockINT(z,n,r) I __attribute__((aligned(CACHELINESIZE))) z[(AKXR(r)>>LGSZI)+(n)]   // define a block, big enough to hold n atoms at rank r, for use in fauxINT/fauxBOX
 // Allocate an INT block. z is the zvalue to hold the result; v is the fauxblock to use if n INTs will fit in the fauxblock, which has rank r
 // shape is not filled in, except when rank is 1.  In case this block gets passed into a modifier or boxed, make it PERMANENT (all such references must be destroyed before the block goes out of scope)
-#define fauxINT(z,v,n,r) {if(likely(AKXR(r)+(n)*SZI<=(I)sizeof(v))){z=(A)(v); AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=INT; ACFAUX(z,ACPERMANENT); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);}else{GATV0(z,INT,(n),(r));}}
-#define fauxBOX(z,v,n,r) {if(likely(AKXR(r)+(n)*SZI<=(I)sizeof(v))){z=(A)(v); AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=BOX; ACFAUX(z,ACPERMANENT); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);}else{GATV0(z,BOX,(n),(r));}}
+#define fauxINT(z,v,n,r) {if(likely(AKXR(r)+(n)*SZI<=(I)sizeof(v))){z=(A)(v); AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=INT; ACFAUX(z,ACPERMANENT); APINIT(z,XHEADERFILL); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);}else{GATV0(z,INT,(n),(r));}}
+#define fauxBOX(z,v,n,r) {if(likely(AKXR(r)+(n)*SZI<=(I)sizeof(v))){z=(A)(v); AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=BOX; ACFAUX(z,ACPERMANENT); APINIT(z,XHEADERFILL); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);}else{GATV0(z,BOX,(n),(r));}}
 // use the following in functions that cannot admit a return.  You must know that the allocated fauxblock is big enough
-#define fauxBOXNR(z,v,n,r) {z=(A)(v); AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=BOX; ACFAUX(z,ACPERMANENT); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);}
+#define fauxBOXNR(z,v,n,r) {z=(A)(v); AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=BOX; ACFAUX(z,ACPERMANENT); APINIT(z,XHEADERFILL); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);}
 // v is a block declared by fauxblock, w is the source data, r is the rank.  offset is assumed 0.  c is the initial value for AC.  If the rank is small enough, we use the fauxblock, otherwise
 // we allocate a block.  We assume that the caller will fill in AN, AS.  Block must be marked UNINCORPABLE so it will not free its backer if freed, and so it will not be in-place virtualed,
 // and must be marked recursive if it is of such a type so that if we fa() the block we will not try to recur
 // PRISTINE is inherited from the backer (this is not done in virtual(), perhaps it should), because we know the block will never be inplaced unless it was inplaceable at the time this fauxblock was
 // created, which means it is not extant anywhere it could be assigned or extracted from.
-#define fauxvirtualcommon(z,v,w,r,c,err) {if(likely((r)<=4)){z=ABACK(w); AK((A)(v))=(CAV(w)-(C*)(v)); AT((A)(v))=AT(w); AR((A)(v))=(RANKT)(r); z=AFLAG(w)&AFVIRTUAL?z:(w); \
-                              AFLAG((A)(v))=AFVIRTUAL|AFUNINCORPABLE|(AFLAG(z)&AFPRISTINE)|(AT(w)&TRAVERSIBLE); ABACK((A)(v))=z; z=(A)(v); ACFAUX(z,(c))} \
-                              else{if(unlikely((z=virtual((w),0,(r)))==0))err; AFLAGORLOCAL(z,AFUNINCORPABLE) if((c)!=ACUC1)ACINIT(z,(c))} }
+#define fauxvirtualcommon(z,v,w,r,c,err) {if(likely((r)<=4)){z=ABACK(w); AK((A)(v))=(CAV(w)-(C*)(v)); AT((A)(v))=AT(w); AR((A)(v))=(RANKT)(r); APINIT((A)v,APX(w)); z=AFLAG(w)&AFVIRTUAL?z:(w); \
+                              AFLAG((A)(v))=AFVIRTUAL|AFUNINCORPABLE|(AFLAG(z)&AFPRISTINE)|(AT(w)&TRAVERSIBLE); ABACK((A)(v))=z; z=(A)(v); ACFAUX(z,(c)); APINIT(z,XHEADERFILL);} \
+                              else{if(unlikely((z=virtual((w),0,(r)))==0))err; AFLAGORLOCAL(z,AFUNINCORPABLE) APINIT(z,XHEADERFILL); if((c)!=ACUC1)ACINIT(z,(c))} }
 #define fauxvirtual(z,v,w,r,c) fauxvirtualcommon(z,v,w,r,c,R 0)
 // for function definition we don't call a subroutine, because that results in pushing all the arguments, popping them, and storing them back.
 // furthermore, we do better to allocate the block early, before the fill has been calculated so that (1) values can be dropped in as they are calculated (2) there is no

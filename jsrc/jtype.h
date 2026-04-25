@@ -189,6 +189,18 @@ typedef I SI;
 #define JTALIGNBDY      MAX(8192,(MAXTHREADSRND<<LGTHREADBLKSIZE))  // jt is aligned on this boundary - all lower bits are 0 (the value is the size of an SDRAM page, to avoid row precharges while accessing jt)
 
 struct AD {
+#if NORMAHX==0
+#if SY_64 || !PYXES
+ I p0[NORMAH8];
+#else
+#if C_LE
+ US origin;S lock;
+#else
+ S lock;US origin;
+#endif
+ I p0[NORMAH8-1];
+#endif
+#endif
  union {
   I k;  // 0
   A chain;   // used when block is on free chain
@@ -200,6 +212,9 @@ struct AD {
              // are changing the block address (i. e. not extending) you must take a system lock before freeing
   A global;      // for user JOB blocks, points to jt->global for the job
  } kchain;
+#if NORMAHX==1
+ I p1;
+#endif
  FLAGT flag; // 1
  union { // 2
   I m;  // Multi-use field. (1) For NJA/SMM blocks, size of allocation. (2) in syncos, a credential to allow pthread calls
@@ -270,6 +285,22 @@ struct AD {
 
 /* Fields of type A                                                        */
 
+#if NORMAHX==0
+#define AMOFFSET (NORMAH8+2)  // I* offset of AM field
+#define AROFFSET (NORMAH8+6)  // I* offset of AR field
+#else
+#if NORMAHX>0 && NORMAHX<=2
+#define AMOFFSET (1+2)  // I* offset of AM field
+#else
+#define AMOFFSET (2)  // I* offset of AM field
+#endif
+#if NORMAHX>0 && NORMAHX<=6
+#define AROFFSET (1+6)  // I* offset of AR field
+#else
+#define AROFFSET (6)  // I* offset of AR field
+#endif
+#endif
+
 #define AK(x)           ((x)->kchain.k)        /* offset of ravel wrt x           */
 #define AKASA(x)        ((x)->kchain.chain)       // the AK field for synthetic self blocks
 #define AKGST(x)        ((x)->kchain.globalst)        // global symbol table for this local symbol table
@@ -289,12 +320,28 @@ struct AD {
 // obsolete #else
 #define ARINIT(x,v)     *(US*)&((x)->r)=(v);       // Rank, clearing the high byte for initialization, and also clearing the lock.  Threadid is set at allocation and never changes
 // obsolete #endif
-#define SMMAH           (7L+0)   // number of header words in old-fashioned SMM alloc
-#define NORMAH          (7L+0)   // number of header words in new system
+#define SMMAH           (7L+NORMAHE)   // number of header words in old-fashioned SMM alloc
+#define NORMAH          (7L+NORMAHE)   // number of header words in new system
 #define AS(x)           ((x)->s)        // Because s is an array, AS(x) is a pointer to the shape, which is in s.  The shape is stored in the fixed position s.
 #if PYXES
 #define AOR(x)          ((x)->origin)   /* thread origin id                */
 #define ALK(x)          ((x)->lock)     /* thread lock                     */
+#endif
+
+#define APA(x)          ((x)->s + (x)->r) // padding I following shape
+#if NORMAHE
+#if NORMAHX==0
+#define APX(x)          ((x)->p0[0]) // extra word in AD
+#elif NORMAHX==1
+#define APX(x)          ((x)->p1)          // extra word in AD
+#endif
+#define APINIT(x,v)     APX(x)=(v);        // setting extra word to some garbage
+#define CHKAPX(x)       chkapx(x)
+#define CHKPOOL jtauditmemchains1(jt);DO((PLIML-PMINL+1),if(jt->mempool[i]){for(int j=i+1;j<5;j++){if(jt->mempool[j]&&(jt->mempool[i]==jt->mempool[j]))SEGFAULT;}})
+#else
+#define APINIT(x,v)
+#define CHKAPX(x)
+#define CHKPOOL jtauditmemchains1(jt);DO((PLIML-PMINL+1),if(jt->mempool[i]){for(int j=i+1;j<5;j++){if(jt->mempool[j]&&(jt->mempool[i]==jt->mempool[j]))SEGFAULT;}})
 #endif
 
 // The following fields are used for private communication between /. and ;. and inside ;. for the fret buffer.
@@ -307,9 +354,14 @@ struct AD {
 #define AKXR(x)         (SZI*(NORMAH+(x)))
 #define WP(t,n,r)       (SMMAH+ r   +(((t&NAME?sizeof(NM):0)+((n)<<bplg(t))+SZI-1)>>LGSZI))  // # I to allocate
 #else
+#if NORMAH & 1   // if NORMAH is odd
 #define AKXR(x)         (SZI*(NORMAH+((x)|1)))
 #define WP(t,n,r)       (SMMAH+(r|1)    +(((t&NAME?sizeof(NM):0)+((n)<<bplg(t))+SZI-1)>>LGSZI))
 /* r|1 to make sure array values are double-word aligned */
+#else
+#define AKXR(x)         (SZI*(NORMAH+(x)))
+#define WP(t,n,r)       (SMMAH+ r   +(((t&NAME?sizeof(NM):0)+((n)<<bplg(t))+SZI-1)>>LGSZI))  // # I to allocate
+#endif
 #endif
 #define AKX(x)          AKXR(AR(x))
 #define RCALIGN         1   // the rank to use to put the data on a cacheline boundary
@@ -889,7 +941,7 @@ typedef DST* DC;
 // type of 0000 is reserved to indicate 'no value'; 1-11 are the type bits (following LASTNOUNX) in order
 // in the words of an explicit definition the words have QCNAMELKP semantics in bit 4-5:
 #define QCMASK 0x3fLL   // all the LSB flags
-#define QCMASK2 QCMASK
+#define QCALIGN(x) ((x + 7) & ~7) // round up to multiple of 8
 #define QCWORD(x) ((A)((I)(x)&~QCMASK))  // the word pointer part of the QC
 #define QCTYPE(x) ((I)(x)&QCMASK)  // the type-code part plus semantics-dependent bits
 #define QCPTYPE(x) ((I)(x)&0xf)  // the type-code part only, 0-15 for the syntax units including assignment
@@ -1353,11 +1405,11 @@ typedef struct __attribute__((aligned(ABDY))) {I memhdr[AKXR(0)/SZI]; union { V 
 // NOTE: for fetching IDs we use the validitymask as a safe place to fetch 0s from.  We know that
 // validitymask[15] will be 0 on any platform
 #define NUMERIC0 ((C*)(validitymask+12))  // 0 0 0 0 for numeric fill
-#define FUNCTYPE0 ((A)(validitymask+12))  // 0 0 0 0, which has a 0 in the AT field
-#define FUNCID0 ((A)(validitymask-4*(!SY_64)))  // 0 in index [15] ([19] for 32-bit), which has a 0 in the id field of V
+#define FUNCTYPE0 ((A)(validitymask+12-NORMAHE))  // 0 0 0 0, which has a 0 in the AT field
+#define FUNCID0 ((A)(validitymask-4*(!SY_64)-NORMAHE))  // 0 in index [15] ([19] for 32-bit), which has a 0 in the id field of V
 #define SYMVAL0 ((L*)(validitymask+12))  // 0 0, which has a 0 in the val field of L
-#define AFLAG0 ((A)(validitymask+12))  // 0 0 0 0, which has a 0 in the flag field and type field of A
-#define ANLEN0 ((A)(validitymask+12-4))  // x x x x 0 0, which has a 0 in the AN field
+#define AFLAG0 ((A)(validitymask+12-NORMAHE))  // 0 0 0 0, which has a 0 in the flag field and type field of A
+#define ANLEN0 ((A)(validitymask+12-4-NORMAHE))  // x x x x 0 0, which has a 0 in the AN field
 #define ZAPLOC0 ((A*)(validitymask+12))  // 0 used as a pointer to a null tpop-stack value
 #define PSTK2NOTFINALASGN ((PSTK*)(validitymask+12)-2)  // 0 in position [2], signifying NOT final assignment (used for errors)
 #define BREAK0 ((C*)(validitymask+12))  // 0 to indicate no ATTN requested

@@ -588,7 +588,7 @@ pid_t p;
 }
 
 // execute the user's task.  Result is an ordinary noun or a pyx.  Bivalent (a,w,self) or (w,self,self) called from unquote or parse
-static A jttaskrun(J jtfg,A arg1, A arg2, A self){F12JT;
+static A jttaskrun(J jtfg,A arg1, A arg2, A self){F12JT0;
  ARGCHK2(arg1,arg2);  // the verb is not the issue.
  A jobA;GAT0(jobA,INT,(sizeof(JOB)+SZI-1)>>LGSZI,1); ACINITUNPUSH(jobA);  // protect the job till it is finished
  JOB *job=(JOB*)AAV1(jobA);  // The job starts on the second cacheline of the A block.  When we free the job we will have to back up to the A block

@@ -529,6 +529,12 @@ F1(jtcpufeature){F12IP;
 #else
   R sc(7);
 #endif
+ } else if(!strcasecmp(CAV(w),"XHEADERFILL")) {
+#ifdef XHEADERFILL
+  R sc(XHEADERFILL);
+#else
+  R sc(0);
+#endif
  }
 #if defined(__aarch64__)
  if     (!strcasecmp(CAV(w),"FP"      )) R sc(!!(getCpuFeatures()&ARM_HWCAP_FP ));

@@ -45,6 +45,9 @@ else
 endif
 ifeq (1,$(USE_PYXES))
  COPTION := $(COPTION) /DPYXES=1
+ ifeq (j32,$(j64x))
+  NORMAHX := 0
+ endif
 else
  COPTION := $(COPTION) /DPYXES=0
 endif
@@ -52,6 +55,11 @@ ifeq (0,$(USE_EMU_AVX))
  COPTION := $(COPTION) /DEMU_AVX2=0
 else
  COPTION := $(COPTION) /DEMU_AVX2=1
+endif
+ifneq ($(NORMAHX),)
+ COPTION := $(COPTION) /DNORMAHX=$(NORMAHX)
+else
+ COPTION := $(COPTION) /DNORMAHX=-1
 endif
 
 ifeq (1,$(USE_OPENMP))

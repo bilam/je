@@ -378,6 +378,9 @@ I jtmaxtype(J jt,I s,I t){
 // Copy m bytes from w to z, repeating every n bytes if n<m
 // This overfetches from z and w, but does not overstore z
 void mvc(I m,void*z,I n,void*w){
+#if NORMAHE
+ if(m<=0)R;
+#endif
  if(m<=n){if(m==SZI)*(I*)z=*(I*)w; else MC(z,w,m); R;}  // if no replication, use simple copy, which will be short
 #if C_AVX2 || EMU_AVX2
  PREFETCH(w);  /* start bringing in the start of data */ 
@@ -699,3 +702,38 @@ A jtfindnameinscript(J jt,C *script, C *name, I pos){
  }
  R 0;  // not found or wrong part of speech - error
 }
+
+void chkinchain(J jt,A x){
+ if(!x)R;
+ I i,j;
+ for(i=0;i<(PLIML-PMINL+1);i++){
+ A p=jt->mempool[i];
+ j=0;
+  while(p){
+   if(j>100000)SEGFAULT;
+   if(p==x){ fprintf(stderr,"mempool "FMTI" index "FMTI" addr %p\n",i,j,x); SEGFAULT; }
+   p=AFCHAIN(p);
+   j++;
+  }
+ }
+}
+
+void chkchain(A w){
+ if(!(w=QCWORD(w))) R;
+ I j=0;
+ A p=AFCHAIN(w);
+ while(p){
+  if(j>100000)SEGFAULT;
+  if(0x100>(uintptr_t)p){dump_ADheader(w);SEGFAULT;}
+  else {w=p; p=AFCHAIN(w);j++;}
+ }
+}
+
+#if NORMAHE
+void chkapx(A w){
+ if(!w)R;
+ if(!ISGMP(w))if(!(w=QCWORD(w))) R;
+ if(APX(w)!=XHEADERFILL){dump_ADheader(w);SEGFAULT;}
+ else if(AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w),chkapx(wv[i]);)}
+}
+#endif

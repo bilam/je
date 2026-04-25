@@ -147,7 +147,9 @@ typedef struct ADic {
   I filler3[SY_64?6:1];  // pad to cacheline (24 words on each system).
  } bloc;
 } DIC;
+#if NORMAH==7
 _Static_assert(sizeof(DIC)==32*SZI,"DIC not 32 Is");
+#endif
 #if 0
 /*
 // temp for debugging
@@ -1394,17 +1396,10 @@ static UI scantree(I dir,J jt,C *hashtbl, UI4 (*sp)[2], I *flags, I nodeb, UI4 *
   // no more medial children.
   while(1){  // process middle and distal nodes
    // nodex is a middle node, with nodexo as distal child
-#if 7==NORMAH
-   if(zx+8*SZI/4==(LOWESTBIT(zx+8*SZI/4)&-(8*SZI))){  // if current allocation exceeded...  (when size+header size is a power of 2, at least 8*SZI - VIRT holds 32 Is, which is 32/64 UI4s)
+   if(zx+(NORMAH+1)*SZI/4==(LOWESTBIT(zx+(NORMAH+1)*SZI/4)&-((NORMAH+1)*SZI))){  // if current allocation exceeded...  (when size+header size is a power of 2, at least (NORMAH+1)*SZI - VIRT holds 32 Is, which is 32/64 UI4s)
       // we could avoid the test if we allocated the max value given by the user, but he might give a very high value
-    A zia; GATV0E(zia,INT4,zx+zx+8*SZI/4,1,goto exiterr); MC(I4AV1(zia),*res,zx*4); *res=I4AV1(zia);  // double & copy
+    A zia; GATV0E(zia,INT4,zx+zx+(NORMAH+1)*SZI/4,1,goto exiterr); MC(I4AV1(zia),*res,zx*4); *res=I4AV1(zia);  // double & copy
    }
-#else
-   if(zx+9*SZI/4==(LOWESTBIT(zx+9*SZI/4)&-(9*SZI))){  // if current allocation exceeded...  (when size+header size is a power of 2, at least 8*SZI - VIRT holds 32 Is, which is 32/64 UI4s)
-      // we could avoid the test if we allocated the max value given by the user, but he might give a very high value
-    A zia; GATV0E(zia,INT4,zx+zx+9*SZI/4,1,goto exiterr); MC(I4AV1(zia),*res,zx*4); *res=I4AV1(zia);  // double & copy
-   }
-#endif
 startmin:;  // enter first time going distal only
    // out the middle node
    (*res)[zx]=nodex;  // provisionally put the node out, in order, advance to next slot

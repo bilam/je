@@ -241,7 +241,7 @@ exit: ;
 // if the symbol has a lookaside, the lookaside is cleared
 // if the symbol is CACHED, it is removed from the chain but otherwise untouched, leaving the symbol abandoned.  It is the caller's responsibility to handle the name
 // We take no locks on g.  They are necessary, but are the user's responsibility
-B jtprobedel(J jtfg,C*string,UI4 hash,A g){F12JT;B ret;
+B jtprobedel(J jtfg,C*string,UI4 hash,A g){F12JT0;B ret;
  L *sympv=SYMORIGIN;  // base of symbol pool
  LX *asymx=LXAV0(g)+SYMHASH(hash,AN(g)-SYMLINFOSIZE);  // get pointer to index of start of chain; address of previous symbol in chain
  LX delblockx=*asymx;
@@ -414,7 +414,7 @@ L *jtprobeislocal(J jt,A a,A lsym){NM*u;I bx;L *sympv=SYMORIGIN;
 // Bit QCNAMEDLOC of the result is set iff the name was found in a named locale
 // We must have no locks coming in; we take a read lock on each symbol table we have to search
 // if we find a name, we ra() it under lock.  All we have to do is increment the name since it is known to be recursive if possible
-A jtsyrd1(J jtfg,C *string,UI4 hash,A g){F12JT;A*v,x,y;
+A jtsyrd1(J jtfg,C *string,UI4 hash,A g){F12JT0;A*v,x,y;
  RZ(g);   // make sure there is a locale...
  // we store an extra 0 at the end of the path to allow us to unroll this loop once
  v=LOCPATH(g); L *sympv=SYMORIGIN;   // v->{:|.locales, with NUL at font; sympv doesn't change here
@@ -443,7 +443,7 @@ A jtsyrd1(J jtfg,C *string,UI4 hash,A g){F12JT;A*v,x,y;
  R 0;  // fall through: not found
 }    /* find name a where the current locale is g */ 
 // same, but return the locale in which the name is found, and no ra().  Takes readlock on searched locales.  Return 0 if not found
-A jtsyrd1forlocale(J jtfg,C *string,UI4 hash,A g){F12JT;
+A jtsyrd1forlocale(J jtfg,C *string,UI4 hash,A g){F12JT0;
  RZ(g);   // make sure there is a locale...
  A *v=LOCPATH(g); NOUNROLL do{A gn=*v--; A y; I chainno=SYMHASH((UI4)hash,AN(g)-SYMLINFOSIZE); if(BLOOMTEST(BLOOMBASE(g),chainno)){READLOCK(ALK(g)) y=(probe)((I)jtfg&255,string,SYMORIGIN,((UI8)(hash)<<32)+(UI4)LXAV0(g)[chainno]); READUNLOCK(ALK(g)) if(y){break;}} g=gn;}while(g);  // return when name found.
  R g;
@@ -562,7 +562,7 @@ A jtsyrdnobuckets(J jt,A a,A locsyms){A g,val;
 }
 
 // return symbol address for name, or 0 if not found
-static L *jtprobeforsym(J jtfg,C*string,UI4 hash,A g){F12JT;
+static L *jtprobeforsym(J jtfg,C*string,UI4 hash,A g){F12JT0;
  RZ(g);
   LX symx=LXAV0(g)[SYMHASH(hash,AN(g)-SYMLINFOSIZE)];  // get index of start of chain
  L *sympv=SYMORIGIN;  // base of symbol table

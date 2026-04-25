@@ -64,6 +64,9 @@ PTHREADLIB = ../pthreads4w/x86/pthreadVC3.lib
 !endif
 !endif
 COPTION = $(COPTION) /DPYXES=1
+!if "j32"=="$(j64x)"
+NORMAHX = 0
+!endif
 !else
 COPTION = $(COPTION) /DPYXES=0
 !endif
@@ -71,6 +74,11 @@ COPTION = $(COPTION) /DPYXES=0
 COPTION = $(COPTION) /DEMU_AVX2=0
 !else
 COPTION = $(COPTION) /DEMU_AVX2=1
+!endif
+!if ""!="$(NORMAHX)"
+COPTION = $(COPTION) /DNORMAHX=$(NORMAHX)
+!else
+COPTION = $(COPTION) /DNORMAHX=-1
 !endif
 
 !if "1"=="$(USE_OPENMP)"

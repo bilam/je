@@ -272,8 +272,23 @@ B jtsymbinit(JS jjt){A q,zloc;JJ jt=MTHREAD(jjt);
  // We need a different empty locale for each thread, because the global symbol table is stored there.  Allocate at rank 1, and fill it with copies of emptyloc
  // Unfortunately the layout of the locale uses words 0 and 8, so we can't pack the block for the threads into adjacent cachelines.  Perhaps we should just have the thread
  // allocate an empty locale when it starts, but we have coded this and we will keep it.  Unallocated threrads will drop out of cache.
- GA0(q,INT,16*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][16])((I*)q+8-3);   //  this mangles the header; OK since the block will never be freed
- DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[16*i+8-3]; MC(ei,emptyloc,(8+3)*SZI); AM(ei)=(I)ei;)
+#if NORMAHE
+#if 1
+#if NORMAHX<5
+ GA0(q,INT,24*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][24])((I*)q+(NORMAH+1)-3);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[24*i+(NORMAH+1)-3]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#else
+ GA0(q,INT,24*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][24])((I*)q+(NORMAH+1)-4);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[24*i+(NORMAH+1)-4]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#endif
+#else
+ GA0(q,INT,24*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][24])((I*)q);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[24*i]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#endif
+#else
+ GA0(q,INT,16*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][16])((I*)q+(NORMAH+1)-3);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[16*i+(NORMAH+1)-3]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#endif
  jt->locsyms=(A)(*INITJT(jjt,emptylocale))[0];  // init jt->locsyms for master thread to the emptylocale for the master thread.  jt->locsyms in other threads must be initialized for each user task
  R 1;
 }
@@ -302,7 +317,7 @@ F1(jtlocsizes){F12IP;I p,q,*v;
 }    /* 9!:39 default locale size set */
 
 // jtprobe, with readlock taken on stlock
-static A jtprobestlock(J jtfg, C *u,UI4 h){F12JT; READLOCK(JT(jt,stloc)->lock) A z=probex((I)jtfg&255,u,SYMORIGIN,h,JT(jt,stloc)); READUNLOCK(JT(jt,stloc)->lock) R z;}
+static A jtprobestlock(J jtfg, C *u,UI4 h){F12JT0; READLOCK(JT(jt,stloc)->lock) A z=probex((I)jtfg&255,u,SYMORIGIN,h,JT(jt,stloc)); READUNLOCK(JT(jt,stloc)->lock) R z;}
 
 // find the symbol table for locale with name u which has length n and hash/number bucketx
 // locale name is known to be valid

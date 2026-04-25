@@ -150,7 +150,7 @@ A jtenqueue(J jt,A a,A w,I env){A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
    // If first char is ASCII, see if the form including inflections is a primitive;
    // if so, that is the word to put into the queue.  No need to copy it
    // Since the address of the shared primitive block is used, we can use that to compare against to identify the primitive later
-   // We keep track of We keep track of whether }~ was found.  If } starts the sentence, this will compare garbage, but
+   // We keep track of We keep track of whether {0 }~ was found.  If {0 } starts the sentence, this will compare garbage, but
    // without risk of program check
    if((-env & SGNIF(AT(y),ASGNX))<0) {
     // If the word is an assignment, use the appropriate assignment block, depending on the previous word and the environment
@@ -169,7 +169,9 @@ A jtenqueue(J jt,A a,A w,I env){A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
      if(!(wl>2&&wi[wl-2]=='_'&&wi[wl-1]==CESC2)){jsignal3(EVSPELL|EMSGINVINFL|EMSGSPACEAFTEREVM,w,wi-s); EFORMENQ}  // error if not *_:
      wl-=2;  // remove _: from name; leave b set to indicate inflection
     }
+    I a1=APX(QCWORD(z));
     RZ(*x=nfs(wl,wi,0)); {if(unlikely(!vnm(wl,wi))){jtjsignale(jt,EVILNAME|EMSGLINEISNAME,*x,0); EFORMENQ}}  //  ASSERTN(vnm(wl,wi),EVILNAME,nfs(wl,wi,0));   // error if invalid name; create name block and install it in result
+    APINIT(z,a1);
     if(unlikely(b)){AT(*x)|=NAMEBYVALUE|NAMEABANDON;}  // flag name_: for stack processing
    }else if(unlikely(b)){jsignal3(EVSPELL|EMSGINVINFL|EMSGSPACEAFTEREVM,w,wi-s); EFORMENQ  // inflections when starting with not (alpha, ASCII graphic) and not num:
    }else if(p==C9){if(unlikely(!(*x=connum(wl,wi)))){I lje=jt->jerr; RESETERR; jsignal3(lje,w,u[0]); EFORMENQ}   // starts with numeric, create numeric constant.  If error, give a message showing the bad number

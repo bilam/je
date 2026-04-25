@@ -19,15 +19,9 @@
 #include "j.h"
 
 #if MEMAUDIT&1
-#define CHKAFCHAIN0   {if(jt->mempool[1]&&AFCHAIN(jt->mempool[1])&&(0x100>(uintptr_t)AFCHAIN(jt->mempool[1])))SEGFAULT;}
-#define CHKAFCHAIN1   {if(jt->mempool[-PMINL+1+blockx]&&AFCHAIN(jt->mempool[-PMINL+1+blockx])&&(0x100>(uintptr_t)AFCHAIN(jt->mempool[-PMINL+1+blockx])))SEGFAULT;}
-#define CHKAFCHAIN(z) {if(z&&AFCHAIN(z)&&(((uintptr_t)AFCHAIN(z)&QCMASK2)||(0x100>(uintptr_t)AFCHAIN(z))))SEGFAULT;}
-#define CHKQCMASK(z)  {if((uintptr_t)z&QCMASK2)SEGFAULT;}
+#define CHKAFCHAIN(z) {if(z&&AFCHAIN(z)&&(((uintptr_t)AFCHAIN(z)&QCMASK)||(0x100>(uintptr_t)AFCHAIN(z))))SEGFAULT;}
 #else
-#define CHKAFCHAIN0
-#define CHKAFCHAIN1
 #define CHKAFCHAIN(z)
-#define CHKQCMASK(z)
 #endif
 
 #if 0    // already defined in m.h
@@ -239,7 +233,7 @@ B jtmeminitt(JJ jt){I k;
 #endif
 // your code for which the warning gets suppressed 
 void jtauditmemchains(J jt){
-#if MEMAUDIT&0x30
+#if MEMAUDIT&0xb0
   I Wi,Wj;A Wx,prevWx=0; forcetomemory(&prevWx);  if((MEMAUDITPCALLENABLE)&&((MEMAUDIT&0x20)||JT(jt,peekdata))){
  for(Wi=PMINL;Wi<=PLIML;++Wi){Wj=0; Wx=(jt->mempool[-PMINL+Wi]);
 #if PYXES
@@ -259,6 +253,21 @@ prevWx=Wx; Wx=AFCHAIN(Wx); ++Wj;}
 #endif
 }
 #endif
+}
+void jtauditmemchains1(J jt){
+  I Wi,Wj;A Wx,prevWx=0; forcetomemory(&prevWx);
+ for(Wi=PMINL;Wi<=PLIML;++Wi){Wj=0; Wx=(jt->mempool[-PMINL+Wi]);
+#if PYXES
+ NOUNROLL while(Wx){
+if(FHRHPOOLBIN(AFHRH(Wx))!=(Wi-PMINL)AUDITFILL||Wj>0x10000000){
+fprintf(stderr,"AFHRH(Wx) %d FHRHPOOLBIN(AFHRH(Wx)) %d Wx %p Wi "FMTI" PMINL %d (Wi-PMINL) "FMTI" Wj 0x"FMTX" \n",AFHRH(Wx),FHRHPOOLBIN(AFHRH(Wx)),Wx,Wi,PMINL,(Wi-PMINL),Wj);
+}
+if(FHRHPOOLBIN(AFHRH(Wx))!=(Wi-PMINL)AUDITFILL||Wj>0x10000000)SEGFAULT; 
+prevWx=Wx; Wx=AFCHAIN(Wx); ++Wj;}
+#else
+ NOUNROLL while(Wx){if(FHRHPOOLBIN(AFHRH(Wx))!=(Wi-PMINL)AUDITFILL||Wj>0x10000000)SEGFAULT; prevWx=Wx; Wx=AFCHAIN(Wx); ++Wj;}
+#endif
+}
 }
 // 13!:_8  check the memory free list, a la auditmemchains()
 // return error info, a 2-atom list where
@@ -310,7 +319,6 @@ B jtspfree(J jt){I i;A p;
    I nexpats=IMIN;  // number of expats repatriated
    for(p=jt->mempool[i];p;){
 #if MEMAUDIT&1
-    CHKQCMASK(p);
     CHKAFCHAIN(p);
     if(FHRHPOOLBIN(AFHRH(p))!=i)SEGFAULT;  // make sure chains are valid
     if(ISGMP(p)&&!ACISPERM(p)&&!AZAPLOC(p))SEGFAULT; // catch an old libgmp integration failure mode
@@ -330,7 +338,11 @@ B jtspfree(J jt){I i;A p;
       // NOTE PUN: AFCHAIN(a) must be offset 0 of a
     for(p=jt->mempool[i];p;p=AFCHAIN(p)){   // for each free block
      if(!FHRHISALLOFREE(p,offsetmask)) {  // if the whole allocation containing this block is NOT deleted...
+#if NORMAHE && NORMAHX==0
+      AFOFFSET0(survivetail)=(I)p;survivetail=p;  // ...add it as tail of survival chain
+#else
       AFOFFSET0(survivetail)=p;survivetail=p;  // ...add it as tail of survival chain
+#endif
      }
     }
     AFCHAIN(survivetail)=0;  // terminate the chain of surviving buffers.  We leave the [].pool entry pointing to the free list
@@ -344,6 +356,7 @@ B jtspfree(J jt){I i;A p;
    for(p=baseblockproxyroot;p;){A np = AFPROXYCHAIN(p);  // next-in-chain
     A baseblock = FHRHROOTADDR(p,offsetmask);  // get address of corresponding base block
     if(FHRHISROOTALLOFREE(AFHRH(baseblock))){ // Free fully-unused base blocks;
+     chkinchain(jt,baseblock);
 #if ALIGNTOCACHE || 1   // with short headers, always align to cache bdy
      FREECHK(((I**)baseblock)[-1]);  // If aligned, the word before the block points to the original block address
      jt->malloctotal-=PSIZE+TAILPAD+ALIGNPOOLTOCACHE*CACHELINESIZE;  // return storage+bdy
@@ -374,6 +387,7 @@ B jtspfree(J jt){I i;A p;
  }
  jt->uflags.spfreeneeded&=~SPFREEGC;  // indicate no check needed yet
 // audit free list {I xxi,xxj;A xxx; {for(xxi=PMINL;xxi<=PLIML;++xxi){xxj=0; xxx=(jt->mempool[-PMINL+xxi]); while(xxx){xxx=xxx->kchain.chain; ++xxj;}}}}
+ CHKPOOL;
  R 1;
 }
 
@@ -402,7 +416,7 @@ static D jtspfor1(J jt, A w){D tot=0.0;
  // done with contents; now get the size of w itself
  if(!ACISPERM(AC(w))) {  // permanent blocks add nothing to size
   if(AFNJA&AFLAG(w)) {  
-   if(BETWEENC(AK(w),0,AM(w)))tot += SZI*WP(AT(w),AN(w),64);  // for NJA allocations with contiguous header, the size is the header size (7+64 words) plus the data size. fixed rank of 64 in NJA memory
+   if(BETWEENC(AK(w),0,AM(w)))tot += SZI*WP(AT(w),AN(w),64);  // for NJA allocations with contiguous header, the size is the header size (NORMAH+64 words) plus the data size. fixed rank of 64 in NJA memory
    else{  // for NJA allocations with separate header, the size is the data size plus the size of the base block
     tot += SZI*((((AN(w)<<bplg(AT(w)))+SZI-1)>>LGSZI));  // data size only.  NJA must be DIRECT type, so not NAME
     tot += alloroundsize(w);  // add in the header
@@ -815,6 +829,7 @@ ASSERT(RMAX>=r,EVLIMIT);
  }else{
   // not self-virtual block: allocate a new one
   RZ(z=gafv(SZI*(NORMAH+r)-1));  // allocate the block
+  APINIT(z,APX(QCWORD(w)));
   AK(z)=(CAV(w)-(C*)z)+offset;
   AFLAGINIT(z,AFVIRTUAL | (wf & ((UI)wip>>(BW-1-AFPRISTINEX))) | (t&RECURSIBLE))  // flags: recursive, not UNINCORPABLE, not NJA.  If w is inplaceable, inherit its PRISTINE status
   A wback=ABACK(w); A *wzaploc=(A*)wback; wback=wf&AFVIRTUAL?wback:w; ABACK(z)=wback;  // wzaploc is AZAPLOC(w) in case it is to be zapped
@@ -989,7 +1004,7 @@ A jtra(AD* RESTRICT wd,I t,A sv){I n=AN(wd);
    np0=*++wv;  // fetch next box address.  This fetch settles while the ra() is running
    PREFETCH((C*)np0);   // prefetch the next box while ra() is running
 #if AUDITEXECRESULTS
-if(QCWORD(np)&&AC(QCWORD(np))<0)SEGFAULT;  // contents are never inplaceable
+   if(QCWORD(np)&&AC(QCWORD(np))<0)SEGFAULT;  // contents are never inplaceable
 #endif
    if((np=QCWORD(np))!=0){racontents(np);}  // increment the box, possibly turning it to recursive.  Low bits of box addr may be enqueue flags.
      // a pyx is always recursive; we can increment the pyx's usecount here but we will never go to the contents
@@ -1268,7 +1283,7 @@ __attribute__((noinline)) A jtgafallopool(J jt){
  // allocate without alignment
  ASSERT(av=MALLOC(PSIZE+TAILPAD),EVWSFULL);
 #endif
- I blockx=(I)jt&63; jt=(J)((I)jt&-64);
+ I blockx=(I)jt&QCMASK; jt=(J)((I)jt&~QCMASK);
  jt->malloctotal+=PSIZE+TAILPAD+ALIGNPOOLTOCACHE*CACHELINESIZE;  // add to total JE mem allocated
  I nt=jt->malloctotalremote+jt->malloctotal;  // get net total allocated from this thread & not freed
  jt->mfreegenallo+=PSIZE+TAILPAD+ALIGNPOOLTOCACHE*CACHELINESIZE;   // add to total from OS
@@ -1289,8 +1304,6 @@ __attribute__((noinline)) A jtgafallopool(J jt){
 #endif
  AFHRH(u) = hrh|FHRHROOT;  // flag first block as root.  It has 0 offset already
 #if MEMAUDIT&1
- CHKQCMASK((A)((C*)u));
- CHKQCMASK((A)((C*)u+n));
  CHKAFCHAIN((A)((C*)u+n));
 #endif
  jt->mempool[-PMINL+1+blockx]=(A)((C*)u+n);  // the second block becomes the head of the free list
@@ -1330,7 +1343,7 @@ RESTRICTF A jtgaf(J jt,I blockx){AD __attribute__ ((aligned (CACHELINESIZE))) *z
 // audit free chain I i,j;MS *x; for(i=PMINL;i<=PLIML;++i){j=0; x=(jt->mempool[-PMINL+i]); while(x){x=(MS*)(x->a); if(++j>25)break;}}  // every time, audit first 25 entries
 // audit free chain if(++auditmodulus>25){auditmodulus=0; for(i=PMINL;i<=PLIML;++i){j=0; x=(jt->mempool[-PMINL+i]); while(x){x=(MS*)(x->a); ++j;}}}
 // audit free chain {I xxi,xxj;A xxx; {for(xxi=PMINL;xxi<=PLIML;++xxi){xxj=0; xxx=(jt->mempool[-PMINL+xxi]); while(xxx){xxx=xxx->kchain.chain; ++xxj;}}}}
-#if MEMAUDIT&16
+#if MEMAUDIT&90
 auditmemchains();
 #endif
 #if MEMAUDIT&15
@@ -1370,14 +1383,18 @@ if((I)jt&3)SEGFAULT;
  }
 #if MEMAUDIT&8
 // NOTE!! z[i] dependency on struct AD
- I fv=lfsr++; DO((((I)1)<<(1+blockx-LGSZI)), if(i!=(0+2)&&i!=(0+6))((I*)z)[i] = fv;);   // fill block with garbage - but not the allocation word or zaploc
+ I fv=lfsr++; DO((((I)1)<<(1+blockx-LGSZI)), if(i!=AMOFFSET&&i!=AROFFSET)((I*)z)[i] = fv;);   // fill block with garbage - but not the allocation word or zaploc
 #endif
 #if MEMAUDIT&1
  if(z->h==0)SEGFAULT;  // h field must be valid
 #endif
  // initialize the header fields.  To help with GAT (especially singletons), we init to an atomic FL block (0x38,0,tp,FL,inplaceable,1)
  A *tp=jt->tnextpushp;  // we will have to modify pushp
+#if NORMAHE
+ static I __attribute__ ((aligned (CACHELINESIZE))) inithdr[6+NORMAHE]={Xhr0 AKXR(0),Xhr1 0,0,FL,ACINPLACE+ACUC1,1};  // atomic header block, type FL.  Could put into JTT around tpushp, but takes too much space
+#else
  static I __attribute__ ((aligned (CACHELINESIZE))) inithdr[6]={AKXR(0),0,0,FL,ACINPLACE+ACUC1,1};  // atomic header block, type FL.  Could put into JTT around tpushp, but takes too much space
+#endif
  memcpy(z,inithdr,sizeof(inithdr));  AZAPLOC(z)=tp; // all blocks are born inplaceable, and point to their deletion entry in tpop
 // obsolete  AFLAGINIT(z,0) ACINIT(z,ACUC1|ACINPLACE)
       // Note: with AVX-512 it is better to insert pushp into the store register using _mm256_insert_epi64
@@ -1394,6 +1411,10 @@ if((I)jt&3)SEGFAULT;
   }
  }
 #endif
+#if NORMAHE
+memset((C*)z+NORMAH*SZI,C0,(1LL<<(1+blockx))-NORMAH*SZI);
+if(AFHRH(z)==0)SEGFAULT; 
+#endif
 #if SHOWALLALLOC
 printf("%p+\n",z);
 #endif
@@ -1405,6 +1426,9 @@ RESTRICTF A jtgafv(J jt, I bytes){UI4 j;
 #if NORMAH*(SY_64?8:4)<(1LL<<(PMINL-1))
  bytes|=(I)1<<(PMINL-1);  // if the memory header itself doesn't meet the minimum buffer length, insert a minimum
 #endif
+#if NORMAHE
+ if(bytes<(1LL<<(PMINL-1)))bytes|=(I)1<<(PMINL-1);
+#endif
  j=CTLZI((UI)bytes);  // 3 or 4 should return 2; 5 should return 3
 // obsolete  ASSERT((UI)bytes<=(UI)JT(jt,mmax),EVLIMIT)
  R jtgaf(jt,(I)j);
@@ -1412,6 +1436,9 @@ RESTRICTF A jtgafv(J jt, I bytes){UI4 j;
 
 #if C_AVX2 || EMU_AVX2
 // fill an INDIRECT block with 0s, starting with s[0].  m is #bytes requested for allo-1, including header
+#if NORMAHE
+A zfillind(A w, I bytes){AS(w)[0]=0; mvc((bytes-(offsetof(AD,s[1])-(NORMAHE*SZI)-32))&-32,(C*)(AS(w)+1)-(NORMAHE*SZI),MEMSET00LEN,MEMSET00); R w;}  // copy in 0s after the header, to the end of the block
+#else
 A zfillind(A w, I m){
  AS(w)[0]=0;  // the first shape atom by hand, i. e. the part after the header up to the first 64B.  The rest is aligned on 32-byte boundaries
  if((m=(m-64)&-32)>=0){   // get #32-byte sections - 1; if there are some to do...
@@ -1448,6 +1475,7 @@ A zfillind(A w, I m){
  }
  R w;
 }
+#endif
 // like jtga, but don't copy shape or AN.   Never called for SPARSE type
 // We don't store AN, because that would take another push/pop and we hope the caller needs to preserve it anyway.
 RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
@@ -1458,20 +1486,34 @@ RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
 // obsolete  ASSERT((UI)bytes<=(UI)JT(jt,mmax),EVLIMIT)
     // We never use GA for NAME types, so we don't need to check for it
  RZ(z=jtgaf(jt, CTLZI((UI)bytes)));   // allocate the block, filling in AC AFLAG AM
+ APINIT(z,XHEADERFILL);
  AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank);
  // Clear data for non-DIRECT types in case of later error
  // Since we allocate powers of 2, we can make the memset a multiple of 32 bytes.
+#if 0 && NORMAHE
+ if(unlikely(!((type&DIRECT)!=0))){memset(AS(z),C0,bytes-(offsetof(AD,s[0])));}
+#else
  if(unlikely(!((type&DIRECT)!=0))){z=zfillind(z,bytes);}  // unlikely is important!  compiler strains then to use one less temp reg
+#endif
  R z;
 }
 #else
+#if NORMAHE
+A zfillind(A w, I bytes){AS(w)[0]=0; mvc((bytes-(offsetof(AD,s[1])-(NORMAHE*SZI)-32))&-32,(C*)(AS(w)+1)-(NORMAHE*SZI),MEMSET00LEN,MEMSET00); R w;}  // copy in 0s after the header, to the end of the block
+#else
 A zfillind(A w, I bytes){AS(w)[0]=0; mvc((bytes-(offsetof(AD,s[1])-32))&-32,(C*)(AS(w)+1),MEMSET00LEN,MEMSET00); R w;}  // copy in 0s after the header, to the end of the block
+#endif
 RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
  I bytes; if(likely(type&(BIT(LASTNOUNX+1)-1)))bytes = ALLOBYTESVSZLG(atoms,rank,bplg(type),(type)&C4T,0);else bytes = ALLOBYTESVSZ(atoms,rank,bpnonnoun(type),0,0);
  ASSERT(((I)bytes>(I)(atoms)&&(I)(atoms)>=(I)0)&&!((rank)&~RMAX),EVLIMIT)
  RZ(z=jtgafv(jt, bytes));   // allocate the block, filling in AC and AFLAG
+ APINIT(z,XHEADERFILL);
  AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank);  // UI to prevent reusing the value from before the call
+#if 0 && NORMAHE
+ if(unlikely(!((type&DIRECT)>0))){memset(AS(z),C0,bytes-(offsetof(AD,s[0])));}
+#else
  if(unlikely(!((type&DIRECT)>0))){z=zfillind(z,bytes);}
+#endif
  R z;
 }
 #endif
@@ -1575,7 +1617,7 @@ printf("%p-\n",w);
  if(FHRHBINISPOOL(hrh)){   // allocated from subpool
   I allocsize = FHRHPOOLBINTOSIZE(blockx);
 #if MEMAUDIT&4
-  I fv=frfillvalue++; DO((allocsize>>LGSZI), if(i!=(0+6))((I*)w)[i] = fv;);   // wipe the block clean before we free it - but not the reserved area
+  I fv=frfillvalue++; DO((allocsize>>LGSZI), if(i!=AROFFSET)((I*)w)[i] = fv;);   // wipe the block clean before we free it - but not the reserved area
 #endif
 #if PYXES
   if(unlikely(AOR(w)!=(US)THREADID1(jt))){jtrepat1(jt,w,allocsize); R;}  // if block was allocated from a different thread, pass it back to that thread where it can be garbage collected
@@ -1591,7 +1633,7 @@ printf("%p-\n",w);
  }else{    // buffer allocated from malloc
   I allocsize = FHRHSYSSIZE(hrh);
 #if MEMAUDIT&4
-  I fv=frfillvalue++; DO((MEMAUDIT&1?8:(allocsize>>LGSZI)), if(i!=(0+6))((I*)w)[i] = fv;);   // wipe the block clean before we free it - but not the reserved area
+  I fv=frfillvalue++; DO((MEMAUDIT&1?(NORMAH+1):(allocsize>>LGSZI)), if(i!=AROFFSET)((I*)w)[i] = fv;);   // wipe the block clean before we free it - but not the reserved area
 #endif
   allocsize+=TAILPAD+ALIGNTOCACHE*CACHELINESIZE;  // the actual allocation had a tail pad and boundary
 #if PYXES
@@ -1610,7 +1652,7 @@ printf("%p-\n",w);
   if(unlikely(jt->mfreegenallo&MFREEBCOUNTING))jt->bytes-=allocsize;  // keep track of total allocation, needed only if enabled
 #endif
 #if MEMAUDIT&4
- ((I*)w)[6] = (I)0xdeadbeefdeadbeefLL;   //  Reserved area in malloc blocks is not permanent
+ ((I*)w)[AROFFSET] = (I)0xdeadbeefdeadbeefLL;   //  Reserved area in malloc blocks is not permanent
 #endif
 
 #if ALIGNTOCACHE
@@ -1622,6 +1664,7 @@ printf("%p-\n",w);
 auditmemchains();
 #endif
  }
+ CHKPOOL;
 }
 
 // allocate header with rank r; if w is given init z to be a surrogate of w (but do not init shape); if r==1, move the item count to be the shape also
@@ -1632,6 +1675,7 @@ RESTRICTF A jtgah(J jt,I r,A w){A z;
  RZ(z=gafv(SZI*(NORMAH+r)-1));
  AT(z)=0;
  if(w){
+  APINIT(z,APX(QCWORD(w)));
   AT(z)=AT(w); AN(z)=AN(w); ARINIT(z,(RANKT)r); AK(z)=CAV(w)-(C*)z; AC(z)=ACUC1;
   if(1==r)AS(z)[0]=AN(w);
  }
@@ -1658,6 +1702,7 @@ F1(jtca){F12IP;A z;P*wp,*zp;
    GA(z,t,n,AR(w),AS(w));
    AN(z)=AN(w);  // copy AN, which has its own meaning in FUNC
   }
+  APINIT(z,APX(QCWORD(w)));
   void *zv=voidAV(z);  // dest address
   I bpt=bp(t);  // bp needed for non-noun
   MC(zv,wv,(n*bpt)+(t&NAME?sizeof(NM):0));
@@ -1700,7 +1745,8 @@ A jtext(J jt,B b,A w){A z;I c,k,m,m1,t;
 
 A jtexta(J jt,I t,I r,I c,I m){A z;I m1; 
  GA00(z,t,m*c,r); 
- I k=bp(t); AS(z)[0]=m1=allosize(z)/(c*k); AN(z)=m1*c;
+ I k=bp(t); 
+ AS(z)[0]=m1=allosize(z)/(c*k); AN(z)=m1*c;
  if(2==r)*(1+AS(z))=c;
  if(!((t&DIRECT)>0))mvc(k*AN(z),AVn(r,z),MEMSET00LEN,MEMSET00);
  R z;

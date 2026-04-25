@@ -174,7 +174,7 @@ static DF2(jtisf){F12IP;A am, mw; RZ(am=onm(a)); RZ(mw=CALL1(FAV(self)->valencef
 // assignment other than name =[.:], single or multiple
 // jt has flag set for final assignment (passed into symbis)
 // The return must be 0 for bad, otherwise good with bit 0=final assignment, bit 1 = local assignment (never set)
-static I NOINLINE jtis(J jtfg,A n,A v,A symtab){F12IP;
+static I NOINLINE jtis(J jtfg,A n,A v,A symtab){F12IP0;
  B ger=0;C *s;
  if(unlikely(AT(n)==BOX+BOXMULTIASSIGN)){   // test both bits, since BOXMULTIASSIGN has multiple uses
   // string assignment, where the NAME blocks have already been computed.  Use them.  The fast case is where we are assigning a boxed list
@@ -297,7 +297,7 @@ static SYMWALK(jtchkval0k, I,INT,1,1, QCSENTTYPE(d->fval)==QCNOUN&&AK(QCWORD(d->
 // JT flags indicate whether call comes from ".
 F1(jtparse){F12IP;A z;I stackallo=0;
  ARGCHK1(w);
- A *queue=AAV(w); I m=AN(w);   // addr and length of sentence
+ A *queue=AAV1(w); I m=AN(w);   // addr and length of sentence
  // Get a new stack frame if needed.  This is a holdover from early days when a frame was allocated for every sentence.  Now that we can
  // parse a sentence in the time it takes to allocate a frame, that is unacceptable overhead.  We come through here for keyboard, script, and ". .
  // We need a DCPARSE frame to get error messages displayed, but we use the dcm field in it to indicate how many levels of ". are active
@@ -348,7 +348,7 @@ static A virthook(J jtip, A f, A g){
 // name_: delete the symbol name but not deleting the value.  The value has been ra()d.  Undo the pending fa: If usecount goes to 1, make it abandoned inplaceable and tpush
 // Incoming y is the value attached to the symbol & has QCFAOWED semantics, result is same value with QCFAOWED semantics.
 // result is the value, possibly with FAOWED set
-static A nameundco(J jtfg, A name, A y){F12IP;
+static A nameundco(J jtfg, A name, A y){F12IP0;
  A locfound;
  if(unlikely(((I)y&QCFAOWED)!=0))locfound=syrdforlocale(name);  // get locale to use.  This re-looks up global names, but they should be rare in name_:
  else{locfound=jt->locsyms;  // if not FAOWED, it must be local, no lookup needed
@@ -478,7 +478,7 @@ void protectlocals(J jt, I ofst){PSTK *stk=jt->parserstackframe.parserstkend1; A
 // Parse a J sentence.  Input is the queue of tokens
 // Result has PARSERASGNX (bit 0) set if the last thing is an assignment
 // JT flag is used to indicate execution from ". - we can't honor name_: then, or perhaps some assignments
-A jtparsea(J jtfg, A *queue, I nwds){F12IP;PSTK *stack;
+A jtparsea(J jtfg, A *queue, I nwds){F12IP0;PSTK *stack;
  // whenever we execute a fragment, parserstkend1 must be set to the execution stack of the fragment; the stack will be analyzed
  // to get the error token.  Errors during the stacking phase will be located from this routine
  A jtlocsyms=jt->locsyms;  // we need the AR flags in the local table very quickly for singlee-word sentences, less urgency for longer

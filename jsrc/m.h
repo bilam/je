@@ -47,13 +47,8 @@
 */
 
 //NOTE: alignment to cache is now required because of LSB flags in enqueue() QCMASK
-#if CACHELINESIZE==128
 #define ALIGNTOCACHE 1   // set to 1 to align each OS-allocated block block to cache-line boundary.  Will reduce cache usage for headers
 #define ALIGNPOOLTOCACHE 1   // set to 1 to align each pool block to cache-line boundary.  Will reduce cache usage for headers
-#else
-#define ALIGNTOCACHE (1)   // set to 1 to align each OS-allocated block block to cache-line boundary.  Will reduce cache usage for headers
-#define ALIGNPOOLTOCACHE (1)   // set to 1 to align each pool block to cache-line boundary.  Will reduce cache usage for headers
-#endif
 #define TAILPAD (32)  // we must ensure that a 32-byte masked op fetch to the last byte doesn't run off into unallocated memory
 
 #define MEMJMASK 0xf   // these bits of j contain subpool #; higher bits used for computation for subpool entries
@@ -62,7 +57,11 @@
 #define MFREEBCOUNTING 1   // When this bit is set in mfreeb[], we keep track of max space usage
 
 // Format of h, the 16-bit workarea for free and allocated blocks in main memory.  This is used for in-memory headers for NJS blocks, but not for NJA blocks all on disk
+#if NORMAHX==0
+#define AFOFFSET0(a) ((a)->p0[0])  // the offset 0 of a  PUN: depends on struct AD
+#else
 #define AFOFFSET0(a) ((a)->kchain.chain)  // the offset 0 of a  PUN: depends on struct AD
+#endif
 #define AFCHAIN(a) ((a)->kchain.chain)  // the chain field, when the block is not allocated
 #define AFPROXYCHAIN(a) ((a)->tproxy.proxychain)  // chain field for base proxies during garbage collection
 #define FHRHROOTX 15

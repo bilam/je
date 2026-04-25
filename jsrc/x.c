@@ -87,7 +87,7 @@ static DF1(jtexitss){F12IP;
 
 
 // the table of A blocks for each foreign.  m and n are in localuse.  Last A block is for 18!:4, which is not available directly
-static PRIM foreignA[320] = { {{AKXR(0),VERB&RECURSIBLE,0,VERB,ACPERMANENT,0,0},{{.valencefns={jtvalenceerr,jtvalenceerr},.fgh={0,0,0},.localuse.lu1.foreignmn={0xfff,0xfff},.flag=VNOLOCCHG+VNONAME+VNOSELF,.flag2=0,.lrr=(RANK2T)((RMAX<<RANKTX)+RMAX),.mr=(RANKT)RMAX,.id=CIBEAM,}}} };
+static PRIM foreignA[320] = { {{Xhr0 AKXR(0),Xhr1 VERB&VERB&RECURSIBLE,0,VERB,ACPERMANENT,0,0},{{.valencefns={jtvalenceerr,jtvalenceerr},.fgh={0,0,0},.localuse.lu1.foreignmn={0xfff,0xfff},.flag=VNOLOCCHG+VNONAME+VNOSELF,.flag2=0,.lrr=(RANK2T)((RMAX<<RANKTX)+RMAX),.mr=(RANKT)RMAX,.id=CIBEAM,}}} };
 
 #ifndef CRC32
 #define CRC32(m,n) (2401*(m))
@@ -98,7 +98,7 @@ static NOINLINE I emptyslot(I m, I n){
  I probe=((CRC32(~0,(m<<16)+n)&0xffff)*((sizeof(foreignA)/sizeof(foreignA[0]))-1))>>16;  // create initial probe
 // TUNE I nprobes=1;
  while((FAV((A)&foreignA[probe])->localuse.lu1.foreignmn[0]&FAV(((A)&foreignA[probe]))->localuse.lu1.foreignmn[1])!=0xfff){if(unlikely(--probe<0))probe=(sizeof(foreignA)/sizeof(foreignA[0]))-2;}  // search for empty
-// TUNE  if(nprobes>1)printf("mn=%d %d, nprobes=%lld\n",m,n,nprobes);
+// TUNE  if(nprobes>1)printf("mn=%d %d, nprobes="FMTI"\n",m,n,nprobes);
 // TUNE totprobes+=nprobes; ++totslots; // TUNE
  R probe;  // return index of empty
 }

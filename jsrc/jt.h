@@ -419,7 +419,11 @@ typedef struct JSTstruct {
  // rest of cacheline is essentially read-only
  // 6 bytes free
  A evm;              // message text for the EVxxx codes
+#if NORMAHE
+ I (*emptylocale)[MAXTHREADS][24];      // locale with no symbols, used when not running explicits, or to avoid searching the local syms.  Aligned on odd word boundary, must never be freed.  One per task, because they are modified
+#else
  I (*emptylocale)[MAXTHREADS][16];      // locale with no symbols, used when not running explicits, or to avoid searching the local syms.  Aligned on odd word boundary, must never be freed.  One per task, because they are modified
+#endif
  I filler6[2];
 // end of cacheline 6
 

@@ -1239,6 +1239,7 @@ takestats(++stats[0x21];)
 #endif
 // obsolete   ASSERT((UI)bytes<=(UI)JT(jt,mmax),EVLIMIT)   // single-allocation limit
   RZ(z=jtgaf(jt,CTLZI((UI)bytes)));   // allocate the block, filling in AC AFLAG AM
+  APINIT(z,XHEADERFILL);
   AT(z)=rtype(cv); AN(z)=zn; ARINIT(z,fru.lanes[frZRANK]); AK(z)=AKXR(fru.lanes[frZRANK]);  // fill in the rest
   if(unlikely(AT(z)&CMPX+QP))AK(z)=(AK(z)+SZD)&~SZD;  // move 16-byte values to 16-byte bdy
   if(unlikely(((AT(z)&DIRECT)==0))){z=zfillind(z,bytes);}  // Clear data for non-DIRECT types in case of later error.  zfillind clears 32 bytes at a time, OK since the region is a power of 2 long
