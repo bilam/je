@@ -379,7 +379,7 @@ endaxes:;
 
 // a is numeric
 FI2(jtifrom){A z;C*wv,*zv;I an,*av,j,k,p,pq,q,wf,wn,*ws,zn;
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  // IRS supported but only for a single a value.  This has implications for empty arguments.
  wf=wr-wcr;
  if(unlikely(ar>acr))R rank2ex(a,w,DUMMYSELF,acr,wcr,acr,wcr,jtifrom);  // split a into cells if needed.  Only 1 level of rank loop is used
@@ -474,7 +474,7 @@ A jtfrombu(J jtfg,A a,A w,I wf){F12IP;
 
 // general boxed a
 static FI2(jtafrom){
- IARG2CR F12IP; PROLOG(0073);
+ IARG2CR F12IPG; PROLOG(0073);
  I wf=wr-wcr;
  // We have IRS on w, but not a.  If there are multiple cells of a we use a rank loop.
  if(unlikely(ar!=0)){A t0;  // if there is an array of boxes
@@ -495,7 +495,14 @@ static FI2(jtafrom){
  I *cmbase;  // start of area we can use for complementary bitmasks
  UI naxesreq=AN(c)+!!wf;  // max # axes we might need
  if(likely(naxesreq<=sizeof(stataxes)/sizeof(stataxes[0]))){axes=stataxes; cmbase=(I*)&stataxes[naxesreq]; }
- else{A t; GATV0(t,INT,naxesreq*(sizeof(stataxes[0])>>LGSZI),1) axes=(struct faxis*)IAV1(t); cmbase=(I*)&stataxes[0];}  // rank 1 for alignment
+ else{A t;
+#if NORMAHN
+// axes MUST on ABDY alignment, but IAV1 is not
+ GATV0(t,INT,8+naxesreq*(sizeof(stataxes[0])>>LGSZI),1) axes=(struct faxis*)((I*)t+16);
+#else
+ GATV0(t,INT,naxesreq*(sizeof(stataxes[0])>>LGSZI),1) axes=(struct faxis*)IAV1(t);
+#endif
+ cmbase=(I*)&stataxes[0];}  // rank 1 for alignment
   // In case user specified rank, we fill in a single axis for the frame.  If there is only 1 frame cell we will overwrite the axis
  I m; PROD(m,wf,ws);  // #wcr-cells in w: tells if we need frame
  axes[0].lenaxis=m; axes[0].nsel=m; axes[0].indsubx.ind=mtv;
@@ -560,7 +567,7 @@ static FI2(jtafrom){
 
 // a{"r w  We handle the fast cases (atom{array) and (empty{"r array) here.  For others we go to a type-dependent processor for a that will build index lists
 DFI2(jtfrom){A z;
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  I at=AT(a), wt=AT(w);
  if(likely(!ISSPARSE(at|wt))){
   PROLOG(000);

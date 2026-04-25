@@ -47,7 +47,7 @@ static A jtcants(J jt,A a,A w,A z){A a1,q,y;B*b,*c;I*u,wr,zr;P*wp,*zp;
 // This is the inverse permutation of the x in x |: y
 // This routine handles IRS on w only (by making higher axes passthroughs), and ignores the rank of a (assumes 1)
 static DFI2(jtcanta){A m,s,t,z;C*wv,*zv;I*av,j,*mv,*sv,*tv,wf,*ws,zn,zr,ms[4],ss[4],ts[4];
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  av=AV(a); ws=AS(w);
  ASSERT(wcr==AN(a),EVLENGTH);
  fauxblockINT(afaux,4,1);
@@ -103,7 +103,7 @@ static DFI2(jtcanta){A m,s,t,z;C*wv,*zv;I*av,j,*mv,*sv,*tv,wf,*ws,zn,zr,ms[4],ss
 }    /* dyadic transpose in APL\360, a f"(1,r) w where 1>:#$a  */
 
 DFI1(jtcant1){A z;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  RZ(z=canta(apv(wcr,wcr-1,-1L),wfg));  // pass cell-rank through to canta
  // We extracted from w, so mark it (or its backer if virtual) non-pristine.  If w was pristine and inplaceable, transfer its pristine status to the result
  // But if we are returning the input block unchanged, leave pristinity unchanged
@@ -112,7 +112,7 @@ DFI1(jtcant1){A z;
 }    /* |:"r w */
 
 FI2(jtcant2){A*av,p,t,y;I j,k,m,n,*pv,*v;
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  if(((acr-2)&(ar-acr-1))>=0){t=rank2ex(a,w,DUMMYSELF,MIN(acr,1),wcr,acr,wcr,jtcant2); PRISTCLRF(w) RETF(t);} // rank loop on a.  Loses pristinity
  if(BOX&AT(a)){
   RZ(y=pfill(wcr,t=raze(a))); v=AV(y);

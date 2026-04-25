@@ -2,7 +2,7 @@ name: EMUAVX00
 
 on:
  push:
-  branches: [ master ]
+  branches: [ master,NOR2 ]
 
 # trigger workflow on file change
 #on:
@@ -17,12 +17,14 @@ env:
  OPTL: -O2
  OPTLD: -O2
  NO_UNDEFINED: 1
- _MEMAUDIT: 0
+ _MEMAUDIT: 0x80
  AUDITEXECRESULTS: 0
  USE_PYXES: 0
  USE_EMU_AVX: 0
  RELEASE: ${{ false }}
  WEBHOOK: ${{ false }}
+ NORMAHN: 2
+ NORMAHX: 0
 
 jobs:
 
@@ -30,8 +32,8 @@ jobs:
 # for selected jobs, disable all and disable the selected needs
 
  all:
-  #if: false
-  if: true
+  if: false
+  #if: true
   runs-on: ubuntu-latest
   steps:
     - run: echo "Runall jobs"
@@ -82,6 +84,8 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -146,6 +150,8 @@ jobs:
       CC: gcc
       USE_SLEEF: 1
       USE_OPENMP: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -188,7 +194,9 @@ jobs:
       CC: clang-18
       USE_SLEEF: 1
       USE_OPENMP: 0
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
       OPTL: ${{ env.OPTL }}
@@ -202,7 +210,7 @@ jobs:
    - name: Test JE (Linux32)
      env:
       DEBUGCMD: gdb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
@@ -252,7 +260,9 @@ jobs:
       CC: gcc
       USE_SLEEF: 1
       USE_OPENMP: 0
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
       OPTL: ${{ env.OPTL }}
@@ -266,7 +276,7 @@ jobs:
    - name: Test JE (Linux32 gcc)
      env:
       DEBUGCMD: gdb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
@@ -290,6 +300,8 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -351,6 +363,8 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -412,6 +426,8 @@ jobs:
       CC: clang-20
       USE_SLEEF: 1
       USE_OPENMP: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -473,7 +489,9 @@ jobs:
       USE_SLEEF: 0
       USE_SLEEFQUAD: 1
       USE_OPENMP: 0
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
 #      _DEBUG: 3
@@ -491,7 +509,7 @@ jobs:
       DEBUGCMD: gdb-multiarch
       DEBUGCPU: arm6
       USE_OPENMP: 0
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
 #      _DEBUG: 3
      run: |
@@ -522,8 +540,8 @@ jobs:
 # rpi64 ----------------------------------------------------------------
  jerpi64:
   name: JE (Raspberry)
-#  needs: [all, deprecated]
-  needs: [all]
+  needs: [all, deprecated]
+#  needs: [all]
   runs-on: ubuntu-latest
   steps:
    - name: Checkout Git repository
@@ -543,6 +561,8 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=0
+       export NORMAHN=${{ env.NORMAHN }}
+       export NORMAHX=${{ env.NORMAHX }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=0   # qemu-arm gdb not supported
@@ -592,8 +612,8 @@ jobs:
 # rpi32 ----------------------------------------------------------------
  jerpi32:
   name: JE (Raspberry32)
-#  needs: [all, deprecated]
-  needs: [all]
+  needs: [all, deprecated]
+#  needs: [all]
   runs-on: ubuntu-latest
   steps:
    - name: Checkout Git repository
@@ -614,7 +634,9 @@ jobs:
        export USE_SLEEF=0
        export USE_SLEEFQUAD=1
        export USE_OPENMP=0
-       export USE_PYXES=0
+       export NORMAHN=${{ env.NORMAHN }}
+       export NORMAHX=${{ env.NORMAHX }}
+       export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=0
        export _DEBUG=0   # qemu-arm gdb not supported
        export OPTL=${{ env.OPTL }}
@@ -694,6 +716,8 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=0
+       export NORMAHN=${{ env.NORMAHN }}
+       export NORMAHX=${{ env.NORMAHX }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=${{ env.DEBUGLEVEL }}
@@ -762,6 +786,8 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=0
+       export NORMAHN=${{ env.NORMAHN }}
+       export NORMAHX=${{ env.NORMAHX }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=${{ env.DEBUGLEVEL }}
@@ -832,6 +858,8 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=0
+       export NORMAHN=${{ env.NORMAHN }}
+       export NORMAHX=${{ env.NORMAHX }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=${{ env.DEBUGLEVEL }}
@@ -903,6 +931,8 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=0
+       export NORMAHN=${{ env.NORMAHN }}
+       export NORMAHX=${{ env.NORMAHX }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=${{ env.DEBUGLEVEL }}
@@ -956,6 +986,8 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -998,7 +1030,9 @@ jobs:
       USE_WASM: 1
       USE_SLEEF: 1
       USE_OPENMP: 0
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: 0   # lldb unavailable
       OPTL: ${{ env.OPTL }}
@@ -1043,6 +1077,8 @@ jobs:
      env:
       NASM: ${{github.workspace}}\openssl-asm\nasm
       _SSE4_2: 1
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       PTHREADS4WSRC: 1
@@ -1130,8 +1166,11 @@ jobs:
      shell: cmd
      env:
       NASM: ${{github.workspace}}\openssl-asm\nasm
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
+      PTHREADS4WSRC: 1
       _DEBUG: ${{ env.DEBUGLEVEL }}
       OPTL: ${{ env.OPTL }}
       OPTLD: ${{ env.OPTLD }}
@@ -1156,7 +1195,7 @@ jobs:
      shell: msys2 {0}
      env:
       DEBUGCMD: gdb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
@@ -1167,7 +1206,7 @@ jobs:
      shell: cmd
      env:
       DEBUGCMD: lldb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: 0
      run: |
@@ -1215,6 +1254,8 @@ jobs:
    - name: Build JE (Windows arm64 old)
      shell: cmd
      env:
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       PTHREADS4WSRC: 1
@@ -1282,6 +1323,8 @@ jobs:
    - name: Build JE (Windows arm64)
      shell: cmd
      env:
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       PTHREADS4WSRC: 1
@@ -1394,6 +1437,8 @@ jobs:
       _SSE4_2: 1
       USE_SLEEF: 1
       USE_OPENMP: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       PTHREADS4WSRC: 1
@@ -1537,7 +1582,9 @@ jobs:
       __MSYS__: 1
       USE_SLEEF: 1
       USE_OPENMP: 0
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      NORMAHX: ${{ env.NORMAHX }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       PTHREADS4WSRC: 1
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -1554,7 +1601,7 @@ jobs:
      env:
       __MSYS__: 1
       DEBUGCMD: gdb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
@@ -1727,3 +1774,4 @@ jobs:
       webhook_url: ${{ secrets.WEBHOOK_URL }}
       webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
       data: '{ "id": "jebuild" }'
+
