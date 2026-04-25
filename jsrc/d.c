@@ -149,8 +149,8 @@ static void jtseeparse(J jt,DC d){A*v;
  DO(d->dcn, if(i==etok||i==ptok)eputs("    "); nflag=disp(QCWORD(v[i]),nflag););  // display tokens with spaces before error(s)
  if(jt->etxn<NETX){  // if we overran the buffer, don't reformat it.  Reformatting requires splitting to words
   // We displayed the sentence.  See if it contains (9 :'string'); if so, replace with {{ string }}
-  fauxblock(fauxw); A z=(A)&fauxw;
-  AK(z)=jt->etxinfo->etx+m1-(C*)z; AFLAGFAUX(z,0) AT(z)=LIT; ACFAUX(z,ACUC1) AR(z)=1; AN(z)=AS(z)[0]=jt->etxn-m1;  // point to etx for parsed line
+  fauxblock(fauxw); A z=(A)&fauxw; FAUXFILL(z);
+  AK(z)=jt->etxinfo->etx+m1-(C*)z; AFLAGFAUX(z,0) AT(z)=LIT; ACFAUX(z,ACUC1) AR(z)=1; AN(z)=AS(z)[0]=jt->etxn-m1; // point to etx for parsed line
   jtunDD((J)((I)jt+(JTINPLACEW|JTINPLACEA)),z);  // reformat in place
   jt->etxn=m1+AN(z);  // set new end-of-sentence pointer
  }
@@ -229,7 +229,7 @@ static A gahzap(J jt,I r,A w){RZ(w=gah(r,w)) ACINITUNPUSH(w); R w;}  // allocate
 // m is the m argument for adverbs
 // the args to eformat_j_ are error#;curname;jt->ranks/empty if m};AR of self;a/AR(a)[;w/AR(w)}[;m]
 // Result is always 0
-A jteformat(J jtfg,A self,A a,A w,A m){F12IP;
+A jteformat(J jtfg,A self,A a,A w,A m){F12IP0;CHKAPX1(QCWORD(a));CHKAPX1(QCWORD(w));CHKAPX1(QCWORD(m));
   if(!(jt->emsgstate&EMSGSTATEUSERMSG+EMSGSTATEFORMATTED+EMSGSTATENOEFORMAT)&&likely(self!=DUMMYSELF)){  // If we have already formatted or have a user msg, don't do it again.  If we expect error, return fast.  If we are called without a real self, we must be executing something internal.  Format it later when we have a real self
   C e=jt->jerr;
   if(e!=0 && e!=EVABORTEMPTY && e!=EVSTACK && e!=EVWSFULL){   // if no error, don't do it again.  Don't waste time on aborts.  If we have run out of memory or stack, don't call eformat, which will probably fail too

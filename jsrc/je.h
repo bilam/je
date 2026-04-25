@@ -1130,7 +1130,7 @@ extern I Biv1[];
 #define iv1 ((A)&Biv1)
 extern A        mnuvxynam[6];
 extern void     moveparseinfotosi(J);
-extern I Bnum[][(NORMAH+1)*(2-SY_64)];
+extern I Bnum[][QCALIGN(NORMAH+1)*(2-SY_64)];
 #define zeroionei(n) ((A)(Bnum+(n)))
 #define num(n) ((A)(Bnum+2+(n)-NUMMIN))
 #define I1mem (iotavec-IOTAVECBEGIN+1)  // 1 stored in memory
@@ -1189,6 +1189,7 @@ extern I Iimin;
 extern I Iimax;
 extern I4 charfill;
 extern I fortesting;
+extern A fortestz0;
 extern C va2ctoc[];
 
 
@@ -1204,4 +1205,10 @@ extern void writetolog(J,C *);
 extern int      memcmp();       /* C library fn                            */
 extern D        strtod();       /* C library fn                            */
 extern I        strtol();       /* C library fn                            */
+#endif
+
+#if MEMAUDIT&0x80
+extern void chkinchain(J,A);
+extern void chkchain(A,I);
+extern void chkapx(A,int,int);
 #endif

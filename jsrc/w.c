@@ -58,7 +58,7 @@ static const ST state[SDDD+1][16]={
 // If there are mismatched quotes, AM(z) is set to -1 and the number of valid tokens is in AS(z)[0]
 F1(jtwordil){F12IP;A z;I s,i,m,n,*x;UC*v;
  ARGCHK1(w);  // if no string, could be empty line from keyboard; return null A in that case
- n=AN(w); v=UAV(w); GATV0(z,INT,n+n,3); x=AVn(3,z); AS(z)[1]=2; AS(z)[2]=1;  // get count of characters n and address v; turn into suitable shape for ;.0 (x 2 1)
+ n=AN(w); v=UAV(w); GATV0(z,INT,1+n+n,3); x=AVn(3,z); AN(z)=n+n; AS(z)[0]=n; AS(z)[1]=2; AS(z)[2]=1;  // get count of characters n and address v; turn into suitable shape for ;.0 (x 2 1)
   // allocate absolute worst-case output area (each char is 1 word); point x to output indexes
  s=SE(SS,0);
  for(i=0;i<n;++i){   // run the state machine
@@ -224,10 +224,12 @@ A jtenqueue(J jt,A a,A w,I env){A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
     j=4; DO(m, yv[i]=p=QCWORD(v[j]); j+=2; if(NAV(p)->n==k&&!memcmpne(s,NAV(p)->s,k))c=i;);  // move name into argument, remember if matched abc
     yv[m]=QCWORD(v[2]); RZ(yv[m+1]=incorp(sc(c))); yv[m+2]=incorp(z);    // add the 3 ending elements
     x[0]=v[0]; x[1]=v[1]; x[2]=QCINSTALLTYPE(ds(CCASEV),QCVERB); x[3]=QCINSTALLTYPE(incorp(y),QCNOUN);  // build the sentence
+    CHKAPX1(z1);
     RETF(z1);  // that's what we'll execute
    }
   }
  }
+ CHKAPX1(z);
  RETF(z);
 }    /* produce boxed list of words suitable for parsing */
                                                             

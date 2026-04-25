@@ -698,3 +698,76 @@ A jtfindnameinscript(J jt,C *script, C *name, I pos){
  }
  R 0;  // not found or wrong part of speech - error
 }
+
+#if MEMAUDIT&0x80
+void chkinchain(J jt,A x){
+ if(!x)R;
+ I i,j;
+ for(i=0;i<(PLIML-PMINL+1);i++){
+ A p=jt->mempool[i],p1=0;
+ j=0;
+  while(p){
+   if(j>1000000)SEGFAULT;
+#if SY_64
+   if(0x0001000000000000LL<((uintptr_t)p)||0x10000>(uintptr_t)p){ fprintf(stderr,"mempool "FMTI" index "FMTI" addr %p\n",i,j,p); SEGFAULT; }
+#else
+   if(0x10000>(uintptr_t)p){ fprintf(stderr,"mempool "FMTI" index "FMTI" addr %p\n",i,j,p); SEGFAULT; }
+#endif
+   if(p==x){ fprintf(stderr,"mempool "FMTI" index "FMTI" addr %p\n",i,j,x); SEGFAULT; }
+   p1=p; p=AFCHAIN(p);
+   j++;
+  }
+ }
+}
+
+void chkchain(A w,I n){
+ if(!w)R;
+ I j=0;
+ while(w&&(!n||j<n)){
+#if SY_64
+  if(w&&(0x0001000000000000LL<((uintptr_t)w)||(0x10000>((uintptr_t)w))||((uintptr_t)w)==0xdeadbeefdeadbeef||((uintptr_t)w)==0xfeeefeeefeeefeee)){fprintf(stderr,"%p: ",w);dump_ADheader(w);SEGFAULT;}
+#else
+  if(w&&((0x10000>((uintptr_t)w))||((uintptr_t)w)==0xdeadbeef||((uintptr_t)w)==0xfeeefeee)){fprintf(stderr,"%p: ",w);dump_ADheader(w);SEGFAULT;}
+#endif
+  CHKORIGIN(w);
+#if NORMAHN>1
+  DO(NORMAHN-1,if(w->p[i]!=XHEADERFILL){fprintf(stderr,"%p: ",w);dump_ADheader(w);SEGFAULT;})
+#endif
+  if(!AFHRH(w)){fprintf(stderr,"%p: ",w);dump_ADheader(w);SEGFAULT;}
+  w=AFCHAIN(w);j++;
+ }
+}
+
+// mode=> 0: normal   1: mempool  2: queue
+void chkapx(A w, int recur, int mode){
+ if(!w)R;
+#if SY_64
+ if(0x0001000000000000LL<((uintptr_t)w)||0x10000>((uintptr_t)w)||((uintptr_t)w)==0xdeadbeefdeadbeef||((uintptr_t)w)==0xfeeefeeefeeefeee)SEGFAULT;
+#else
+ if(0x10000>((uintptr_t)w)||((uintptr_t)w)==0xdeadbeef||((uintptr_t)w)==0xfeeefeee)SEGFAULT;
+#endif
+ if(!ISGMP(w)&&w!=QCWORD(w))SEGFAULT;
+ if(1!=mode){
+  if(ACISPERM(AC(w)))R;
+//  if(!AFLAG(w))R;           // faux block
+//  if(AFLAG(w)&AFVIRTUAL)R;  // virtual block
+  if(!AFHRH(w))R;
+  if((!AFLAG(w)&AFVIRTUAL)&&!(AFLAG(w)&AFNJA)&&(AFHRH(w)==0)){fprintf(stderr,"%p: ",w);dump_ADheader(w);SEGFAULT;}  // pool number must be valid if not GMP block and not mem-mapped
+ }
+ CHKORIGIN(w);
+#if NORMAHN>1
+ DO(NORMAHN-1,if(w->p[i]!=XHEADERFILL){fprintf(stderr,"%p: ",w);dump_ADheader(w);SEGFAULT;})
+#endif
+ if(1==mode){
+  if(!AFHRH(w)){fprintf(stderr,"%p: ",w);dump_ADheader(w);SEGFAULT;}
+#if SY_64
+  if(AFCHAIN(w)&&(0x0001000000000000LL<((uintptr_t)AFCHAIN(w))||(0x10000>((uintptr_t)AFCHAIN(w)))||((uintptr_t)AFCHAIN(w))==0xdeadbeefdeadbeef||((uintptr_t)AFCHAIN(w))==0xfeeefeeefeeefeee)){fprintf(stderr,"%p: ",w);dump_ADheader(AFCHAIN(w));SEGFAULT;}
+#else
+  if(AFCHAIN(w)&&((0x10000>((uintptr_t)AFCHAIN(w)))||((uintptr_t)AFCHAIN(w))==0xdeadbeef||((uintptr_t)AFCHAIN(w))==0xfeeefeee)){fprintf(stderr,"%p: ",w);dump_ADheader(AFCHAIN(w));SEGFAULT;}
+#endif
+  R;   // mempool block has no content
+ }
+ if(AFLAG(w)==0x0000000000020020LL)R;  // workaround gdic
+ if(recur&&AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w), chkapx((2==mode)?QCWORD(wv[i]):wv[i],recur,mode);)}
+}
+#endif

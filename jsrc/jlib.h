@@ -6,8 +6,12 @@
 #ifndef JLIB_H
 #define JLIB_H
 
+#ifndef NORMAHN
+#define NORMAHN 0
+#endif
+
 #ifndef PYXES
-#if defined(_WIN64)||defined(__LP64__)
+#if defined(_WIN64)||defined(__LP64__)||NORMAHN!=0
 #define PYXES 1
 #else
 #define PYXES 0
@@ -37,7 +41,11 @@ typedef long I;
 typedef char C;
 typedef void* JS;
 typedef struct A_RECORD {
+#if NORMAHN!=0
+  I p[NORMAHN],k,flag,m,t,c,n,r,s[1];
+#else
   I k,flag,m,t,c,n,r,s[1];
+#endif
 }* A;
 typedef struct AREP_RECORD {
   I n,t,c,r,s[1];

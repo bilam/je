@@ -114,8 +114,8 @@ A jtfxeachv(J jt,I r,A w){A*wv,x,z,*zv;I n;
 
 // self blocks to pass into every and thence into jtfx.  AK holds the parm into jtfx
 PRIM jtfxself[2]={
-{{0,0,0,0,0,0,0},{{.valencefns={jtfx,0},.fgh={0,0,0},.localuse=0,.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=0}}} ,
-{{1,0,0,0,0,0,0},{{.valencefns={jtfx,0},.fgh={0,0,0},.localuse=0,.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=0}}}
+{{Xhr0 0,0,0,0,0,0,0},{{.valencefns={jtfx,0},.fgh={0,0,0},.localuse=0,.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=0}}} ,
+{{Xhr0 1,0,0,0,0,0,0},{{.valencefns={jtfx,0},.fgh={0,0,0},.localuse=0,.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=0}}}
 };
 
 // run self on each box in w, turning AR into an A block. This is like every() but we do not convert verbs to ARs
@@ -166,7 +166,7 @@ F2(jttie){F12IP;ARGCHK2(a,w);I gflg; if(AT(a)&VERB){RZ(a=box(a)) gflg=AFGERUNDOK
 
 // m@.v y.  Execute the verbs at high rank
 // Bivalent entry point: called as (jt,w,self,self) or (jt,a,w,self)
-static DF2(jtcasei12){DF12IP;A vres,z;I gerit[128/SZI],ZZFLAGWORD;
+static DF2(jtcasei12){DF12IP;A vres,z;I __attribute__((aligned(ABDY))) gerit[128/SZI+NORMAHN],ZZFLAGWORD;
  ARGCHK2(a,w);
  PROLOG(997);
  // see if we were called as monad or dyad.  If monad, fix up w and self

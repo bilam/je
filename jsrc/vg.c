@@ -711,7 +711,7 @@ static B (*grroutine[])(J,I,I,I,A,I*,I,I) = {  // index is [bitx]
 
 // /: and \: with IRS support
 A jtgr1(JJ jtfg,A wfg,A self,I rmin,I rmax){A z;I f,ai,m,n,*s,t,wn,zn;   // like DFI1
- IARG1CR F12IP;PROLOG(0075);
+ IARG1CR F12IPG;PROLOG(0075);
  t=AT(w);
  f=wr-wcr; s=AS(w);
  // Calculate m: #cells in w   n: #items in a cell of w   ai: #atoms in an item of a cell of w  c: #atoms in a cell of w  
@@ -731,12 +731,12 @@ A jtgr1(JJ jtfg,A wfg,A self,I rmin,I rmax){A z;I f,ai,m,n,*s,t,wn,zn;   // like
  EPILOG(z);
 }    /*   grade"r w main control for dense w */
 
-DFI1(jtgrade1){IARG1 DF12IP;A z; jtfg=(J)((I)jtfg&~JTDESCEND); if(likely(!ISSPARSE(AT(w))))RETF(gr1(wfg)); RETF(grd1sp(wfg));}
-DFI1(jtdgrade1){IARG1 DF12IP;A z; jtfg=(J)(((I)jtfg&~JTFLAGMSK)+JTDESCEND); if(likely(!ISSPARSE(AT(w))))RETF(gr1(wfg)); RETF(grd1sp(wfg));}
+DFI1(jtgrade1){IARG1 DF12IPG;A z; jtfg=(J)((I)jtfg&~JTDESCEND); if(likely(!ISSPARSE(AT(w))))RETF(gr1(wfg)); RETF(grd1sp(wfg));}
+DFI1(jtdgrade1){IARG1 DF12IPG;A z; jtfg=(J)(((I)jtfg&~JTFLAGMSK)+JTDESCEND); if(likely(!ISSPARSE(AT(w))))RETF(gr1(wfg)); RETF(grd1sp(wfg));}
 // Since grade2 pulls from a, mark a as non-pristine.  But since there can be no repeats, transfer a's pristinity to result if a is inplaceable
 // We do this in jtgr2 because it has a branch where all boxed values go
-FI2(jtgrade2){IARG2 F12IP;A z; if(likely(!ISSPARSE(AT(w))))RETF(jtgr2((J)((I)jtfg&~JTDESCEND),afg,wfg)); RETF(jtgrd2sp((J)((I)jtfg&~JTDESCEND),afg,wfg));}
-FI2(jtdgrade2){IARG2 F12IP;A z; if(likely(!ISSPARSE(AT(w))))RETF(jtgr2((J)((I)jtfg+JTDESCEND),afg,wfg)); RETF(jtgrd2sp((J)((I)jtfg+JTDESCEND),afg,wfg));}
+FI2(jtgrade2){IARG2 F12IPG;A z; if(likely(!ISSPARSE(AT(w))))RETF(jtgr2((J)((I)jtfg&~JTDESCEND),afg,wfg)); RETF(jtgrd2sp((J)((I)jtfg&~JTDESCEND),afg,wfg));}
+FI2(jtdgrade2){IARG2 F12IPG;A z; if(likely(!ISSPARSE(AT(w))))RETF(jtgr2((J)((I)jtfg+JTDESCEND),afg,wfg)); RETF(jtgrd2sp((J)((I)jtfg+JTDESCEND),afg,wfg));}
 
 #if 0 // obsolete
 // the rest of this file handles order statistics

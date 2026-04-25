@@ -17,6 +17,12 @@
 #include "p.h"
 #include "w.h"
 
+#if MEMAUDIT&0x80
+#define CHKQUEUE {UI8 tcesx=CWTCESX2(cwsent,ic); A *queue=&cwsent[PEXT08(tcesx,32,TCESXSXMSK)]; I m=(tcesx-(tcesx>>32))&TCESXSXMSK; DO(m, CHKAPX1(QCWORD(queue[i])););}
+#else
+#define CHKQUEUE
+#endif
+
 // DD definitions
 #define DDBGN (US)('{'+256*'{')  // digraph for start DD
 #define DDEND (US)('}'+256*'}')  // digraph for end DD
@@ -434,7 +440,7 @@ dobblock:
    // if there is no error, step to next line.  debug mode has set the value to use if any, or 0 to request a new line
    if(likely(z!=0)){bic=ic; ic-=(tcesx>>(32+TCESXTYPEX+5))+1;  // advance to next sentence to be executed, which is NSI, or NSI+1 if BBLOCKEND
     // the sequence BBLOCKEND BBLOCKEND indicates that the second BBLOCKEND was originally an END that went to NSI which was BBLOCK, i. e. end. for an if./select. followed by BBLOCK.
-    if(!(TXOR5(tcesx,CBBLOCK)|jt->uflags.trace))goto dobblock;  // if NSI is BBLOCK, run it; if we have BBE BBE BB[E], skip second BBE (which was an END) - even for debug/pm -  and run BB[E] as bblock 
+    if(!(TXOR5(tcesx,CBBLOCK)|jt->uflags.trace)){CHKQUEUE;goto dobblock;}  // if NSI is BBLOCK, run it; if we have BBE BBE BB[E], skip second BBE (which was an END) - even for debug/pm -  and run BB[E] as bblock 
     if(!(TXORTOP5(tcesx,32+(CIF&CWHILE))|jt->uflags.trace)){--ic; goto knowntblock;}  // if NSI is flagged if./while., skip over it, knowing it is followed by tblock. i was always decremented by 1
     goto nextline;  // not another B block or if./while., dispatch the next location (which might not be in tcesx)
     // BBLOCK is usually followed by another BBLOCK, but another important followon is END followed by BBLOCK.  BBLOCKEND means
@@ -538,6 +544,7 @@ dobblock:
     // We allow verbose messages in case the catch. wants to display them.  This is different from u :: v
     ++tdv; NPGpysfmtdl|=4;  // bump tdv pointer, install index of next entry, set flag
     --ic;  // continue with NSI
+    CHKQUEUE;
     if(likely(FLAGGEDNOTRACE(tcesx)))goto dobblock;   // normal case, flagged so we know we are continuing with bblock.  No need to fetch it
    }
    goto nextline;
@@ -600,6 +607,7 @@ dobblock:
   case CENDSEL:
    // end. for select., and do. for for. after the last iteration, must pop the stack - just once
    cv=unstackcv(cv,1);  // This leaves xyz[_index] defined, so there is no need to rat() z
+   CHKQUEUE;
    if(FLAGGEDNOTRACE(tcesx)){--ic; goto dobblock;}  // if flagged (must be ENDSEL), NSI is bblock, go do it without reading
    ic=CWGO(cwsent,CNSTOREDCW,ic);    // otherwise, continue at new location
    goto nextline;

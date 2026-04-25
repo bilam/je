@@ -36,10 +36,18 @@ COPTION = $(COPTION) /Od /DOPTMO0
 COPTION = $(COPTION) $(OPTL)
 !endif
 !endif
+!if ""!="$(NORMAHN)"
+COPTION = $(COPTION) /DNORMAHN=$(NORMAHN)
+!endif
 !if "1"=="$(USE_PYXES)"
 COPTION = $(COPTION) /DPYXES=1
 !else
 COPTION = $(COPTION) /DPYXES=0
+!endif
+!if ""!="$(NORMAHN)"
+COPTION = $(COPTION) /DNORMAHN=$(NORMAHN)
+!else
+COPTION = $(COPTION) /DNORMAHN=0
 !endif
 
 !if "arm64"=="$(TARGET_CPU)"
