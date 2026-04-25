@@ -43,6 +43,9 @@ else
   COPTION := $(COPTION) $(OPTL)
  endif
 endif
+ifneq ($(NORMAHN),)
+ COPTION := $(COPTION) /DNORMAHN=$(NORMAHN)
+endif
 ifeq (1,$(USE_PYXES))
  COPTION := $(COPTION) /DPYXES=1
 else
@@ -52,6 +55,11 @@ ifeq (0,$(USE_EMU_AVX))
  COPTION := $(COPTION) /DEMU_AVX2=0
 else
  COPTION := $(COPTION) /DEMU_AVX2=1
+endif
+ifneq ($(NORMAHN),)
+ COPTION := $(COPTION) /DNORMAHN=$(NORMAHN)
+else
+ COPTION := $(COPTION) /DNORMAHN=0
 endif
 
 ifeq (1,$(USE_OPENMP))

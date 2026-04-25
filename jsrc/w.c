@@ -58,7 +58,7 @@ static const ST state[SDDD+1][16]={
 // If there are mismatched quotes, AM(z) is set to -1 and the number of valid tokens is in AS(z)[0]
 F1(jtwordil){F12IP;A z;I s,i,m,n,*x;UC*v;
  ARGCHK1(w); MEMCHK1(w);  // if no string, could be empty line from keyboard; return null A in that case
- n=AN(w); v=UAV(w); GATV0(z,INT,n+n,3); x=AVn(3,z); AS(z)[1]=2; AS(z)[2]=1;  // get count of characters n and address v; turn into suitable shape for ;.0 (x 2 1)
+ n=AN(w); v=UAV(w); GATV0(z,INT,1+n+n,3); x=AVn(3,z); AN(z)=n+n; AS(z)[0]=n; AS(z)[1]=2; AS(z)[2]=1;  // get count of characters n and address v; turn into suitable shape for ;.0 (x 2 1)
   // allocate absolute worst-case output area (each char is 1 word); point x to output indexes
  s=SE(SS,0);
  for(i=0;i<n;++i){   // run the state machine

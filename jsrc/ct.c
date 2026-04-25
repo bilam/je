@@ -769,6 +769,7 @@ F1(jtnulljob){F12IP; MEMCHK1(w);
 }
 
 #else
+// non PYXES branch
 static A jttaskrun(J jt,A arg1, A arg2, A arg3){A pyx;
  ARGCHK2(arg1,arg2); MEMCHK2(arg1,arg2);  // the verb is not the issue
  I dyad=!(AT(arg2)&VERB); A self=dyad?arg3:arg2;  // the call is either noun self x or noun noun self.  See which set dyad flag and select self.

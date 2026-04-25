@@ -56,6 +56,12 @@ JS gjt=0; // JPF debug - convenience debug single process - points to shared are
 // The jt we are given is a throwaway, needed ONLY so we can allocate some A blocks here.  Anything stored
 // into jt will never be used.  jinit3 will later be called with the real jt, to initialize it
 B jtglobinit(JS jjt){A x,y;J jt=MTHREAD(jjt);  // initialize in master thread
+#if NORMAHN
+ ASSERTSYS((!AT(FUNCTYPE0)),"FUNCTYPE0 invalid");
+ ASSERTSYS((!(FAV(FUNCID0)->id)),"FUNCID0 invalid");
+ ASSERTSYS((!AFLAG(AFLAG0)&&!AT(AFLAG0)),"AFLAG0 invalid");
+ ASSERTSYS((!AN(ANLEN0)),"ANLEN0 invalid");
+#endif
  jtmeminits(jjt);
  jtmeminitt(jt);  // init allocation queues & tpop stack, master thread only
  RZ(mnuvxynam[0]=makename("m",0));

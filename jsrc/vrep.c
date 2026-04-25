@@ -19,7 +19,11 @@ static REPF(jtrepzdx){F12IP;A p,q,x;P*wp;
  R IRS2(jtfrom,jt,p,1L,q,wcr+!wcr,0L);
 }    /* (dense complex) # (dense or sparse) */
 
+#if NORMAHN>0 && !SY_64
+static NOOPTIMIZE REPF(jtrepzsx){F12IP;A q,x,y;I c,d,j,k=-1,m,p=0,*qv,*xv,*yv;P*ap;
+#else
 static REPF(jtrepzsx){F12IP;A q,x,y;I c,d,j,k=-1,m,p=0,*qv,*xv,*yv;P*ap;
+#endif
  ARGCHK2(a,w); MEMCHK2(a,w);
  ap=PAV(a); x=SPA(ap,x); m=AN(x);
  if(!AN(SPA(ap,a)))R repzdx(ravel(x),w,wf,wcr);
@@ -289,7 +293,11 @@ static REPF(jtrepidx){F12IP;A y;I j,m,p=0,*v,*x;A z;
 }    /* (dense  integer) #"r (dense or sparse) */
 #undef itemsize
 
+#if NORMAHN>0 && !SY_64
+static NOOPTIMIZE REPF(jtrepisx){F12IP;A e,q,x,y;I c,j,m,p=0,*qv,*xv,*yv;P*ap;
+#else
 static REPF(jtrepisx){F12IP;A e,q,x,y;I c,j,m,p=0,*qv,*xv,*yv;P*ap;
+#endif
  ARGCHK2(a,w); MEMCHK2(a,w);
  ap=PAV(a); e=SPA(ap,e); 
  y=SPA(ap,i); yv=AV(y);

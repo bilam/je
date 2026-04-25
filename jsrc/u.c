@@ -719,6 +719,9 @@ void chkmemchain(J jt,int blockx,I maxdepth,A addr){
 #endif 
   if(!AFHRH(w)){fprintf(stderr,"AFHRH %p AFHRH %d\n",w,AFHRH(w));SEGFAULT;}
   CHKORIGIN(w);
+#if NORMAHN>1
+  DO(NORMAHN-1,if(w->p[i]!=XHEADERFILL){fprintf(stderr,"XHEADERFILL %p ",w);dump_ADheader(w);SEGFAULT;})
+#endif
   prev=w; w=AFCHAIN(w);
   j++;
  }
@@ -742,6 +745,9 @@ void chkapx(J jt, A w, int recur, int mode){
   if(jt)DO(PLIML-PMINL+1, chkmemchain(jt,i,3,w);)
  }
  CHKORIGIN(w);
+#if NORMAHN>1
+ DO(NORMAHN-1,if(w->p[i]!=XHEADERFILL){fprintf(stderr,"XHEADERFILL %p: ",w);dump_ADheader(w);SEGFAULT;})
+#endif
  if(1==mode){
   if(!AFHRH(w)){fprintf(stderr,"AFHRH %p AFHRH %d\n",w,AFHRH(w));SEGFAULT;}
 #if SY_64

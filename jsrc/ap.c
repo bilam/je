@@ -493,7 +493,7 @@ static DF2(jtginfix){DF12IP; MEMCHK2(a,w); A h,*hv,x,z,*zv;I d,m,n;
 #define STATESLASH2 BIT(STATESLASH2X)
 
 // prefix and infix: prefix if a is mark
-static DF2(jtinfixprefix2){DF12IP;PROLOG(00202);A fs;I cger[128/SZI];
+static DF2(jtinfixprefix2){DF12IP; MEMCHK2(a,w); PROLOG(00202);A fs;I __attribute__((aligned(ABDY))) cger[128/SZI+NORMAHN];
    I wt;
   ARGCHK1(w); MEMCHK1(w);
  F2RANKIP(0,RMAX,jtinfixprefix2,self);  // handle rank loop if needed

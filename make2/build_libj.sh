@@ -114,6 +114,7 @@ case "$jplatform/$j64x" in
   LDTHREAD=" -pthread "
   NO_SHA_ASM=1
   USE_PYXES=0
+  NORMAHN=0
   ;;
 esac
 case "$j64x" in
@@ -287,6 +288,8 @@ if [ $USE_BOXEDSPARSE -eq 1 ]; then
  common="$common -DBOXEDSPARSE"
 fi
 
+NORMAHN="${NORMAHN:=0}"
+
 if [ $USE_PYXES -eq 1 ]; then
  case "$jplatform/$j64x" in
   windows/j32)
@@ -337,6 +340,8 @@ else
  esac
  common="$common -DPYXES=0"
 fi
+
+common="$common -DNORMAHN=${NORMAHN}"
 
 case "$jplatform/$j64x" in
  */j64)
