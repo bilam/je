@@ -212,11 +212,16 @@ else
  common="$common -DEMU_AVX2=0"
 fi
 
+NORMAHX="${NORMAHX:=-1}"
+NORMAHN="${NORMAHN:=1}"
+
 if [ $USE_PYXES -eq 1 ]; then
  common="$common -DPYXES=1"
 else
  common="$common -DPYXES=0"
 fi
+
+common="$common -DNORMAHX=${NORMAHX} -DNORMAHN=${NORMAHN}"
 
 if [ -n "$MAX_ERRORS" ]; then
   if [ -z "${compiler##*gcc*}" ] || [ -z "${CC##*gcc*}" ]; then

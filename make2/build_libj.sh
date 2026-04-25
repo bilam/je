@@ -285,6 +285,9 @@ if [ $USE_BOXEDSPARSE -eq 1 ]; then
  common="$common -DBOXEDSPARSE"
 fi
 
+NORMAHX="${NORMAHX:=-1}"
+NORMAHN="${NORMAHN:=1}"
+
 if [ $USE_PYXES -eq 1 ]; then
  case "$jplatform/$j64x" in
   windows/j32)
@@ -327,6 +330,8 @@ else
  esac
  common="$common -DPYXES=0"
 fi
+
+common="$common -DNORMAHX=${NORMAHX} -DNORMAHN=${NORMAHN}"
 
 case "$jplatform/$j64x" in
  */j64)

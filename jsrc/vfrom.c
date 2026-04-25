@@ -497,7 +497,14 @@ static F2(jtafrom){F12IP; PROLOG(0073);
  I *cmbase;  // start of area we can use for complementary bitmasks
  UI naxesreq=AN(c)+!!wf;  // max # axes we might need
  if(likely(naxesreq<=sizeof(stataxes)/sizeof(stataxes[0]))){axes=stataxes; cmbase=(I*)&stataxes[naxesreq]; }
- else{A t; GATV0(t,INT,naxesreq*(sizeof(stataxes[0])>>LGSZI),1) axes=(struct faxis*)IAV1(t); cmbase=(I*)&stataxes[0];}  // rank 1 for alignment
+ else{A t;
+#if NORMAHE
+// axes MUST on ABDY alignment, but IAV1 is not
+ GATV0(t,INT,8+naxesreq*(sizeof(stataxes[0])>>LGSZI),1) axes=(struct faxis*)((I*)t+16);
+#else
+ GATV0(t,INT,naxesreq*(sizeof(stataxes[0])>>LGSZI),1) axes=(struct faxis*)IAV1(t);
+#endif
+ cmbase=(I*)&stataxes[0];}  // rank 1 for alignment
   // In case user specified rank, we fill in a single axis for the frame.  If there is only 1 frame cell we will overwrite the axis
  I m; PROD(m,wf,ws);  // #wcr-cells in w: tells if we need frame
  axes[0].lenaxis=m; axes[0].nsel=m; axes[0].indsubx.ind=mtv;

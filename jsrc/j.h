@@ -59,7 +59,10 @@
 #define dump_m256i32(a,x) {__m256i _b=x;fprintf(stderr,"%s %x %x %x %x %x %x %x %x \n", a, ((unsigned int*)(&_b))[0], ((unsigned int*)(&_b))[1], ((unsigned int*)(&_b))[2], ((unsigned int*)(&_b))[3], ((unsigned int*)(&_b))[4], ((unsigned int*)(&_b))[5], ((unsigned int*)(&_b))[6], ((unsigned int*)(&_b))[7]);}
 #define dump_m256d(a,x) {__m256d _b=x;fprintf(stderr,"%s %f %f %f %f \n", a, ((double*)(&_b))[0], ((double*)(&_b))[1], ((double*)(&_b))[2], ((double*)(&_b))[3]);}
 #define dump_m128d(a,x) {__m128d _b=x;fprintf(stderr,"%s %f %f \n", a, ((double*)(&_b))[0], ((double*)(&_b))[1]);}
-#define dump_ADheader(x) fprintf(stderr,""FMTX" "FMTX" "FMTX" "FMTX" "FMTX" "FMTX" "FMTX" "FMTX" \n", ((UI*)(x))[0], ((UI*)(x))[1], ((UI*)(x))[2], ((UI*)(x))[3], ((UI*)(x))[4], ((UI*)(x))[5], ((UI*)(x))[6], ((UI*)(x))[7]);
+#define dump_ADheader(x) {DO(NORMAH+1,fprintf(stderr,""FMTX" ", ((UI*)(x))[i]);) fprintf(stderr,"\n");}
+#define dump_Astr(x) fprintf(stderr,"str len("FMTI") %.*s\n", AN(x), (int)AN(x), CAV(x));
+#define dump_Astrx(x) {fprintf(stderr,"strx len("FMTI")",AN(x));DO(AN(x),fprintf(stderr," %x",CAV(x)[i]);) fprintf(stderr,"\n");}
+#define dump_Anum(x) {fprintf(stderr,"num len("FMTI")",AN(x));DO(AN(x),fprintf(stderr," "FMTI"",IAV(x)[i]);) fprintf(stderr,"\n");}
 
 
 #ifdef MMSC_VER
@@ -788,6 +791,7 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 //            (starting after you have run 9!:_5 (1) to turn it on)
 //     0x20:  audit freelist at end of every sentence regardless of 9!:_5
 //     0x40:  enable guard blocks (libgmp mallocs only)
+//     0x80:  enable guard blocks (NORMAHE only)
 //
 // Thus 1+4+8 (or 13 or 0xD) will verify that there are no blocks
 // being used after they are freed, or freed prematurely. If you
@@ -870,6 +874,119 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 #else
 #define PYXES 0
 #endif
+#endif
+
+// extra AD header length
+#ifndef NORMAHX
+#define NORMAHX -1
+#endif
+#ifndef NORMAHN
+#define NORMAHN 1
+#endif
+#if NORMAHX!=-1 && (NORMAHX<0 || NORMAHX>1)
+#error NORMAHX only supports 0 .. 1
+#endif
+#if NORMAHN<1 || NORMAHN>8
+#error NORMAHN only supports 1 .. 8
+#endif
+#if NORMAHX!=-1
+#define NORMAHE NORMAHN
+#else
+#define NORMAHE 0
+#endif
+
+#if SY_64
+#define XHEADERFILL 0x5a5a5a5a5a5a5a5aLL
+#else
+#define XHEADERFILL 0x5a5a5a5aL
+#endif
+
+// static global initializer
+#if NORMAHX==0
+#if NORMAHN==1
+#define Xhr0 XHEADERFILL,
+#elif NORMAHN==2
+#define Xhr0 XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==3
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==4
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==5
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==6
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==7
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==8
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#endif
+#else
+#define Xhr0
+#endif
+
+#if NORMAHX==1
+#if NORMAHN==1
+#define Xhr1 XHEADERFILL,
+#elif NORMAHN==2
+#define Xhr1 XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==3
+#define Xhr1 XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==4
+#define Xhr1 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==5
+#define Xhr1 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==6
+#define Xhr1 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==7
+#define Xhr1 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==8
+#define Xhr1 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#endif
+#else
+#define Xhr1
+#endif
+
+// for struct AD initializer
+#if NORMAHX==0
+#if SY_64 || !PYXES
+#if NORMAHN==1
+#define Xhrg {XHEADERFILL},
+#elif NORMAHN==2
+#define Xhrg {XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==3
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==4
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==5
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==6
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==7
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==8
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#endif
+#else
+#if NORMAHN==1
+#define Xhrg XHEADERFILL,XHEADERFILL,{},
+#elif NORMAHN==2
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL},
+#elif NORMAHN==3
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==4
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==5
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==6
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==7
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==8
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#endif
+#endif
+#else
+#define Xhrg
 #endif
 
 // if we are not multithreading, report the master thread only
@@ -1158,7 +1275,7 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 // see if value of x is the atom v.  Do INT/B01/FL here, subroutine for exotic cases
 #define EQINTATOM(x,v)  ( (AR(x)==0) && ((AT(x)&(INT+B01)) ? (((*IAV0(x))&(((AT(x)&B01)<<8)-1))==(v)) : (AT(x)&FL) ? *DAV0(x)==(D)(v) : 0!=equ(num(v),x))  )
 // define fs block used in every/every2.  It is the self for the f in f&.>, and contains only function pointers, an optional param in AK, and the flag field
-#define EVERYFS(name,f0,f1,akparm,flg) PRIM name={{akparm,0,0,0,0,0,0},{.primvb={.valencefns={f0,f1},.flag=flg}}};
+#define EVERYFS(name,f0,f1,akparm,flg) PRIM name={{Xhr0 akparm,Xhr1 0,0,0,0,0,0},{.primvb={.valencefns={f0,f1},.flag=flg}}};
 
 #define STACKPOS ({D stackpos; (uintptr_t)&stackpos;})
 #ifdef NOSTACKCHK
@@ -1186,8 +1303,12 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 #define F1(f)           A f(JJ jtfg,    A w)  // whether in an interface routine or not, these must use the internal parameter type
 #define F2(f)           A f(JJ jtfg,A a,A w)
 #define JTFROMJTFG(T) jt=(T)(intptr_t)((I)jtfg&~JTFLAGMSK)
-#define F12IP JJ JTFROMJTFG(JJ)
-#define F12JT JJ JTFROMJTFG(JJ)  // for documentation, when flags are not IP flags
+#define F12IP0 JJ JTFROMJTFG(JJ)
+#define F12IP1 F12IP0             // need QCWORD(w)
+#define F12IP JJ JTFROMJTFG(JJ);CHKAPX(w)
+#define F12JT0 JJ JTFROMJTFG(JJ)  // for documentation, when flags are not IP flags
+#define F12JT1 F12JT0             // need QCWORD(w)
+#define F12JT JJ JTFROMJTFG(JJ);CHKAPX(w)  // for documentation, when flags are not IP flags
 #define FPREFIP(T)         T jtfg=jt; JTFROMJTFG(T)  // turn off all flag bits in jt, leave them in jtfg
 #define F1PREFJT        FPREFIP(J)  // for doc purposes, use when the JT flags are not for inplacing
 #define F2PREFJT        FPREFIP(J)
@@ -1525,7 +1646,11 @@ if(likely(!((I)jtfg&JTWILLBEOPENED)))z=EPILOGNORET(z); RETF(z); \
  if(likely(name!=0)){   \
  if((rank)!=0)AK(name)=AKXR(rank); if((type)!=FL)AT(name)=(type); if((atoms)!=1)AN(name)=atoms;  /* default is atomic FL */   \
  ARINIT(name,rank);     \
- if(!(((type)&DIRECT))>0){if(rank==0)AS(name)[0]=0; if((bytes-(offsetof(AD,s[1])-32))&-32)mvc((bytes-(offsetof(AD,s[1])-32))&-32,&AS(name)[1],MEMSET00LEN,MEMSET00);}  \
+ if(NORMAHE){ \
+ if(!(((type)&DIRECT))>0){if(rank==0)AS(name)[0]=0; if(0<((bytes+31)&-32)-(offsetof(AD,s[1])))mvc((((bytes+31)&-32)-offsetof(AD,s[1])),&AS(name)[1],MEMSET00LEN,MEMSET00);}  \
+ }else{ \
+ if(!(((type)&DIRECT))>0){if(rank==0)AS(name)[0]=0; if((bytes-(offsetof(AD,s[1])-32))&-32)mvc((bytes-(offsetof(AD,s[1])-32))&-32,(&AS(name)[1]),MEMSET00LEN,MEMSET00);} \
+ } \
       /* bytes is known; the if((bytes is evaluated at compile time */ \
  shapecopier(name,type,atoms,rank,shaape)   \
     \
@@ -1548,7 +1673,11 @@ if(likely(!((I)jtfg&JTWILLBEOPENED)))z=EPILOGNORET(z); RETF(z); \
  I akx=AKXR(rank);   \
  if(likely(name!=0)){   \
   AK(name)=akx; AT(name)=(type); AN(name)=atoms; ARINIT(name,rank);     \
-  if(!(((type)&DIRECT)>0)){AS(name)[0]=0; mvc((bytes-(offsetof(AD,s[1])-32))&-32,&AS(name)[1],MEMSET00LEN,MEMSET00);}   /* overclears the data but never over buffer bdy */ \
+  if(NORMAHE){ \
+  if(!(((type)&DIRECT)>0)){AS(name)[0]=0; if(0<((bytes+31)&-32)-(offsetof(AD,s[1])))mvc((((bytes+31)&-32)-(offsetof(AD,s[1]))),&AS(name)[1],MEMSET00LEN,MEMSET00);}  /* overclears the data but never over buffer bdy */ \
+  }else{ \
+  if(!(((type)&DIRECT)>0)){AS(name)[0]=0; mvc((bytes-(offsetof(AD,s[1])-32))&-32,&AS(name)[1],MEMSET00LEN,MEMSET00);} /* overclears the data but never over buffer bdy */ \
+  } \
   shapecopier(name,type,atoms,rank,shaape)   \
      \
  }else{erraction;} \
