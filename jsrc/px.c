@@ -46,7 +46,7 @@ DF1(jtexec1){F12IP;A z;
 // JT flags controlling print are passed through to jpr
 // Result has assignment flag
 // We check for system locks before executing the sentence
-F1(jtimmex){F12JT;A z;
+F1(jtimmex){F12JT1;A z;
  if(!w)R A0;  // if no string, return error
  if(unlikely(JT(jt,adbreak)[1])!=0)jtsystemlockaccept(jt,LOCKALL);  // if a systemlock has been requested, accept it.
  // When we start a sentence, we need to establish AKGST in locsyms as a shadow of jt->global, because that's

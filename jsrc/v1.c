@@ -305,7 +305,7 @@ B jtequ(J jtfg,A a,A w){F12IP;A x;  // allow inplace request - it has no effect
 }
 
 // Return 1 if a and w match, 0 if not   Passes inplaceability through
-B jtequx(J jtfg,X a,X w){F12IP;R 0==icmpXX(a,w);}
+B jtequx(J jtfg,X a,X w){F12IP0;R 0==icmpXX(a,w);}
 
 // Return 1 if a and w match, 0 if not
 B jteqx(J jtfg,A a,A w){F12IP;A x;  // allow inplace request - it has no effect
@@ -472,7 +472,7 @@ static B jtmatchsub(J jtfg,A a,A w,B* RESTRICT x,I af,I wf,I m,I n,I b1){F12IP;C
 }
 
 static FI2(jtmatchs){A ae,ax,p,q,we,wx,x;B*b,*pv,*qv;D d;I an=0,c,j,k,m,n,*s,*v,wn=0;P*ap,*wp;
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  if(ar>acr||wr>wcr)R rank2ex(a,w,DUMMYSELF,acr,wcr,acr,wcr,jtmatchs);
  if(ar!=wr||memcmpne(AS(a),AS(w),ar*SZI)||!HOMO(AT(a),AT(w)))R num(0);
  GATV0(x,B01,ar,1L); b=BAVn(1L,x); mvc(ar,b,MEMSET00LEN,MEMSET00);
@@ -497,7 +497,7 @@ static FI2(jtmatchs){A ae,ax,p,q,we,wx,x;B*b,*pv,*qv;D d;I an=0,c,j,k,m,n,*s,*v,
 
 // x -:"r y or x -.@-:"r y depending on LSB of jt
 DFI2(jtmatch){A z;I m,n,mn;
- IARG2CR F12JT;
+ IARG2CR F12JT1;
  I eqis0 = !!((I)jtfg&JTNOTMATCH);   // remember whether we are -: or -.@-:
  I isatoms = (-AN(a))&(-AN(w));  // neg if both args have atoms
  if(unlikely(ISSPARSE(AT(a)|AT(w))))R ne(num(eqis0),matchs(a,w));
@@ -532,4 +532,4 @@ DFI2(jtmatch){A z;I m,n,mn;
  RETF(z);
 }    /* a -:"r w */
 
-DF2(jtnotmatch){F12IP;R jtmatch((J)((I)jt+JTNOTMATCH),a,w,0);}   /* a -.@-:"r w */
+DF2(jtnotmatch){F12IP1;R jtmatch((J)((I)jt+JTNOTMATCH),a,w,0);}   /* a -.@-:"r w */

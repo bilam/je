@@ -698,3 +698,50 @@ A jtfindnameinscript(J jt,C *script, C *name, I pos){
  }
  R 0;  // not found or wrong part of speech - error
 }
+
+#if MEMAUDIT&0x80
+void chkinchain(J jt,A x){
+ if(!x)R;
+ I i,j;
+ for(i=0;i<(PLIML-PMINL+1);i++){
+ A p=jt->mempool[i];
+ j=0;
+  while(p){
+   if(j>1000000)SEGFAULT;
+   if(p==x){ fprintf(stderr,"mempool "FMTI" index "FMTI" addr %p\n",i,j,x); SEGFAULT; }
+   p=AFCHAIN(p);
+   j++;
+  }
+ }
+}
+
+void chkchain(A w){
+ if(!(w=QCWORD(w))) R;
+ I j=0;
+ A p=AFCHAIN(w);
+ while(p){
+  if(j>1000000)SEGFAULT;
+  if(0x100>(uintptr_t)p){dump_ADheader(w);SEGFAULT;}
+  else {w=p; p=AFCHAIN(w);j++;}
+ }
+}
+#endif
+
+#if MEMAUDIT&0x80
+void chkapx(J jt, A w, int recur, int qcword){
+ if(!w)R;
+ w=qcword?QCWORD(w):w;
+ if(ISGMP(w)) R;
+#if NORMAHE && NORMAHN>1
+#if NORMAHX==0
+ DO(NORMAHN-1,if(w->p0[i]!=XHEADERFILL){dump_ADheader(w);SEGFAULT;})
+#else
+ DO(NORMAHN-1,if(w->p1[i]!=XHEADERFILL){dump_ADheader(w);SEGFAULT;})
+#endif
+#endif
+ if(AFLAG(w)==0x0000000000020020)R;   // kludge to pass gdic test
+ if(ACISPERM(AC(w)))R;
+ if((!AFLAG(w)&AFVIRTUAL)&&!(AFLAG(w)&AFNJA)&&(AFHRH(w)==0)){dump_ADheader(w);SEGFAULT;}  // pool number must be valid if not GMP block and not mem-mapped
+ if(recur&&AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w),chkapx(jt,wv[i],recur,qcword);)}
+}
+#endif

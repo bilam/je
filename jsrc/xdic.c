@@ -91,6 +91,9 @@ DF2(jthashy){F12IP; ARGCHK2(a,w) RETF(sc(jtcrcy(jt,w)));}
 // is a recursive BOX but AK points past the areas that do not need to be freed, i.e to the boxed arrays
 typedef struct ADic {
  I header[NORMAH+1];  // A header up through s[0].  DIC is always allocated with rank 1.
+#if NORMAHE
+ I filler[32-NORMAHE];
+#endif
  struct Dic { // *** this group of values is updated atomically en bloc to make sure hashelesiz matches hash when possible.
   union {
    struct {
@@ -147,7 +150,11 @@ typedef struct ADic {
   I filler3[SY_64?6:1];  // pad to cacheline (24 words on each system).
  } bloc;
 } DIC;
+#if !NORMAHE
 _Static_assert(sizeof(DIC)==32*SZI,"DIC not 32 Is");
+#else
+_Static_assert(sizeof(DIC)==64*SZI,"DIC not 64 Is");
+#endif
 #if 0   // temp for debugging
 
 /*
@@ -222,7 +229,11 @@ switch (i) {
 static DF1(jtcreatedic1){F12IP;A box,box1;  // temp for box contents
  ARGCHK1(w);
  A a=FAV(self)->fgh[0];  // extract u from the verb
+#if NORMAHE
+ A z; GAT0(z,BOX,32+24,1) AK(z)=offsetof(struct ADic,bloc.hash); AN(z)=AS(z)[0]=7;  // allocate nonrecursive box, long enough to make the total allo big enough in 32- and 64-bit.  Then restrict to the boxes in case of error
+#else
  A z; GAT0(z,BOX,24,1) AK(z)=offsetof(struct ADic,bloc.hash); AN(z)=AS(z)[0]=7;  // allocate nonrecursive box, long enough to make the total allo big enough in 32- and 64-bit.  Then restrict to the boxes in case of error
+#endif
  I flags;  // part of a union that gets overwritten
  if(AT(a)&VERB){  // initial creation
   //  install user's verb, & see if the user wants the internal functions
@@ -533,7 +544,7 @@ A self;   //
 } VIRT;
 
 // fill in virtual block to hold one key
-#define initvirt(v,dic) {AFLAG(v)=AFUNINCORPABLE+AFRO; AT(v)=dic->bloc.ktype; AN(v)=dic->bloc.kaii; AC(v)=ACPERMANENT; AR(v)=AN(dic->bloc.kshape); MCISH(AS(v),IAV1(dic->bloc.kshape),AN(dic->bloc.kshape));}
+#define initvirt(v,dic) {AFLAG(v)=AFUNINCORPABLE+AFRO; AT(v)=dic->bloc.ktype; AN(v)=dic->bloc.kaii; AC(v)=ACPERMANENT; APINIT(v,XHEADERFILL); AR(v)=AN(dic->bloc.kshape); MCISH(AS(v),IAV1(dic->bloc.kshape),AN(dic->bloc.kshape));}
 
 #define biasforcomp {k=(void *)((I)k-(I)&virt.u); kbase=(void *)((I)kbase-(I)&virt.h); }   // bias k and kbase back so that their values can be used in AK of virt.u and virt.v
 #define unbiasforcomp {k=(void *)((I)k+(I)&virt.u); kbase=(void *)((I)kbase+(I)&virt.h); }   // restore original pointers
@@ -1394,17 +1405,14 @@ static UI scantree(I dir,J jt,C *hashtbl, UI4 (*sp)[2], I *flags, I nodeb, UI4 *
   // no more medial children.
   while(1){  // process middle and distal nodes
    // nodex is a middle node, with nodexo as distal child
-#if 7==NORMAH
-   if(zx+8*SZI/4==(LOWESTBIT(zx+8*SZI/4)&-(8*SZI))){  // if current allocation exceeded...  (when size+header size is a power of 2, at least 8*SZI - VIRT holds 32 Is, which is 32/64 UI4s)
+   if((NORMAHE)||zx+(NORMAH+1)*SZI/4==(LOWESTBIT(zx+(NORMAH+1)*SZI/4)&-((NORMAH+1)*SZI))){  // if current allocation exceeded...  (when size+header size is a power of 2, at least (NORMAH+1)*SZI - VIRT holds 32 Is, which is 32/64 UI4s)
       // we could avoid the test if we allocated the max value given by the user, but he might give a very high value
-    A zia; GATV0E(zia,INT4,zx+zx+8*SZI/4,1,goto exiterr); MC(I4AV1(zia),*res,zx*4); *res=I4AV1(zia);  // double & copy
-   }
+#if NORMAHE
+    A zia; GATV0E(zia,INT4,zx+zx+(16)*SZI/4,1,goto exiterr); MC(I4AV1(zia),*res,zx*4); *res=I4AV1(zia);  // double & copy
 #else
-   if(zx+9*SZI/4==(LOWESTBIT(zx+9*SZI/4)&-(9*SZI))){  // if current allocation exceeded...  (when size+header size is a power of 2, at least 8*SZI - VIRT holds 32 Is, which is 32/64 UI4s)
-      // we could avoid the test if we allocated the max value given by the user, but he might give a very high value
-    A zia; GATV0E(zia,INT4,zx+zx+9*SZI/4,1,goto exiterr); MC(I4AV1(zia),*res,zx*4); *res=I4AV1(zia);  // double & copy
-   }
+    A zia; GATV0E(zia,INT4,zx+zx+(NORMAH+1)*SZI/4,1,goto exiterr); MC(I4AV1(zia),*res,zx*4); *res=I4AV1(zia);  // double & copy
 #endif
+   }
 startmin:;  // enter first time going distal only
    // out the middle node
    (*res)[zx]=nodex;  // provisionally put the node out, in order, advance to next slot

@@ -189,6 +189,19 @@ typedef I SI;
 #define JTALIGNBDY      MAX(8192,(MAXTHREADSRND<<LGTHREADBLKSIZE))  // jt is aligned on this boundary - all lower bits are 0 (the value is the size of an SDRAM page, to avoid row precharges while accessing jt)
 
 struct AD {
+#if NORMAHX==0
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin0;  // 
+ S lock0;   // can be used as a lock
+#else  // bigendian, not used
+ S lock0;   // can be used as a lock
+ US origin0;
+#endif
+#if NORMAHN>1
+ I p0[NORMAHN-1];
+#endif
+#endif
  union {
   I k;  // 0
   A chain;   // used when block is on free chain
@@ -200,6 +213,19 @@ struct AD {
              // are changing the block address (i. e. not extending) you must take a system lock before freeing
   A global;      // for user JOB blocks, points to jt->global for the job
  } kchain;
+#if NORMAHX==1
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin1;  // 
+ S lock1;   // can be used as a lock
+#else  // bigendian, not used
+ S lock1;   // can be used as a lock
+ US origin1;
+#endif
+#if NORMAHN>1
+ I p1[NORMAHN-1];
+#endif
+#endif
  FLAGT flag; // 1
  union { // 2
   I m;  // Multi-use field. (1) For NJA/SMM blocks, size of allocation. (2) in syncos, a credential to allow pthread calls
@@ -267,8 +293,25 @@ struct AD {
   // when AFUNIFORMITEMS is set, s[0] holds the number of items in the raze of the block
 };
 // header fits in 7 words
+#if NORMAHE
+#if NORMAHX==0
+_Static_assert(offsetof(AD,kchain.k)==NORMAHN*SZI,"NORMAHX");
+#endif
+#if NORMAHX==1
+_Static_assert(offsetof(AD,flag)==(1+NORMAHN)*SZI,"NORMAHX");
+#endif
+#endif
 
 /* Fields of type A                                                        */
+
+#if NORMAHE
+// NORMAHX only supports 0 .. 1
+#define AMOFFSET (NORMAHN+2)  // I* offset of AM field
+#define AROFFSET (NORMAHN+6)  // I* offset of AR field
+#else
+#define AMOFFSET (2)  // I* offset of AM field
+#define AROFFSET (6)  // I* offset of AR field
+#endif
 
 #define AK(x)           ((x)->kchain.k)        /* offset of ravel wrt x           */
 #define AKASA(x)        ((x)->kchain.chain)       // the AK field for synthetic self blocks
@@ -284,12 +327,84 @@ struct AD {
 #define AN(x)           ((x)->n)        /* # elements in ravel             */
 #define AR(x)           ((x)->r)        /* Rank                            */
 #define ARINIT(x,v)     *(US*)&((x)->r)=(v);       // Rank, clearing the high byte for initialization, and also clearing the lock.  Threadid is set at allocation and never changes
-#define SMMAH           (7L+0)   // number of header words in old-fashioned SMM alloc
-#define NORMAH          (7L+0)   // number of header words in new system
+#define SMMAH           (7L+NORMAHE)   // number of header words in old-fashioned SMM alloc
+#define NORMAH          (7L+NORMAHE)   // number of header words in new system
 #define AS(x)           ((x)->s)        // Because s is an array, AS(x) is a pointer to the shape, which is in s.  The shape is stored in the fixed position s.
 #if PYXES
+#if NORMAHE
+#if NORMAHX==0
+#define AORIGIN(x)      ((x)->origin0)  /* thread origin id                */
+#define ALOCK(x)        ((x)->lock0)    /* thread lock                     */
+#elif NORMAHX==1
+#define AORIGIN(x)      ((x)->origin1)  /* thread origin id                */
+#define ALOCK(x)        ((x)->lock1)    /* thread lock                     */
+#else
 #define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
 #define ALOCK(x)        ((x)->lock)     /* thread lock                     */
+#endif
+#else
+#define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
+#define ALOCK(x)        ((x)->lock)     /* thread lock                     */
+#endif
+#endif
+
+#if NORMAHE && NORMAHN>1 && MEMAUDIT&0x80
+#if NORMAHX==0
+#define APX(x)          ((x)->p0[0]) // extra word in AD
+#if NORMAHN==2
+#define APINIT(x,v)     ((x)->p0[0])=(v);
+#elif NORMAHN==3
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=(v);
+#elif NORMAHN==4
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=(v);
+#elif NORMAHN==5
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=((x)->p0[3])=(v);
+#elif NORMAHN==6
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=((x)->p0[3])=((x)->p0[4])=(v);
+#elif NORMAHN==7
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=((x)->p0[3])=((x)->p0[4])=((x)->p0[5])=(v);
+#elif NORMAHN==8
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=((x)->p0[3])=((x)->p0[4])=((x)->p0[5])=((x)->p0[6])=(v);
+#endif
+#elif NORMAHX==1
+#define APX(x)          ((x)->p1[0]) // extra word in AD
+#if NORMAHN==2
+#define APINIT(x,v)     ((x)->p1[0])=(v);
+#elif NORMAHN==3
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=(v);
+#elif NORMAHN==4
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=(v);
+#elif NORMAHN==5
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=((x)->p1[3])=(v);
+#elif NORMAHN==6
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=((x)->p1[3])=((x)->p1[4])=(v);
+#elif NORMAHN==7
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=((x)->p1[3])=((x)->p1[4])=((x)->p1[5])=(v);
+#elif NORMAHN==8
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=((x)->p1[3])=((x)->p1[4])=((x)->p1[5])=((x)->p1[6])=(v);
+#endif
+#endif
+#define CHKAPX(x)       chkapx(jt,x,1,0)
+#define CHKAPX1(x)      chkapx(jt,x,1,1)
+#define CHKPOOL         DO(PLIML-PMINL+1, A z1=jt->mempool[i]; while(z1){if(z1&&(((uintptr_t)z1)<0x10000))SEGFAULT;CHKAFCHAIN(z1);z1=AFCHAIN(z1);})
+#define CHKPOOL1        DO(PLIML-PMINL+1, chkapx(jt,jt->mempool[i],0,0);)
+#define CHKAFCHAIN(x)   {A x1=x; while(x1){if(x1&&(((uintptr_t)x1)<0x10000))SEGFAULT;chkapx(jt,x1,0,0);x1=AFCHAIN(x1);}}
+#else
+#if MEMAUDIT&0x80
+#define APINIT(x,v)
+#define CHKAPX(x)       chkapx(jt,x,1,0)
+#define CHKAPX1(x)      chkapx(jt,x,1,1)
+#define CHKPOOL         DO(PLIML-PMINL+1, A z1=jt->mempool[i]; while(z1){if(z1&&(((uintptr_t)z1)<0x10000))SEGFAULT;CHKAFCHAIN(z1);z1=AFCHAIN(z1);})
+#define CHKPOOL1        DO(PLIML-PMINL+1, chkapx(jt,jt->mempool[i],0,0);)
+#define CHKAFCHAIN(x)   {A x1=x; while(x1){if(x1&&(((uintptr_t)x1)<0x10000))SEGFAULT;chkapx(jt,x1,0,0);x1=AFCHAIN(x1);}}
+#else
+#define APINIT(x,v)
+#define CHKAPX(x)
+#define CHKAPX1(x)
+#define CHKPOOL
+#define CHKPOOL1
+#define CHKAFCHAIN(x)
+#endif
 #endif
 
 // The following fields are used for private communication between /. and ;. and inside ;. for the fret buffer.
@@ -302,9 +417,14 @@ struct AD {
 #define AKXR(x)         (SZI*(NORMAH+(x)))
 #define WP(t,n,r)       (SMMAH+ r   +(((t&NAME?sizeof(NM):0)+((n)<<bplg(t))+SZI-1)>>LGSZI))  // # I to allocate
 #else
+#if NORMAH & 1   // if NORMAH is odd
 #define AKXR(x)         (SZI*(NORMAH+((x)|1)))
 #define WP(t,n,r)       (SMMAH+(r|1)    +(((t&NAME?sizeof(NM):0)+((n)<<bplg(t))+SZI-1)>>LGSZI))
 /* r|1 to make sure array values are double-word aligned */
+#else
+#define AKXR(x)         (SZI*(NORMAH+(x)))
+#define WP(t,n,r)       (SMMAH+ r   +(((t&NAME?sizeof(NM):0)+((n)<<bplg(t))+SZI-1)>>LGSZI))  // # I to allocate
+#endif
 #endif
 #define AKX(x)          AKXR(AR(x))
 #define RCALIGN         1   // the rank to use to put the data on a cacheline boundary
@@ -884,6 +1004,7 @@ typedef DST* DC;
 // type of 0000 is reserved to indicate 'no value'; 1-11 are the type bits (following LASTNOUNX) in order
 // in the words of an explicit definition the words have QCNAMELKP semantics in bit 4-5:
 #define QCMASK 0x3fLL   // all the LSB flags
+#define QCALIGN(x) ((x + 7) & ~7) // round up to multiple of 8
 #define QCWORD(x) ((A)((I)(x)&~QCMASK))  // the word pointer part of the QC
 #define QCTYPE(x) ((I)(x)&QCMASK)  // the type-code part plus semantics-dependent bits
 #define QCPTYPE(x) ((I)(x)&0xf)  // the type-code part only, 0-15 for the syntax units including assignment
@@ -1347,11 +1468,11 @@ typedef struct __attribute__((aligned(ABDY))) {I memhdr[AKXR(0)/SZI]; union { V 
 // NOTE: for fetching IDs we use the validitymask as a safe place to fetch 0s from.  We know that
 // validitymask[15] will be 0 on any platform
 #define NUMERIC0 ((C*)(validitymask+12))  // 0 0 0 0 for numeric fill
-#define FUNCTYPE0 ((A)(validitymask+12))  // 0 0 0 0, which has a 0 in the AT field
-#define FUNCID0 ((A)(validitymask-4*(!SY_64)))  // 0 in index [15] ([19] for 32-bit), which has a 0 in the id field of V
+#define FUNCTYPE0 ((A)(validitymask+12-NORMAHE))  // 0 0 0 0, which has a 0 in the AT field
+#define FUNCID0 ((A)(validitymask-4*(!SY_64)-NORMAHE))  // 0 in index [15] ([19] for 32-bit), which has a 0 in the id field of V
 #define SYMVAL0 ((L*)(validitymask+12))  // 0 0, which has a 0 in the val field of L
-#define AFLAG0 ((A)(validitymask+12))  // 0 0 0 0, which has a 0 in the flag field and type field of A
-#define ANLEN0 ((A)(validitymask+12-4))  // x x x x 0 0, which has a 0 in the AN field
+#define AFLAG0 ((A)(validitymask+12-NORMAHE))  // 0 0 0 0, which has a 0 in the flag field and type field of A
+#define ANLEN0 ((A)(validitymask+12-4-NORMAHE))  // x x x x 0 0, which has a 0 in the AN field
 #define ZAPLOC0 ((A*)(validitymask+12))  // 0 used as a pointer to a null tpop-stack value
 #define PSTK2NOTFINALASGN ((PSTK*)(validitymask+12)-2)  // 0 in position [2], signifying NOT final assignment (used for errors)
 #define BREAK0 ((C*)(validitymask+12))  // 0 to indicate no ATTN requested

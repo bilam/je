@@ -502,7 +502,7 @@ DFI1(jtcompsum){
 }
 
 // w is an array with 0 items, self is f, result is frame $ ,: identity-verb cell-shape $ atom-of-type
-static DFI1(jtred0){F12IP;A x,z;I f,*s;
+static DFI1(jtred0){F12IPG;A x,z;I f,*s;
  IARG1CR
  f=wr-wcr; s=AS(w);
  if(likely(!ISSPARSE(AT(w)))){GA(x,AT(w),0L,wcr,f+s);}else{GASPARSE(x,AT(w),1,wcr,f+s);}  // x exists only for type and shape
@@ -510,7 +510,7 @@ static DFI1(jtred0){F12IP;A x,z;I f,*s;
 }    /* f/"r w identity case */
 
 // general reduce.  We inplace the results into the next iteration.  This routine cannot inplace its inputs.
-static DFI1(jtredg){F12IP;PROLOG(0020);A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; AD * RESTRICT a;I i,n;
+static DFI1(jtredg){F12IPG;PROLOG(0020);A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; AD * RESTRICT a;I i,n;
  IARG1CR 
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);
  // loop over rank
@@ -963,7 +963,7 @@ static DFI1(jtredstitch){A c,y;I f,n,*s,*v;
   RETF(y);
 }}   /* ,./"r w */
 
-static DF1(jtredstiteach){F12IP;A*wv,y;I n,p,r,t;
+static DF1(jtredstiteach){F12IP0;A*wv,y;I n,p,r,t;
  ARGCHK1(w);
  n=AN(w);
  if(!(2<n&&1==AR(w)&&BOX&AT(w)))R reduce(w,self);

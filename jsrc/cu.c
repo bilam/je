@@ -26,7 +26,7 @@ static A jteverysp(J jt,A w,A fs){A*wv,x,z,*zv;P*wp,*zp;
 
 // NOTE: internal calls to every/every2 use a skeletal fs created by the EVERYFS macro.  It fills in only
 // AK, valencefns, and flag.  If these routines use other fields, EVERYFS will need to fill them in
-DF1(jteveryself){F12IP;R jtevery(jtfg,w,FAV(self)->fgh[0]);}   // replace u&.> with u and process.  Pass inplaceability through
+DF1(jteveryself){F12IP0;R jtevery(jtfg,w,FAV(self)->fgh[0]);}   // replace u&.> with u and process.  Pass inplaceability through
 // u&.>, but w may be a gerund, which makes the result a list of functions masquerading as an aray of boxes
 A jtevery(J jtfg, A wfg, A fs){A * RESTRICT wv,x,z,* RESTRICT zv;
  IARG1 F12IP;  // we claim to support IRS1 but really there's nothing to do for it since the operation is guaranteed atomic

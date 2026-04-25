@@ -1209,19 +1209,19 @@ A jtindexofprehashed(J jtfg,A a,A w,A hs,A self){F12IP;A h,*hv,x,z;IFN fn;I ar,*
 }
 
 // x i. y, with IRS, supports inplacing (in subroutine)
-DFI2(jtindexof){IARG2CR F12IP;
+DFI2(jtindexof){IARG2CR F12IPG;
  if(unlikely(a==ds(CALP))&&likely(AT(w)&LIT)&&likely(acr==1)&&likely(!ISSPARSE(AT(w)))){R jtadotidot(jt,w);}  // catch special case of a. i. y
  R jtindexofsub(jtfg,IIDOT,afg,wfg);  // pass inplaceability through
 }
      /* a i."r w */
 
 // x i: y, with IRS, supports inplacing (in subroutine)
-FI2(jtjico2){IARG2 F12IP;R jtindexofsub(jtfg,IICO,afg,wfg);}  // pass inplaceability through
+FI2(jtjico2){IARG2 F12IPG;R jtindexofsub(jtfg,IICO,afg,wfg);}  // pass inplaceability through
      /* a i:"r w */
 
 // ~: y
 FI1(jtnubsieve){
- IARG1 F12IP;
+ IARG1 F12IPG;
  if(unlikely(ISSPARSE(AT(w))))R nubsievesp(wfg); 
  R indexofsub(INUBSV,wfg,wfg);   // not inplace
 }    /* ~:"r w */

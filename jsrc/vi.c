@@ -1390,16 +1390,16 @@ A jtindexofprehashed(J jtfg,A a,A w,A hs,A self){F12IP;A h,hi,*hv,x,z;AF fn;I ar
 // Now, support for the primitives that use indexof
 
 // x i. y, with IRS
-DFI2(jtindexof){IARG2 F12IP; R indexofsub(IIDOT,afg,wfg);}
+DFI2(jtindexof){IARG2 F12IPG; R indexofsub(IIDOT,afg,wfg);}
      /* a i."r w */
 
 // x i: y, with IRS
-FI2(jtjico2){IARG2 F12IP; R indexofsub(IICO,afg,wfg);}
+FI2(jtjico2){IARG2 F12IPG; R indexofsub(IICO,afg,wfg);}
      /* a i:"r w */
 
 // ~: y
 FI1(jtnubsieve){
- IARG1 F12IP;
+ IARG1 F12IPG;
  if(unlikely(ISSPARSE(AT(w))))R nubsievesp(wfg); 
  R indexofsub(INUBSV,wfg,wfg); 
 }    /* ~:"r w */

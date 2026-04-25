@@ -47,12 +47,36 @@ void jmpn_com (mp_ptr rp, mp_srcptr up, mp_size_t n)
 
 #define XFIXED0(nam, typ,val) \
  struct AD __attribute__((aligned(ABDY))) B##nam= \
- {AKXR(0),typ,0,typ,ACPERMANENT,1,Xrh,(I)val}; \
+ {Xhrg0 AKXR(0),Xhrg1 typ,0,typ,ACPERMANENT,1,Xrh,(I)val}; \
  X nam= (X)&B##nam
 
 /* like struct AD but a data element */
 struct BDV1 {
- I k;I f;I m;I t;I c;I n;
+#if NORMAHX==0
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin0;  // 
+ S lock0;   // can be used as a lock
+#else  // bigendian, not used
+ S lock0;   // can be used as a lock
+ US origin0;
+#endif
+ I p0[NORMAHN-1];
+#endif
+ I k;
+#if NORMAHX==1
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin1;  // 
+ S lock1;   // can be used as a lock
+#else  // bigendian, not used
+ S lock1;   // can be used as a lock
+ US origin1;
+#endif
+ I p1[NORMAHN-1];
+#endif
+ I f;I m;I t;I c;
+ I n;
 #if C_LE
  RANKT r;UC filler;US h;
 #if PYXES && SY_64
@@ -68,7 +92,7 @@ struct BDV1 {
 
 #define XFIXED1(nam, typ,sgn,val) \
  struct BDV1 __attribute__((aligned(ABDY))) B##nam= \
- {XHSZ,typ,0,typ,ACPERMANENT,1,Xrh,sgn,(UI)val}; \
+ {Xhrg0 XHSZ,Xhrg1 typ,0,typ,ACPERMANENT,1,Xrh,sgn,(UI)val}; \
  X nam= (X)&B##nam
 
 XFIXED1(X_1,LIT,-1,1);  // _1x (not an array)
@@ -178,6 +202,7 @@ void jgmpguard(X x) {
  AN(z)= size;           // track amount of requested memory
  AR(z)= 1;              // always rank 1
  AFHRH(z)= FHRHISGMP;   // mark as a GMP psuedo-array
+ APINIT(z,XHEADERFILL);
  /*
  fprintf(stderr,"jmalloc4gmp (%lli) z: %llx (size: %zx), ", ++gmpmallocs, (UI)z, size);
  fprintf(stderr,"AK(z): %llx (%lli), ", AK(z), AK(z));
@@ -191,7 +216,16 @@ void jgmpguard(X x) {
  */
 #if MEMAUDIT&8
  static I lfsr= 1;
- DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if (i!=(0+2)&&i!=(0+6))((I*)(XHSZ+(C*)z))[i]= lfsr;);
+// NOTE!! z[i] dependency on struct AD
+#if NORMAHE
+#if NORMAHX==0
+ DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if ((i>NORMAHN)&&i!=AMOFFSET&&i!=AROFFSET)((I*)(XHSZ+(C*)z))[i]= lfsr;);
+#elif NORMAHX==1
+ DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if (((i==0)||(i>1+NORMAHN))&&i!=AMOFFSET&&i!=AROFFSET)((I*)(XHSZ+(C*)z))[i]= lfsr;);
+#endif
+#else
+ DO(size/SZI, lfsr= (lfsr<<1) ^ (lfsr<0 ?0x1b :0); if (i!=AMOFFSET&&i!=AROFFSET)((I*)(XHSZ+(C*)z))[i]= lfsr;);
+#endif
 #endif
  R CAV1(z);
 }
@@ -242,7 +276,15 @@ static void*jrealloc4gmp(void*ptr, size_t old, size_t new){
 #if MEMAUDIT&8
  static I lfsr= 1;
  if (new > old) {
-  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if (i!=(0+2)&&i!=(0+6))((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#if NORMAHE
+#if NORMAHX==0
+  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if ((i>NORMAHN)&&i!=AMOFFSET&&i!=AROFFSET)((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#elif NORMAHX==1
+  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if (((i==0)||(i>1+NORMAHN))&&i!=AMOFFSET&&i!=AROFFSET)((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#endif
+#else
+  DO((new-old)/SZI, lfsr= (lfsr<<1)^(lfsr<0 ?0x1b :0); if (i!=AMOFFSET&&i!=AROFFSET)((I*)(old+XHSZ+(C*)z))[i]= lfsr;);
+#endif
  }
 #endif
  R CAV1(z);
@@ -301,6 +343,7 @@ X jtXmpzcommon(J jt, mpz_t mpz, I numeric) {
  XSGN(x)= mpz->_mp_size;            // size of number and its sign
  I n= AN(x);                        // length of memory allocated for number
  I sz= XHSZ+n;                      // bytes allocated
+ APINIT(x,XHEADERFILL);
 #if PYXES
  AORIGIN(x)= THREADID1(jt);         // track thread which created this array
 #endif

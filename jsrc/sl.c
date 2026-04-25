@@ -272,8 +272,13 @@ B jtsymbinit(JS jjt){A q,zloc;JJ jt=MTHREAD(jjt);
  // We need a different empty locale for each thread, because the global symbol table is stored there.  Allocate at rank 1, and fill it with copies of emptyloc
  // Unfortunately the layout of the locale uses words 0 and 8, so we can't pack the block for the threads into adjacent cachelines.  Perhaps we should just have the thread
  // allocate an empty locale when it starts, but we have coded this and we will keep it.  Unallocated threrads will drop out of cache.
- GA0(q,INT,16*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][16])((I*)q+8-3);   //  this mangles the header; OK since the block will never be freed
- DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[16*i+8-3]; MC(ei,emptyloc,(8+3)*SZI); AM(ei)=(I)ei;)
+#if NORMAHE
+ GA0(q,INT,32*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][32])((I*)q+(NORMAH+1)-3);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[32*i+(NORMAH+1)-3]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#else
+ GA0(q,INT,16*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][16])((I*)q+(NORMAH+1)-3);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[16*i+(NORMAH+1)-3]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#endif
  jt->locsyms=(A)(*INITJT(jjt,emptylocale))[0];  // init jt->locsyms for master thread to the emptylocale for the master thread.  jt->locsyms in other threads must be initialized for each user task
  R 1;
 }
@@ -302,7 +307,7 @@ F1(jtlocsizes){F12IP;I p,q,*v;
 }    /* 9!:39 default locale size set */
 
 // jtprobe, with readlock taken on stlock
-static A jtprobestlock(J jtfg, C *u,UI4 h){F12JT; READLOCK(ALOCK(JT(jt,stloc))) A z=probex((I)jtfg&255,u,SYMORIGIN,h,JT(jt,stloc)); READUNLOCK(ALOCK(JT(jt,stloc))) R z;}
+static A jtprobestlock(J jtfg, C *u,UI4 h){F12JT0; READLOCK(ALOCK(JT(jt,stloc))) A z=probex((I)jtfg&255,u,SYMORIGIN,h,JT(jt,stloc)); READUNLOCK(ALOCK(JT(jt,stloc))) R z;}
 
 // find the symbol table for locale with name u which has length n and hash/number bucketx
 // locale name is known to be valid
@@ -430,7 +435,18 @@ F1(jtlochdr){F12IP;
   }
  }
  ASSERT(y!=0,EVLOCALE)  // fail if nonexistent
+#if NORMAHE
+ I y1[8];
+ int i=0,j=0;
+  if(!NORMAHX){j=NORMAHN; for(;i<8;i++)y1[i]=((I*)y)[j++];
+ }else{
+  for(;i<NORMAHX;i++)y1[i]=((I*)y)[j++];
+  j=NORMAHX+NORMAHN; for(;i<8;i++)y1[i]=((I*)y)[j++];
+ }
+ R vec(INT,8,y1);  // counts are in s[0]
+#else
  R vec(INT,8,y);  // counts are in s[0]
+#endif
 }
 
 

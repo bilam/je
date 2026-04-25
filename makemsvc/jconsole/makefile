@@ -41,6 +41,16 @@ ifeq (1,$(USE_PYXES))
 else
  COPTION := $(COPTION) /DPYXES=0
 endif
+ifneq ($(NORMAHX),)
+ COPTION := $(COPTION) /DNORMAHX=$(NORMAHX)
+else
+ COPTION := $(COPTION) /DNORMAHX=-1
+endif
+ifneq ($(NORMAHN),)
+ COPTION := $(COPTION) /DNORMAHN=$(NORMAHN)
+else
+ COPTION := $(COPTION) /DNORMAHN=1
+endif
 
 ifeq (arm64,$(TARGET_CPU))
  CF1 = -target arm64-pc-windows-msvc -march=armv8-a+crc+crypto -fno-strict-aliasing -Wno-parentheses -Wno-unused-variable -Wno-pointer-sign -Wno-missing-braces -Wno-missing-field-initializers -Wno-char-subscripts -Wno-unused-value -Wno-unused-function -Wno-empty-body -Wno-sometimes-uninitialized -Wno-string-plus-int -Wno-unknown-pragmas -Wno-delete-non-abstract-non-virtual-dtor -Wno-unused-variable

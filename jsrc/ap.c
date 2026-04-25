@@ -395,13 +395,13 @@ PREFIXPFX(bw1111pfxI, UI,UI, BW1111, bw1111II,R EVOK;)
 
 // This old prefix support is needed for sparse matrices
 
-static DFI1(jtprefix){F12IP;A fs=FAV(self)->fgh[0];
+static DFI1(jtprefix){F12IPG;A fs=FAV(self)->fgh[0];
  IARG1R
  if(unlikely(wcr<wr)){R rank1ex(w,self,wr,jtprefix);}
  R eachl(apv(SETIC(w,wr),1L,1L),w,atop(fs,ds(CTAKE)));
 }    /* f\"r w for general f */
 
-static DFI1(jtgprefix){F12IP;A h,*hv,z,*zv;I m,n,r;
+static DFI1(jtgprefix){F12IPG;A h,*hv,z,*zv;I m,n,r;
  IARG1R
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);
  if(unlikely(wcr<wr)){R rank1ex(w,self,wr,jtgprefix);}
@@ -493,7 +493,7 @@ static DF2(jtginfix){F12IP;A h,*hv,x,z,*zv;I d,m,n;
 #define STATESLASH2 BIT(STATESLASH2X)
 
 // prefix and infix: prefix if a is mark
-static DF2(jtinfixprefix2){F12IP;PROLOG(00202);A fs;I cger[128/SZI];
+static DF2(jtinfixprefix2){F12IP;PROLOG(00202);A fs;I __attribute__((aligned(ABDY))) cger[128/SZI+NORMAHE];
    I wt;
   ARGCHK1(w);
  F2RANKIP(0,RMAX,jtinfixprefix2,self);  // handle rank loop if needed

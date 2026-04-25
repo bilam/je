@@ -83,8 +83,8 @@ static A jtlr2(J jt,A afg,A wfg){
 } 
 
 // ][, with IRS.  Must not call EPILOG because the verb propagates WILLOPEN.  When rank is specified ]"n does not propagate
-FI2(jtleft2){IARG2 F12IP; if(likely((acr&wcr)==RMAX))RETF(RETARG(a)); RETF(jtlr2(jt,wfg,afg));}  // swap a & w, and their ranks
-DFI2(jtright2){IARG2 F12IP;if(likely((acr&wcr)==RMAX))RETF(RETARG(w)); RETF(jtlr2(jt,afg,wfg));}
+FI2(jtleft2){IARG2 F12IPG; if(likely((acr&wcr)==RMAX))RETF(RETARG(a)); RETF(jtlr2(jt,wfg,afg));}  // swap a & w, and their ranks
+DFI2(jtright2){IARG2 F12IPG;if(likely((acr&wcr)==RMAX))RETF(RETARG(w)); RETF(jtlr2(jt,afg,wfg));}
 
 F1(jtright1){F12IP;RETF(RETARG(w));} // no IRS
 // lev, dex, and ident - identity adverb/conjunction  (ident uses the same code as lev)

@@ -165,7 +165,7 @@ static void moveawS(C *zv,C *av,C *wv,I c,I k,I ma,I mw,I arptreset,I wrptreset,
   if(!anotatomic)JMCR(zv,wv,mw,0,endmask) else mvc(mw,zv,k,wv); zv+=mw; --wrptct; wv+=REPSGN(wrptct)&wadv; wrptct+=REPSGN(wrptct)&wrptreset;
  }
 }
-DFI2(jtover){F12IP;AD * RESTRICT z;I replct,framect,ma,mw,p,q,t,zn;
+DFI2(jtover){F12IPG;AD * RESTRICT z;I replct,framect,ma,mw,p,q,t,zn;
  IARG2CR
  if(unlikely(ISSPARSE(AT(a)|AT(w)))){R ovs(afg,wfg);}  // if either arg is sparse, switch to sparse code
  // Examine args for compatibility.  Treat empty arg as boolean if the other is nonempty.  Do not convert until we know whether we have fill, to avoid a second conversion

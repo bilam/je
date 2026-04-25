@@ -9,12 +9,12 @@
 F1(jtqfill){F12IP;PROLOG(976); ASSERTMTV(w); A z=jt->fill; z=z?z:mtm; jt->fill=0; EPILOG(z);}
 
 // here to set jt->fill over the execution of u
-static DF2(jtfitfill12){F12IP;w=EPMONAD?0:w; A fs=FAV(self)->fgh[0]; AF f12=FAV(fs)->valencefns[!!w]; A z; jt->fill=FAV(self)->fgh[1]; z=CALL12IP(w,f12,a,w,fs); jt->fill=0; RETF(z);}
+static DF2(jtfitfill12){F12IP0;w=EPMONAD?0:w; A fs=FAV(self)->fgh[0]; AF f12=FAV(fs)->valencefns[!!w]; A z; jt->fill=FAV(self)->fgh[1]; z=CALL12IP(w,f12,a,w,fs); jt->fill=0; RETF(z);}
 
-static DF1(jtfitct1){F12IP;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; A z; PUSHCCT(FAV(self)->localuse.lu1.cct) z=CALL1IP(f1,  w,fs); POPCCT RETF(z);}  // lD has the complementary ct
+static DF1(jtfitct1){F12IP0;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; A z; PUSHCCT(FAV(self)->localuse.lu1.cct) z=CALL1IP(f1,  w,fs); POPCCT RETF(z);}  // lD has the complementary ct
 
 // IRS passes through - mustn't look at a/w
-#define fitctvector(name,vector) DF2(name){F12IP;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; A z; ASSERT(0<=1.0-FAV(self)->localuse.lu1.cct&&1.0-FAV(self)->localuse.lu1.cct<5.82076609134675e-11,EVLIMIT) PUSHCCT(FAV(self)->localuse.lu1.cct) vector; POPCCT RETF(z);}
+#define fitctvector(name,vector) DF2(name){F12IP1;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; A z; ASSERT(0<=1.0-FAV(self)->localuse.lu1.cct&&1.0-FAV(self)->localuse.lu1.cct<5.82076609134675e-11,EVLIMIT) PUSHCCT(FAV(self)->localuse.lu1.cct) vector; POPCCT RETF(z);}
    // we muct audit ct again in case bivalent >!.f was used
 static fitctvector(jtfitct2, A2LINKIF(FAV(fs)->flag&VFUSEDOK2,jtfg,a,w); z=CALL2IP(f2,a,w,fs))
 fitctvector(jtfitcteq, A2LINKIF(1,jtfg,a,w); z=jtatomic2(jtfg,a,w,fs))
