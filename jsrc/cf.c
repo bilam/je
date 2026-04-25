@@ -265,7 +265,7 @@ static DF2(jthklvl2){DF12IP;
 // table of verbs for executing (compare |).  We back the address to the phantom start of the verb block.
 // each verb is valid ONLY for DD operands, and the pointers to those functions are next to each other in the block nominally for (=|)
 #define PRIMCOMPAREABS(ctype) \
- {{0,0,0,0,ACPERMANENT,0,0},{{.valencefns={0,0},.fgh={0,0,0},.localuse={.lu1.uavandx={0,0},},.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=(ctype)}}}
+ {{Xhr0 0,0,0,0,ACPERMANENT,0,0},{{.valencefns={0,0},.fgh={0,0,0},.localuse={.lu1.uavandx={0,0},},.flag=0,.flag2=0,.lrr=0,.mr=0,.id=0,.lu2.lc=(ctype)}}}
 PRIM cmpabsblk[6] = {
  PRIMCOMPAREABS(VA2CEQABS), //
  PRIMCOMPAREABS(VA2CNEABS), //

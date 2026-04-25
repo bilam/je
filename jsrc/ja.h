@@ -380,10 +380,10 @@
 #define fauxblockINT(z,n,r) I __attribute__((aligned(CACHELINESIZE))) z[(AKXR(r)>>LGSZI)+(n)]   // define a block, big enough to hold n atoms at rank r, for use in fauxINT/fauxBOX
 // Allocate an INT block. z is the zvalue to hold the result; v is the fauxblock to use if n INTs will fit in the fauxblock, which has rank r
 // shape is not filled in, except when rank is 1.  In case this block gets passed into a modifier or boxed, make it PERMANENT (all such references must be destroyed before the block goes out of scope)
-#define fauxINT(z,v,n,r) {if(likely(AKXR(r)+(n)*SZI<=(I)sizeof(v))){z=(A)(v); AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=INT; ACFAUX(z,ACPERMANENT); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);FAUXFILL(z);}else{GATV0(z,INT,(n),(r));FAUXFILL(z);}}
-#define fauxBOX(z,v,n,r) {if(likely(AKXR(r)+(n)*SZI<=(I)sizeof(v))){z=(A)(v); AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=BOX; ACFAUX(z,ACPERMANENT); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);FAUXFILL(z);}else{GATV0(z,BOX,(n),(r));FAUXFILL(z);}}
+#define fauxINT(z,v,n,r) {if(likely(AKXR(r)+(n)*SZI<=(I)sizeof(v))){z=(A)(v); FAUXFILL(z) AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=INT; ACFAUX(z,ACPERMANENT); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);}else{GATV0(z,INT,(n),(r));}}
+#define fauxBOX(z,v,n,r) {if(likely(AKXR(r)+(n)*SZI<=(I)sizeof(v))){z=(A)(v); FAUXFILL(z) AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=BOX; ACFAUX(z,ACPERMANENT); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);}else{GATV0(z,BOX,(n),(r));}}
 // use the following in functions that cannot admit a return.  You must know that the allocated fauxblock is big enough
-#define fauxBOXNR(z,v,n,r) {z=(A)(v); AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=BOX; ACFAUX(z,ACPERMANENT); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);FAUXFILL(z);}
+#define fauxBOXNR(z,v,n,r) {z=(A)(v); FAUXFILL(z) AK(z)=AKXR(r); AFLAGFAUX(z,0) AT(z)=BOX; ACFAUX(z,ACPERMANENT); AN(z)=(n); AR(z)=(RANKT)(r); if(r==1)AS(z)[0]=(n);}
 // v is a block declared by fauxblock, w is the source data, r is the rank.  offset is assumed 0.  c is the initial value for AC.  If the rank is small enough, we use the fauxblock, otherwise
 // we allocate a block.  We assume that the caller will fill in AN, AS.  Block must be marked UNINCORPABLE so it will not free its backer if freed, and so it will not be in-place virtualed,
 // and must be marked recursive if it is of such a type so that if we fa() the block we will not try to recur
@@ -916,8 +916,8 @@ extern void jfree4gmp(void*,size_t);
 #define rasv(x)   {I c=AC(x); if(likely(!ACISPERM(c))){if(c<0)AC(x)=(I)((UI)c+(ACINPLACE+ACUC1));else raincr(x); radescend(x,sv)}}  // better a misbranch than an atomic instruction if c<0.  Could avoid recur check if AC>1
 #define ra(x)   {I c=AC(x); if(likely(!ACISPERM(c))){if(c<0)AC(x)=(I)((UI)c+(ACINPLACE+ACUC1));else raincr(x); radescend(x)}}  // better a misbranch than an atomic instruction if c<0.  Could avoid recur check if AC>1
 #define raN(x,n)   {I c=AC(x); if(likely(!ACISPERM(c))){if(c<0)AC(x)=(I)((UI)c+(ACINPLACE+(n)));else __atomic_fetch_add(&AC(x),(n),__ATOMIC_ACQ_REL); radescend(x)}}  // add N to usecount all at once
-#define racontents(x)   {I c=AC(x); if(MEMAUDIT!=0&&c<0)SEGFAULT; if(likely(!ACISPERM(c))){raincr(x); radescend(x)}}  // Used on contents of box, which cannot have AC<0
-#define rareccontents(x)   {I c=AC(x); if(MEMAUDIT!=0&&c<0)SEGFAULT; if(likely(!ACISPERM(c))){raincr(x);}}  // Used on contents of recursive box, which cannot have AC<0 and does not need recursion
+#define racontents(x)   {I c=AC(x); if(MEMAUDIT&0x7f&&c<0)SEGFAULT; if(likely(!ACISPERM(c))){raincr(x); radescend(x)}}  // Used on contents of box, which cannot have AC<0
+#define rareccontents(x)   {I c=AC(x); if(MEMAUDIT&0x7f&&c<0)SEGFAULT; if(likely(!ACISPERM(c))){raincr(x);}}  // Used on contents of recursive box, which cannot have AC<0 and does not need recursion
 #define raname(x) {if(likely(!ACISPERM(AC(x))))raincr(x);}  // NAME is not inplaceable, seldom local; just add 1.  No traverse needed on ra
 // In the following pos means the block is known to be assigned already, thus usecount>0 and recursive; acv means known non-noun; gbl means global name (always recursive usecount); local means local symtab
 // sv means the last arg is saved/restored through the call; qcg supplies the QC type; uncond means the arg cannot be perm/sparse/need recursion, so just increment

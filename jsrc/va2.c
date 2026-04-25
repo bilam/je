@@ -1261,6 +1261,9 @@ takestats(++stats[0x3e];)
 #if NORMAH*(SY_64?8:4)<(1LL<<(PMINL-1))
   bytes|=(I)1<<(PMINL-1);  // if the memory header itself doesn't meet the minimum buffer length, insert a minimum
 #endif
+#if NORMAHN
+ if (bytes<(1LL<<(PMINL-1))) bytes=((I)1<<(PMINL-1));
+#endif
   RZ(z=jtgaf(jt,CTLZI((UI)bytes)));   // allocate the block, filling in AC AFLAG AM
   AT(z)=rtype(cv); AN(z)=zn; ARINIT(z,fru.lanes[frZRANK]); AK(z)=AKXR(fru.lanes[frZRANK]);  // fill in the rest
   if(unlikely(AT(z)&(CMPX|QP|(NOUN&~DIRECT)))){

@@ -493,7 +493,7 @@ static DF2(jtginfix){DF12IP; MEMCHK2(a,w); A h,*hv,x,z,*zv;I d,m,n;
 #define STATESLASH2 BIT(STATESLASH2X)
 
 // prefix and infix: prefix if a is mark
-static DF2(jtinfixprefix2){DF12IP;PROLOG(00202);A fs;I cger[128/SZI];
+static DF2(jtinfixprefix2){DF12IP; MEMCHK2(a,w); PROLOG(00202);A fs;I __attribute__((aligned(ABDY))) cger[128/SZI+NORMAHN];
    I wt;
   ARGCHK1(w); MEMCHK1(w);
  F2RANKIP(0,RMAX,jtinfixprefix2,self);  // handle rank loop if needed
@@ -711,7 +711,7 @@ static DF2(jtinfixd){DF12IP; MEMCHK2(a,w); A z;C*x,*y;I c=0,d,k,m,n,p,q,r,*s,wr,
  if(likely(q==0)){
   // Each input will be moved once.  We can make a virtual block using ($,)
   // Create the shape of the result
-  fauxblockINT(afaux,4,1); fauxINT(z,afaux,r,1) s=IAV1(z); s[0]=d; s[1]=zc; MCISH(s+2,1+ws,r-2);  // allocate and copy shape
+  fauxblockINT(afaux,4,1); fauxINT(z,afaux,r,1) s=IAV1(z); s[0]=d; s[1]=zc; MCISH(s+2,1+ws,r-2); // allocate and copy shape
   R reshape(z,w);  // return the reshaped w
  }
  GA00(z,wt,d*p*c,r); x=CAVn(r,z); y=CAV(w);   // allocate result, set x=output pointer y=input pointer

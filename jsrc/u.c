@@ -736,6 +736,9 @@ void chkmemchain(J jt,int blockx,I maxdepth,A addr){
 #endif 
   if(!AFHRH(w)){fprintf(stderr,"AFHRH %p AFHRH %d\n",w,AFHRH(w));SEGFAULT;}
   CHKORIGIN(w);
+#if NORMAHN>1
+  DO(NORMAHN-1,if((w->p[i]!=(I)XHEADERFILL)&&(w->p[i]!=(I)DEADBEEF)){fprintf(stderr,"NOT XHEADERFILL/DEADBEEF %p ",w);dump_ADheader(w);SEGFAULT;})
+#endif
   prev=w; w=AFCHAIN(w);
   j++;
  }
@@ -751,24 +754,34 @@ void chkapx(J jt, A w, int recur, int mode){
  if(0x10000>((uintptr_t)w)||(I)w==(I)DEADBEEF){fprintf(stderr,"ADDRESS %p\n",w);SEGFAULT;};
 #endif
  if((mode!=3)&&!ISGMP(w)&&w!=QCWORD(w)){fprintf(stderr,"ADDRESS MISALIGNMENT %p\n",w);SEGFAULT;};
- if(!ACISPERM(AC(w)))CHKORIGIN(w);
  if(1==mode){
+  if(ACISPERM(AC(w))){fprintf(stderr,"MEMPOOL %p AC "FMTX"\n",w,AC(w));SEGFAULT;}
   if(!AFHRH(w)){fprintf(stderr,"AFHRH %p AFHRH %d\n",w,AFHRH(w));SEGFAULT;}
 #if SY_64
   if(AFCHAIN(w)&&(0x0001000000000000LL<((uintptr_t)AFCHAIN(w))||(0x10000>((uintptr_t)AFCHAIN(w)))||(I)AFCHAIN(w)==(I)DEADBEEF)){fprintf(stderr,"ADDRESS %p\n",w);SEGFAULT;}
 #else
   if(AFCHAIN(w)&&((0x10000>((uintptr_t)AFCHAIN(w)))||(I)AFCHAIN(w)==(I)DEADBEEF)){fprintf(stderr,"ADDRESS %p\n",w);SEGFAULT;}
 #endif
+#if NORMAHN>1
+  DO(NORMAHN-1,if((w->p[i]!=(I)XHEADERFILL)&&(w->p[i]!=(I)DEADBEEF)){fprintf(stderr,"NOT XHEADERFILL/DEADBEEF %p ",w);dump_ADheader(w);SEGFAULT;})
+#endif
  } else {
   if((*(I*)w)==(I)DEADBEEF||AFLAG(w)==(I)DEADBEEF||AM(w)==(I)DEADBEEF||AT(w)==(I)DEADBEEF||AC(w)==(I)DEADBEEF||AN(w)==(I)DEADBEEF){fprintf(stderr,"MEMORY DISPOSED  %p\n",w);dump_ADheader(w);SEGFAULT;};
-  if(!AFHRH(w))R;
   if(!ACISPERM(AC(w))){
-   if((!AFLAG(w)&AFVIRTUAL)&&!(AFLAG(w)&AFNJA)&&(AFHRH(w)==0)){fprintf(stderr,"POOL NUMBER %p\n",w);dump_ADheader(w);SEGFAULT;}  // pool number must be valid if not GMP block and not mem-mapped
+   CHKORIGIN(w);
+   if((!AFLAG(w)&AFVIRTUAL)&&!(AFLAG(w)&AFNJA)&&!(AFLAG(w)&ACUC1)&&(AFHRH(w)==0)){fprintf(stderr,"POOL NUMBER %p\n",w);dump_ADheader(w);SEGFAULT;}  // pool number must be valid if not GMP block and not mem-mapped
    if(jt)DO(PLIML-PMINL+1, chkmemchain(jt,i,3,w);)
   }
-  if(ISGMP(w))R;  // component not allocated by J
-  if(!(AFLAG(w)&AFUNAUDITABLE))R;  // block has gaps and cannot be audited
-  if((!ACISPERM(AC(w)))&&recur&&AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w), chkapx(jt,QCWORD(wv[i]),recur,mode);)}
+#if NORMAHN>1
+  DO(NORMAHN-1,if(w->p[i]!=(I)XHEADERFILL){fprintf(stderr,"XHEADERFILL %p: ",w);dump_ADheader(w);SEGFAULT;})
+#endif
+//  if(ACISPERM(AC(w)))R; // permanent need not audit
+  if(ISGMP(w))R;        // component not allocated by J
+  if(AFLAG(w)&AFNJA)R;  // component not allocated by J
+  if(AFLAG(w)&PYX)R;    // no need to open PYXES
+  if(AFLAG(w)&AFUNAUDITABLE)R;  // block has gaps and cannot be audited
+  if(AFLAG(w)&AFVIRTUAL+BOX)R;  // workaround xdic
+  if(recur&&AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w), chkapx(jt,QCWORD(wv[i]),recur,mode);)}
  }
 }
 #endif

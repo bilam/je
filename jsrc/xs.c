@@ -91,7 +91,7 @@ PROLOG(000);
 #endif
   NOUNROLL while(x){RESETERR x=jgets(GETSPROMPT); if(x==0)break; SETTRACK z=jtimmea(jtfg,x); if(jt->jerr)break; tpop(old);}   // no tpop on untrapped error
 #if SEEKLEAK
-  I endbytes=spbytesinuse(); if(endbytes-stbytes > 1000)printf("%lld bytes lost\n",endbytes-stbytes);
+  I endbytes=spbytesinuse(); if(endbytes-stbytes > 1000)printf(""FMTI" bytes lost\n",endbytes-stbytes);
 #endif
   }
  }
