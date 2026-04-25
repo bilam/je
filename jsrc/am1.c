@@ -73,7 +73,7 @@ static B jtipart(J jt,A z,A ind,A*i1,A*i2){A*iv,p,*pv,q,*qv,x;B*b;I c,d,n;P*zp;
  R 1;
 }    /* partition index into sparse and dense parts */
 
-static A jtdcube(J jt,A z,A i2){A*iv,x,y;I i,m,n,*s;P*zp;D rkblk[16];
+static A jtdcube(J jt,A z,A i2){A*iv,x,y;I i,m,n,*s;P*zp;D rkblk[16+NORMAHE];
  n=AN(i2); iv=AAV(i2); 
  zp=PAV(z); x=SPA(zp,x); s=1+AS(x);
  m=1; y=C(iv[n-1]); if(y==ds(CACE))RZ(y=IX(s[n-1]));

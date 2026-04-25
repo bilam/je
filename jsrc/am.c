@@ -52,7 +52,7 @@ D*wd=(D*)wc,*zd=(D*)zc;
                        zv[i]=*(i+(T*)aa[j]);); break;}
 
 // Handle the case statement abc =: pqr} x,...,y,:z, with in-place operation if pqr is Boolean and abc appears on the right
-F1(jtcasev){F12IP;A b,*u,*v,w1,x,y,z;B*bv,p,q;I*aa,c,*iv,j,m,n,r,*s,t;
+F1(jtcasev){F12IP1;A b,*u,*v,w1,x,y,z;B*bv,p,q;I*aa,c,*iv,j,m,n,r,*s,t;
  ARGCHK1(w);
  RZ(w1=ca(w)); u=AAV(w1);   // make a copy of the input, point to its value
  // the input is a boxed list.  The last 3 values are (name pqr);(index in which abc appeared in the x,y,... or -1 if it didn't);(original sentence queue including flags)

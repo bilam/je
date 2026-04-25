@@ -10,7 +10,7 @@
 #endif
 
 // This is the derived verb for f/. y
-static DF1(jtoblique){F12IP;A x,y,z;I m,n,r;D rkblk[16];
+static DF1(jtoblique){F12IP;A x,y,z;I m,n,r;D rkblk[16+NORMAHE];
  ARGCHK1(w);
  r=AR(w);  // r = rank of w
  // create y= ,/ w - the _2-cells of w arranged in a list (virtual block)

@@ -150,7 +150,7 @@ A jtenqueue(J jt,A a,A w,I env){A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
    // If first char is ASCII, see if the form including inflections is a primitive;
    // if so, that is the word to put into the queue.  No need to copy it
    // Since the address of the shared primitive block is used, we can use that to compare against to identify the primitive later
-   // We keep track of We keep track of whether }~ was found.  If } starts the sentence, this will compare garbage, but
+   // We keep track of We keep track of whether }~ was found.  If {0 } starts the sentence, this will compare garbage, but
    // without risk of program check
    if((-env & SGNIF(AT(y),ASGNX))<0) {
     // If the word is an assignment, use the appropriate assignment block, depending on the previous word and the environment

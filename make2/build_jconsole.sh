@@ -212,11 +212,18 @@ else
  common="$common -DEMU_AVX2=0"
 fi
 
+NORMAHX="${NORMAHX:=-1}"
+
 if [ $USE_PYXES -eq 1 ]; then
  common="$common -DPYXES=1"
+ case "$j64x" in
+  j32*) NORMAHX="${NORMAHX:=0}" ;;
+ esac
 else
  common="$common -DPYXES=0"
 fi
+
+common="$common -DNORMAHX=${NORMAHX}"
 
 if [ -n "$MAX_ERRORS" ]; then
   if [ -z "${compiler##*gcc*}" ] || [ -z "${CC##*gcc*}" ]; then

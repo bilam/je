@@ -699,3 +699,41 @@ A jtfindnameinscript(J jt,C *script, C *name, I pos){
  }
  R 0;  // not found or wrong part of speech - error
 }
+
+void chkinchain(J jt,A x){
+ if(!x)R;
+ I i,j;
+ for(i=0;i<(PLIML-PMINL+1);i++){
+ A p=jt->mempool[i];
+ j=0;
+  while(p){
+   if(j>100000)SEGFAULT;
+   if(p==x){ fprintf(stderr,"mempool "FMTI" index "FMTI" addr %p\n",i,j,x); SEGFAULT; }
+   p=AFCHAIN(p);
+   j++;
+  }
+ }
+}
+
+void chkchain(A w){
+ if(!(w=QCWORD(w))) R;
+ I j=0;
+ A p=AFCHAIN(w);
+ while(p){
+  if(j>100000)SEGFAULT;
+  if(0x100>(uintptr_t)p){dump_ADheader(w);SEGFAULT;}
+  else {w=p; p=AFCHAIN(w);j++;}
+ }
+}
+
+#if NORMAHE
+void chkapx(A w){
+#if MEMAUDIT&0x80
+ if(!w)R;
+// if(!ISGMP(w))if(!(w=QCWORD(w))) R;
+ if(APX(w)!=XHEADERFILL){dump_ADheader(w);SEGFAULT;}
+ if(ISGMP(w)) R;
+ if(AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w),chkapx(wv[i]);)}
+#endif
+}
+#endif

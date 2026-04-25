@@ -529,6 +529,30 @@ F1(jtcpufeature){F12IP;
 #else
   R num(7);
 #endif
+ } else if(!strcasecmp(CAV(w),"NORMAHE")) {
+#ifdef NORMAHE
+  R sc(NORMAHE);
+#else
+  R num(0);
+#endif
+ } else if(!strcasecmp(CAV(w),"NORMAHN")) {
+#ifdef NORMAHN
+  R sc(NORMAHN);
+#else
+  R num(1);
+#endif
+ } else if(!strcasecmp(CAV(w),"NORMAHX")) {
+#ifdef NORMAHX
+  R sc(NORMAHX);
+#else
+  R num(-1);
+#endif
+ } else if(!strcasecmp(CAV(w),"XHEADERFILL")) {
+#ifdef XHEADERFILL
+  R sc(XHEADERFILL);
+#else
+  R num(0);
+#endif
  }
 #if defined(__aarch64__)
  if     (!strcasecmp(CAV(w),"FP"      )) R num(!!(getCpuFeatures()&ARM_HWCAP_FP ));

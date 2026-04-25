@@ -5,7 +5,7 @@
 
 #include "j.h"
 
-B jtscheck(J jt,A w){A a,e,x,y;I k1,k2,r,*s,t;P*p;D rkblk[16];
+B jtscheck(J jt,A w){A a,e,x,y;I k1,k2,r,*s,t;P*p;D rkblk[16+NORMAHE];
  ARGCHK1(w);
  r=AR(w); s=AS(w); t=AT(w);
  if(!ISSPARSE(t))R 1;

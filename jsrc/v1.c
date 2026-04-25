@@ -305,7 +305,7 @@ B jtequ(J jtfg,A a,A w){F12IP;A x;  // allow inplace request - it has no effect
 }
 
 // Return 1 if a and w match, 0 if not   Passes inplaceability through
-B jtequx(J jtfg,X a,X w){F12IP;R 0==icmpXX(a,w);}
+B jtequx(J jtfg,X a,X w){F12IP0;R 0==icmpXX(a,w);}
 
 // Return 1 if a and w match, 0 if not
 B jteqx(J jtfg,A a,A w){F12IP;A x;  // allow inplace request - it has no effect

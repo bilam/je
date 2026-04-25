@@ -277,7 +277,7 @@ static A jtmnomx(J jt,I m,A w){A s,*wv,x,z=w,*zv;I i,n,r;
  R z;
 }    /* standardize multinomial right arg */
 
-static F2(jtpoly2a){F12IP;A c,e,x;I m;D rkblk[16];
+static F2(jtpoly2a){F12IP;A c,e,x;I m;D rkblk[16+NORMAHE];
  ARGCHK2(a,w);
  m=AS(a)[1]-1;
  ASSERT(AT(a)&NUMERIC,EVDOMAIN);
