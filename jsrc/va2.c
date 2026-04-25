@@ -1624,7 +1624,7 @@ static DF2(jtsumattymes1E){F12IP;
 
 // +/@:*"1 with IRS, also +/@:*"1!.0 on float args and +/@:*"1!.1 producing a float extended-precision result, a length-2 list per product
 DFI2(jtsumattymes1){
- IARG2CR F12IP;
+ IARG2CR F12IPG;
 
  I fit=0; if(unlikely(FAV(self)->id==CFIT))fit=1+FAV(self)->localuse.lu1.fittype;  // fit 0=normal, 1=!.0, 2=!.1
  I *as=AS(a), *ws=AS(w);
@@ -1917,8 +1917,8 @@ forcess:;  // branch point for rank-0 singletons from above, always with atomic 
  }
 }
 
-DFI2(jtexpn2  ){IARG2 F12IP; if(unlikely(((((I)AR(w)-1)&SGNIF(AT(w),FLX))<0)))if(unlikely(0.5==DAV(w)[0]))R sqroot(a);  R jtatomic2(jtfg,afg,wfg,self);}  // use sqrt hardware for sqrt.  Only for atomic w. 
-DFI2(jtresidue){IARG2 F12IP; I intmod; if(!((AT(a)|AT(w))&((NOUN|SPARSE)&~INT)|AR(a))&&(intmod=IAV(a)[0], (intmod&-intmod)+(intmod<=0)==0))R intmod2(w,intmod); R jtatomic2(jtfg,afg,wfg,self);}  // special case for x an atom power of 2 
+DFI2(jtexpn2  ){IARG2 F12IPG; if(unlikely(((((I)AR(w)-1)&SGNIF(AT(w),FLX))<0)))if(unlikely(0.5==DAV(w)[0]))R sqroot(a);  R jtatomic2(jtfg,afg,wfg,self);}  // use sqrt hardware for sqrt.  Only for atomic w. 
+DFI2(jtresidue){IARG2 F12IPG; I intmod; if(!((AT(a)|AT(w))&((NOUN|SPARSE)&~INT)|AR(a))&&(intmod=IAV(a)[0], (intmod&-intmod)+(intmod<=0)==0))R intmod2(w,intmod); R jtatomic2(jtfg,afg,wfg,self);}  // special case for x an atom power of 2 
 
 
 // These are the unary ops that are implemented using a canned argument

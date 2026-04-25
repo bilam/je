@@ -390,7 +390,7 @@
 // PRISTINE is inherited from the backer (this is not done in virtual(), perhaps it should), because we know the block will never be inplaced unless it was inplaceable at the time this fauxblock was
 // created, which means it is not extant anywhere it could be assigned or extracted from.
 #define fauxvirtualcommon(z,v,w,r,c,err) {if(likely((r)<=4)){z=ABACK(w); AK((A)(v))=(CAV(w)-(C*)(v)); AT((A)(v))=AT(w); AR((A)(v))=(RANKT)(r); z=AFLAG(w)&AFVIRTUAL?z:(w); \
-                              AFLAG((A)(v))=AFVIRTUAL|AFUNINCORPABLE|(AFLAG(z)&AFPRISTINE)|(AT(w)&TRAVERSIBLE); ABACK((A)(v))=z; z=(A)(v); ACFAUX(z,(c))} \
+                              AFLAG((A)(v))=AFVIRTUAL|AFUNINCORPABLE|(AFLAG(z)&AFPRISTINE)|(AT(w)&TRAVERSIBLE); ABACK((A)(v))=z; z=(A)(v); ACFAUX(z,(c));} \
                               else{if(unlikely((z=virtual((w),0,(r)))==0))err; AFLAGORLOCAL(z,AFUNINCORPABLE) if((c)!=ACUC1)ACINIT(z,(c))} }
 #define fauxvirtual(z,v,w,r,c) fauxvirtualcommon(z,v,w,r,c,R 0)
 // for function definition we don't call a subroutine, because that results in pushing all the arguments, popping them, and storing them back.
@@ -918,8 +918,8 @@ extern void jfree4gmp(void*,size_t);
 #define rasv(x)   {I c=AC(x); if(likely(!ACISPERM(c))){if(c<0)AC(x)=(I)((UI)c+(ACINPLACE+ACUC1));else raincr(x); radescend(x,sv)}}  // better a misbranch than an atomic instruction if c<0.  Could avoid recur check if AC>1
 #define ra(x)   {I c=AC(x); if(likely(!ACISPERM(c))){if(c<0)AC(x)=(I)((UI)c+(ACINPLACE+ACUC1));else raincr(x); radescend(x)}}  // better a misbranch than an atomic instruction if c<0.  Could avoid recur check if AC>1
 #define raN(x,n)   {I c=AC(x); if(likely(!ACISPERM(c))){if(c<0)AC(x)=(I)((UI)c+(ACINPLACE+(n)));else __atomic_fetch_add(&AC(x),(n),__ATOMIC_ACQ_REL); radescend(x)}}  // add N to usecount all at once
-#define racontents(x)   {I c=AC(x); if(MEMAUDIT!=0&&c<0)SEGFAULT; if(likely(!ACISPERM(c))){raincr(x); radescend(x)}}  // Used on contents of box, which cannot have AC<0
-#define rareccontents(x)   {I c=AC(x); if(MEMAUDIT!=0&&c<0)SEGFAULT; if(likely(!ACISPERM(c))){raincr(x);}}  // Used on contents of recursive box, which cannot have AC<0 and does not need recursion
+#define racontents(x)   {I c=AC(x); if(MEMAUDIT&0x7f&&c<0)SEGFAULT; if(likely(!ACISPERM(c))){raincr(x); radescend(x)}}  // Used on contents of box, which cannot have AC<0
+#define rareccontents(x)   {I c=AC(x); if(MEMAUDIT&0x7f&&c<0)SEGFAULT; if(likely(!ACISPERM(c))){raincr(x);}}  // Used on contents of recursive box, which cannot have AC<0 and does not need recursion
 #define raname(x) {if(likely(!ACISPERM(AC(x))))raincr(x);}  // NAME is not inplaceable, seldom local; just add 1.  No traverse needed on ra
 // In the following pos means the block is known to be assigned already, thus usecount>0 and recursive; acv means known non-noun; gbl means global name (always recursive usecount); local means local symtab
 // sv means the last arg is saved/restored through the call; qcg supplies the QC type; uncond means the arg cannot be perm/sparse/need recursion, so just increment
@@ -1258,7 +1258,7 @@ extern void jfree4gmp(void*,size_t);
 // We can have an inplaceable but recursible block, if it was gc'd.  We never push a PERMANENT block, so that we won't try to free it
 // NOTE that PERMANENT blocks are always marked traversible if they are of traversible type, so we will not recur on them internally
 // If this fails, the block is not pushed but the system can keep running
-#define tpushcommon(x,cksparse,suffix) {if(likely(!ACISPERM(AC(x)))){I tt=AT(x); A *pushp=jt->tnextpushp; *pushp++=(x); \
+#define tpushcommon(x,cksparse,suffix) {if(likely(!ACISPERM(AC(x)))){CHKORIGIN(x); I tt=AT(x); A *pushp=jt->tnextpushp; *pushp++=(x); CHKORIGIN(*(pushp-1));\
                               if(unlikely(!((I)pushp&(NTSTACKBLOCK-1)))){RZ(pushp=tg(pushp));} if(unlikely(cksparse&&ISSPARSE(tt)))RZ(pushp=jttpush(jt,(x),tt,pushp)); jt->tnextpushp=pushp; suffix}}
 #define tpush(x)              tpushcommon(x,1,if(MEMAUDIT&2)audittstack(jt);)
 #define tpushna(x)            tpushcommon(x,1,)   // suppress audit

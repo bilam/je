@@ -179,13 +179,13 @@ SUFFIXPFX(bw1111sfxI, UI,UI, BW1111, bw1111II,R EVOK;)
 
 
 static DFI1(jtsuffix){A fs=FAV(self)->fgh[0];
- IARG1R F12IP;
+ IARG1R F12IPG;
  if(wcr<wr)R rank1ex(w,self,wcr,jtsuffix);
  R eachl(IX(SETIC(w,wcr)),w,atop(fs,ds(CDROP)));
 }    /* f\."r w for general f */
 
 static DFI1(jtgsuffix){A h,*hv,z,*zv;I m,n;
- IARG1R F12IP;
+ IARG1R F12IPG;
  if(wcr<wr)R rank1ex(w,self,wcr,jtgsuffix);
  SETIC(w,n); 
  h=FAV(self)->fgh[2]; hv=AAV(h); m=AN(h);
@@ -203,7 +203,7 @@ static DFI1(jtgsuffix){A h,*hv,z,*zv;I m,n;
  }}
 
 static DFI1(jtssg){A a,z;I i,n;
- IARG1CR F12IP;PROLOG(0020);
+ IARG1CR F12IPG;PROLOG(0020);
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);
  // loop over rank - we claim to handle IRS
  if(wcr<wr)R rank1ex(w,self,wcr,jtssg);
@@ -310,7 +310,7 @@ A jtscansp(J jt,A wfg,A self,AF sf){A e,ee,x,z;B*b;I f,m,j,t;P*wp,*zp;
 }    /* f/\"r or f/\."r on sparse w */
 
 static DFI1(jtsscan){A y,z;I d,m,n,t,wn,*ws,wt;
- IARG1CR F12IP;
+ IARG1CR F12IPG;
  wt=AT(w); if(unlikely(ISSPARSE(wt)))R scansp(wfg,self,jtsscan);
  wn=AN(w); ws=AS(w);
  I f=wr-wcr; PROD(m,f,ws); PROD(d,wcr-1,f+ws+1); I *nn=&ws[f]; nn=wcr?nn:I1mem; n=*nn;   // will not be used if WN==0, so PROD ok.  n is # items along the selected rank

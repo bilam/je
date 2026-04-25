@@ -1006,7 +1006,7 @@ static CR condrange2(US *s,I n,I min,I max,I maxrange){CR ret;I i;US x;
 
 A jtindexofsub(J jtfg,I mode,A afg,A wfg){A h=0,hi=mtv,z;B mk=wfg==mark,th;fauxblockINT(zfaux,1,0);
     I ac,af,ak,an,*as,at,datamin,f,f1,k,k1,n,r,*s,t,wc,wf,wk,wn,*ws,wt,zn;UI c,m,p;I forkeyresult;
- IARG2CR F12JT;PROLOG(0079);
+ IARG2CR F12JT0;PROLOG(0079);
  // ?r=rank of argument, ?cr=rank the verb is applied at, ?f=length of frame, ?s->shape, ?t=type, ?n=#atoms
  // mk is set if w argument is omitted (we are just prehashing the a arg)   note: mark is an atom
  af=ar-acr; wf=wr-wcr;
@@ -1390,16 +1390,16 @@ A jtindexofprehashed(J jtfg,A a,A w,A hs,A self){F12IP;A h,hi,*hv,x,z;AF fn;I ar
 // Now, support for the primitives that use indexof
 
 // x i. y, with IRS
-DFI2(jtindexof){IARG2 F12IP; R indexofsub(IIDOT,afg,wfg);}
+DFI2(jtindexof){IARG2 F12IPG; R indexofsub(IIDOT,afg,wfg);}
      /* a i."r w */
 
 // x i: y, with IRS
-FI2(jtjico2){IARG2 F12IP; R indexofsub(IICO,afg,wfg);}
+FI2(jtjico2){IARG2 F12IPG; R indexofsub(IICO,afg,wfg);}
      /* a i:"r w */
 
 // ~: y
 FI1(jtnubsieve){
- IARG1 F12IP;
+ IARG1 F12IPG;
  if(unlikely(ISSPARSE(AT(w))))R nubsievesp(wfg); 
  R indexofsub(INUBSV,wfg,wfg); 
 }    /* ~:"r w */
@@ -1432,7 +1432,7 @@ F2(jtless){F12IP;A x=w;I ar,at,k,r,*s,wr,*ws,wt;
 
 // x e. y
 FI2(jteps){
- IARG2CR F12IP;
+ IARG2CR F12IPG;
  if(ISSPARSE(AT(a)|AT(w)))R lt(irs2(w,a,0L,wcr,acr,jtindexof),sc(wcr?*(AS(w)+AR(w)-wcr):1));  // for sparse, implement as (# cell of y) > y i. x
  R indexofsub(IEPS,wfg,afg);  // swap args (& ranks)
 }    /* a e."r w */
