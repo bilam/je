@@ -119,7 +119,11 @@ static UI jthiau(J jt,A y){I m,n;UI z=2038074751;X*u,x;
  if(!n)R 0;
  switch(CTTZ(AT(y))){
   case RATX:  m+=n;  /* fall thru */
+#if !SY_64 && !(NORMAH & 1)   // AS(x) != AV1(x)-1
+  case XNUMX: u=XAV(y); DQ(m, x=*u++; AS(x)[1]=AS(x)[0]; z+=hicnz(SZI+XLIMBLEN(x)*SZI,UAV(x)-SZI);); R z; /* make sure value of shape immediately preceeds limbs, sign is in shape */
+#else
   case XNUMX: u=XAV(y); DQ(m, x=*u++; z+=hicnz(SZI+XLIMBLEN(x)*SZI,UAV(x)-SZI);); R z; /* shape immediately preceeds limbs, sign is in shape */
+#endif
   case INTX:                                    z =hicnz(n    *SZI,UAV(y));   R z;
   default:   R hic(n<<bplg(AT(y)),UAV(y));
 }}

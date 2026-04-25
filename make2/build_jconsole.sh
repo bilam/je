@@ -129,6 +129,7 @@ case "$jplatform/$j64x" in
   USE_LINENOISE=0
   USE_OPENMP=0
   USE_PYXES=0
+  NORMAHN=0
   ;;
 esac
 case "$j64x" in
@@ -221,11 +222,15 @@ else
  common="$common -DEMU_AVX2=0"
 fi
 
+NORMAHN="${NORMAHN:=0}"
+
 if [ $USE_PYXES -eq 1 ]; then
  common="$common -DPYXES=1"
 else
  common="$common -DPYXES=0"
 fi
+
+common="$common -DNORMAHN=${NORMAHN}"
 
 if [ -n "$MAX_ERRORS" ]; then
   if [ -z "${compiler##*gcc*}" ] || [ -z "${CC##*gcc*}" ]; then

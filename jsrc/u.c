@@ -724,7 +724,11 @@ void chkmemchain(J jt,int blockx,I maxdepth,A addr){
 #else
   if(0x10000>(uintptr_t)w){fprintf(stderr,"mempool %d index "FMTI" ADDRESS %p prev %p\n",blockx,j,w,prev); SEGFAULT; }
 #endif
-  if(addr&&w==addr){fprintf(stderr,"mempool %d index "FMTI" COLLISON %p prev %p\n",blockx,j,addr,prev); SEGFAULT; }
+  if(addr){ UI addrz= (uintptr_t)addr+FHRHSIZE(AFHRH(addr))-1; UI wz= (uintptr_t)w+FHRHSIZE(AFHRH(w))-1;
+   if(w==addr){fprintf(stderr,"mempool %d index "FMTI" COLLISON %p prev %p\n",blockx,j,addr,prev); SEGFAULT; }
+   else if(((uintptr_t)w>(uintptr_t)addr)&&((addrz>=(uintptr_t)w)&&(addrz<=wz))){fprintf(stderr,"mempool %d index "FMTI" CORRUPTION w %p addr %p prev %p ,FHRHSIZE(AFHRH(w)) 0x"FMTX"  FHRHSIZE(AFHRH(addr)) 0x"FMTX" \n",blockx,j,w,addr,prev,FHRHSIZE(AFHRH(w)),FHRHSIZE(AFHRH(addr))); SEGFAULT; }
+   else if(((uintptr_t)w<(uintptr_t)addr)&&(((uintptr_t)addr>=(uintptr_t)w)&&((uintptr_t)addr<=wz))){fprintf(stderr,"mempool %d index "FMTI" CORRUPTION w %p addr %p prev %p ,FHRHSIZE(AFHRH(w)) 0x"FMTX"  FHRHSIZE(AFHRH(addr)) 0x"FMTX" \n",blockx,j,w,addr,prev,FHRHSIZE(AFHRH(w)),FHRHSIZE(AFHRH(addr))); SEGFAULT; }
+  }
 #if SY_64
   if(w&&(0x0001000000000000LL<((uintptr_t)w)||(0x10000>((uintptr_t)w))||((uintptr_t)w)==0xdeadbeefdeadbeef||((uintptr_t)w)==0xfeeefeeefeeefeee)){fprintf(stderr,"ADDRESS %p\n",w);SEGFAULT;}
 #else
@@ -732,6 +736,9 @@ void chkmemchain(J jt,int blockx,I maxdepth,A addr){
 #endif 
   if(!AFHRH(w)){fprintf(stderr,"AFHRH %p AFHRH %d\n",w,AFHRH(w));SEGFAULT;}
   CHKORIGIN(w);
+#if NORMAHN>1
+  DO(NORMAHN-1,if(w->p[i]!=XHEADERFILL){fprintf(stderr,"XHEADERFILL %p ",w);dump_ADheader(w);SEGFAULT;})
+#endif
   prev=w; w=AFCHAIN(w);
   j++;
  }
@@ -754,6 +761,9 @@ void chkapx(J jt, A w, int recur, int mode){
   if(jt)DO(PLIML-PMINL+1, chkmemchain(jt,i,3,w);)
  }
  CHKORIGIN(w);
+#if NORMAHN>1
+ DO(NORMAHN-1,if(w->p[i]!=XHEADERFILL){fprintf(stderr,"XHEADERFILL %p: ",w);dump_ADheader(w);SEGFAULT;})
+#endif
  if(1==mode){
   if(!AFHRH(w)){fprintf(stderr,"AFHRH %p AFHRH %d\n",w,AFHRH(w));SEGFAULT;}
 #if SY_64

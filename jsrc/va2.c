@@ -1264,9 +1264,6 @@ takestats(++stats[0x3e];)
 #if NORMAHN
  if (bytes<(1LL<<(PMINL-1))) bytes=((I)1<<(PMINL-1));
 #endif
-#if !SY_64 && NORMAHN==5
-  bytes+=8;   // kludge , bytes is too short when NORMAHN==5
-#endif
   RZ(z=jtgaf(jt,CTLZI((UI)bytes)));   // allocate the block, filling in AC AFLAG AM
   AT(z)=rtype(cv); AN(z)=zn; ARINIT(z,fru.lanes[frZRANK]); AK(z)=AKXR(fru.lanes[frZRANK]);  // fill in the rest
   if(unlikely(AT(z)&(CMPX|QP|(NOUN&~DIRECT)))){

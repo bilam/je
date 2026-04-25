@@ -2,7 +2,7 @@ name: JE
 
 on:
  push:
-  branches: [ master ]
+  branches: [ master,NOR2 ]
 
 # trigger workflow on file change
 #on:
@@ -13,17 +13,18 @@ on:
 # if: ${{ false }}
 
 env:
- DEBUGLEVEL: 0
+ DEBUGLEVEL: 3
  OPTL: -O2
- OPTLD: -O2
+ OPTLD: -O0
  NO_UNDEFINED: 1
- _MEMAUDIT: 0
+ _MEMAUDIT: 0x80
  AUDITEXECRESULTS: 0
  USE_OPENMP: 0
  USE_PYXES: 1
  USE_EMU_AVX: 1
  RELEASE: ${{ true }}
- WEBHOOK: ${{ true }}
+ WEBHOOK: ${{ false }}
+ NORMAHN: 5
 
 jobs:
 
@@ -83,6 +84,7 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -147,6 +149,7 @@ jobs:
       CC: gcc
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -189,7 +192,8 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
       OPTL: ${{ env.OPTL }}
@@ -203,7 +207,7 @@ jobs:
    - name: Test JE (Linux32)
      env:
       DEBUGCMD: gdb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
@@ -253,7 +257,8 @@ jobs:
       CC: gcc
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
       OPTL: ${{ env.OPTL }}
@@ -267,7 +272,7 @@ jobs:
    - name: Test JE (Linux32 gcc)
      env:
       DEBUGCMD: gdb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
@@ -276,6 +281,7 @@ jobs:
 # macOS ----------------------------------------------------------------
  jemacos:
   name: JE (macOS)
+  if: ${{ false }}
   needs: all
   runs-on: macos-15-intel
   steps:
@@ -291,6 +297,7 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -352,6 +359,7 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -413,6 +421,7 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -474,7 +483,8 @@ jobs:
       USE_SLEEF: 0
       USE_SLEEFQUAD: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
 #      _DEBUG: 3
@@ -492,7 +502,7 @@ jobs:
       DEBUGCMD: gdb-multiarch
       DEBUGCPU: arm6
       USE_OPENMP: ${{ env.USE_OPENMP }}
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
 #      _DEBUG: 3
      run: |
@@ -543,6 +553,7 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=${{ env.USE_OPENMP }}
+       export NORMAHN=${{ env.NORMAHN }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=0   # qemu-arm gdb not supported
@@ -613,7 +624,8 @@ jobs:
        export USE_SLEEF=0
        export USE_SLEEFQUAD=1
        export USE_OPENMP=${{ env.USE_OPENMP }}
-       export USE_PYXES=0
+       export NORMAHN=${{ env.NORMAHN }}
+       export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=0
        export _DEBUG=0   # qemu-arm gdb not supported
        export OPTL=${{ env.OPTL }}
@@ -663,6 +675,7 @@ jobs:
 # openbsd --------------------------------------------------------------
  jeopenbsd:
   name: JE (OpenBSD cross-platform-actions)
+  if: ${{ false }}
   needs: all
   runs-on: ubuntu-latest
   steps:
@@ -686,6 +699,7 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=${{ env.USE_OPENMP }}
+       export NORMAHN=${{ env.NORMAHN }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=${{ env.DEBUGLEVEL }}
@@ -723,6 +737,7 @@ jobs:
 # too slow, comment out   script/testga.sh openbsd
  jeopenbsdarm64:
   name: JE (OpenBSD arm64)
+  if: ${{ false }}
   needs: [all, slow]
   runs-on: ubuntu-latest
   steps:
@@ -746,6 +761,7 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=${{ env.USE_OPENMP }}
+       export NORMAHN=${{ env.NORMAHN }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=${{ env.DEBUGLEVEL }}
@@ -781,6 +797,7 @@ jobs:
 # freebsd --------------------------------------------------------------
  jefreebsd:
   name: JE (FreeBSD cross-platform-actions)
+  if: ${{ false }}
   needs: all
   runs-on: ubuntu-latest
   steps:
@@ -805,6 +822,7 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=${{ env.USE_OPENMP }}
+       export NORMAHN=${{ env.NORMAHN }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=${{ env.DEBUGLEVEL }}
@@ -865,6 +883,7 @@ jobs:
        export CC=clang
        export USE_SLEEF=1
        export USE_OPENMP=${{ env.USE_OPENMP }}
+       export NORMAHN=${{ env.NORMAHN }}
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_EMU_AVX }}
        export _DEBUG=${{ env.DEBUGLEVEL }}
@@ -918,6 +937,7 @@ jobs:
       CC: clang
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -968,6 +988,7 @@ jobs:
       USE_WASM: 1
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: 0
       USE_EMU_AVX: 0
       _DEBUG: 0   # lldb unavailable
@@ -1013,6 +1034,7 @@ jobs:
      env:
       NASM: ${{github.workspace}}\openssl-asm\nasm
       _SSE4_2: 1
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       PTHREADS4WSRC: 1
@@ -1100,8 +1122,10 @@ jobs:
      shell: cmd
      env:
       NASM: ${{github.workspace}}\openssl-asm\nasm
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
+      PTHREADS4WSRC: 1
       _DEBUG: ${{ env.DEBUGLEVEL }}
       OPTL: ${{ env.OPTL }}
       OPTLD: ${{ env.OPTLD }}
@@ -1127,7 +1151,7 @@ jobs:
      shell: msys2 {0}
      env:
       DEBUGCMD: gdb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
@@ -1138,7 +1162,7 @@ jobs:
      shell: cmd
      env:
       DEBUGCMD: lldb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: 0
      run: |
@@ -1186,6 +1210,7 @@ jobs:
    - name: Build JE (Windows arm64 old)
      shell: cmd
      env:
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       PTHREADS4WSRC: 1
@@ -1253,6 +1278,7 @@ jobs:
    - name: Build JE (Windows arm64)
      shell: cmd
      env:
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       PTHREADS4WSRC: 1
@@ -1337,6 +1363,7 @@ jobs:
 # windows msys2 x64 clang ----------------------------------------------
  jewin-msys2-x64-clang:
   name: JE (Windows MSYS2 x64 clang)
+  if: ${{ false }}
   needs: all
   runs-on: windows-2022
   steps:
@@ -1365,6 +1392,7 @@ jobs:
       _SSE4_2: 1
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
+      NORMAHN: ${{ env.NORMAHN }}
       USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: ${{ env.USE_EMU_AVX }}
       PTHREADS4WSRC: 1
@@ -1409,6 +1437,7 @@ jobs:
 # windows msys2 x64 ----------------------------------------------------
  jewin-msys2-x64:
   name: JE (Windows MSYS2 x64)
+  if: ${{ false }}
   needs: all
   runs-on: windows-2022
   steps:
@@ -1482,6 +1511,7 @@ jobs:
 # windows msys2 x86 ----------------------------------------------------
  jewin-msys2-x86:
   name: JE (Windows MSYS2 x86)
+  if: ${{ false }}
   needs: all
   runs-on: windows-2022
   steps:
@@ -1509,7 +1539,8 @@ jobs:
       __MSYS__: 1
       USE_SLEEF: 1
       USE_OPENMP: ${{ env.USE_OPENMP }}
-      USE_PYXES: 0
+      NORMAHN: ${{ env.NORMAHN }}
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       PTHREADS4WSRC: 1
       _DEBUG: ${{ env.DEBUGLEVEL }}
@@ -1526,7 +1557,7 @@ jobs:
      env:
       __MSYS__: 1
       DEBUGCMD: gdb
-      USE_PYXES: 0
+      USE_PYXES: ${{ env.USE_PYXES }}
       USE_EMU_AVX: 0
       _DEBUG: 0
      run: |
@@ -1553,6 +1584,7 @@ jobs:
 # windows msys2 arm64 --------------------------------------------------
  jewin-msys2-arm64:
   name: JE (Windows MSYS2 arm64)
+  if: ${{ false }}
   needs: all
   runs-on: windows-11-arm
   steps:
@@ -1699,3 +1731,4 @@ jobs:
       webhook_url: ${{ secrets.WEBHOOK_URL }}
       webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
       data: '{ "id": "jebuild" }'
+

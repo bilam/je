@@ -272,8 +272,18 @@ B jtsymbinit(JS jjt){A q,zloc;JJ jt=MTHREAD(jjt);
  // We need a different empty locale for each thread, because the global symbol table is stored there.  Allocate at rank 1, and fill it with copies of emptyloc
  // Unfortunately the layout of the locale uses words 0 and 8, so we can't pack the block for the threads into adjacent cachelines.  Perhaps we should just have the thread
  // allocate an empty locale when it starts, but we have coded this and we will keep it.  Unallocated threrads will drop out of cache.
- GA0(q,INT,16*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][16])((I*)q+8-3);   //  this mangles the header; OK since the block will never be freed
- DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[16*i+8-3]; MC(ei,emptyloc,(8+3)*SZI); AM(ei)=(I)ei;)
+#if NORMAHN
+#if 1
+ GA0(q,INT,EMPTYLOCALESIZE*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][EMPTYLOCALESIZE])((I*)q+(NORMAH+1)-3);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[EMPTYLOCALESIZE*i+(NORMAH+1)-3]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#else
+ GA0(q,INT,EMPTYLOCALESIZE*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][EMPTYLOCALESIZE])((I*)q);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[EMPTYLOCALESIZE*i]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#endif
+#else
+ GA0(q,INT,16*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][16])((I*)q+(NORMAH+1)-3);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[16*i+(NORMAH+1)-3]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#endif
  jt->locsyms=(A)(*INITJT(jjt,emptylocale))[0];  // init jt->locsyms for master thread to the emptylocale for the master thread.  jt->locsyms in other threads must be initialized for each user task
  R 1;
 }
@@ -430,7 +440,11 @@ F1(jtlochdr){F12IP; MEMCHK1(w);
   }
  }
  ASSERT(y!=0,EVLOCALE)  // fail if nonexistent
+#if NORMAHN
+ R vec(INT,8,(I*)y+NORMAHN);  // counts are in s[0]
+#else
  R vec(INT,8,y);  // counts are in s[0]
+#endif
 }
 
 
@@ -443,9 +457,9 @@ F2(jtlocnl2){F12IP;UC*u;
 }    /* 18!:1 locale name list */
 
 #if defined(__clang__) && (defined(DEBUG) || defined(__OpenBSD__))
-static A NOOPTIMIZE jtlocale(J jt,B b,A w){A g=0,*wv,y;
+static A NOOPTIMIZE jtlocale(J jt,B b,A w){MEMCHK1(w); A g=0,*wv,y;
 #else
-static A jtlocale(J jt,B b,A w){A g=0,*wv,y;
+static A jtlocale(J jt,B b,A w){MEMCHK1(w); A g=0,*wv,y;
 #endif
  if(((AR(w)-1) & -(AT(w)&(INT|B01)))<0){  // atomic integer is OK
   if(!((g=(b?jtstfindcre:jtstfind)(jt,-1,0,BIV0(w)))&&LOCPATH(g)))R 0;  // error if name not found/created or if name was found but deleted
