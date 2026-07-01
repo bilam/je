@@ -100,6 +100,9 @@ endif
 ifneq ($(C_CRC32C),)
  COPTION := $(COPTION) /DC_CRC32C=$(C_CRC32C)
 endif
+ifneq ($(NOSTACKCHK),)
+ COPTION := $(COPTION) /DNOSTACKCHK
+endif
 ifneq ($(_NAN),)
  COPTION := $(COPTION) /D_NAN
 endif

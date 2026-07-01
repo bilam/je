@@ -90,6 +90,7 @@ static int a2v (JJ jt, A a, VARIANT *v, int dobstrs)  // jt is a thread pointer,
 	r=AR(a);
 	t=NOUN&AT(a);
 	if(r>MAXRANK) return EVRANK;
+ // fprintf(stderr,"a2v a %p AC %llx AT %llu AN %lld AR %hx \n",a,AC(a),AT(a),AN(a),AR(a));
 	if(dobstrs && r<2 && (t&LIT+C2T+C4T)) 	// char scalar or vector returned as BSTR
 	{
     WCHAR *wstr;
@@ -146,11 +147,11 @@ static int a2v (JJ jt, A a, VARIANT *v, int dobstrs)  // jt is a thread pointer,
 		  if(!r) {v->vt=VT_I8; v->llVal = (I)(*pi); return 0;}
 		  vt=VT_I8;
 		  cb=k*sizeof(long long);
-    } else {
+		} else {
 		  if(!r) {v->vt=VT_I4; v->lVal = (int)(*pi); return 0;}
 		  vt=VT_I4;
 		  cb=k*sizeof(int);
-    }
+		}
 #else
 		if(!r) {v->vt=VT_I4; v->lVal = (I)(*pi); return 0;}
 		vt=VT_I4;
@@ -251,6 +252,8 @@ static int a2v (JJ jt, A a, VARIANT *v, int dobstrs)  // jt is a thread pointer,
       I *p2=AV(a);
       while (k--)
         *p1++=(long)*p2++;
+    } else {
+      memcpy(psa->pvData, AV(a), cb);
     }
 		break;
 	}
@@ -377,8 +380,14 @@ static A v2a(JJ jt, VARIANT* v, int dobstrs)   // jt is a thread pointer
 			// The z's are not getting their reference
 			// count set until everything is in place
 			// and the jset() is done in Jset().
+#if 0
 			z = *boxes++ = v2a(jt, pv++, dobstrs);
 			if (!z) break;
+#else
+			if(!(z = v2a(jt, pv++, dobstrs)))break;
+			INCORPNV(z);  // we know this block is one we just allocated, and that we are putting it into a nonrecursive box
+			*boxes++ = z;
+#endif
 		}
 		SafeArrayUnaccessData(psa);
 		if (jt->jerr) return 0;

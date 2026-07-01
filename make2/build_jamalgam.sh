@@ -423,6 +423,10 @@ if [ -n "$C_CRC32C" ]; then
  common="$common -DC_CRC32C=$C_CRC32C"
 fi
 
+if [ -n "$NOSTACKCHK" ]; then
+ common="$common -DNOSTACKCHK"
+fi
+
 if [ -n "$_NAN" ]; then
  common="$common -D_NAN"
 fi

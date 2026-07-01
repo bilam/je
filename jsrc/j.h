@@ -1257,8 +1257,13 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 #define EVERYFS(name,f0,f1,akparm,flg) PRIM name={{akparm,0,0,0,0,0,0},{.primvb={.valencefns={f0,f1},.flag=flg}}};
 
 #define STACKPOS ({D stackpos; (uintptr_t)&stackpos;})
+#ifdef NOSTACKCHK
+#define STACKCHKOFL
+#define STACKCHKOFLSUFF(suff)
+#else
 #define STACKCHKOFL {D stackpos; ASSERT(STACKPOS>=jt->cstackmin,EVSTACK);}
 #define STACKCHKOFLSUFF(suff) {D stackpos; ASSERTSUFF(STACKPOS>=jt->cstackmin,EVSTACK,suff);}
+#endif
 #define EPDYAD (w!=self)  // for any call (i. e. verb or modifier), true if w is an operand
 #define EPMONAD (w==self)  // for any call (i. e. verb or modifier), true if w is self, not an operand
 #define FCONS(x)        fdef(0,CFCONS,VERB,jtnum1,jtnum2,0L,0L,(x),VIRS1+VNOLOCCHG+VNONAME+VNOSELF, RMAX,RMAX,RMAX)  // used for _9: to 9:
