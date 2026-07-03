@@ -201,6 +201,65 @@ f =: cocurrent_z_ f.
 
 0 = $:^:*@<:$::@6: 5
 
+NB. -------------- u f: n ------------------------------
+{{
+l1=.+
+l11=. l1 - l1
+g1=:*
+g11=:g1 % g1 % l1
+l21=.g1 $ g1 $ l1
+l=.<'xxx'
+g=:<'xxx'
+g2_xxx_ =: !
+l22=.l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g
+
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: '')
+assert. 'l1 - l1' -:&, 5!:5 <'f' [. f =. (l11 f: '')
+assert. 'g1' -:&, 5!:5 <'f' [. f =. (g1 f: '')
+assert. 'g11' -:&, 5!:5 <'f' [. f =. (g11 f: '')
+assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: '')
+assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: '')
+
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'recur')
+assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: 'recur')
+assert. 'g1' -:&, 5!:5 <'f' [. f =. (g1 f: 'recur')
+assert. 'g11' -:&, 5!:5 <'f' [. f =. (g11 f: 'recur')
+assert. 'g1 $ g1 $ +' -:&, 5!:5 <'f' [. f =. (l21 f: 'recur')
+assert. '+ ^ g11 ^ g2_xxx_ ^ g2_xxx_ ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'recur')
+
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'public')
+assert. 'l1 - l1' -:&, 5!:5 <'f' [. f =. (l11 f: 'public')
+assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'public')
+assert. 'g1 % g1 % l1' -:&, 5!:5 <'f' [. ff__ =: f =. (g11 f: 'public')
+assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: 'public')
+assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'public')
+
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'recur public')
+assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: 'recur public')
+assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'recur public')
+assert. '* % * % +' -:&, 5!:5 <'f' [. f =. (g11 f: 'recur public')
+assert. '* $ * $ +' -:&, 5!:5 <'f' [. f =. (l21 f: 'recur public')
+assert. '+ ^ (* % * % +) ^ g2_xxx_ ^ g2_xxx_ ^ g2_xxx_' -:&, 5!:5 <'f' [. f =. (l22 f: 'recur public')
+
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'all')
+assert. 'l1 - l1' -:&, 5!:5 <'f' [. ff__ =: f =. (l11 f: 'all')
+assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'all')
+assert. 'g1 % g1 % l1' -:&, 5!:5 <'f' [. ff__ =: f =. (g11 f: 'all')
+assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: 'all')
+assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'all')
+
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'recur all')
+assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: 'recur all')
+assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'recur all')
+assert. '* % * % +' -:&, 5!:5 <'f' [. f =. (g11 f: 'recur all')
+assert. '* $ * $ +' -:&, 5!:5 <'f' [. f =. (l21 f: 'recur all')
+assert. '+ ^ (* % * % +) ^ ! ^ ! ^ !' -:&, 5!:5 <'f' [. f =. (l22 f: 'recur all')
+
+1
+}}''
+
+18!:55 <'xxx'
+
 
 epilog''
 

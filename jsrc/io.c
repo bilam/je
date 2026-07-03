@@ -1025,6 +1025,7 @@ F1(jtbreakfns){F12IP;A z;I *fh,*mh=0; void* ad;
  R mtm;
 }
 
+// validate the name in *psrc, copying it to *psnk.  Remove leading and trailing blanks.  Terminate with NUL.  The string is known to fit in the result area
 int valid(C* psrc, C* psnk)
 {
  NOUNROLL while(*psrc == ' ') ++psrc;

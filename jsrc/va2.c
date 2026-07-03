@@ -1830,68 +1830,77 @@ static VF eqnetbl[2][11] = {
 // The flags in cv have doubled letters (e.g. VDD) for input precision, single letters (e. g. VD) for result
 // result is a VA2 struct  containing ado and cv.  If failure, ado is 0 and the caller should signal domain error
 // The type has been converted to dense type
-VA2 jtvar(J jt,A self,I at,I wt){I t;
+VA2 jtvar(J jt,A self,I at,I wt){
+ I opchar=(UC)FAV(self)->id;  //  the index of the opcode - start reading ASAP, needed on main line
  // If there is a pending error, it might be one that can be cured with a retry; for example, fixed-point
  // overflow, where we will convert to float.  If the error is one of those, get the routine and conversion
  // for it, and return.
- if(likely(!jt->jerr)){
-  // Normal case where we are not retrying: here for numeric arguments
+ I jerr=jt->jerr;
+ if(likely(!jerr)){
+  // Normal case where we are not retrying
   // vaptr converts the character pseudocode into an entry in va;
   // that entry contains 34 (ado,cv) pairs, indexed according to verb/argument types.
   // the first 9 entries [0-8] are a 3x3 array of the combinations of the main numeric types
-  // B,I,D; then [9] CMPX [10] XNUM (but not RAT) [11] RAT [12] x [13] SP [14] QP [15] INT2 [16] INT4
-  // then [17-25] are for verb/, with precisions B I D Z X Q x INT2 INT4
-  // [26-34] for verb\, and [35-43] for verb\.
+  // B,I,D; then in priority order
+  // then a pointer to the blocks for / /\ /\.
+  I t=at|wt;  // composite requested types
+  if(withprob((t&(NOUN&~NUMERIC)),0.8)){I argtypes;   // comparison of chars or boxes, most likely, unless the user is into sparse or exotic types
+   // No retry, but something is nonnumeric.  This will be a domain error except for = and ~:
+   VA2 retva2;  retva2.cv=VRNONE+VB; // where we build the return value   cv indicates no input conversion, boolean result, no result conversion
+   if(likely(HOMO(at,wt))){
+    argtypes=PEXT0((at<<2)+wt,C2TX,0xf); argtypes=at&BOX?0b0011:argtypes; // bits are a4 a2 w4 w2 if char, 0011 if box, 0111 if INHOMO
+   }else argtypes=7;  // inhomogeneous line
+   if(likely((opchar&~1)==CEQ)){  // CEQ or CNE
+    // = or ~:, possibly inhomogeneous
+    retva2.f=eqnetbl[opchar-CEQ][argtypes];  // return the comparison
+   }else retva2.f=0;  // if not equality comparison, it's a domain error
+   R retva2;
+  }
+  // falling through, all args are numeric
   VA *vainfo=((VA*)((I)va+FAV(self)->localuse.lu1.uavandx[1]));  // extract table line from the primitive
-  if(withprob(!((t=(at|wt))&(NOUN&~(B01|INT|FL))),0.1)){  // this normal case was tested for in va2()
-   // Here for the fast and important case, where the arguments are both B01/INT/FL
-   R vainfo->p2[(at*3+(wt&INT+FL))>>INTX];
-
-  }else if(likely(!(t&(NOUN&~NUMERIC)))){
+  if(withprob((t&(NOUN&~(B01|INT|FL))),0.9)){
    // Numeric args, but one of the arguments is CMPX/RAT/XNUM/other numeric precisions 
-   I apri=TYPEPRIORITYNUM(at), wpri=TYPEPRIORITYNUM(wt), pri=MAX(apri,wpri);  // conversion priority for each arg
+   I apri=TYPEPRIORITYNUM(at), wpri=TYPEPRIORITYNUM(wt);  // start the long priority computation
+   I pri=MAX(apri,wpri);  // conversion priority for each arg
    //  0   1   2   3   4   5   6    7  8  9  A  B  C  D  E   F     // priorities
    // B01 LIT C2T C4T INT BOX XNUM RAT FL I1 I2 I4 HP SP QP CMPX
    //  0               4       9   10  8     11 12       13 14   routine indexes for homogeneous args (final pri)
-   //                          5   6   4      7  8        9 10   biased by 4, the smallest we use here (values stored in the shift constant)
    // (B)             (I)      X   Q   D     I2 I4    DS  E  Z   internal type for each precision 
-   pri=4+(I)SHMSK8(0xa9ff87f465ffffffLL,pri<<2,0xf);  // 4 is II, lower than the lowest routine# we can call for here  f is unimplemented precision
-   VA2 selva2 = vainfo->p2[pri];  // routine/flags for the top-priority arg
+   pri=(I)SHMSK8(0xedffcbf8a9ffffffLL,pri<<2,0xf);  // 4 is II, lower than the lowest routine# we can call for here  f is unimplemented precision
+   VA2 selva2=vainfo->p2[pri];  // routine/flags for the top-priority arg
    if(unlikely(pri==8))selva2.cv|=VDD;      // We allow input conversion to be omitted for BID, so if we are using the DD line (necessarily with non-BID input) we have to install DD conversion
    R selva2;
-  }else{
-   // No retry, but something is nonnumeric.  This will be a domain error except for = and ~:
-   VA2 retva2;  retva2.cv=VRNONE+VB; // where we build the return value   cv indicates no input conversion, boolean result, no result conversion
-   if(likely(((UC)FAV(self)->id&~1)==CEQ)){I opcode;  // CEQ or CNE
-    // = or ~:, possibly inhomogeneous
-    if(likely(HOMO(at,wt))){
-     opcode=PEXT0((at<<2)+wt,C2TX,0xf); opcode=at&BOX?0b0011:opcode; // bits are a4 a2 w4 w2 if char, 0011 if box.
-    }else opcode=7;  // inhomogeneous line
-    retva2.f=eqnetbl[(UC)FAV(self)->id&1][opcode];  // return the comparison
-    R retva2;
-   }
-   retva2.f=0; R retva2;  // not = ~:, return not found
   }
+  // falling through the operation is on the main numeric types.  Sparse, probably.
+  R vainfo->p2[(at*3+(wt&INT+FL))>>INTX];  // this normal case was tested for in va2() so it's not likely here
+#if 0  // obsolete 
+   I cpri=(at<<2+wt)>>C2TX;  // priority if character
+   VA2 *base=&eqnetbl[opchar&1];  // table line if character
+   I npri=((UI8)0xedffcbf8a9ffffffLL>>(MAX(apri,wpri)<<2);  // priority if numeric
+   base=t&(NOUN&~NUMERIC)?base:(VA2*)vainfo; cpri=t&(NOUN&~NUMERIC)?cpri:npri;  // base and priority to use
+   if(likely(HOMO(at,wt)){cpri=at&BOX?0b0011:cpri;
+   R base[cpri];  // return the routine
+#endif
  }else{VA2 retva2;
   // Here there was an error in a previous run.  We see if we have a way to retry the operation
   retva2.f=0;  // error if not filled in
   switch((UC)FAV(self)->id){
-  case CCIRCLE: if(jt->jerr==EWIMAG){retva2.f=(VF)cirZZ; retva2.cv=VRD+VZ+VZZ;} break;
-  case CEXP: if(jt->jerr==EWIMAG){retva2.f=(VF)powZZ; retva2.cv=VRNONE+VZ+VZZ;}
-             else if(jt->jerr==EWRAT){retva2.f=(VF)powQQ; retva2.cv=VRNONE+VQ+VQQ;}
-             else if(jt->jerr==EWIRR){retva2.f=(VF)powDD; retva2.cv=VRNONE+VD+VDD;} break;
-  case CBANG: if(jt->jerr==EWIRR){retva2.f=(VF)binDD; retva2.cv=VRNONE+VD+VDD;} break;
-  case CDIV: if(jt->jerr==EWRAT){retva2.f=(VF)divQQ; retva2.cv=VRNONE+VQ+VQQ;}
-             else if(jt->jerr==EWDIV0){retva2.f=(VF)divDD; retva2.cv=VRNONE+VD+VDD;} break;
+  case CCIRCLE: if(jerr==EWIMAG){retva2.f=(VF)cirZZ; retva2.cv=VRD+VZ+VZZ;} break;
+  case CEXP: if(jerr==EWIMAG){retva2.f=(VF)powZZ; retva2.cv=VRNONE+VZ+VZZ;}
+             else if(jerr==EWRAT){retva2.f=(VF)powQQ; retva2.cv=VRNONE+VQ+VQQ;}
+             else if(jerr==EWIRR){retva2.f=(VF)powDD; retva2.cv=VRNONE+VD+VDD;} break;
+  case CBANG: if(jerr==EWIRR){retva2.f=(VF)binDD; retva2.cv=VRNONE+VD+VDD;} break;
+  case CDIV: if(jerr==EWRAT){retva2.f=(VF)divQQ; retva2.cv=VRNONE+VQ+VQQ;}
+             else if(jerr==EWDIV0){retva2.f=(VF)divDD; retva2.cv=VRNONE+VD+VDD;} break;
 // the following errors are normally retryable in place.  We keep the alternate code for sparse
-  case CPLUS: if(jt->jerr==EWOVIP+EWOVIPPLUSII||jt->jerr==EWOVIP+EWOVIPPLUSBI||jt->jerr==EWOVIP+EWOVIPPLUSIB){retva2.f=(VF)plusIO; retva2.cv=VRNONE+VD+VII;} break;
-  case CMINUS: if(jt->jerr==EWOVIP+EWOVIPMINUSII||jt->jerr==EWOVIP+EWOVIPMINUSBI||jt->jerr==EWOVIP+EWOVIPMINUSIB){retva2.f=(VF)minusIO; retva2.cv=VRNONE+VD+VII;} break;
-  case CSTAR: if(jt->jerr==EWOVIP+EWOVIPMULII){retva2.f=(VF)tymesIO; retva2.cv=VRNONE+VD+VII;} break;
-  case CPLUSDOT: if(jt->jerr==EWOV){retva2.f=(VF)gcdIO; retva2.cv=VRNONE+VD+VII;} break;
-  case CSTARDOT: if(jt->jerr==EWOV){retva2.f=(VF)lcmIO; retva2.cv=VRNONE+VD+VII;} break;
-  case CSTILE: if(jt->jerr==EWOV){retva2.f=(VF)remDD; retva2.cv=VRNONE+VD+VDD+VIP;} break;
+  case CPLUS: if(BETWEENC(jerr,EWOVIP+EWOVIPPLUSII,EWOVIP+EWOVIPPLUSIB)){retva2.f=(VF)plusIO; retva2.cv=VRNONE+VD+VII;} break;
+  case CMINUS: if(BETWEENC(jerr,EWOVIP+EWOVIPMINUSII,EWOVIP+EWOVIPMINUSIB)){retva2.f=(VF)minusIO; retva2.cv=VRNONE+VD+VII;} break;
+  case CSTAR: if(jerr==EWOVIP+EWOVIPMULII){retva2.f=(VF)tymesIO; retva2.cv=VRNONE+VD+VII;} break;
+  case CPLUSDOT: if(jerr==EWOV){retva2.f=(VF)gcdIO; retva2.cv=VRNONE+VD+VII;} break;
+  case CSTARDOT: if(jerr==EWOV){retva2.f=(VF)lcmIO; retva2.cv=VRNONE+VD+VII;} break;
+  case CSTILE: if(jerr==EWOV){retva2.f=(VF)remDD; retva2.cv=VRNONE+VD+VDD+VIP;} break;
   }
-  if(likely(retva2.f)){RESETERR}else{if(jt->jerr>NEVM){RESETERR jsignal(EVSYSTEM);}}  // system error if unhandled exception.  Otherwise reset error only if we handled it
+  if(likely(retva2.f)){RESETERR}else{if(jerr>NEVM){RESETERR jsignal(EVSYSTEM);}}  // system error if unhandled exception.  Otherwise reset error only if we handled it
   R retva2;
  }
-}    /* function and control for rank */
+}

@@ -344,8 +344,7 @@ xco:
  // Failure - no inverse found.  If there are names in w, try fixing w and try on that.
  // But only fix once, at the top recursion level, to avoid an infinite loop if
  // there is a circular reference that leaves names in the fixed form of w;
- if(!recur&&!nameless(w))R invrecur(fix(w,sc(FIXAFCORECUR+FIXAFCOPUBLIC+FIXAFCOLOCATIVE)));
-// obsolete  if(!recur&&!nameless(w))R invrecur(fix(w,num(5)));
+ if(!recur&&!nameless(w))R invrecur(fix(w,zeroionei(0)));
  ASSERT(0,EVDOMAIN);
 }
 
@@ -367,7 +366,7 @@ static F1(jtneutral){F12IP;A x,y;B b;V*v;
 
 // return neutral element for verb, if known
 F1(jtiden){F12IP;A f,g,x=0;V*u,*v;
- RZ(w=fix(w,sc(FIXAFCORECUR+FIXAFCOPUBLIC+FIXAFCOLOCATIVE))); ASSERT(VERB&AT(w),EVDOMAIN);
+ RZ(w=fix(w,zeroionei(0))); ASSERT(VERB&AT(w),EVDOMAIN);
  v=FAV(w); f=v->fgh[0]; g=v->fgh[1];
  switch(v->id){
  default:      RZ(x=neutral(w)); break;

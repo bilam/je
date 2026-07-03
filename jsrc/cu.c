@@ -286,10 +286,10 @@ DF2(jteachl){F12IP;ARGCHK3(a,w,self); I lcr=AR(a)-((UI)AR(a)>0); I lr=lr(self); 
 DF2(jteachr){F12IP;ARGCHK3(a,w,self); I rcr=AR(w)-((UI)AR(w)>0); I rr=rr(self); rr=rcr<rr?rcr:rr; I lr=lr(self); lr=AR(a)<lr?AR(a):lr; R rank2exip(a,w,self,lr,rr,AR(a),rcr,FAV(self)->valencefns[1]);}
 
 // u&.v
-// PUSH/POP ZOMB is performed in atop/amp/ampco
+// PUSH/POP ZOMB is performed in atop/amp/ampcosc
 // under is for when we could not precalculate the inverse.  The verb is in localuse
-static DF1(jtunder1){F12IP;A fullf; RZ(fullf=atop(invrecur(fix(FAV(self)->localuse.lu1.wvb,sc(FIXASTOPATINV))),FAV(self)->fgh[2])); R (FAV(fullf)->valencefns[0])(jtfg,w,fullf);}
-static DF2(jtunder2){F12IP;A fullf; RZ(fullf=atop(invrecur(fix(FAV(self)->localuse.lu1.wvb,sc(FIXASTOPATINV))),FAV(self)->fgh[2])); R (FAV(fullf)->valencefns[1])(jtfg,a,w,fullf);}
+static DF1(jtunder1){F12IP;A fullf; RZ(fullf=atop(invrecur(fix(FAV(self)->localuse.lu1.wvb,num(FIXASTOPATINV>>FIXAFINTX))),FAV(self)->fgh[2])); R (FAV(fullf)->valencefns[0])(jtfg,w,fullf);}
+static DF2(jtunder2){F12IP;A fullf; RZ(fullf=atop(invrecur(fix(FAV(self)->localuse.lu1.wvb,num(FIXASTOPATINV>>FIXAFINTX))),FAV(self)->fgh[2])); R (FAV(fullf)->valencefns[1])(jtfg,a,w,fullf);}
 // underh has the inverse precalculated, and the inplaceability set from it.  It handles &. and &.: which differ only in rank
 DF1(jtunderh1){F12IP;A hs=FAV(self)->fgh[2]; R (FAV(hs)->valencefns[0])(jtfg,w,hs);}
 DF2(jtunderh2){F12IP;A hs=FAV(self)->fgh[2]; R (FAV(hs)->valencefns[1])(jtfg,a,w,hs);}

@@ -240,6 +240,21 @@ struct AD {
   A proxychain;  // used when block is on free chain
  } tproxy;
  I c;  // 4 usecount
+  /* J6.02 had two serious defects: (1) whenever a BOX array was used as an argument, the usecount was raised on every component box before each operation and lowered after the operation, wasting an enormous amount of time
+  (running dissect, almost 80% of the time was in usecount-fiddling); (2) every operation allocated a new result area, which made every operation add to cache footprint - much slower than if operations are done in-place.
+
+  To fix (2), I added the concept of the 'inplaceable block'.  The AC field, which formerly held the usecount which was always >=1, is now flagged with the MSB set if the block has never been saved anywhere else.
+  Blocks are initialized with AC=0x80...1, i. e. inplaceable, and AC is masked to 0x00..1 if the block is incorporated.  Now an operation is performed inplace if the block is inplaceable and the context of the
+  operation ensures that no later operation in the sentence will need the block.  [There is a great deal of detail involved in establishing that the context is inplaceable.]
+  It is vital that any incorporated block be marked as non-inplaceable using INCORP*(), otherwise the block will be double-freed.
+
+  To fix (1), I added the concept of the 'recursive block'.  A non-DIRECT block can be marked recursive (by copying its AT bit into AFLAG).  When a block A is marked recursive:
+  1. all non-DIRECT descendants of A must also be marked recursive
+  2. 1 is added to the AC field of all descendants
+  3. when A is freed, each of its immediate descendants has its usecount decremented by 1
+
+  Example: block B is created, getting usecount 0x80..01, and then incorporated into recursive box A.  The incorporation sets B non-inplaceable (AC=0x1) and adding it to the recursive A increments AC to 2.
+  Sometime before the end of the sentence the initial death warrant on B will be executed, bringing its usecount back to 1, where it will remain.  Eventually, when the parent block A is freed, B's usecount drops to 0 and B is freed. */
 //  NOTE!! result.h faux cellshape block depends on n, r, and s being in place from here to the end of this struct, with 2 Is from n to s
  I n;  // 5 # atoms - always 1 for sparse arrays.  In JOB block for task with locales, the thread mask
 #if C_LE
@@ -803,15 +818,19 @@ _Static_assert(C2TX+1==C4TX,"LIT4 and LIT2 bits must be contiguous");
 
 #define SFNSIMPLEONLY 1   // to sfn: return simple name only, discarding any locative
 
-#define FIXALOCSONLYLOWEST 4  // to fixa: replace only the first occurrence of u/v in each branch
-#define FIXALOCSONLY 8  // to fixa: replace only u/v (IMPLOC)
-#define FIXASTOPATINV 16  // to fixa: stop fixing a branch when it gets to a an explicit obverse 
-#define FIXAFCOX 5  // starting bit# of options given by f:
-#define FIXAFCONAMEONLY BIT(FIXAFCOX)  // 32 fix only top name
-#define FIXAFCONAMESONCE ((I)2<<FIXAFCOX)  // 64 fix each name only once
-  // 128 all names
-#define FIXAFCONOTLOCATIVES ((I)8<<FIXAFCOX)  // 256 don't fix locatives
-#define FIXAFCONOTPUBLIC ((I)16<<FIXAFCOX)  // 512 don't fix any nonlocal name
+// obsolete #define FIXALOCSONLYLOWEST 4  // to fixa: replace only the first occurrence of u./v. in each branch
+// obsolete #define FIXALOCSONLY 8  // to fixa: replace only u./v. (IMPLOC)
+// obsolete #define FIXAFCOX 5  // starting bit# of options given by f:
+// f./f: flags.  The user's code is converted into a bit mask of these:
+// bits 0-1 are recursion flags
+#define FIXAFCOX 2  // start of bits indicating which names to replace.  Private names are always replaced.
+#define FIXAFCORECUR BIT(FIXAFCOX+0)  // 4 recur on names
+#define FIXAFCOPUBLIC BIT(FIXAFCOX+1) // 8 fix public non-locative names
+#define FIXAFCOLOCATIVE BIT(FIXAFCOX+2) // 16 fix all locatives
+// the following bits are set for internal calls only:
+#define FIXAFINTX 8  // start of internal flag bits
+#define FIXAFIRSTIMPLOCONLY 256  // to fixa: replace only the first occurrence of u./v. in each branch (IMPLOC)
+#define FIXASTOPATINV 512  // to fixa: stop fixing a branch when it gets to a an explicit obverse 
 
 // AH field of all blocks
 #define AFHRH(a) ((a)->h)    // the workarea
@@ -820,13 +839,13 @@ _Static_assert(C2TX+1==C4TX,"LIT4 and LIT2 bits must be contiguous");
 
 // ********************* explicit definition block *************************
 
-// the compiled form of an explicit definition is an A block with rank 0 with AK pointing into the middle so that only the As are freed.
-// The number of words is AN, while the number of control words+1 (NC) is AK-s (counting 4-byte values)
+// the compiled form of an explicit definition is a BOX A block with AK pointing into the middle so that only the boxes are freed.
+// The number of body words is AN, while the number of control words+1 (NC) is AK-(defn->s) (counting 4-byte values)
 // the sequence is
 // source line numbers (NC US values, accessed from the end - read only on error)
 // go values (NC US values, accessed from the end) - cw# to go to on error, or in if./for./try./select construct
 // tcesx values (NC UI4 values, accessed from the end)
-// words of the sentence, counting up, no gap between words of adjacent cws  <-- data pointer is at the beginning of this part
+// boxed words of the sentences in the body, counting up, no gap between words of adjacent cws  <-- data pointer is at the beginning of this part
 //
 // the block is allocated at rank 1 so the compare in jtredef works 
 //

@@ -1099,25 +1099,8 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 
 #define A0              0   // a nonexistent A-block
 #define ABS(a)          (0<=(a)?(a):-(a))
-#include "jr0.h" // #define ASSERT(b,e) {if(unlikely(!(b))){jsignal(e); R 0;}}
-
-/* moved to jr0.h
-#define ASSERTF(b,e,s...)     {if(unlikely(!(b))){jsignal(e); R 0;}}
-#define ASSERTSUFF(b,e,suff)   {if(unlikely(!(b))){jsignal(e); {suff}}}  // when the cleanup is more than a goto
-#define ASSERTGOTO(b,e,lbl)   ASSERTSUFF(b,e,goto lbl;)
-#define ASSERTTHREAD(b,e)     {if(unlikely(!(b))){jtjsignal(jm,e); R 0;}}   // used in io.c to signal in master thread
-#define ASSERTD(b,s)    {if(unlikely(!(b))){jsigd((s)); R 0;}}
-#define ASSERTMTV(w)    {ARGCHK1(w); ASSERT(1==AR(w),EVRANK); ASSERT(!AN(w),EVLENGTH);}
-#define ASSERTN(b,e,nm) {if(unlikely(!(b))){jtjsignale(jt,(e)|EMSGLINEISNAME|EMSGNOMSGLINE,(nm),0); R 0;}}  // signal error, overriding the running name with a different one
-#define ASSERTNGOTO(b,e,nm,lbl) {if(unlikely(!(b))){jtjsignale(jt,(e)|EMSGLINEISNAME|EMSGNOMSGLINE,(nm),0); goto lbl;}}  // same, but without the exit
-#define ASSERTPYX(e,line)   {jtjsignale(jt,(e)|(EMSGFROMPYX|EMSGNOEFORMAT|EMSGNOMSGLINE),line,0); R 0;}
-#define ASSERTSYSCOMMON(b,s,stmt)  {if(unlikely(!(b))){fprintf(stderr,"system error: %s : file %s line %d\n",s,__FILE__,__LINE__); jsignal(EVSYSTEM); jtwri(jt,JJTOJ(jt),MTYOSYS,"",(I)strlen(s),s); stmt}}
-#define ASSERTSYS(b,s)  ASSERTSYSCOMMON(b,s,R 0;)
-#define ASSERTSYSGOTO(b,s,lbl)  ASSERTSYSCOMMON(b,s,goto lbl;)
-#define ASSERTSYSV(b,s,stmt) ASSERTSYSCOMMON(b,s,stmt)
-#define ASSERTW(b,e)    {if(unlikely(!(b))){if((e)<=NEVM)jsignal(e); else jt->jerr=(e); R;}}  // put error code into jerr, but signal only if nonretryable
-#define ASSERTWR(c,e)   {if(unlikely(!(c))){R e;}}  // exit primitive with error code in return
-*/
+#include "jr0.h" // moved to jr0.h: R0, ASSERT(b,e), ASSERTF(b,e,s...), ASSERTSUFF(b,e,suff), ASSERTGOTO(b,e,lbl), ASSERTTHREAD(b,e), ASSERTD(b,s), ASSERTMTV(w), ASSERTN(b,e,nm), ASSERTNGOTO(b,e,nm,lbl), ASSERTPYX(e,line), ASSERTSYSCOMMON(b,s,stmt),
+// ASSERTSYS(b,s), ASSERTSYSGOTO(b,s,lbl), ASSERTSYSV(b,s,stmt), ASSERTW(b,e), ASSERTWR(c,e)
 
 // Avoid call to memcmp to save registers
 #if C_AVX2 || EMU_AVX2
@@ -2223,14 +2206,6 @@ if(likely(_i<3)){z=(_i<1)?1:(_i==1)?_zzt[0]:_zzt[0]*_zzt[1];}else{z=1; NOUNROLL 
 #define PUSHZOMB A savasginfo = jt->zombieval; if(unlikely(JT(jt,asgzomblevel)==0)){CLEARZOMBIE}
 #define POPZOMB {jt->zombieval=savasginfo;}
 #define R               return
-
-/* see above: include "jr0.h"
-#if FINDNULLRET   // When we return 0, we should always have an error code set.  trap if not
-#define R0 {if(!jt->jerr)SEGFAULT; R 0;}
-#else
-#define R0 R 0;
-#endif
-*/
 
 // In the original JE many verbs returned a clone of the input, i. e. R ca(w).  We have changed these to avoid the clone, but we preserve the memory in case we need to go back
 #define RCA(w)          R w

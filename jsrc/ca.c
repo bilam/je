@@ -54,7 +54,7 @@ static A jtintfloorlog2(J jt, A w, A compself) {  // compself is the floor/ceil 
     I d = wv[i]; if (unlikely(d <= 0))goto revert; // Failover to by hand if d <= 0.
     zv[i] = CTLZI(d); // When d >= 1 then <.@(2&^.) d is equal to the position of the highest 1-bit in d (CTLZI).
    )
-  } else { // Case with floats.
+  }else{ // Case with floats.
    I8 *wv = I8AV(w);
    I8 *ctv=(I8*)&jt->cct; ctv=FAV(compself)->id==CFIT?(I8*)&FAV(compself)->localuse.lu1.cct:ctv;  // ctv points to cct to use
    // A mantissa m should round down if (1+m)*cct > 1, i. e. m = 1/cct - 1 = 1 + ct + ct^2... - 1 = ct + ct^2.  We round this to ct, which means we should add ct-1 to the
@@ -407,7 +407,7 @@ F2(jtatop){F12IP;A f,g,h=0,x;AF f1=on1,f2=jtupon2;B b=0,j;C c,d,e;I flag, flag2=
 // u@:v
 F2(jtatco){F12IP;A f,g;AF f1=on1cell,f2=jtupon2cell;C c,d,e;I flag, flag2=0,m=-1;V*av,*wv;
  ASSERTVV(a,w);
- av=FAV(a); c=av->id; f=av->fgh[0]; g=av->fgh[1]; e=ID(f);   /// c=op for a, d=op for w   if a is compound r m [s], f is r and e is its id; and g is s
+ av=FAV(a); c=av->id; f=av->fgh[0]; g=av->fgh[1]; e=ID(f);   // c=op for a, d=op for w   if a is compound r m [s], f is r and e is its id; and g is s
  wv=FAV(w); d=wv->id;
  A z; fdefallo(z)
  if((d&~1)==CLEFT){

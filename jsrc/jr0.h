@@ -10,8 +10,8 @@
 
 #undef R0
 
-#if FINDNULLRET // When we return 0, we should always have an error code set.  trap if not
-#define R0 {if(!jt->jerr)SEGFAULT; R FAIL;}
+#if FINDNULLRET // When we return 0, we should always have an error code set.  trap if not; but not if we are suppressing jerr
+#define R0 {if(!jt->jerr&&!(jt->emsgstate&EMSGSTATEUSERMSG+EMSGSTATEFORMATTED))SEGFAULT; R FAIL;}
 #else
 #define R0 R FAIL;
 #endif

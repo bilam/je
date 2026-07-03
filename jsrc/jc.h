@@ -218,7 +218,7 @@
 #define CACE       (C)0xbc       /* 188 274 bc a:                           */
 #define CCDOT      (C)0xbe       /* 190 276 be c.                           */
 #define CFIX       (C)0xc6       /* 198 306 c6 f.                           */
-#define CFCAPCO    (C)0xc7       /* 199 307 c7 F:                           */
+#define CFIXS      (C)0xc7       /* 199 307 c7 f:                           */
 #define CHGEOM     (C)0xc8       /* 200 310 c8 H.                           */
 #define CICAPCO    (C)0xcc       /* 204 314 cc I:                           */
 #define CLDOT      (C)0xce       /* 206 316 ce L.                           */
@@ -226,7 +226,7 @@
 #define CMCAP      (C)0xd1       /* 209 321 d1 M.                           */
 #define CTDOT      (C)0xd3  // t.
 #define CTCAPDOT   (C)0xd4  // T.
-#define CQCAPCO    (C)0xd6       /* 214 326 d6 Q:                           */
+// obsolete #define CQCAPCO    (C)0xd6       /* 214 326 d6 Q:                           */
 #define CMDOT      (C)0xd9       /* 217 331 d9 m.                           */
 #define CSCAPCO    (C)0xda       /* 218 332 da S:                           */
 // db-e8 free

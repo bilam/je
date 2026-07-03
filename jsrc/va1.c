@@ -121,7 +121,6 @@ static AMONPS(floorDI,I,D,
  {if(likely(((fbits=*(UI*)x)&0x7fffffffffffffff)<0x43c0000000000000)){D wdv=jround(*x); *z=wdv-TGT(wdv,*x);}
   // if there is a value above 2^61, encode it by setting bit 62 to the opposite of bit 63 (we know bit 62 was 1 originally).  Remember the fact that we need a correction pass.
   // See if the value must be promoted to floating-point in the correction pass.  Return value of EWOVFLOOR0 if there are values all of which fit in an integer, EWOVFLOOR1 if float is required
-
   else{rc|=EWOVFLOOR0; D d=tfloor(*x); *z=fbits^(SGNTO0(fbits)<<(BW-2)); if(d>=FLIMAX||d<FLIMIN)rc|=EWOVFLOOR1&~EWOVFLOOR0;} } ,  // we use DQ; i is n-1-reali, ~i = (reali-n+1)-1 = i-n musn't inspect d after conversion
   R rc?rc:EVOK;
  ; )  // x100 0011 1100 =>2^61
@@ -139,7 +138,6 @@ static AMONPS(ceilDI,I,D,
  {if(likely(((fbits=*(UI*)x)&0x7fffffffffffffff)<0x43c0000000000000)){D wdv=jround(*x); *z=wdv+TLT(wdv,*x);}
   // if there is a value above 2^61, encode it by setting bit 62 to the opposite of bit 63 (we know bit 62 was 1 originally).  Remember the fact that we need a correction pass.
   // See if the value must be promoted to floating-point in the correction pass.  Return value of -2 if there are values all of which fit in an integer, -3 if float is required
-
   else{rc|=EWOVFLOOR0; D d=tceil(*x); *z=fbits^(SGNTO0(fbits)<<(BW-2)); if(d>=FLIMAX||d<FLIMIN)rc|=EWOVFLOOR1&~EWOVFLOOR0;} } ,  // we use DQ; i is n-1-reali, ~i = (reali-n+1)-1 = i-n mustn't inspect d after conversion
   R rc?rc:EVOK;
  ; )  // x100 0011 1100 =>2^61
@@ -296,18 +294,18 @@ static AHDR1(oneB,C,C){mvc(n,z,MEMSET01LEN,MEMSET01); R EVOK;}
 extern AHDR1FN expI, expD, expE, logI, logD, logE;
 
 UA va1tab[]={
- /* <. */ {{{ 0,VB}, {  0,VI}, {floorDI,VI+VIP64}, {floorZ,VZ}, {  0,VX}, {floorQ,VX}, {0,VI}, {floorEI,VI}, {  0, VI2}, {0, VI4}}},
- /* >. */ {{{ 0,VB}, {  0,VI}, { ceilDI,VI+VIP64}, { ceilZ,VZ}, {  0,VX}, { ceilQ,VX}, {0,VI}, {ceilEI,VI}, {  0, VI2}, {0, VI4}}},
- /* +  */ {{{ 0,VB}, {  0,VI}, {    0,VD}, { cjugZ,VZ}, {  0,VX}, {   0,VQ}, {  0, 0}, {0, VE}, {  0, VI2}, {0, VI4}}},
- /* *  */ {{{ 0,VB}, { sgnI,VI+VIPW}, {   sgnD,VI+VIP64}, {  sgnZ,VZ}, { sgnX,VX}, {  sgnQ,VX}, {0,0}, {sgnE,VI}, {sgnI2,VI}, {sgnI4,VI}}},
- /* ^  */ {{{expB,VD}, { expI,VD}, {   expD,VD+VIPW}, {  expZ,VZ}, { expX,VX}, {  expD,VD+VDD}, {0,0}, {expE,VE}, { expD,VDD+VD}, { expD,VDD+VD}}},
- /* |  */ {{{ 0,VB}, { absI,VI+VIPW}, {   absD,VD+VIPW}, {  absZ,VD}, { absX,VX}, {  absQ,VQ}, {0,0}, {absE,VE+VIPW}, { absI2,VI2+VIPW}, { absI4,VI4+VIPW}}},
- /* !  */ {{{oneB,VB}, {factI,VD}, {  factD,VD}, { factZ,VZ}, {factX,VX}, {factQ,VQ}, {0,0}, {factD,VD+VDD}, {factD,VD+VDD}, {factD,VD+VDD}}},
- /* o. */ {{{  0L,0L}, {   0L,0L}, {     0L,0L}, {    0L,0L}, { pixX,VX}, {0L,0L}, {0L,0L}, {0L,0L}, {0L,0L}, {0L,0L}}}, // others handled as dyads
- /* %: */ {{{ 0,VB}, {sqrtI,VD}, {sqrtD,VD+VIPW}, { sqrtZ,VZ}, {sqrtX,VX}, { sqrtQ,VQ}, {0,0}, {sqrtE,VE}, {sqrtD,VD+VDD+VIPW}, {sqrtD,VD+VDD+VIPW}}},  // most cannot inplace lest CMPX
- /* ^. */ {{{logB,VD}, { logI,VD}, {   logD,VD}, {  logZ,VZ}, { logX,VX}, { logQD,VD}, {0,0}, {logE,VE}, {logD,VD+VDD}, {logD,VD+VDD}}},
- /* 10 - (QP only) */ {{{}, {}, {}, {}, {}, {}, {}, {negE,VE+VIPW}}},
- /* 11 % (QP only) */ {{{}, {}, {}, {}, {}, {}, {}, {recipE,VE+VIPW}}},
+ /* <. */ [VA1CMIN-VA1ORIGIN]= {{{ 0,VB}, {  0,VI}, {floorDI,VI+VIP64}, {floorZ,VZ}, {  0,VX}, {floorQ,VX}, {0,VI}, {floorEI,VI}, {  0, VI2}, {0, VI4}}},
+ /* >. */ [VA1CMAX-VA1ORIGIN]= {{{ 0,VB}, {  0,VI}, { ceilDI,VI+VIP64}, { ceilZ,VZ}, {  0,VX}, { ceilQ,VX}, {0,VI}, {ceilEI,VI}, {  0, VI2}, {0, VI4}}},
+ /* +  */ [VA1CPLUS-VA1ORIGIN]= {{{ 0,VB}, {  0,VI}, {    0,VD}, { cjugZ,VZ}, {  0,VX}, {   0,VQ}, {  0, 0}, {0, VE}, {  0, VI2}, {0, VI4}}},
+ /* *  */ [VA1CSTAR-VA1ORIGIN]= {{{ 0,VB}, { sgnI,VI+VIPW}, {   sgnD,VI+VIP64}, {  sgnZ,VZ}, { sgnX,VX}, {  sgnQ,VX}, {0,0}, {sgnE,VI}, {sgnI2,VI}, {sgnI4,VI}}},
+ /* ^  */ [VA1CEXP-VA1ORIGIN]= {{{expB,VD}, { expI,VD}, {   expD,VD+VIPW}, {  expZ,VZ}, { expX,VX}, {  expD,VD+VDD}, {0,0}, {expE,VE}, { expD,VDD+VD}, { expD,VDD+VD}}},
+ /* |  */ [VA1CSTILE-VA1ORIGIN]= {{{ 0,VB}, { absI,VI+VIPW}, {   absD,VD+VIPW}, {  absZ,VD}, { absX,VX}, {  absQ,VQ}, {0,0}, {absE,VE+VIPW}, { absI2,VI2+VIPW}, { absI4,VI4+VIPW}}},
+ /* !  */ [VA1CBANG-VA1ORIGIN]= {{{oneB,VB}, {factI,VD}, {  factD,VD}, { factZ,VZ}, {factX,VX}, {factQ,VQ}, {0,0}, {factD,VD+VDD}, {factD,VD+VDD}, {factD,VD+VDD}}},
+ /* o. */ [VA1CCIRCLE-VA1ORIGIN]= {{{  0L,0L}, {   0L,0L}, {     0L,0L}, {    0L,0L}, { pixX,VX}, {0L,0L}, {0L,0L}, {0L,0L}, {0L,0L}, {0L,0L}}}, // others handled as dyads
+ /* %: */ [VA1CROOT-VA1ORIGIN]= {{{ 0,VB}, {sqrtI,VD}, {sqrtD,VD+VIPW}, { sqrtZ,VZ}, {sqrtX,VX}, { sqrtQ,VQ}, {0,0}, {sqrtE,VE}, {sqrtD,VD+VDD+VIPW}, {sqrtD,VD+VDD+VIPW}}},  // most cannot inplace lest CMPX
+ /* ^. */ [VA1CLOG-VA1ORIGIN]= {{{logB,VD}, { logI,VD}, {   logD,VD}, {  logZ,VZ}, { logX,VX}, { logQD,VD}, {0,0}, {logE,VE}, {logD,VD+VDD}, {logD,VD+VDD}}},
+ /* 10 - (QP only) */ [VA1CNEG-VA1ORIGIN]= {{{}, {}, {}, {}, {}, {}, {}, {negE,VE+VIPW}}},
+ /* 11 % (QP only) */ [VA1CRECIP-VA1ORIGIN]= {{{}, {}, {}, {}, {}, {}, {}, {recipE,VE+VIPW}}},
 };
 
 

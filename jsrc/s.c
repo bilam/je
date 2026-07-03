@@ -320,7 +320,7 @@ A probelocalbuckets(L *sympv,A a,LX lx,I bx){NM*u;   // lx is LXAV0(locsyms)[buc
 // Use buckets if present
 A jtprobelocal(L *symorigin,A a,A locsyms){NM*u;I b,bx;
  // There is always a local symbol table, but it may be empty
- RZ(a);u=NAV(a);  // u->NM block
+ RZQ(a);u=NAV(a);  // u->NM block
  if(likely((b = u->bucket)>0)){  // if there is bucket info, use it
   R probelocalbuckets(symorigin,a,LXAV0(locsyms)[b],u->bucketx);  // look up using bucket info
  }else{
@@ -506,6 +506,7 @@ exitfa: ;
 
 // a is a locative NAME block; result is the starting locale, or 0 if error
 // if the locative is direct we just look up/create the locale with that name; if indirect we find the value, then look up that locale
+// Result is A block for locale
 A jtsybaseloc(J jt,A a) {I m,n;NM*v;
  v=NAV(a); n=v->n; m=v->m;
  // Locative: find the indirect locale to start on, or the named locale, creating the locale if not found
@@ -655,7 +656,6 @@ F1(jtsymbrdlock){F12IP;A y;
  R FUNC&AT(y)&&(jt->glock||VLOCK&FAV(y)->flag)?nameref(w,jt->locsyms):y;
 }
 
-
 // w is a value to be assigned, v is the incumbent value in that name
 // Called only in debug mode.  If we redefine an executing name with a different value, it would invalidate
 // the debug stack.  It is OK to reassign if the value doesn't change.  Fail if any redefinition would change part of speech or the id of the executing function.
@@ -699,7 +699,7 @@ A jtprobequiet(J jt,A a){A g;
 }
 
 
-#if 0  // for testing 
+#if 0  // obsolete
 static B jtselfq(J jt,A w){A hs,*u;V*v;
  ARGCHK1(w);
  if(AT(w)&NOUN+NAME+SYMB)R 0;

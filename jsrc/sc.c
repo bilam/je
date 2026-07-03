@@ -365,6 +365,7 @@ RETF(z);
 // up it will add a pointer to the reference in the sentence word, which will establish the caching.  Otherwise the value is used only for flags and rank
 // The reference lookup is initialized with QCFAOWED (not named, no fa owed) semantics (0/QCVERB if undefined ref) and the current asngct
 A jtnamerefacv(J jt, A a, A val){A y;V*v;
+ ARGCHK1(a)   // val may be 0, but a may come from an errant execution
  y=likely(val!=0)?QCWORD(val):ds(CCAP);  // If there is a value, use it; if not, treat as [: (verb that creates error)
  if(unlikely(((I)val&QCNOUN)!=0))R SYMVALTOFAOWED(val);  // if noun, keep the flags: if global, indicate it needs eventual fa()
  // This reference might escape into another context, either (1) by becoming part of a

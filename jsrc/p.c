@@ -732,7 +732,7 @@ endname: ;
      --pt0ecam;  //  decrement token# for the word we just processed
      queue--;  // back to the word we just fetched, which might be garbage
      stack[0].a = (A)((savy&~QCMASK)+PEXT0(savy,QCNAMEDX-STKNAMEDX,STKNAMEDMSK));   // finish setting the stack entry, with the new word.  The stack entry has STKNAMED/STKFAOWED with the rest of the address valid (no type flags)
-     pt0ecam|=(BIT(LASTNOUNX-1)<<tx)&(3LL<<CONJX);   /// install pull delay line  OR it in: 000= no more, other 001=1 more (CONJ), 01x=2 more (RPAR).  (1xx could come in 1st time).  This is where we skip execution for CONJ/RPAR
+     pt0ecam|=(BIT(LASTNOUNX-1)<<tx)&(3LL<<CONJX);   // install pull delay line  OR it in: 000= no more, other 001=1 more (CONJ), 01x=2 more (RPAR).  (1xx could come in 1st time).  This is where we skip execution for CONJ/RPAR
      UI tmpes=pt0ecam;  // pt0ecam is going to be settling after stack0pt below.  To ratify the branch faster we save the relevant part (the pull queue)
      pt0ecam&=(I)(UI4)(~((0b111LL<<CONJX)|FLGPMSK));  // clear the pull queue, PMSK, and all of the stackpt0 field if any.  This is to save 2 fetches in executing lines 0-2 for =:
      stack[0].pt=it;   // stack the internal type too.  We split the ASGN types into with/without name to speed up IPSETZOMB. Only parts have to be valid; we use the rest as flags

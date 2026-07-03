@@ -679,7 +679,7 @@ bodyend: ;  // we branch to here to exit with z set to result
    // It is OK to refer to other symbol tables, since they will be removed if they try to escape at higher levels and in the meantime can be executed; but
    // there is no way we could have a reference to such an implied locative unless we also had a reference to the current table; so we replace only the
    // first locative in each branch
-   z=fix(z,sc(FIXALOCSONLY|FIXALOCSONLYLOWEST));
+   z=fix(z,zeroionei(FIXAFIRSTIMPLOCONLY>>FIXAFINTX));
    ACVCACHECLEAR;  // if a reference is returned, its cache must be invalidated since it may be freed here
   }else{pee(cwsent,CWTCESX2(cwsent,bic),EVNONNOUN,NPGpysfmtdl<<(BW-2)); z=0;}  // signal error, set z to 'no result'
  }else{
@@ -711,7 +711,7 @@ bodyend: ;  // we branch to here to exit with z set to result
    DC d; RZ(d=deba(DCPM+(~bic<<8)+((NPGpysfmtdl<<(7-6))&SHMSK(~(I)jtfg,JTXDEFMODIFIERX-7,128)),locsym,AAV1(sv->fgh[2])[HN*PEXT0(NPGpysfmtdl,6,1)],self));  // push a debug frame for this error.  We know we didn't free locsym
    RETF(0)
   }
-// scaf  tpop(_ttop);
+// obsolete   tpop(_ttop);
  }
 
  // locsym may have been freed now, if it was cloned and there was no error.
@@ -1077,8 +1077,7 @@ A jtcrelocalsyms(J jt, A l, A c,I type, I dyad, I flags){A actst,*lv,pfst,t,wds;
 
 // l is the A block for all the words/queues used in the definition (modified in place and must be nonrecursive)
 // c is the table of control-word info used in the definition
-// type is the m operand to m : n, indicating part of speech to be produced
-// We preparse what we can in the definition
+// We preparse what we can in the definition: (...with no exec on nouns), ((... including nouns), m!:n pure fn, (m : n) which causes {{ }} to be preparsed
 // Return 0 if error
 I pppp(J jt, A l, A c){I j; A fragbuf[20], *fragv=fragbuf+1; I fragl=sizeof(fragbuf)/sizeof(fragbuf[0])-1;  // leave 1 pad word before frag to allow for overfetch in parsea
  // Go through the control-word table, looking at each sentence
@@ -1147,7 +1146,7 @@ I pppp(J jt, A l, A c){I j; A fragbuf[20], *fragv=fragbuf+1; I fragl=sizeof(frag
 // cw is control words, sw is sentence words for one valence.  Result is in compiled form, one A block with the data preceded by index info
 static A compiledefn(J jt, A sw, A cw){A z;
  I nsw=AN(sw); I ncw=AN(cw)+1;  // number of sentence words and control words including the extra word with total len
- I alloamtA=nsw+ncw*(8/sizeof(A));  // number of As needed to hold the sentences plus 8 bytes per cw 
+ I alloamtA=nsw+ncw*(sizeof(CW)/sizeof(A));  // number of As needed to hold the sentences plus 8 bytes per cw 
  GATV0(z,BOX,alloamtA,1) AK(z)+=8*ncw; AS(z)[0]=AN(z)=nsw;  // allo block; point AK past the cw data; AN=# sentence words (for when we free them).  Must allo at rank 1 to make compare in jtredef work
  A * RESTRICT base=CWBASE(z);  // point to start of sent/end+1 of tcesx
  JMC(base,AAV(sw),nsw*sizeof(A),0)  // copy in the sentence words

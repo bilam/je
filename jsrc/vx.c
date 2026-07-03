@@ -401,7 +401,7 @@ static UI modarg(A w, UI n, UI nrecip){UI z;
   z=ABS(wsign); if(unlikely(z>=n))z=z%n;  // modulus of ABS(w)
  }else{
   // XNUM arg.  First thing is to take its modulus, which we do here since n is small
-  X wx=XAV(w)[0]; wsign=XSGN(wx); RZ(wsign)  // sign/size of w, if 0 modulus is 0
+  X wx=XAV(w)[0]; wsign=XSGN(wx); RZQ(wsign)  // sign/size of w, if 0 modulus is 0
   I wlimbs=ABS(wsign); UI *wdig=&XLIMB0(wx);  // get # limbs and a pointer to the least significant
   UI modBW=0-n*nrecip;  // this is 2^BW(mod n)
   z=0;  // modulus inherited from higher digits, and result

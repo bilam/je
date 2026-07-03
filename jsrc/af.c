@@ -45,30 +45,30 @@ static A jtfixa(J,A,A);
 EVERYFS(arofixaself,jtaro,jtfixa,0,VFLAGNONE)  // create A block to be used in every to call jtfixa (dyad) or jtaro (monad)
 
 // fix the verb w (could be a name if name+noun, or during debug).
-// a is flags to handle lower recursions:
+// IAV(a)[0] is flags to handle lower recursions:
 //  0 to begin with
-//  1, 2, or 3 to indicate that a piece of the original input has been processed, and any $: found in a name must
-//   be replaced by an explicit equivalent with the indicated valence(s)
+//  1, 2, or 3 to indicate that a piece of the original input has been processed, and any $: found in a name must end with $::
 // Higher flag bits restrict the search:
-// FIXALOCSONLY set if we will replace only implicit locatives.  We don't go down a branch that doesn't contain one
-// FIXALOCSONLYLOWEST set if we replace only lowest-level locatives (suitable for function return).  We stop in a branch when we hit a locative reference
-// FIXASTOPATINV set if we halt at a defined obverse
+// FIXAFRECUR,FIXAFCOPUBLIC,FIXAFCOLOCATIVE   call for replacement of that class of names
+// FIXAFIRSTIMPLOCONLY 256 // replace only the first occurrence of u./v. in each branch (IMPLOC)
+// FIXASTOPATINV 512  // stop fixing a branch when it gets to a an explicit obverse 
+
 // a has to be an A type because it goes into every2.  It is always an I type with rank 0 and AN=1 so it can go into every, but it has multiple items.
 //   It may be virtual in callbacks from every2 so must not use IAV0
 // IAV0(aa)[1-2] are len/addr of the recursion name-list and must be passed to all recursion levels
 static A jtfixa(J jtfg,A a,A w){F12JT;A z;
-#define REFIXA(a,x) (IAV0(aa)[0]=(aif|(a)), fixa((A)aa,(x)))
-#define R255(x) if(unlikely((I)(x)&-256)==0)R x;
+#define REFIXA(a,x) (IAV0(aa)[0]=(aif|(a)), fixa((A)aa,(x)))  // a indicates which side of the input may need $::
+#define R255(x) if(unlikely((I)(x)&-256)==0)R x;  // return values of 1-255 indicate cycles; return cycle position in that case.  We return the cycle position up the line till we find the start of cycle, which becomes the result
  ARGCHK1(w);
  // If we are only interested in replacing locatives, and there aren't any, exit fast
  if(NOUN&AT(w)){R w;}  // return noun value; only way a name gets here is by ".@noun which turns into ".@(name+noun) for execution.  Also in debug, but that's discarded
  if(FAV(w)->flag&VNONAME)R w;  // if value already fixed (or m : n which gets VNONAME+VNOSELF set), keep it.  This prunes all branches with no names, since VNONAME+VNOSELF is propagated from the bottom up during tree creation
  // continuing, there is a name in the branch and we have to plod through the tree to find it
- fauxblock(fauxself); A aa; fauxINT(aa,fauxself,3,0); AN(aa)=1; IAV0(aa)[1]=IAV(a)[1]; IAV0(aa)[2]=IAV(a)[2];  // place to build recursion parm - make the AK field right, and pass the AM field along
+ fauxblock(fauxself); A aa; fauxINT(aa,fauxself,3,0); AN(aa)=1; IAV0(aa)[1]=IAV(a)[1]; IAV0(aa)[2]=IAV(a)[2];  // place to build recursion parm - copy the recursion namelist and length
  A f=FAV(w)->fgh[0]; A g=FAV(w)->fgh[1]; A h=FAV(w)->fgh[2]; I id=FAV(w)->id;   // fetch fgh of compound, and the type
  I ai=IAV(a)[0]; I aif=ai&~3; //get value of control input a; extract control flags
  ai^=aif; I na=ai==0?3:ai;  // now ai = state without flags; for levels other than the top, use na to cause replacement of $:
- if(unlikely(aif&FIXALOCSONLY)&&!hasimploc(w))R w;  // if looking for implicit locatives, and there aren't any, nothing to fix
+ if(unlikely(aif&FIXAFIRSTIMPLOCONLY)&&!hasimploc(w))R w;  // if looking for implicit locatives, and there aren't any, nothing to fix
  A wf=ds(id);   // fetch self for w
  switch(id){  // we know that modifiers have been executed to produce verb/nouns
  // we reexecute the modifiers to use the new values.
@@ -121,7 +121,7 @@ static A jtfixa(J jtfg,A a,A w){F12JT;A z;
   if(f&&NAME&AT(f)){  // f is the name in name~
    I initn=IAV0(aa)[1];  // save name depth coming in
    if(unlikely(initn>125)){
-    // the number of names processed has gotten large: check for name cycle.  If we find a cycle we return the start of the cycle+1 as the result: always < 256.  If no cycle, it's just too many names
+    // the number of names processed has gotten large: check for name cycle.  If we find a cycle we return the start of the cycle+1 as the result: always < 256.  If no cycle, it's just too many names, EVLIMIT
     // this is tricky: the FIRST reference in a cycle must return a reference to itself.  We do it this way to avoid all traversals except when there is a cycle
     A *av=(A*)IAV0(aa)[2];  // pointer to list of names encountered so far
     I cyc1;  // start of cycle including last element
@@ -134,22 +134,46 @@ cycfound:;  // cycle found, running from cyci to cycn; now back it down to find 
     ++cyc1;  // advance to start of cycle
     R (A)(cyc1+1);  // return start of cycle+1, which signals abort
    }
-   // recursion check finished.  Now replace the name with its value
-   A x; RZ(x=symbrdlock(f))   // current value of name; locked name returns a ref to the same name; not found returns error.  If found, value has been ra'd and tpushed.  Error if undefname
+   // self-recursion check finished.  Now replace the name with its value
+// obsolete    A x; RZ(x=symbrdlock(f))   // current value of name; locked name returns a ref to the same name; not found returns error.  If found, value has been ra'd and tpushed.  Error if undefname
+#if 0 // obsolete 
+A x; RZ(x=symbrdlock(f))   // current value of name; locked n
+I isglobal=0;
+#else
+// obsolete    I isglobal=1;  // scaf
+   A x; ASSERTN(QCWORD(x=syrd(f,jt->locsyms))!=0,EVVALUE,f);  // read name, returning QCFAOWED semantics.  Error if not defined
+   I isglobal; if(isglobal=ISFAOWED(x))tpush(QCWORD(x)); x=QCWORD(x);  // remember if name was public (it can't be sparse, since it is not a noun).  If fa owed, use the tstack for it; remove QC flags
+#endif
+   if(unlikely(FUNC&AT(x)&&(jt->glock||FAV(x)->flag&VLOCK)))R w;  // if value is locked, don't replace it - leave the original name
    // since the name is supposed to be executable, we have to guard against a type pun on the name
    ASSERT(PARTOFSPEECHEQACV(AT(w),AT(x)),EVTYPECHG);   // make sure its part of speech has not changed since the name was parsed
    if(unlikely(AFLAG(x)&AFRO))R w;  // If name has readonly value (like cocurrent), leave it as a reference
-   // if this is an implicit locative, we have to switch the environment before we recur on the name for subsequent lookups
-   // The value we get from the lookup must be interpreted in the environment of the higher level
-   A savloc=jt->locsyms, savglob=jt->global;  // initial locales
-   if(unlikely(NAV(f)->flag&NMIMPLOC)){     //  implicit locative
-    // If our ONLY mission is to replace implicit locatives, we are finished after replacing this locative IF
-    // (1) we want to replace only first-level locatives; (2) there are no more locatives in this branch after the replacement
-    if(aif&FIXALOCSONLYLOWEST)R x;  // return looked-up value once we hit one
-    // If we have to continue after the replacement, we must do so in the environment of the implicit locative.
-    SYMSWITCHTOLOCAL((A)AM(jt->locsyms));
-    // NO FAILURES ALLOWED FROM HERE TO RESTORE
+   // See if we should replace the name with its value, based on operation type; and see if we should stop
+   if(unlikely(aif&FIXAFIRSTIMPLOCONLY)&&NAV(f)->flag&NMIMPLOC)R x;  // In the special mode where we are looking for 1 locative, stop after we have found it
+   if(!isglobal){
+     // private name (including u./v.) is always replaced
+   }else if((NAV(f)->flag&NMLOC+NMILOC+NMIMPLOC)==0){  // name was global but not locative
+    if(!(aif&FIXAFCOPUBLIC))R w;  // if private name and we are not replacing private names, leave unreplaced
+   }else{   // some kind of locative
+    if(NAV(f)->flag&NMILOC){  // name was indirect locative
+     if(!(aif&FIXAFCOLOCATIVE)){C wkarea[258];  // if not fixing locatives...
+      // we have name__ind, but we are not replacing locatives.  Turn the locative into a direct locative, replacing ind with its value (if it is replaceable)
+      if(!(aif&FIXAFCOPUBLIC)){   // if we are not replacing public names, we must check the status of ind
+       C *ind=&NAV(f)->s[NAV(f)->n]; while(ind[-1]!='_')--ind; if(!jtprobelocal(SYMORIGIN,nfs(&NAV(f)->s[NAV(f)->n]-ind,ind,0),jt->locsyms))R w;  // convert ind to name; if not private, leave the locative unchanged
+      }
+      // ind is a replaceable name.  Turn the reference into name_valofind_.  There may be many inds
+      A baseloc; RZ(baseloc=jtsybaseloc(jt,f))   // resolve the indirects to the defining locale
+      I stglen=snprintf(wkarea,sizeof(wkarea),"%.*s_%.*s_",(int)NAV(f)->m,NAV(f)->s,(int)NAV(LOCNAME(baseloc))->n,NAV(LOCNAME(baseloc))->s);  // format the direct locative
+      R namerefacv(nfs(stglen,wkarea,0),x);  // a reference to that name becomes the result
+     }
+    }
+    if(!(aif&FIXAFCOLOCATIVE))R w;  // if name is locative and we are not replacing locatives, leave unreplaced
    }
+   if(!(aif&FIXAFCORECUR))R x;  // if we are replacing only the top name, stop after we have its value
+   // here we decided to keep looking for names, in the new value x
+   // if this is an implicit locative, we have to switch the environment before we recur on the name for subsequent lookups.
+   A savloc=jt->locsyms, savglob=jt->global;  // push the current locales, whether we change them or not
+   if(unlikely(NAV(f)->flag&NMIMPLOC))SYMSWITCHTOLOCAL((A)AM(jt->locsyms));     //  on implicit locative, switch to locative's context  NO FAILURES ALLOWED FROM HERE TO RESTORE
    // Before we recur on the contents of the name, add the name we are currently looking up to the list of encountered names
    // so that we abort if we hit a loop.  BUT if the current name is uv defined in a higher level, it can't be part of
    // a loop (since we are advancing the symbol pointer) and the name, which is just 'u', might well come up again; so we don't
@@ -166,7 +190,7 @@ cycfound:;  // cycle found, running from cyci to cycn; now back it down to find 
     if(initn>=(I)z)R z;     // we found a cycle, which started at z-1.  If this call is the start of the cycle, have it return w to close the cycle.  Keep the cycle up until that happens
     z=w;
    }else R z;  // error, abort
-   R z;
+   R z;  // good return
   }else{f=REFIXA(2,f); R255(f)  R df1(z,f,wf);}
 // bug ^: and m} should process gerund args
  case COBVERSE:
@@ -183,23 +207,34 @@ cycfound:;  // cycle found, running from cyci to cycn; now back it down to find 
 // On internal calls, self is an integer whose value contains flags.  Otherwise zeroionei is used
 // bivalent; called by user as f./f: with w omitted or flags.  self is ds(f./f:)
 // called internally with w holding internal flags, and self=0
-// w=repl level: 0=top only 1=each name once 2=all names (default) 3=not locatives 4=not globals
+// w=string list of keywords (or boxed list), 'recur', 'public', or 'all'.  'public' means non-locatives
+// if self=0 (internal call), bits 0-1 of w are passed through to the flags into fixa, and 'recur all' is implied
 DF2(jtfix){F12IP;PROLOG(0005);A z;
  ARGCHK1(a);
- if(LIT&AT(a)){ASSERT(1>=AR(a),EVRANK); RZ(a=nfs(AN(a),CAV(a),0));}   // convert string to name, to allow us to fix modifiers
- // only verbs/noun can get in through the parser, but internally we also vet adv/conj
- ASSERT(AT(a)&NAME+VERB+ADV+CONJ,EVDOMAIN);
+ if(unlikely(LIT&AT(a))){ASSERT(1>=AR(a),EVRANK); RZ(a=nfs(AN(a),CAV(a),0));}   // convert string to name, to allow us to fix modifiers.  Only verbs/noun can get in through the parser, but internally we also vet adv/conj
+ ASSERT(AT(a)&NAME+VERB+ADV+CONJ,EVDOMAIN);   // other nouns are errors
+ if(unlikely(AT(a)&NAME))RZ(a=jtnameref(jt,a,jt->locsyms))  // convert a name to a reference (must have come from string - other verb names are already converted to references)
  STACKCHKOFL  // make sure we can't recur to a name by removing the name
- w=w==self?num(2):w;   // monad defaults to full replace
- I rqtype=rei0(w);   // get the requested operation
- if(self!=0){  // if not internal call, convert req to flags
-  ASSERT(BETWEENC(rqtype,0,4),EVDOMAIN) rqtype=BIT(FIXAFCOX)<<rqtype;  // audit value & convert to one-hot
- } 
- // To avoid infinite recursion ae keep an array of names that we have looked up.  We create that array here, initialized to empty.  To pass it into fixa, we create
- // a faux INT block to hold the value, and use AM in that block to point to the list of names.  The fauxblock has rank 0 but 2 items
- I namelist[128];  // work area to hold names being fixed.  Only a tiny bit will be used
- fauxblock(fauxself); A augself; fauxINT(augself,fauxself,3,0); IAV0(augself)[0]=rqtype; IAV0(augself)[1]=0; IAV0(augself)[2]=(I)namelist;  // transfer value to writable block; install empty name array
- RZ(z=fixa(augself,AT(a)&VERB+ADV+CONJ?a:symbrdlock(a)));  // name comes from string a
- // the fixed version may still contain a name, if there was a cycle
+ I reqmask;
+ if(self!=0){  // not internal call
+  if(w==self)reqmask=FIXAFCORECUR+FIXAFCOPUBLIC+FIXAFCOLOCATIVE;   // default for f. // recur all
+  else{   // w has string args for keywords.
+   if(AT(w)&LIT)RZ(w=words(w)) ASSERT(AT(w)&BOX,EVDOMAIN) ASSERT(AR(w)<2,EVRANK)   // convert to list of boxed strings
+   A wx; RZ(wx=indexof(words(str(16,"recur public all")),w));   // look up each word in w among the keywords
+   I *wxv=IAV(wx); reqmask=0; DQ(AN(wx), I bit=(I)1<<wxv[i]; ASSERT((reqmask&bit)==0,EVDOMAIN) reqmask|=bit;) ASSERT(reqmask<6,EVDOMAIN)  // no misspelled or repeated words, and only one of public|all
+   reqmask|=(reqmask&4)>>1; reqmask<<=FIXAFCOX;  // all implies public; shift into position
+  }
+ }else{reqmask=(IAV(w)[0]<<FIXAFINTX)+FIXAFCORECUR+FIXAFCOPUBLIC+FIXAFCOLOCATIVE;}   // internal call has upper flags bits only, lower implied (so we can use num() for them)
+
+ if(unlikely(!(reqmask&FIXAFCORECUR))&&!(FAV(a)->id==CTILDE&&(AT(FAV(a)->fgh[0])&NAME)))z=a;  // if user wants to fix only the top, the top must be a reference or we leave it unfixed
+ else{
+  // To avoid infinite recursion ae keep an array of names that we have looked up.  We create that array here, initialized to empty.  To pass it into fixa, we create
+  // a faux INT block to hold the value, and use AM in that block to point to the list of names.  The fauxblock has rank 0 but 2 items
+  I namelist[128];  // work area to hold names being fixed.  Only a tiny bit will be used
+  fauxblock(fauxself); A augself; fauxINT(augself,fauxself,3,0); IAV0(augself)[0]=reqmask; IAV0(augself)[1]=0; IAV0(augself)[2]=(I)namelist;  // transfer value to writable block; install empty name array
+// obsolete   RZ(z=fixa(augself,AT(a)&VERB+ADV+CONJ?a:symbrdlock(a)));  // name comes from string a
+  RZ(z=fixa(augself,a));  // fix as requested.  a must be an ACV now
+  // the fixed version may still contain a name, if there was a cycle
+ }
  EPILOG(z);
 }
