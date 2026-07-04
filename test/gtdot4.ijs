@@ -1,8 +1,10 @@
 prolog './gtdot4.ijs'
 NB. T. t. ------------------------------------------------------------------
 
+0!:_1`1:@.(9!:56'pyxes') '?'   NB. skip if not pyxes
+
 NB. **************************************** threads & tasks **********************************
-NB. 64-bit only
+NB. pyxes only
 
 NB. threadpools
 
@@ -45,6 +47,8 @@ a =: i.&.> ((QKTEST{20 5) ?@$ 10)
 
 
 delth''
+
+NB.?  end of skip if not pyxes
 
 epilog''
 

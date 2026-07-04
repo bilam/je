@@ -2,8 +2,12 @@ prolog './gtdot2.ijs'
 NB. T. t. ------------------------------------------------------------------
 NB. locale
 
+0!:_1`1:@.(9!:56'pyxes') '?'   NB. skip if not pyxes
+
+NB. **************************************** threads & tasks **********************************
+NB. pyxes only
+
 NB. void freesymb(J jt, A w){I j,wn=AN(w); LX k,* RESTRICT wv=LXAV0(w);
-NB. 64-bit only
 NB. delete all worker threads
 delth''  NB. make sure we start with an empty system
 
@@ -373,6 +377,7 @@ NB.$    end of skip
 (<'z') 18!:2 <'base'
 (271828) 18!:55 ;:'l1 l2'
 
+NB.?  end of skip if not pyxes
 
 epilog''
 

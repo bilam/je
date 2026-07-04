@@ -1,5 +1,7 @@
 prolog './g128x19.ijs'
 
+0!:_1`1:@.(9!:56'pyxes') '?'   NB. skip if not pyxes
+
 0!:_1`1:@.(2 -.@*@(17 b.) 9!:56'memaudit') '$'   NB. skip slow
 
 CacheLine=: 9!:56'cachelinesize'
@@ -1351,7 +1353,9 @@ f i. 65
 
 delth''
 
-NB.$  end of skip
+NB.$  end of skip slow
+
+NB.?  end of skip if not pyxes
 
 epilog''
 

@@ -1,8 +1,10 @@
 prolog './gtdot.ijs'
 NB. T. t. ------------------------------------------------------------------
 
+0!:_1`1:@.(9!:56'pyxes') '?'   NB. skip if not pyxes
+
 NB. **************************************** threads & tasks **********************************
-NB. 64-bit only
+NB. pyxes only
 
 chk=: (<UNAME) e. 'FreeBSD';'OpenBSD'
 
@@ -436,8 +438,7 @@ delth''
 'limit error' -: 2 T. etx 8
 'limit error' -: ". etx '] t. 8'
 
-
-
+NB.?  end of skip if not pyxes
 
 epilog''
 

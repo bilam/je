@@ -1,8 +1,10 @@
 prolog './gtdot5.ijs'
 NB. T. t. ------------------------------------------------------------------
 
+0!:_1`1:@.(9!:56'pyxes') '?'   NB. skip if not pyxes
+
 NB. **************************************** threads & tasks **********************************
-NB. 64-bit only
+NB. pyxes only
 
 NB. wait until there are y waiting threads
 wthr=: {{ while. y ~: {. 2 T.'' do. 6!:3]0.001 end. 1 }}
@@ -206,5 +208,8 @@ EMPTY
 
 )
 NB.$  end of skip
+
+NB.?  end of skip if not pyxes
+
 epilog''
   

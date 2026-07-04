@@ -2,8 +2,10 @@ prolog './gtdot1.ijs'
 NB. T. t. ------------------------------------------------------------------
 NB. files
 
+0!:_1`1:@.(9!:56'pyxes') '?'   NB. skip if not pyxes
+
 NB. **************************************** threads & tasks **********************************
-NB. 64-bit only
+NB. pyxes only
 NB. delete all worker threads
 delth''  NB. make sure we start with an empty system
 
@@ -511,6 +513,8 @@ t1done=: 0
 
 1: (2!:0 :: 1:)^:IFUNIX 'rm -rf ',jpath '~temp/tdot'
 1: (1!:55 ::1:)^:IFWIN ((jpath'~temp/tdot/')&,)&.> {."1[ 1!:0 jpath '~temp/tdot/*' 
+
+NB.?  end of skip if not pyxes
 
 epilog''
 

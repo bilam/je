@@ -1,5 +1,7 @@
 prolog './g128x14.ijs'
 
+0!:_1`1:@.(9!:56'pyxes') '?'   NB. skip if not pyxes
+
 CacheLine=: 9!:56'cachelinesize'
 
 3 : 0''
@@ -201,6 +203,8 @@ for. r#0 do. if. unbat do. tt =. tt , batchop 'qktcopy';ops,<0.0 else. tt =. tt 
 
 res =: 0 mtpivottbl (20, (>.&.(%&(CacheLine%16)) 20));(,:0.9 0.9);0.0
 delth''
+
+NB.?  end of skip if not pyxes
 
 epilog''
 
