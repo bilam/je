@@ -104,7 +104,7 @@ t0 =: 6!:1''
 NB. assert. (t0 + 0.5) > 6!:1''  [ 'a6' NB. master should wait
 NB. semaphore test
 localpyx=:5 T. 5
-sema t. '' localpyx;<1
+empty sema t. '' localpyx;<1  NB. Must not display result of sema
 'remotepyx remote_stuff'=:>localpyx
 remote_stuff=2
 6 T. remotepyx,<(localpyx =: 5 T. 5);<3
