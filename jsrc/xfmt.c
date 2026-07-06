@@ -7,6 +7,7 @@
 #include "x.h"
 #include "vcomp.h" /* for TLT & friends */
 #include "dtoa.h"
+#include "jgmp.h"
 
 static const D ppwrs[10]={1, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9};
 static const D npwrs[10]={1,1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7,1e-8,1e-9};
@@ -82,20 +83,23 @@ static F1(jtfmtbfc){F12IP;A*u,z;B t;C c,p,q,*s,*wv;I i,j,m,n;
  R z;
 } /* format phrases: boxed from char */
 
+// install commas into *x, whose length l is big enough.  d is the number of decimal digits.  Discard non-digits (including sign)
 static B jtfmtcomma(J jt, C *x, I l, I d, C *subs) {C *v,*u;I j,n,c;
- n=l-(c=(l-!!d-d)>>2); u=x+l-1;
- if(v=memchr(x, SUBd, n)){j=n-(v-x); u-=j; memmove(u+1,v,j); v--;} else v=x+n-1;
+ n=l-(c=(l-!!d-d)>>2); u=x+l-1;  // n=length of input before decimal point (remove 1/4 of the spaces, which are reserved for commas) u=output pointer
+ if(v=memchr(x, SUBd, n)){j=n-(v-x); u-=j; memmove(u+1,v,j); v--;} else v=x+n-1;   // v=input pointer, positioned just left of the decimal point
  j=0;
  DQ(v-x+1, if((C)(*v-'0')<=(C)('9'-'0')){if(j==3){*u--=SUBc; j=0;} j++;} *u--=*v--;);
  R 1;
 }
 
+// b is the bitflags for the floating-point value w
+// result is number of decimal places needed to show all significance
 static I jtdpone(J jt, B bits, D w){D t;
- if(bits&BITSf) R 0;
+ if(bits&BITSf) R 0;   // if field is formatted as f type, 0 decimal places
  w=ABS(w);
- if(bits&BITSe) w/=pow(10,tfloor(log10(w)));
- DO(10, t=npwrs[i]*jround(ppwrs[i]*w); if(TEQ(t,w)) R i; );
- R 9;
+ if(bits&BITSe) w/=pow(10,tfloor(log10(w)));   // if exponent form, shift significance to be in [1,10)
+ DO(10, t=npwrs[i]*jround(ppwrs[i]*w); if(TEQ(t,w)) R i; );  // count number of significant decimal places, return it
+ R 9;  // never more than 9
 }
 
 // scan a for [www[.ddd]}
@@ -201,12 +205,13 @@ static D jtexprndID(J jt, I d, D y){I e,s;D f,q,c,x1,x2;DI8 f8,y8,c8;
  if(y8.i-f8.i >= c8.i-y8.i-1) R s*c; else R s*f;
 } /* afzrnd for numbers in exponential notation */
 
+// format absolute value of integer iw into the LAST columns of *x which has length m.  dp is number of reserved decimal digits
 static B jtsprintfI(J jt, C *x, I m, I dp, I iw, C *subs) {I /*r,*/ g;
- x+=m-1;
- DQ(dp, *x--='0';); if(dp) *x--=SUBd; /*r = dp + !!dp;*/
+ x+=m-1;   // start at last digit
+ DQ(dp, *x--='0';); if(dp) *x--=SUBd; /*r = dp + !!dp;*/  // if there are decimal places, make them all 0 and add the decimal point
  g=SGN(iw); UI uiw=ABS(iw);
- while(uiw){ *x--='0'+(C)(uiw%10); uiw/=10; /*r++;*/ }
- if(g==0) { *x--='0'; /*r++; */ }
+ while(uiw){ *x--='0'+(C)(uiw%10); uiw/=10; /*r++;*/ }   // format absolute value
+ if(g==0) { *x--='0'; /*r++; */ }  // if input 0, give 1 digit of 0
  R 1;
 }
 
@@ -240,58 +245,72 @@ static B jtsprintfeD(J jt, C *x, I m, I dp, D dw, C *subs) {I y,y0;int decpt,sig
 /* the output of jtfmtprecomp looks like this                                */
 /*   z =: base ; strings ; length ; bitflags                                */
 /* given the following:                                                      */
-/*   nc =: {: $ y.           NB. the number of columns                       */
+/*   nc =: {: $ y           NB. the number of columns                       */
 /*   nf is the number of format phrases                                      */
 /* if. 1 < nf do.                                                            */
 /*  base   =:(nf,4)$width_0, decimal_places_0, modifiers_0, col_width_0, ... */
 /* else.                                                                     */    
 /*  base   =:(3+nc)$width, dec_places, mods, col_width_0, col_width_1, ...   */
 /* end.                                                                      */
-/* strings =:(nf,8)$b0;d0;m0;n0;p0;q0;r0;s0; b1;d1; ...                      */
-/* length  =:($y.)$number_length_0_0, number_length_0_1, ... (in w, not      */
-/* bitflags=:($y.)$bitflags_0_0, bitflags_0_1, ...            column order)  */
+/* strings =:(nf,11)$k0;j0;i0;b0;d0;m0;n0;p0;q0;r0;s0; b1;d1; ...                      */
+/* length  =:($y)$number_length_0_0, number_length_0_1, ... (in w, not      */
+/* bitflags=:($y)$bitflags_0_0, bitflags_0_1, ...            column order)  */
 
 #define mods_coldp 0x40000000 /* applied to modifiers when we're computing this columns # of decimal places */
 
 static F2(jtfmtprecomp) {F12IP;A*as,base,fb,len,strs,*u,z;B*bits,*bw;D dtmp,*dw;
      I d,i,*ib,imod,*iw,*iv,maxl,mods,n,nB,nD,nMN,nPQ,nI,nc,nf,*s,wr,*ws,wt;
  ARGCHK2(a,w); 
- nf=AS(a)[0]; nf=1==AR(a)?1:nf; n=AN(w); wt=AT(w); wr=AR(w); ws=AS(w); SHAPEN(w,wr-1,nc);   // nf=#cells, nc=length of 1-cell (# columns)
- ASSERT(ISDENSETYPE(wt,B01+INT+FL), EVDOMAIN);
- if(1<nf){GATV0(base,INT,nf*4,2); s=AS(base); *s++=nf; *s=4;}else GATV0(base,INT,3+nc,1);
- GATV0(strs,BOX,nf*NMODVALS,2); s=AS(strs); *s++=nf; *s=NMODVALS;
- GATV(len, INT,n,wr,ws); 
- GATV(fb,  B01,n,wr,ws); mvc(n,BAVn(wr,fb),MEMSET00LEN,MEMSET00);
- GAT0(z,BOX,4,1); u=AAV1(z); *u++=incorp(base); *u++=incorp(strs); *u++=incorp(len); *u++=incorp(fb); 
- ib=AV(base); as=AAV(strs); u=AAV(a);
- if(1==nf){MC(ib,AV(C(*u)),SZI*3); mvc(SZI*nc,ib+3,MEMSET00LEN,MEMSET00); DO(NMODVALS, *as++=incorp(C(u[i+1]));)}
- else DQ(nf, MC(ib,AV(C(*u)),SZI*3); ib[3]=0; ib+=4; DO(NMODVALS, *as++=incorp(C(u[1])); ++u;) ++u; )
- bits=BAV(fb);
+ nf=AS(a)[0]; nf=1==AR(a)?1:nf; n=AN(w); wt=AT(w); wr=AR(w); ws=AS(w); SHAPEN(w,wr-1,nc);   // nf=#cells, nc=length of 1-cell (# columns), n=#atoms in w
+ ASSERT(ISDENSETYPE(wt,B01+INT+FL+XNUM), EVDOMAIN);
+ if(1<nf){GATV0(base,INT,nf*4,2); s=AS(base); *s++=nf; *s=4;}else GATV0(base,INT,3+nc,1);   // allocate result area, either a table or a list
+ GATV0(strs,BOX,nf*NMODVALS,2); s=AS(strs); *s++=nf; *s=NMODVALS;    // strings, one per modifier per format phrase
+ GATV(len, INT,n,wr,ws);    // len=length in bytes of each number, or # decimal places
+ GATV(fb,  B01,n,wr,ws); mvc(n,BAVn(wr,fb),MEMSET00LEN,MEMSET00);   // fb=bitflags for each number, init to 0
+ GAT0(z,BOX,4,1); u=AAV1(z); *u++=incorp(base); *u++=incorp(strs); *u++=incorp(len); *u++=incorp(fb);    // allocate result = base ; strs ; len ; fb
+ ib=AV(base); as=AAV(strs); u=AAV(a);   // init scan pointers  ib=base, as=strs, u=a (the format phrases)
+ if(1==nf){MC(ib,AV(C(*u)),SZI*3); mvc(SZI*nc,ib+3,MEMSET00LEN,MEMSET00); DO(NMODVALS, *as++=incorp(C(u[i+1]));)}  // 1 fp: move it (width, decplaces, mods), set col widths to 0;  then move strs
+ else DQ(nf, MC(ib,AV(C(*u)),SZI*3); ib[3]=0; ib+=4; DO(NMODVALS, *as++=incorp(C(u[1])); ++u;) ++u; )  // >1 fp: move each, and move strs
+ bits=BAV(fb);  // init bits=ptr to bitflags for each number
  switch(CTTZ(wt)) {
  case B01X:
   bw=BAV(w); ib=AV(base);
-  DQ(n, *bits|=BITSz*!*bw; bits++; bw++;);  /* BITSe, BITS_, BITS__, and BITS_d are 0 */
+  DQ(n, *bits|=BITSz*!*bw; bits++; bw++;);  // BITSe, BITS_, BITS__, and BITS_d are 0; set BITSz if 0
   DQ(nf, if(ib[1]==-1)ib[1]=0; ib+=4;);     /* boolean always has 0 decimal places: */
   break;
- case INTX:
+ case INTX: case XNUMX:
+
   iw=AV(w);
   iv=AV(len); /* use len to store dp */
-  imod=1;  // row size counter
+  imod=1;  // row index counter
   for(i=0;i<n;++i){
-   ib+=4; --imod; ib=(imod==0)?AV(base):ib; imod=(imod==0)?nf:imod;
-   d=ib[1];
-   if(d==-1) *bits |= BITSe * (2000000000L < (UI)ABS(*iw));
+   ib+=4; --imod; ib=(imod==0)?AV(base):ib; imod=(imod==0)?nf:imod;  // use the entries in base cyclically, repeating every nf loops
+   d=ib[1];   // d=#decimal places requested
    /* BITS_, BITS__, and BITS_d are 0 */
-   *bits |= BITSz*!*iw;
-   if(d==-1) *iv = dpone(*bits,(D)*iw);
+   if(wt&INT){
+    if(!*iw){*bits|=BITSz; *iv=0;    // set BITSz if value 0, and clear field len
+    }else if(d==-1){if(ABS((D)*iw)>2000000000.){*bits|=BITSe; *iv=dpone(*bits,(D)*iw);}else *iv=0;}  // if exponent form allowed, switch to it (by setting BITSe) if |value|>2e9, & save #dps needed as exp form
+// obsolete  *bits |= BITSe * (2000000000L < (UI)ABS(*iw));
+// obsolete    if(d==-1) *iv = dpone(*bits,(D)*iw);    // get # decimal places needed (only if exponent form allowed)
+// obsolete    }else{
+// obsolete    }
+   }else{X XN=*(X*)iw;  // must be XNUM.  the value, as X
+    if(ISX0(XN))*bits|=BITSz;    // set BITSz if value 0
+    else if(d==-1){   // exponent form possible, which would give us decimal places
+     ASSERT(ABS(AS(XN)[0])<=(1023>>LGBW),EVLIMIT)  // GMP crashes if value exceeds float range
+     mpX(XN); D h=jmpz_get_d(mpXN);   // high & low parts as D
+     if(ABS(h)>2000000000.){*bits|=BITSe; *iv=dpone(*bits,h);}  // if exponent form allowed, switch to it (by setting BITSe) if |value|>2e9, & save #dps needed as exp form
+    }
+   }
    bits++; iw++; iv++;
   }
-  imod=1;  // row size counter
+  imod=1;  // reset to beginning of row
+  // pass over the numbers again; extend the # fraction bits if needed
   iv=AV(len); 
   for(i=0;i<n;++i){
-   ib+=4; --imod; ib=(imod==0)?AV(base):ib; imod=(imod==0)?nf:imod;
-   if(ib[1]==-1) ib[2] |= mods_coldp; 
-   if(ib[2]&mods_coldp && *iv>ib[1]) ib[1]=*iv; 
+   ib+=4; --imod; ib=(imod==0)?AV(base):ib; imod=(imod==0)?nf:imod;  // use the entries in base cyclically, repeating every nf loops
+   if(ib[1]==-1) ib[2] |= mods_coldp;    // if 'enough' decimal places requested, either as part of the field spec or because exponent form allowed...
+   if(ib[2]&mods_coldp && *iv>ib[1]) ib[1]=*iv;    // ...increase the number of decimal places if needed to hold the significance
    iv++; 
   }
   break;
@@ -338,54 +357,71 @@ static F2(jtfmtprecomp) {F12IP;A*as,base,fb,len,strs,*u,z;B*bits,*bw;D dtmp,*dw;
  imod=1;  // row size counter
  I imodc=-1;  // 
  for(i=0;i<n;i++) {  // go through the values figuring the length needed for each value
-       ib+=4; u+=NMODVALS; --imod; ib=(imod==0)?AV(base):ib; u=(imod==0)?AAV(strs)-1:u; imod=(imod==0)?nf:imod;
-       ++imodc; imodc=(imodc==nc)?0:imodc;  // imodc is i%nc
-       nB=AN(C(uB)); nD=AN(C(uD)); nMN=AN(C(uM))+AN(C(uN)); nPQ=AN(C(uP))+AN(C(uQ)); nI=AN(C(uI));
-       d=ib[1]; mods=ib[2]; 
-       if(*bits&BITSf) { if(mI&&*bits&BITS__)*iv=nI; else if(mD) *iv=nD; else *iv=2-!!(*bits&BITS_); }
-       else if(*bits&BITSz) { 
-        if(mB) *iv=nB; 
-        else {
-         *iv=1+d+!!d;
-         if(mPQ) (*iv) += nPQ;
-        }
-       } else if(mI && wt&INT && *iw==IMIN){*iv=nI;  // if we recognize NUL, do so regardless of output precision
-       } else if(*bits&BITSe) {
-        if(FL&wt) {
-         if     (ABS(*dw) < 1e-99) *iv=2+!!d+d+1+3;
-         else if(ABS(*dw) < 1    ) *iv=2+!!d+d+1+2;
-         else if(ABS(*dw) < 1e10 ) *iv=2+!!d+d+  1;
-         else if(ABS(*dw) < 1e100) *iv=2+!!d+d+  2;
-         else                      *iv=2+!!d+d+  3;
-         if(*dw < 0) { if(mMN) (*iv)+=nMN; else (*iv)++; }
-         else if(mPQ) (*iv)+=nPQ;
-        } else {
-#if SY_64
-         if ((((UI)*iw)^(UI)REPSGN(*iw))-(UI)REPSGN(*iw) < 10000000000L) *iv=2+!!d+d+  1;  // (UI)ABS(*iw) without signed arithmetic
-         else                         *iv=2+!!d+d+  2;
-#else
-         *iv=2+!!d+d+  1;
-#endif
-         if(*iw < 0) { if(mMN) (*iv)+=nMN; else (*iv)++; }
-         else if(mPQ) (*iv) += nPQ;
-        }
-       } else {
-        if(B01&wt) *iv=1+!!d+d;
-        else {
-         if(B01&wt) dtmp=1; if(INT&wt) dtmp=(D)*iw; else dtmp=*dw;
-         *iv=(I)jfloor(log10(roundID(d,MAX(ABS(dtmp),1))));
-         if(mC) (*iv)+=(*iv)/3;
-         (*iv)+=1+!!d+d;
-         if(dtmp < 0 && mMN) (*iv)+=nMN;
-         else if(dtmp < 0) (*iv)++;
-         else if(mPQ) (*iv)+=nPQ;
-        }
-       }
-       ASSERTSYS(0 <= *iv, "jtfmtprecomp: cell length");
-       if(*iv > maxl) maxl=*iv;
-       if(1<nf && *iv > ib[3]) ib[3]=*iv;
-       else if(1==nf && *iv > ib[3+imodc]) ib[3+imodc]=*iv;
-       bits++; dw++; iw++; iv++;
+  ib+=4; u+=NMODVALS; --imod; ib=(imod==0)?AV(base):ib; u=(imod==0)?AAV(strs)-1:u; imod=(imod==0)?nf:imod;
+  ++imodc; imodc=(imodc==nc)?0:imodc;  // imodc is i%nc
+  nB=AN(C(uB)); nD=AN(C(uD)); nMN=AN(C(uM))+AN(C(uN)); nPQ=AN(C(uP))+AN(C(uQ)); nI=AN(C(uI));
+  d=ib[1]; mods=ib[2]; 
+  if(*bits&BITSf) { if(mI&&*bits&BITS__)*iv=nI; else if(mD) *iv=nD; else *iv=2-!!(*bits&BITS_); }
+  else if(*bits&BITSz) { 
+   if(mB) *iv=nB; 
+   else {
+    *iv=1+d+!!d;
+    if(mPQ) (*iv) += nPQ;
+   }
+  } else if(mI && wt&INT && *iw==IMIN){*iv=nI;  // if we recognize NUL, do so regardless of output precision
+  } else if(*bits&BITSe) {  // exponent form
+   if(FL&wt) {D ad=ABS(*dw);  // value
+    I ep=1+3; ep=ad>=1e-99?1+2:ep; ep=ad>=1?1:ep; ep=ad>=1e10?2:ep; ep=ad>=1e100?3:ep;  // # exponent places needed
+    *iv=2+!!d+d+ep;  // store total # columns needed
+// obsoleteif(ABS(*dw) < 1e-99) *iv=2+!!d+d+1+3;
+// obsolete  else if(ABS(*dw) < 1    ) *iv=2+!!d+d+1+2;
+// obsolete  else if(ABS(*dw) < 1e10 ) *iv=2+!!d+d+  1;
+// obsoleteelse if(ABS(*dw) < 1e100) *iv=2+!!d+d+  2;
+// obsoleteelse  *iv=2+!!d+d+  3;
+    if(*dw < 0) { if(mMN) (*iv)+=nMN; else (*iv)++; }
+    else if(mPQ) (*iv)+=nPQ;
+   } else {D ad, dv;  // exponent form originating from integer (possibly XNUM).  ad is value converted to float
+    if(wt&INT)ad=ABS(dv=(D)*iw);
+    else{X XN=*(X*)iw;  // must be XNUM.  the value, as X
+     ASSERT(ABS(AS(XN)[0])<=(1023>>LGBW),EVLIMIT)  // GMP crashes if value exceeds float range
+     mpX(XN); ad=ABS(jmpz_get_d(mpXN));   // as D
+    }
+    I ep=1+3; ep=ad>=1e-99?1+2:ep; ep=ad>=1?1:ep; ep=ad>=1e10?2:ep; ep=ad>=1e100?3:ep;  // # exponent places needed
+    *iv=2+!!d+d+ep;  // store total # columns needed
+// obsolete #if SY_64
+// obsolete         }
+// obsolete          if ((((UI)*iw)^(UI)REPSGN(*iw))-(UI)REPSGN(*iw) < 10000000000L) *iv=2+!!d+d+  1;  // (UI)ABS(*iw) without signed arithmetic
+// obsolete          else                         *iv=2+!!d+d+  2;
+// obsolete #else
+// obsolete          *iv=2+!!d+d+  1;
+// obsolete #endif
+    if(dv < 0) { if(mMN) (*iv)+=nMN; else (*iv)++; }
+    else if(mPQ) (*iv) += nPQ;
+   }
+  } else {  // must be B01/FL/INT/XNUM type but not exponent form, count number of significant digits
+   if(B01&wt) *iv=1+!!d+d;
+   else {   // INT/FL/XNUM
+    B dneg;  // set if value < 0
+    if(!(wt&XNUM)){  // INT/FL
+     if(INT&wt) dtmp=(D)*iw; else dtmp=*dw;
+     *iv=(I)jfloor(log10(roundID(d,MAX(ABS(dtmp),1))));  // number of digits needed minus 1
+     dneg=dtmp<0;
+    }else{   // XNUM
+     C*s=SgetX(*(A*)iw); // base 10 representation
+     dneg=s[0]=='-'; s+=dneg; *iv=strlen(s)-1;  // remember if neg & skip sign; get len of absolute value minus 1
+    }
+    if(mC) (*iv)+=(*iv)/3;
+    (*iv)+=1+!!d+d;
+    if(dneg && mMN) (*iv)+=nMN;
+    else if(dneg) (*iv)++;
+    else if(mPQ) (*iv)+=nPQ;
+   }
+  }
+  ASSERTSYS(0 <= *iv, "jtfmtprecomp: cell length");
+  if(*iv > maxl) maxl=*iv;
+  if(1<nf && *iv > ib[3]) ib[3]=*iv;
+  else if(1==nf && *iv > ib[3+imodc]) ib[3+imodc]=*iv;
+  bits++; dw++; iw++; iv++;
  }
  ib=AV(base);
  if(1==nf){if(!ib[0])ib[0]=maxl;}else DQ(nf, if(ib[0]==0)ib[0]=ib[3]; ib+=4;);
@@ -393,13 +429,13 @@ static F2(jtfmtprecomp) {F12IP;A*as,base,fb,len,strs,*u,z;B*bits,*bw;D dtmp,*dw;
 } /* format: precomputation to separate the group and column concept */
 
 /* a is jtfmtprecomp result */
-/* w is argument to format, but with BO1, INT, or FL type. */
+/* w is argument to format, but with BO1, INT, FL, or XNUM type. */
 static A jtfmtallcol(J jt, A a, A w, I mode) {A *a1v,base,fb,len,strs,*u,v,x;
     B *bits,*bv;C*cB,*cD,*cM,*cN,*cP,*cQ,*cR,*cI,*cv,**cvv,*cx,*subs;D dtmp,*dv;
     I coll,d,g,h,i,*ib,imod,*iv,*il,j,k,l,m,mods,nB,nD,nM,nN,nP,nQ,nR,nI,n,nc,nf,t,wr,*ws,y,zs[2];
  ARGCHK1(a); u=AAV(a); base=*u++; strs=*u++; len=*u++; fb=*u++; u=0; subs=0;  // extract components: len->lengths of the values
  ARGCHK1(w); n=AN(w); t=AT(w); wr=AR(w); ws=AS(w); SHAPEN(w,wr-1,nc); 
- ASSERT(ISDENSETYPE(t,B01+INT+FL), EVDOMAIN);
+ ASSERT(ISDENSETYPE(t,B01+INT+FL+XNUM), EVDOMAIN);
 
  nf=1==AR(base)?1:AS(base)[0];
  switch(mode){
@@ -489,16 +525,18 @@ static A jtfmtallcol(J jt, A a, A w, I mode) {A *a1v,base,fb,len,strs,*u,v,x;
     else if(dtmp< 0       ) { *cv=SUBm;                              }   // if other negative, use the specified - sign
     else if(dtmp>=0 && mPQ) { MC(cv, cP, nP); MC(cv+*il-nQ, cQ, nQ); }  // if nonnegative & pref/suff given, move them in
    } else {
-    if(t==INT){  // integer to be displayed in fixed-point
-     y=*iv < 0; g=0; 
-     if(*iv < 0 && mMN) { y=nM; g=nN; }
-     else if(*iv>=0 && mPQ) { y=nP; g=nQ; }  // pref/suff length as above
+    if(t&INT+XNUM){  // integer to be displayed in fixed-point
+     I sgniv=t&INT?*iv:AS((A)*iv)[0];   // surrogate for value, giving sign & zero info
+     y=sgniv < 0; g=0; 
+     if(sgniv < 0 && mMN) { y=nM; g=nN; }
+     else if(sgniv>=0 && mPQ) { y=nP; g=nQ; }  // pref/suff length as above
      m=*il-y-g; if(mC) m=m-((m-!!d-d)>>2);  // m=length left for value after pref/suff, and any added commas
-     RZ(sprintfI(cv+y, m, d, *iv, subs));  // format as integer
+     if(t&INT){RZ(sprintfI(cv+y, m, d, sgniv, subs))  // format as integer
+     }else{C *s=SgetX(*(A*)iv); s+=SGNTO0(sgniv); I sl=strlen(s); MC(cv+y+m-sl,s,sl); }  // format XNUM as integer, skip sign, copy to END of field
      if(mC) RZ(fmtcomma(cv+y, *il-y-g, d, subs));  // insert commas if called for
-     if     (*iv < 0 && mMN) { MC(cv, cM, nM); MC(cv+*il-nN, cN, nN); }  // install pref/suff as above
-     else if(*iv < 0       ) { *cv=SUBm;                              }
-     else if(*iv>= 0 && mPQ) { MC(cv, cP, nP); MC(cv+*il-nQ, cQ, nQ); }
+     if     (sgniv < 0 && mMN) { MC(cv, cM, nM); MC(cv+*il-nN, cN, nN); }  // install pref/suff as above
+     else if(sgniv < 0       ) { *cv=SUBm;                              }
+     else if(sgniv>= 0 && mPQ) { MC(cv, cP, nP); MC(cv+*il-nQ, cQ, nQ); }
     }else if(t<INT){  // B01
      if(mPQ) { MC(cv, cP, nP); MC(cv+*il-nQ, cQ, nQ); }
      RZ(sprintfI(cv+nP, *il-nP-nQ, d, *bv, subs));
@@ -539,7 +577,7 @@ static A jtfmtxi(J jt, A a, A w, I mode, I *omode){I lvl;
       ASSERT(!(AR(x)&&AT(x)&NUMERIC),EVRANK);});
   A z; R dfv2(z,reitem(shape(w),a),w,amp(foreign(num(8),num(0)), ds(COPE)));
  } else {
-  if(ISDENSETYPE(AT(w),XNUM+RAT+CMPX))RZ(w=ccvt(FL,w,0));
+  if(ISDENSETYPE(AT(w),RAT+CMPX))RZ(w=ccvt(FL,w,0));
   *omode=mode;
   R fmtallcol(fmtprecomp(rank1ex0(a,DUMMYSELF,jtfmtparse),w),w,mode);
 }} /* 8!:x internals */

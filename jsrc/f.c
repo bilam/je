@@ -288,7 +288,7 @@ static F1(jtthxqe){F12IP;
  I n=AN(w), r=AR(w), *s=AS(w), *wv=AV(w), c;
  SHAPEN(w,r-1,c); I m=n/c; // m: # rows, c: # columns
  A t; GATV0(t,BOX,n,1); A*tv=AAV1(t);
- A d; RZ(d=apvwr(c,1L,0L)); I*dv=AV(d); A*v=tv;
+ A d; RZ(d=apvwr(c,1L,0L)); I*dv=AV(d); A*v=tv;  // create vector of c 1s
  switch(CTTZ(AT(w))){A y;
  case XNUMX:{X*u=(X*)wv; DO(m, DO(c, RZ(*v++=y=thx1(*u++)); dv[i]=MAX(dv[i],AN(y));));} break;
  case RATX: {Q*u=(Q*)wv; DO(m, DO(c, RZ(*v++=y=thq1(*u++)); dv[i]=MAX(dv[i],AN(y));));} break;

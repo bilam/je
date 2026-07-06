@@ -328,7 +328,7 @@ static DF2(jtcasei12){F12IP;A vres,z;I gerit[128/SZI],ZZFLAGWORD;
    if(ZZFLAGWORD&ZZFLAGISDYAD){
     zz=rank2ex(a,w,z,ar,wr,ar,wr,FAV(z)->valencefns[1]);  // Execute on all cells
    }else{
-    zz=rank1ex(w,z,wr,FAV(z)->valencefns[0]);  // Execute on all cells8
+    zz=rank1ex(w,z,wr,FAV(z)->valencefns[0]);  // Execute on all cells
    }
   }
 

@@ -802,6 +802,12 @@ NB. left justify.  same deal for fmt2.
 ('' fmt <0$'5'     ) -: '' fmt <0$10&u:'5'
 ('' fmt <  '5'     ) -: '' fmt <  10&u:'5'
 
+NB. XNUM, which diverges only slightly.  We just verify that we can format a long number
+(,:'  265,252,859,812,191,058,636,308,480,000,000') -: 'c0' 8!:2 !30x
+(,:' -265,252,859,812,191,058,636,308,480,000,000') -: 'c0' 8!:2 -!30x
+(,:'$$$') -: 'b<$$$>c0' 8!:2 0x
+(,:'$$$') -: 'b<$$$>c0' 8!:2 -0x
+
 
 
 

@@ -47,7 +47,6 @@ struct jtimespec jmtfclk(){return jmtclk();}
 #define WakeByAddressAll(p)
 #define WaitOnAddress(p,v,n,ns) 1
 #endif
-
 void jfutex_wake1(unsigned *p){WakeByAddressSingle(p);}
 void jfutex_wakea(unsigned *p){WakeByAddressAll(p);}
 unsigned char jfutex_wait(unsigned *p,unsigned v){return WaitOnAddress(p,&v,4,INFINITE)?0:EVFACE;}
