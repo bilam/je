@@ -1,7 +1,7 @@
 cocurrent <'z'
 3 : 0 ''
 
-JLIB=: '9.8.3'
+JLIB=: '9.8.6'
 
 notdef=. 0: ~: 4!:0 @ <
 hostpathsep=: ('/\'{~6=9!:12'')&(I. @ (e.&'/\')@] })
@@ -60,7 +60,7 @@ if. notdef 'IFRASPI' do.
     IFRASPI=: 0
   end.
 end.
-if. IF64 +. IFIOS do.
+if. IF64 +. IFIOS +. UNAME -: 'Wasm' do.
   IFWOW64=: 0
 else.
   if. IFUNIX do.
@@ -2262,7 +2262,6 @@ for_i. i.#res do.
 end.
 if. L. y do. res else. >res end.
 )
-Loaded=: ''
 Public=: i. 0 2
 UserFolders=: i. 0 2
 getignore=: 3 : 0
@@ -2505,20 +2504,19 @@ load=: 3 : 0
 0 load y
 :
 fls=. getscripts_j_ y
-fn=. ('script',x#'d')~
+fn=. x & {{ 0!:x_: y_: }}
 for_fl. fls do.
   if. Displayload_j_ do. smoutput > fl end.
   if. -. fexist fl do.
     smoutput 'not found: ',>fl
   end.
   fn fl
-  Loaded_j_=: ~. Loaded_j_,fl
 end.
 empty''
 )
 loadd=: 1&load
 require=: 3 : 0
-fls=. Loaded_j_ -.~ getscripts_j_ y
+fls=. (getscripts_j_ y) -. 4!:3''
 if. # fls do. load fls else. empty'' end.
 )
 scripts=: scripts_j_
