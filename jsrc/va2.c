@@ -948,7 +948,7 @@ static INLINE A jtva2(J jtfg,AD *a,AD *w,AD * RESTRICT self,I afwfagreefr){F12IP
  // vbls in use: a w allranks cv jt
  // cv is going to take ~6 cycles to settle, or more if it missed D1$.  We want to do as much as we can before needing to use it.  We can do the agreement test first, and then any input conversions
 
- ASSERTAGREE(AS(a),AS(w),afwfagreefr>>(2*RANKTX));  // outermost (or only) agreement check.  If we retry the operation we will do it agan, which is a waste.  But is it worth testing for?  We might be killing enough time that we never block on cv
+ ASSERTAGREE(AS(a),AS(w),afwfagreefr>>(2*RANKTX));  // outermost (or only) agreement check.  If we retry the operation we will do it again, which is a waste.  But is it worth testing for?  We might be killing enough time that we never block on cv
 
  // If op specifies forced input conversion AND if both arguments are non-sparse: convert them to the selected type.
  // Failed conversion are real errors, but they have priority below agreement errors.  If the conversion error is EVDOMAIN, we defer it by
@@ -962,6 +962,7 @@ static INLINE A jtva2(J jtfg,AD *a,AD *w,AD * RESTRICT self,I afwfagreefr){F12IP
   if(TYPESNE(AT(a),t)){A cz=cvt(t|(cv&XCVTXNUMORIDEMSK),a); if(likely(cz!=0)){a=cz; jtfg=(J)((I)jtfg|JTINPLACEA);}else{if(jt->jerr!=EVDOMAIN)R 0; RESETERR adocvfn=0; jtfg=(J)((I)jtfg&~JTINPLACEA);}}
   if(TYPESNE(AT(w),t)){A cz=cvt(t|(cv&XCVTXNUMORIDEMSK),w); if(likely(cz!=0)){w=cz; jtfg=(J)((I)jtfg|JTINPLACEW);}else{if(jt->jerr!=EVDOMAIN)R 0; RESETERR adocvfn=0; jtfg=(J)((I)jtfg&~JTINPLACEW);}}
  }
+
  cv&=(I)jtfg|~(JTINPLACEA+JTINPLACEW);  // If function doesn't support inplacing, remove it from the argument.  cv has not settled yet
 
  // a and w have their final addresses.  No function calls till we allocate the result
@@ -975,7 +976,7 @@ static INLINE A jtva2(J jtfg,AD *a,AD *w,AD * RESTRICT self,I afwfagreefr){F12IP
     awlongcr=(UI)ar<(UI)wr?w:a; awlongfr=(UI)ar<(UI)wr?a:w;   // point to long cell and short cell.  short cell could be either, since it is not used, but it must be mapped to avoid uprogram check and we need short cell here
     zn=AN(awlongcr); m=AN(awlongfr);   // fetch lengths of result and the short arg
     fr=(UI)ar<(UI)wr?wr:ar; UI shortr=(UI)ar<(UI)wr?ar:wr;   // long frame and short frame
-    mf=(UI)(0+((UI)ar<(UI)wr)); nf=(UI)(mf+mf+((UI)wr<(UI)ar));   // set a non-inplaceable if repeated, similar for w
+    mf=(UI)(0+((UI)ar<(UI)wr)); nf=(UI)(mf+mf+((UI)wr<(UI)ar));   // set a non-inplaceable if repeated, similar for w   should be ADDC
     PRODRNK(n,fr-shortr,AS(awlongcr)+shortr);  // treat the entire operands as one big cell
     cv&=~nf;  // bit 0-1=routine/rank/arg/input inplaceable
     n=2*n+mf;   // parm m if there are multiple inner loops.  The value is 2 * (length of inner loop), with LSB set if x is the repeated value (i. e. w has long frame)
@@ -1081,7 +1082,7 @@ static INLINE A jtva2(J jtfg,AD *a,AD *w,AD * RESTRICT self,I afwfagreefr){F12IP
     I neq1m=REPSGN(n-2), eq1ct=neq1m; eq1ct=eq1ct+((UI)1<(UI)m); eq1ct=eq1ct+((UI)1<(UI)nf);  // m=1 + n=1 + nf=1 > 1 => n=1 + (1 - m!=1) + (1 - nf!=1) > 1 => n=1 - nf!=1 > m!=1 - 1 => n=1 - nf!=1 >= m!=1: any 2 values = 1
     // encode major-axis in LSB of n, and complement m if there in only 1 loop
     if(withprob(eq1ct>0,0.7)){  // any 2 or 3 values <= 1
-     // All 4 loops (normal case since rank given).  nf is outer loop repeat count-1.  zend ([9]) is offset to result of last iteration.
+     // All 4 loops (normal case since rank given).  nf is outer loop repeat count-1.  zend ([9]) is offset to result of last iteration.  We deferred as much as possible till here, hoping for migration
      DPMULDE(nf,mf,mf);  // mf is total # iterations
      I zendofst=(mf-1)*(aawwzknfxrz[4]=zn<<rtypebplg(cv));   // set byte offset to z location of last iteration, length of each major z cell
      if(unlikely(zendofst<=0))goto migrate1;  // 0-1 outer loops needed, skip setup for it

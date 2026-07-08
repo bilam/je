@@ -131,7 +131,7 @@ static B jtwidthdp(J jt, A a, I *w, I *d){
  }else *w=-1;   // flag to indicate omitted d (!)
  // verify no remaining digits/. in field
  for(;remchars;++v,--remchars){C vv=*v; CCMCAND(digdot,cand,vv) ASSERT(!CCMTST(cand,vv),EVDOMAIN);}
- ASSERT(BETWEENC(*d,-1,MAXDVAL), EVDOMAIN);
+ ASSERT(BETWEENC(*d,-1,MAXDVAL), EVDOMAIN);  // error if too many decimal places requested
  R 1;
 } /* width and decimal places */
 

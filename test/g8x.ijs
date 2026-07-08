@@ -312,11 +312,11 @@ NB. 8!:n : # of decimal places ------------------------------------------
 (< 3{.x) -: '1' fmt ".x
 (< 1{.x) -: '0' fmt ".x
 
-('domain error';'assertion failure') e.~< '10' fmt etx ".x
+('domain error';'assertion failure') e.~< '18' fmt etx ".x
 ('domain error';'assertion failure') e.~< '-1' fmt etx ".x
 ('domain error';'assertion failure') e.~< '_1' fmt etx ".x
-('domain error';'assertion failure') e.~< '11' fmt etx ".x
-('domain error';'assertion failure') e.~< '20.10' fmt etx ".x
+('domain error';'assertion failure') e.~< '19' fmt etx ".x
+('domain error';'assertion failure') e.~< '20.18' fmt etx ".x
 ('domain error';'assertion failure') e.~< '20.19' fmt etx ".x
 
 
