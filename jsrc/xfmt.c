@@ -9,8 +9,13 @@
 #include "dtoa.h"
 #include "jgmp.h"
 
-static const D ppwrs[10]={1, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9};
-static const D npwrs[10]={1,1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7,1e-8,1e-9};
+#define MAXDVAL 17  // max # decimal places allowed
+static const D pnpwrs[MAXDVAL+1][2]={{1e0, 1e-0}, {1e1, 1e-1}, {1e2, 1e-2}, {1e3, 1e-3}, {1e4, 1e-4},
+  {1e5, 1e-5}, {1e6, 1e-6}, {1e7, 1e-7}, {1e8, 1e-8}, {1e9, 1e-9}, 
+  {1e10, 1e-10}, {1e11, 1e-11}, {1e12, 1e-12}, {1e13, 1e-13}, {1e14, 1e-14},
+  {1e15, 1e-15}, {1e16, 1e-16}, {1e17, 1e-17}}; 
+// obsolete static const D ppwrs[10]={1, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9};
+// obsolete static const D npwrs[10]={1,1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7,1e-8,1e-9};
 static const C*pp="<({[";
 static const C*qq=">)}]";
 
@@ -98,7 +103,7 @@ static I jtdpone(J jt, B bits, D w){D t;
  if(bits&BITSf) R 0;   // if field is formatted as f type, 0 decimal places
  w=ABS(w);
  if(bits&BITSe) w/=pow(10,tfloor(log10(w)));   // if exponent form, shift significance to be in [1,10)
- DO(10, t=npwrs[i]*jround(ppwrs[i]*w); if(TEQ(t,w)) R i; );  // count number of significant decimal places, return it
+ DO(10, t=jround(pnpwrs[i][0]*w)/pnpwrs[i][0]; if(TEQ(t,w)) R i; );  // count number of significant decimal places, return it
  R 9;  // never more than 9
 }
 
@@ -126,7 +131,7 @@ static B jtwidthdp(J jt, A a, I *w, I *d){
  }else *w=-1;   // flag to indicate omitted d (!)
  // verify no remaining digits/. in field
  for(;remchars;++v,--remchars){C vv=*v; CCMCAND(digdot,cand,vv) ASSERT(!CCMTST(cand,vv),EVDOMAIN);}
- ASSERT(BETWEENC(*d,-1,9), EVDOMAIN);
+ ASSERT(BETWEENC(*d,-1,MAXDVAL), EVDOMAIN);
  R 1;
 } /* width and decimal places */
 
@@ -175,15 +180,16 @@ static F1(jtfmtparse){F12IP;A x,z,*zv;B ml[2+NMODVALS],mod,t;C c,*cu="srqpnmdbij
 
 typedef union u_DI8_tag { I8 i; D d; } DI8;
 
+// d is #decimal places, y is |value|.  Return value rounded to d places
 static D jtroundID(J jt,I d,D y){D f,q,c,h;DI8 f8,q8,c8;
- q=ppwrs[d]*y; if(q<1) h=2; else h=0; q+=h;
- f=jfloor(q); c=-jfloor(-q); 
- if(f==c) R npwrs[d]*(c-h);
+ q=pnpwrs[d][0]*y; if(q<1) h=2; else h=0; q+=h;  // shift significance to left of decimal point.  h is extra significance: set to 2 if no other significance so subsequent compares are tolerant
+ f=jfloor(q); c=-jfloor(-q);  // take floor and ceil of q
+ if(f==c) R (c-h)/pnpwrs[d][0];   // if they are the same, they are the rounded result
  ASSERTSYS(f<=q&&q<=c, "roundID: fqc");
  f8.d=f;q8.d=q;c8.d=c;
- ASSERTSYS(0<=f8.i&&0<=q8.i&&0<=c8.i, "roundID: sign");
- if(q8.i-f8.i >= c8.i-q8.i-1) R npwrs[d]*(c-h);
- else                         R npwrs[d]*(f-h);
+ ASSERTSYS(0<=f8.i&&0<=q8.i&&0<=c8.i, "roundID: sign");  // ?? signs?? y is always positive or +0
+ if(q8.i-f8.i >= c8.i-q8.i-1) R (c-h)/pnpwrs[d][0];  // if floor & ceil differ, return the closer
+ else                         R (f-h)/pnpwrs[d][0];
 } /* round a number in not in exponential notation */
 
 static D jtafzrndID(J jt,I dp,D y){R SGN(y)*roundID(dp,ABS(y));}
@@ -327,7 +333,7 @@ static F2(jtfmtprecomp) {F12IP;A*as,base,fb,len,strs,*u,z;B*bits,*bw;D dtmp,*dw;
             BITS__*!memcmpne(dw, &infm, SZD)+
             BITS_d*_isnan(*dw); 
    if(d==-1) *iv = dpone(*bits,*dw);
-   else *bits |= BITSz*(TEQ(*dw, 0) || (!(*bits&BITSf+BITSe) && TLT(dtmp, npwrs[d]/2)));
+   else *bits |= BITSz*(TEQ(*dw, 0) || (!(*bits&BITSf+BITSe) && TLT(dtmp, pnpwrs[d][1]/2)));
    bits++; dw++; iv++; 
   }
   iv=AV(len);
@@ -336,7 +342,7 @@ static F2(jtfmtprecomp) {F12IP;A*as,base,fb,len,strs,*u,z;B*bits,*bw;D dtmp,*dw;
    ib+=4; --imod; ib=(imod==0)?AV(base):ib; imod=(imod==0)?nf:imod;
    if(ib[1]==-1) ib[2] |= mods_coldp;
    if(ib[2]&mods_coldp&&*iv>ib[1]) ib[1]=*iv;
-   ASSERTSYS(0<=ib[1]&&9>=ib[1], "jtfmtprecomp: d oob");
+   ASSERTSYS(BETWEENC(ib[1],0,17), "jtfmtprecomp: d oob");
    iv++; 
   }
   bits=BAV(fb); dw=DAV(w);
@@ -345,7 +351,7 @@ static F2(jtfmtprecomp) {F12IP;A*as,base,fb,len,strs,*u,z;B*bits,*bw;D dtmp,*dw;
    ib+=4; --imod; ib=(imod==0)?AV(base):ib; imod=(imod==0)?nf:imod;
    d=ib[1]; 
    if(ib[2]&mods_coldp){
-    *bits |= BITSz*(TEQ(*dw, 0) || (!(*bits&BITSf+BITSe) && TLT(ABS(*dw), npwrs[d]/2)));
+    *bits |= BITSz*(TEQ(*dw, 0) || (!(*bits&BITSf+BITSe) && TLT(ABS(*dw), pnpwrs[d][1]/2)));
    }
    bits++; dw++; 
   );
