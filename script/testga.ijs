@@ -175,15 +175,15 @@ t0=: {. t=: 1 56 10 $ ,".;._2 (0 : 0)
 
 b0=: ~: {.t
 
-NB. echo 'a1'
-NB. echo (<b0) #&.> <"_1 t
-NB. echo 'a2'
-NB. echo (<b0) #&.> < {. t
-NB. echo 'a3'
-NB. echo (<b0) #&.> < t0
-NB. echo 'a9'
-NB. echo ((<b0) #&.> < {. t) -: {. <@~."_1 t
-NB. skip this to allow testing g212 crash
+echo 'a1'
+echo (<b0) #&.> <"_1 t
+echo 'a2'
+echo (<b0) #&.> < {. t
+echo 'a3'
+echo (<b0) #&.> < t0
+echo 'a9'
+echo ((<b0) #&.> < {. t) -: {. <@~."_1 t
+skip this to allow testing g212 crash
 3 : 0''
 for_i. i.1000 do.
 assert. ((<b0) #&.> < {. t) -: {. <@~."_1 t

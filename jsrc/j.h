@@ -1780,7 +1780,7 @@ if(likely(!((I)jtfg&JTWILLBEOPENED)))z=EPILOGNORET(z); RETF(z); \
 #define JMC(d,s,l,bytelen) JMCcommon(d,s,l,bytelen,endmask,JMCDECL(endmask),JMCSETMASK(endmask,ll,bytelen))  //   0->1111 1->1000 3->1110 bytelen has already been applied here
 #define JMCR(d,s,l,bytelen,maskname) JMCcommon(d,s,l,bytelen,maskname,,)
 #else
-#if defined(__linux__) && BW==32 && !defined(ANDROID)
+#if 0 && defined(__linux__) && BW==32 && !defined(ANDROID)
 #define JMC(d,s,l,bytelen) MC(d,s,bytelen?(((l)+(SZI-1))&-SZI):l);
 #else
 #define JMC(d,s,l,bytelen) MC(d,s,(bytelen)?(l):(((l)+(SZI-1))&-SZI));   // it's better to round up the length than to require the byte store
