@@ -1546,7 +1546,7 @@ jobs:
 # AFAIK there is no cleaner way to do this
   needs:
    - jelinux
-#   - jelinux32
+   - jelinux32
    - jemacos
    - jemacosarm
    - jerpi64arm
@@ -1590,7 +1590,7 @@ jobs:
 # comment out any needs not used by the webhook
   needs:
    - jelinux
-#   - jelinux32
+   - jelinux32
    - jemacos
    - jemacosarm
    - jerpi64arm
