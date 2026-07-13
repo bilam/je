@@ -178,8 +178,7 @@ jobs:
       USE_OPENMP: 0
       USE_PYXES: 0
       USE_EMU_AVX: 0
-#      _DEBUG: ${{ env.DEBUGLEVEL }}
-      _DEBUG: 3
+      _DEBUG: ${{ env.DEBUGLEVEL }}
       OPTL: ${{ env.OPTL }}
       OPTLD: ${{ env.OPTLD }}
       NO_UNDEFINED: ${{ env.NO_UNDEFINED }}
@@ -191,8 +190,7 @@ jobs:
       DEBUGCMD: gdb
       USE_PYXES: 0
       USE_EMU_AVX: 0
-#      _DEBUG: ${{ env.DEBUGLEVEL }}
-      _DEBUG: 3
+      _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
       script/testga.sh linux i386 || exit 1
       cp jlibrary/bin32/* j32 || true
@@ -240,8 +238,7 @@ jobs:
       USE_OPENMP: 0
       USE_PYXES: 0
       USE_EMU_AVX: 0
-#      _DEBUG: ${{ env.DEBUGLEVEL }}
-      _DEBUG: 3
+      _DEBUG: ${{ env.DEBUGLEVEL }}
       OPTL: ${{ env.OPTL }}
       OPTLD: ${{ env.OPTLD }}
       NO_UNDEFINED: ${{ env.NO_UNDEFINED }}
@@ -253,8 +250,7 @@ jobs:
       DEBUGCMD: gdb
       USE_PYXES: 0
       USE_EMU_AVX: 0
-#      _DEBUG: ${{ env.DEBUGLEVEL }}
-      _DEBUG: 3
+      _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
       script/testga.sh linux i386 || exit 1
 
@@ -1545,6 +1541,7 @@ jobs:
 # this allows tests to be run that can be ignored for the webhook
 # AFAIK there is no cleaner way to do this
   needs:
+   - all
    - jelinux
    - jelinux32
    - jemacos
@@ -1589,6 +1586,7 @@ jobs:
 # this needs is also in tests above
 # comment out any needs not used by the webhook
   needs:
+   - all
    - jelinux
    - jelinux32
    - jemacos
