@@ -213,48 +213,71 @@ g=:<'xxx'
 g2_xxx_ =: !
 l22=.l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g
 
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'single ')
+assert. 'l1 - l1' -:&, 5!:5 <'f' [. f =. (l11 f: 'single ')
+assert. 'g1' -:&, 5!:5 <'f' [. f =. (g1 f: 'single ')
+assert. 'g11' -:&, 5!:5 <'f' [. f =. (g11 f: 'single ')
+assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: 'single ')
+assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'single ')
+
 assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: '')
-assert. 'l1 - l1' -:&, 5!:5 <'f' [. f =. (l11 f: '')
+assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: '')
 assert. 'g1' -:&, 5!:5 <'f' [. f =. (g1 f: '')
 assert. 'g11' -:&, 5!:5 <'f' [. f =. (g11 f: '')
-assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: '')
-assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: '')
+assert. 'g1 $ g1 $ +' -:&, 5!:5 <'f' [. f =. (l21 f: '')
+assert. '+ ^ g11 ^ g2_xxx_ ^ g2_xxx_ ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: '')
 
-assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'recur')
-assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: 'recur')
-assert. 'g1' -:&, 5!:5 <'f' [. f =. (g1 f: 'recur')
-assert. 'g11' -:&, 5!:5 <'f' [. f =. (g11 f: 'recur')
-assert. 'g1 $ g1 $ +' -:&, 5!:5 <'f' [. f =. (l21 f: 'recur')
-assert. '+ ^ g11 ^ g2_xxx_ ^ g2_xxx_ ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'recur')
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'single private')
+assert. 'l1 - l1' -:&, 5!:5 <'f' [. f =. (l11 f: 'single private')
+assert. 'g1' -:&, 5!:5 <'f' [. f =. (g1 f: 'single private')
+assert. 'g11' -:&, 5!:5 <'f' [. f =. (g11 f: 'single private')
+assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: 'single private')
+assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'single private')
+
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'private')
+assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: 'private')
+assert. 'g1' -:&, 5!:5 <'f' [. f =. (g1 f: 'private')
+assert. 'g11' -:&, 5!:5 <'f' [. f =. (g11 f: 'private')
+assert. 'g1 $ g1 $ +' -:&, 5!:5 <'f' [. f =. (l21 f: 'private')
+assert. '+ ^ g11 ^ g2_xxx_ ^ g2_xxx_ ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'private')
+
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'single public')
+assert. 'l1 - l1' -:&, 5!:5 <'f' [. f =. (l11 f: 'single public')
+assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'single public')
+assert. 'g1 % g1 % l1' -:&, 5!:5 <'f' [. ff__ =: f =. (g11 f: 'single public')
+assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: 'single public')
+assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'single public')
 
 assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'public')
-assert. 'l1 - l1' -:&, 5!:5 <'f' [. f =. (l11 f: 'public')
+assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: 'public')
 assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'public')
-assert. 'g1 % g1 % l1' -:&, 5!:5 <'f' [. ff__ =: f =. (g11 f: 'public')
-assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: 'public')
-assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'public')
+assert. '* % * % +' -:&, 5!:5 <'f' [. f =. (g11 f: 'public')
+assert. '* $ * $ +' -:&, 5!:5 <'f' [. f =. (l21 f: 'public')
+assert. '+ ^ (* % * % +) ^ g2_xxx_ ^ g2_xxx_ ^ g2_xxx_' -:&, 5!:5 <'f' [. f =. (l22 f: 'public')
 
-assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'recur public')
-assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: 'recur public')
-assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'recur public')
-assert. '* % * % +' -:&, 5!:5 <'f' [. f =. (g11 f: 'recur public')
-assert. '* $ * $ +' -:&, 5!:5 <'f' [. f =. (l21 f: 'recur public')
-assert. '+ ^ (* % * % +) ^ g2_xxx_ ^ g2_xxx_ ^ g2_xxx_' -:&, 5!:5 <'f' [. f =. (l22 f: 'recur public')
+assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'single all')
+assert. 'l1 - l1' -:&, 5!:5 <'f' [. ff__ =: f =. (l11 f: 'single all')
+assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'single all')
+assert. 'g1 % g1 % l1' -:&, 5!:5 <'f' [. ff__ =: f =. (g11 f: 'single all')
+assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: 'single all')
+assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'single all')
 
 assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'all')
-assert. 'l1 - l1' -:&, 5!:5 <'f' [. ff__ =: f =. (l11 f: 'all')
+assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: 'all')
 assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'all')
-assert. 'g1 % g1 % l1' -:&, 5!:5 <'f' [. ff__ =: f =. (g11 f: 'all')
-assert. 'g1 $ g1 $ l1' -:&, 5!:5 <'f' [. f =. (l21 f: 'all')
-assert. 'l1 ^ g11 ^ g2_xxx_ ^ g2__l ^ g2__g' -:&, 5!:5 <'f' [. f =. (l22 f: 'all')
+assert. '* % * % +' -:&, 5!:5 <'f' [. f =. (g11 f: 'all')
+assert. '* $ * $ +' -:&, 5!:5 <'f' [. f =. (l21 f: 'all')
+assert. '+ ^ (* % * % +) ^ ! ^ ! ^ !' -:&, 5!:5 <'f' [. f =. (l22 f: 'all')
 
-assert. '+' -:&, 5!:5 <'f' [. f =. (l1 f: 'recur all')
-assert. '+ - +' -:&, 5!:5 <'f' [. f =. (l11 f: 'recur all')
-assert. '*' -:&, 5!:5 <'f' [. f =. (g1 f: 'recur all')
-assert. '* % * % +' -:&, 5!:5 <'f' [. f =. (g11 f: 'recur all')
-assert. '* $ * $ +' -:&, 5!:5 <'f' [. f =. (l21 f: 'recur all')
-assert. '+ ^ (* % * % +) ^ ! ^ ! ^ !' -:&, 5!:5 <'f' [. f =. (l22 f: 'recur all')
-
+'domain error' -: ". etx 'z f: 0'
+'domain error' -: ". etx 'z f: ''xxx'''
+'domain error' -: ". etx 'z f: ''single single'''
+'domain error' -: ". etx 'z f: ''private private'''
+'domain error' -: ". etx 'z f: ''public public'''
+'domain error' -: ". etx 'z f: ''all all'''
+'domain error' -: ". etx 'z f: ''private public'''
+'domain error' -: ". etx 'z f: ''private all'''
+'domain error' -: ". etx 'z f: ''public all'''
 1
 }}''
 

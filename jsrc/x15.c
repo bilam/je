@@ -1534,13 +1534,14 @@ F1(jtmemu) {F12IP;  ARGCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE) if(!((I)jtfg&JTI
 }
 F2(jtmemu2) {F12IP; ASSERT(!JT(jt,seclev),EVSECURE) RETF(ca(w)); }  // dyad - force copy willy-nilly
 
+// 15!:8 w  get header block, rank w
 F1(jtgh15){F12IP;A z;I k; ASSERT(!JT(jt,seclev),EVSECURE) k=rei0(w); RZ(z=gah(k,0L)); ACINIT(z,ACUC2); R sc((I)z);}   // ra the header
-     /* 15!:8  get header */
+// post 9.8 F1(jtgh15){F12IP;A z;I k; ASSERT(!JT(jt,seclev),EVSECURE) k=rei0(w); RZ(z=gah(k,0L)); *AZAPLOC(z)=0; ACINIT(z,0); R sc((I)z);}   // allocate header, usecount 0
 
 F1(jtfh15){F12IP;A k; ASSERT(!JT(jt,seclev),EVSECURE) RE(k=(A)i0(w)); ASSERT(AT(k)==LOWESTBIT(AT(k))&&(AT(k)&DIRECT),EVDOMAIN) fr(k); R num(0);}
-     /* 15!:9  free header */
+     /* 15!:9 w free header */  // not used 9.8 and later
 
-// 15!:7.  w has the address of a header.  Put that address in play as an A block
+// 15!:7 w.  w has the address of a header.  Put that address in play as an A block
 F1(jtdllsymset){F12IP;ARGCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE) R (A)i0(w);}      /* do some validation here */
 
 /* dll callback routines */

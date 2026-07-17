@@ -32,33 +32,8 @@
 #define CSIGN      (C)'_'  //  minus sign
 #define CFF        (C)'\377'       /* 255 377 ff                              */
 
-// Internal IDs
-// Affinities:
-// oblique  + comp, min/max B0001 B0110 B0111
-
-// Current primitive order:
-// fills with inverses to populate the area near 0
-// !. ^: #. }: }. !: p. ^. |. o. |: \
-// seldom-used verbs
-// -. ? ?. I. 0:
-// structural
-// &. ,. ,: [ ] , ;
-// the heart of the order: arithmetic
-// j. *: +: /: ^ % - * +. *. +
-// comparison
-// = ~: <: >: <  > e. E.   <. >.
-// modifiers (must start at '0'
-// NOUN / HOOK FORK ADVF [: & @ &: @:  @.
-// seldom-used verbs
-// $: `: : ~ u. v.
-// more structural
-// {. {:   # $ /. :: "   #: i. i: {   -: ~.
-// verbs with inverses
-//  \.p.. x: ": u:    \: ;: $. ;. A .p: q:
-// verbs with identities
-// . %. C. | r. %: ! b.
-
 // 0 reserved for 'invalid'
+// supporting fill, with inverses
 #define CFIT       (C)0x03  // !.   is beginning of switch in u@v, u@:v
 #define CPOWOP     (C)0x04  // ^:
 #define CBASE      (C)0x05  // #.
@@ -73,12 +48,14 @@
 #define CCIRCLE    (C)0x0c  // o.
 #define CCANT      (C)0x0d  // |:
 #define CBSLASH    (C)0x0e  // \   backslash must be 0x40 from \.
+// rare
 #define CNOT       (C)0x0f  // -.
 #define CLESS      (C)0x0f  // -.
 #define CICAP      (C)0x10  // I.
 #define CQUERY     (C)0x11  // ?
 #define CQRYDOT    (C)0x12  // ?.
 #define CFCONS     (C)0x13  // 0: 1: 2: etc.
+// structural
 #define CUNDER     (C)0x14  // &.
 #define CCOMDOT    (C)0x15  // ,.
 #define CLEFT      (C)0x16  // [   must be paired with CRIGHT
@@ -87,6 +64,7 @@
 #define CCOMMA     (C)0x19  // ,
 #define CSEMICO    (C)0x1a  // ;
 #define CRAZE      (C)0x1a  //
+// arithmetic
 #define CJDOT      (C)0x1b  // j.
 #define CGRADE     (C)0x1c  // /:
 #define CEXP       (C)0x1d  // ^
@@ -98,6 +76,7 @@
 #define CPLUS      (C)0x23  // + +. *. must stay in order.  Low digit is combining type-1
 #define CPLUSDOT   (C)0x24  // +.  +. *. x ~:  are so tested
 #define CSTARDOT   (C)0x25  // *.
+// comparisons
 #define CEQ        (C)0x26  // =   must be paired with ~:  = through e. are in the order used by comparison combination
 #define CNE        (C)0x27  // ~:
 #define CLT        (C)0x28  // <   must be paired with <:
@@ -112,6 +91,7 @@
 #define CFLOOR     (C)0x2e  // <. must be paired with >.
 #define CMAX       (C)0x2f  // >. must be paired with <. as upper of pair
 #define CCEIL      (C)0x2f  // >. 20-2f used in cip.c and ar.c
+// modifiers
 #define CNOUN      (C)0x30  // '0' - used in AR for noun
 #define CSLASH     (C)0x31  // /
 #define CHOOK      (C)0x32  // '2' - used in AR for hook  is paired with ADVF 2 distant
@@ -134,6 +114,7 @@
 #define CDOLLAR    (C)0x43  // $
 #define CTILDE     (C)0x44  // ~
 #define CADVERSE   (C)0x45  // ::
+// structural
 #define CTAIL      (C)0x46  // {:
 #define CTAKE      (C)0x47  // {.
 #define CHEAD      (C)0x47  // {.
@@ -145,6 +126,7 @@
 #define CHALVE     (C)0x4c  // -:
 #define CMATCH     (C)0x4c  // -:
 #define CNUB       (C)0x4d  // ~.
+// verbs with inverses
 #define CBSDOT     (C)0x4e  // \. must be 0x40 from backslash
 #define CPDERIV    (C)0x4f  // p..
 #define CXCO       (C)0x50  // x:
@@ -160,6 +142,7 @@
 #define CATOMIC    (C)0x5a  // A.
 #define CPCO       (C)0x5b  // p:
 #define CQCO       (C)0x5c  // q:
+// verbs with identities
 #define CDOT       (C)0x5d  // .
 #define CDOMINO    (C)0x5e  // %.
 #define CCYCLE     (C)0x5f  // C.

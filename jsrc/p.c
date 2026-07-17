@@ -820,8 +820,8 @@ reexec012:;  // enter here with fs, fs1, and pmask set when we know which line w
         // Here we have an assignment to check.  We will call subroutines, thus losing all volatile registers
         if(likely(TESTSTACK0PT(PTASGNLOCALX))){   // only sentences from explicit defns have ASGNLOCAL set
          // local assignment.  First check for primary symbol.  We expect this to succeed.  We fetch the unflagged address of the value
-        if(likely((I)(pt0ecam&(ARLCLONED<<LOCSYMFLGX))<QCPTYPE(zval))){   //   (Is cloned local table) < symbol given? 
-         zval=QCWORD(zval);  // get value of symbol in primary table.  There may be no value; that's OK
+         if(likely((I)(pt0ecam&(ARLCLONED<<LOCSYMFLGX))<QCPTYPE(zval))){   //   (Is cloned local table) < symbol given? 
+          zval=QCWORD(zval);  // get value of symbol in primary table.  There may be no value; that's OK
          }else{zval=unlikely((pt0ecam&((ARLCLONED+JTFROMEXEC)<<LOCSYMFLGX)))?QCWORD(jtprobelocal(symorigin,QCWORD(y),jt->locsyms)):0;}  // look up the name if it is in a cloned table or from ". .  The normal case of undefined name in an uncloned
             // table is an unassigned name, but it could also come from (". 'name =. ') or (7!:2 'name =.') or a line in a script.  We judge that the value of supporting inplacing in those cases, considerable though it may be,
             // does not justify a name lookup for every initial assignment in every script; but we go ahead and look up in ". because the test is free.
@@ -843,7 +843,7 @@ reexec012:;  // enter here with fs, fs1, and pmask set when we know which line w
         // path to here is to mispredict the assignment and then correctly predict the local path.  In that path we have loaded the symbol number followed by zval, and it will
         // not settle for 10 clocks.  We very much want to keep executing during the settlement so we don't want to risk a misprediction.  We should be executing
         // well into tpop* before zval settles.
-       I af=AFLAG(zval); zval=AC(zval)==((I)PEXT0(af,AFNJAX,1)+targc)?zval:0; zval=af&(AFRO|AFVIRTUAL)?0:zval;  // OK if count right, and not R-O/VIRT
+        I af=AFLAG(zval); zval=AC(zval)==((I)PEXT0(af,AFNJAX,1)+targc)?zval:0; zval=af&(AFRO|AFVIRTUAL)?0:zval;  // OK if count right, and not R-O/VIRT
 anchoredip:;  // here when we have detected that an anchored name is inplaceable
         jt->zombieval=zval;
        }

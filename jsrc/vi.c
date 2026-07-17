@@ -1401,7 +1401,7 @@ F2(jtjico2){F12IP; R indexofsub(IICO,a,w);}
 // ~: y
 F1(jtnubsieve){F12IP;
  ARGCHK1(w);
- if(ISSPARSE(AT(w)))R nubsievesp(w); 
+ if(unlikely(ISSPARSE(AT(w))))R nubsievesp(w); 
  jt->ranks=(RANKT)jt->ranks + ((RANKT)jt->ranks<<RANKTX);  // we process as if dyad; make left rank=right rank
  R indexofsub(INUBSV,w,w); 
 }    /* ~:"r w */
@@ -1409,7 +1409,7 @@ F1(jtnubsieve){F12IP;
 // ~. y  - does not have IRS
 F1(jtnub){F12IP; 
  ARGCHK1(w);
- if(ISSPARSE(AT(w))||AFLAG(w)&AFNJA)R repeat(nubsieve(w),w); 
+ if(unlikely(ISSPARSE(AT(w)))||unlikely(AFLAG(w)&AFNJA))R repeat(nubsieve(w),w); 
  A z; RZ(z=indexofsub(INUB,w,w));
  // We extracted from w, so mark it (or its backer if virtual) non-pristine.  If w was pristine and inplaceable, transfer its pristine status to the result.  We overwrite w because it is no longer in use
  PRISTXFERF(z,w)

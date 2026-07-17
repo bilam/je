@@ -320,7 +320,8 @@ F2(jtreshape){F12IP;A z;B filling;C*wv,*zv;I acr,ar,c,k,m,n,p,q,r,*s,t,* RESTRIC
     AR(w)=(RANKT)(r+wf); AN(w)=m; ws+=wf; MCISH(ws,u,r) RETF(w);   // Start the copy after the (unchanged) frame
    }
    // Not inplaceable.  Create a (noninplace) virtual copy, but not if NJA memory (to avoid making the virtual NJA backer unmodifiable).  Don't virtual unless m is big enough
-   if((SGNIF(AFLAG(w),AFNJAX)|(m-MINVIRTSIZE(t)))>=0){RZ(z=virtual(w,0,r+wf)); AN(z)=m; I * RESTRICT zs=AS(z); MCISH(zs,ws,wf) MCISH(zs+wf,u,r) RETF(z);}
+// obsolete    if((SGNIF(AFLAG(w),AFNJAX)|(m-MINVIRTSIZE(t)))>=0){RZ(z=virtual(w,0,r+wf)); AN(z)=m; I * RESTRICT zs=AS(z); MCISH(zs,ws,wf) MCISH(zs+wf,u,r) RETF(z);}
+   if(m>=MINVIRTSIZE(t)&&likely(!(AFLAG(w)&AFNJA))){RZ(z=virtual(w,0,r+wf)); AN(z)=m; I * RESTRICT zs=AS(z); MCISH(zs,ws,wf) MCISH(zs+wf,u,r) RETF(z);}
    // for NJA/SMM, fall through to nonvirtual code
   }
  }else if(filling=jt->fill!=0){RZ(w=jtsetfv1(jt,w,AT(w))); t=AT(w);}   // if fill required, set fill value.  Remember if we need to fill

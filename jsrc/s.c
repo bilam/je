@@ -234,7 +234,8 @@ exit: ;
  RETF(zz);
 }    /* 18!:_2 symbol pool */
 
-// l/string are length/addr of name, hash is hash of the name, g is symbol table  l is encoded in low bits of jt
+// l/string are length/addr of name, hash is hash of the name, g is symbol table  l is encoded in low bits of jtfg
+//   bit 8 of jtfg is set for NJA deletions
 // the symbol is deleted if found.  If the value is an ACV, we take a write lock on the ACV cache count, incrementing it
 // if the symbol is PERMANENT, it is not deleted but its value is removed
 // if the symbol has a lookaside, the lookaside is cleared
@@ -249,7 +250,7 @@ B jtprobedel(J jtfg,C*string,UI4 hash,A g){F12JT;B ret;
   if(!delblockx){ret=0; break;}  // if chain empty or ended, not found
   L *sym=sympv+delblockx;  // address of next in chain, before we delete it
   LX nextdelblockx=sym->next;  // unroll loop once
-  if(likely(!(AFLAG(sym->name)&AFRO))){   // ignore request to delete readonly name (cocurrent)
+  if(likely(!(AFLAG(sym->name)&AFRO+AFNJA))||(likely(!(AFLAG(sym->name)&AFRO)))&&(I)jtfg&JTNJADEL){   // ignore request to delete readonly name (cocurrent), or the mapped name for a mapped file, unless deleting mapname
    IFCMPNAME(NAV(sym->name),string,(I)jtfg&0xff,hash,     // (1) exact match - if there is a value, use this slot, else say not found
      {
       ret=sym->fval==0?0:~(I)sym->fval&QCNOUN;  // return value: value was defined & not a noun
@@ -833,6 +834,7 @@ I jtsymbis(J jtfg,A a,A w,A g){F12JT;
   }else{  // x is memory-mapped, and is not rewriting an incumbent value
    w=QCWORD(w);  // remove type that was stored in w
    ASSERTGOTO(!(AFRO&xaf),EVRO,exitlock);   // error if read-only value
+   if(unlikely(AT(w)&ASGN))AFLAG(a)|=AFNJA;  // if value is flagged as =., it is the mapping assignment: mark the name as NJA, meaning it is deleted only when the mapping is deleted
    // no need to store valtype - that can't change from noun (because must be DIRECT below)
    I wt=AT(w); I wn=AN(w); I wr=AR(w); I m=wn<<bplg(wt);  // we will move the flags/data from w to the preallocated area x
    ASSERTGOTO((wt&DIRECT)>0,EVDOMAIN,exitlock);  // boxed, extended, etc can't be assigned to memory-mapped array

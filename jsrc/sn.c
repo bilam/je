@@ -238,15 +238,18 @@ static F1(jtnch2){F12IP;A ch;B b;LX *e;I i,m,n;L*d;
 
 F1(jtnch){F12IP;READLOCK(JT(jt,stlock)) READLOCK(JT(jt,stloc)->lock) READLOCK(JT(jt,symlock)) A z=jtnch2(jt,w); READUNLOCK(JT(jt,stlock)) READUNLOCK(JT(jt,stloc)->lock) READUNLOCK(JT(jt,symlock)) R z;}
 
-F1(jtex){F12IP;A*wv,y,z;B*zv;I i,n;
- ARGCHK1(w);
+// [x] 4!:55 y.  y is boxed names.  Delete names in y
+// Result is array of booleans, 1 if name OK
+// If x is given, mark the name as NJA, which signals probedel to allow deleting an NJA name
+DF2(jtex){F12IP;jtfg=jt;A*wv,y,z;B*zv;I i,n;  // clear all jt flags in jtfg
+ ARGCHK2(a,w);
  PROLOG(000);
  protectlocals(jt,0);  // we must ra() any local names on the current sentence's stack, since we may be about to delete them
- n=AN(w); wv=AAV(w); 
+ if(likely(w==self))w=a; else{ASSERT(271828==rei0(a),EVDOMAIN) jtfg=(J)((I)jtfg|JTNJADEL);} n=AN(w); wv=AAV(w);  // if dyad, set flag for probedel (require magic a)
  ASSERT(((n-1)|SGNIF(AT(w),BOXX))<0,EVDOMAIN);
  I zr=AR(w); GATV(z,B01,n,AR(w),AS(w)); zv=BAVn(zr,z);
  for(i=0;i<n;++i){
-  y=stdnm(C(wv[i])); if(unlikely(jt->jerr!=0)){z = 0; break;}
+  y=stdnm(C(wv[i])); if(unlikely(jt->jerr!=0)){z = 0; break;}   // scaf why jt->jerr?
   zv[i]=1&&y;
   // If the name is defined and is an ACV, invalidate all looked-up ACVs
   A locfound;  // get the locale in which the name is defined - must exist.
@@ -254,9 +257,9 @@ F1(jtex){F12IP;A*wv,y,z;B*zv;I i,n;
    // if debug turned on, see if the value is on the debug stack.  The name must still be in the locale we found it in, if it is on our debug stack.
    if(jt->uflags.trace&TRACEDB){READLOCK(locfound->lock) A v=probex(NAV(y)->m,NAV(y)->s,SYMORIGIN,NAV(y)->hash,locfound); A rres=(A)1; if(v)rres=redef(mark,v); READUNLOCK(locfound->lock) RZ(rres)}
    WRITELOCK(locfound->lock)
-   jtprobedel((J)((I)jt+NAV(y)->m),NAV(y)->s,NAV(y)->hash,locfound);  // delete the symbol (incl name and value) in the locale in which it is defined.  if we delete an ACV, probedel invalidates cached references
+   jtprobedel((J)((I)jtfg+NAV(y)->m),NAV(y)->s,NAV(y)->hash,locfound);  // delete the symbol (incl name and value) in the locale in which it is defined.  if we delete an ACV, probedel invalidates cached references
    WRITEUNLOCK(locfound->lock)
   }
  }
  EPILOG(z);
-}    /* 4!:55 expunge */
+} 

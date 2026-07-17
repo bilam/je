@@ -220,9 +220,9 @@ DF2(jtfix){F12IP;PROLOG(0005);A z;
   if(w==self)reqmask=FIXAFCORECUR+FIXAFCOPUBLIC+FIXAFCOLOCATIVE;   // default for f. // recur all
   else{   // w has string args for keywords.
    if(AT(w)&LIT)RZ(w=words(w)) ASSERT(AT(w)&BOX,EVDOMAIN) ASSERT(AR(w)<2,EVRANK)   // convert to list of boxed strings
-   A wx; RZ(wx=indexof(words(str(16,"recur public all")),w));   // look up each word in w among the keywords
-   I *wxv=IAV(wx); reqmask=0; DQ(AN(wx), I bit=(I)1<<wxv[i]; ASSERT((reqmask&bit)==0,EVDOMAIN) reqmask|=bit;) ASSERT(reqmask<6,EVDOMAIN)  // no misspelled or repeated words, and only one of public|all
-   reqmask|=(reqmask&4)>>1; reqmask<<=FIXAFCOX;  // all implies public; shift into position
+   A wx; RZ(wx=indexof(words(str(25,"single public all private")),w));   // look up each word in w among the keywords
+   I *wxv=IAV(wx); reqmask=0; DQ(AN(wx), I bit=(I)1<<wxv[i]; ASSERT((reqmask&bit)==0,EVDOMAIN) reqmask|=bit;) ASSERT((reqmask&16)==0,EVDOMAIN) ASSERT(LOWESTBIT(reqmask>>1)==(reqmask>>1),EVDOMAIN)  // no misspelled or repeated words, and only one of public|all
+   reqmask&=7; reqmask^=1; reqmask|=(reqmask&4)>>1; reqmask<<=FIXAFCOX;  // all implies public; shift into position
   }
  }else{reqmask=(IAV(w)[0]<<FIXAFINTX)+FIXAFCORECUR+FIXAFCOPUBLIC+FIXAFCOLOCATIVE;}   // internal call has upper flags bits only, lower implied (so we can use num() for them)
 

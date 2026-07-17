@@ -38,8 +38,8 @@ t -: 10&u: (IF64{_2 _4) ic fread f0
 JCHAR4 map_jmf_ 'abc';f0     NB. map abc to file characters
 abc -: t
 2 = >(<(({."1 t) i. <'abc_base_');MAPREFS_jmf_){t=: showmap_jmf_ ''
-4!:55 ;:'abc'
-1 = >(<(({."1 t) i. <'abc_base_');MAPREFS_jmf_){t=: showmap_jmf_ ''
+NB. obsolete 4!:55 ;:'abc'
+NB. obsolete 1 = >(<(({."1 t) i. <'abc_base_');MAPREFS_jmf_){t=: showmap_jmf_ ''
 0 -: unmap_jmf_ 'abc'
 -. (<'abc_base_') e. {."1 t=: showmap_jmf_ ''
 
@@ -94,9 +94,9 @@ abc=: jdata
 abc -: x
 3 = >(<(({."1 t) i. <'jdata_base_'),MAPREFS_jmf_){t=: showmap_jmf_ 'jdata'
 2 -: unmap_jmf_ 'jdata'
-2 = >(<(({."1 t) i. <'jdata_base_'),MAPREFS_jmf_){t=: showmap_jmf_ 'jdata'
+3 = >(<(({."1 t) i. <'jdata_base_'),MAPREFS_jmf_){t=: showmap_jmf_ 'jdata'
 4!:55 ;:'abc'
-1 = >(<(({."1 t) i. <'jdata_base_'),MAPREFS_jmf_){t=: showmap_jmf_ 'jdata'
+2 = >(<(({."1 t) i. <'jdata_base_'),MAPREFS_jmf_){t=: showmap_jmf_ 'jdata'
 0 -: unmap_jmf_ 'jdata'
 
 map_jmf_ 'jdata'; (>f); ''; 1  NB. read-only

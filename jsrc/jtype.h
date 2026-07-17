@@ -152,6 +152,8 @@ typedef I SI;
 #define JTEXPVALENCEOFFD  (((I)2)<<JTEXPVALENCEOFFX)  // dyad flag
 #define JTOUTERPARENSX       5   // create fully parenthesized output
 #define JTOUTERPARENS     (((I)1)<<JTOUTERPARENSX)
+// following is input to jtprobedel
+#define JTNJADEL          (I)0x100   // OK to delete an NJA mapping name
 
 // following is passed from ^:_. to u^:v which is the only thing ^:_. can call
 #define JTDOWHILEX 2   // return A(1) if v returns false
@@ -515,7 +517,7 @@ _Static_assert(C2TX+1==C4TX,"LIT4 and LIT2 bits must be contiguous");
 #define ADVSIZE sizeof(V)
 // NOTE: SYMB is set in an ADV value to indicate that the value is nameless, see below
 #define ASGNX 24
-#define ASGN            ((I)1L<<ASGNX)     /* I  assignment                   */
+#define ASGN            ((I)1L<<ASGNX)     // I  assignment  also used in jmf.ijs
 #define ASGNSIZE sizeof(I)     // only 1 byte, but all non-DIRECT are fullword multiples
 // BOTE: SYMB and CONW are used as flags in ASGN, see below
 #define SYMBX 25
@@ -1088,14 +1090,14 @@ typedef struct{
 } NM;
 
 // values in flag.  These are set at creation and not modified, & thus threadsafe
-#define NMLOC           1       // direct   locative abc_lm_   only one of NMLOC/NMILOC/NMIMPLOC is set
-#define NMILOC          2       // indirect locative abc__de__fgh ...     only one of NMLOC/NMILOC/NMIMPLOC is set
+#define NMLOC           1       // 1 direct   locative abc_lm_   only one of NMLOC/NMILOC/NMIMPLOC is set
+#define NMILOC          2       // 1 indirect locative abc__de__fgh ...     only one of NMLOC/NMILOC/NMIMPLOC is set
 #define NMSHAREDX    2
-#define NMSHARED     BIT(NMSHAREDX)      // This NM is for a locally-defined name and is shared by all references to the name
-#define NMIMPLOC        16      // this NM block is u./v.     only one of NMLOC/NMILOC/NMIMPLOC is set
+#define NMSHARED     BIT(NMSHAREDX)      // 4 This NM is for a locally-defined name and is shared by all references to the name
+#define NMIMPLOC        16      // 16 this NM block is u./v.     only one of NMLOC/NMILOC/NMIMPLOC is set
 #define NMCACHEDX       5
-#define NMCACHED        BIT(NMCACHEDX)      // This NM is to cache any valid lookup
-#define NMMNUVXY           128       // one of the names m n u v x y
+#define NMCACHED        BIT(NMCACHEDX)      // 32 This NM is to cache any valid lookup
+#define NMMNUVXY           128       // 128 one of the names m n u v x y
 
 
 // ************************ sparse-array header ************************

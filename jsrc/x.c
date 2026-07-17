@@ -250,7 +250,7 @@ void jtforeigninit(J jt){UI i;
  MN(4,6)   XPRIM(VERB, jtscriptstring, 0,          VNONAME+VNOSELF,VF2NONE,RMAX,RMAX,RMAX);
  MN(4,7)   XPRIM(VERB, jtscriptnum,  0,            VNONAME+VNOSELF,VF2NONE,RMAX,RMAX,RMAX);
  MN(4,8)   XPRIM(ADV, jtcreatecachedref,jtvalenceerr,   VNONAME+VNOSELF,VF2NONE,0L,  0L,  0L  );
- MN(4,55)  XPRIM(VERB, jtex,         0,            VNONAME+VNOSELF,VF2NONE,0,   RMAX,RMAX);
+ MN(4,55)  XPRIM(VERB, jtex,         jtex,            VNONAME+VNOSELF,VF2NONE,0,   RMAX,RMAX);
  MN(5,0)   XPRIM(ADV, jtfxx,jtvalenceerr,          VNONAME+VNOSELF,VF2NONE,0L,  0L,  0L  );
  MN(5,1)   XPRIM(VERB, jtarx,        0,            VNONAME+VNOSELF,VF2NONE,0,   RMAX,RMAX);
  MN(5,2)   XPRIM(VERB, jtdrx,        0,            VNONAME+VNOSELF,VF2NONE,0,   RMAX,RMAX);
@@ -438,8 +438,8 @@ MN(18,7)  XPRIM(VERB, jtsetpermanent,    0,       VNONAME+VNOSELF,VF2NONE,RMAX,R
 
 // called at initialization after memory reset, to assign cocurrent_z_ and coclass_z_.  The 18!:4 block is at the end of foreignA and is a read-only value
 I jtforeignassigninit(J jt){A nm;L *e;
- RZ(nm=nfs(12,"cocurrent_z_",0)); symbis(nm,(A)&foreignA[(sizeof(foreignA)/sizeof(foreignA[0]))-1],jt->global); e=probeisres(nm, *JT(jt,zpath)); e->flag|=LREADONLY;  // the assignment is in z, but we need...
- RZ(nm=nfs(10,"coclass_z_",0)); symbis(nm,(A)&foreignA[(sizeof(foreignA)/sizeof(foreignA[0]))-1],jt->global); e=probeisres(nm, *JT(jt,zpath)); e->flag|=LREADONLY;  // ... a valid global table as an arg
+ RZ(nm=nfs(12,"cocurrent_z_",0)); AFLAG(nm)|=AFRO; symbis(nm,(A)&foreignA[(sizeof(foreignA)/sizeof(foreignA[0]))-1],jt->global); e=probeisres(nm, *JT(jt,zpath)); e->flag|=LREADONLY;  // the assignment is in z, but we need...
+ RZ(nm=nfs(10,"coclass_z_",0)); AFLAG(nm)|=AFRO; symbis(nm,(A)&foreignA[(sizeof(foreignA)/sizeof(foreignA[0]))-1],jt->global); e=probeisres(nm, *JT(jt,zpath)); e->flag|=LREADONLY;  // ... a valid global table as an arg
  R 1;
 }
 
