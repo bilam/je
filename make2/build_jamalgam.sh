@@ -25,17 +25,31 @@ if [ "" = "$CFLAGS" ]; then
    NASM_FLAGS="-g"
    ;;
   *)
-   OPTLEVEL=" $OPTL "
+   if [ "$OPTL" = "-O0" ]; then
+    OPTLEVEL=" $OPTL -DOPTMO0 "
+   else
+    OPTLEVEL=" $OPTL "
+   fi
    DEBUG=0
    NASM_FLAGS=""
    ;;
  esac
 else
- case "$CFLAGS" in *-O0*)
-  OPTLEVEL=" -DOPTMO0 "
-  DEBUG=1
-  ;;
- *) DEBUG=0 ;; esac
+ case "$CFLAGS" in
+  *-O0*) OPTLEVEL=" -DOPTMO0 " ;;
+ esac
+ case "$CFLAGS" in
+  *\ -g\ *)
+   DEBUG=1
+   NASM_FLAGS="-g"
+   ;;
+  *\ -ggdb\ *)
+   DEBUG=1
+   NASM_FLAGS="-g"
+   ;;
+  *)
+   DEBUG=0 ;;
+ esac
 fi
 echo "jplatform=$jplatform"
 echo "j64x=$j64x"
