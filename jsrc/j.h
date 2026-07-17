@@ -1780,7 +1780,7 @@ if(likely(!((I)jtfg&JTWILLBEOPENED)))z=EPILOGNORET(z); RETF(z); \
 #define JMC(d,s,l,bytelen) JMCcommon(d,s,l,bytelen,endmask,JMCDECL(endmask),JMCSETMASK(endmask,ll,bytelen))  //   0->1111 1->1000 3->1110 bytelen has already been applied here
 #define JMCR(d,s,l,bytelen,maskname) JMCcommon(d,s,l,bytelen,maskname,,)
 #else
-#define JMC(d,s,l,bytelen) MC(d,s,(bytelen)?(l):(((l)+(SZI-1))&-SZI));   // it's better to round up the length than to require the byte store
+#define JMC(d,s,l,bytelen) MC(d,s,l);
 #define JMCR(d,s,l,bytelen,maskname) JMC(d,s,l,bytelen)
 #define JMCDECL(mskname)
 #define JMCSETMASK(mskname,l,bytelen)
@@ -2942,10 +2942,15 @@ static INLINE void aligned_free(void *ptr) {
   #define CRC32LL CRC32L                 // takes UIL (8 bytes), return UI
 #endif
 
+#if defined(__has_builtin)
 #if !__has_builtin(__builtin_rotateleft16)
 #define __builtin_rotateleft16(v,n) (((US)(v)<<(n))|((US)(v)>>(16-(n))))
 #endif
 #if !__has_builtin(__builtin_rotateleft32)
+#define __builtin_rotateleft32(v,n) (((UI4)(v)<<(n))|((UI4)(v)>>(32-(n))))
+#endif
+#else
+#define __builtin_rotateleft16(v,n) (((US)(v)<<(n))|((US)(v)>>(16-(n))))
 #define __builtin_rotateleft32(v,n) (((UI4)(v)<<(n))|((UI4)(v)>>(32-(n))))
 #endif
 

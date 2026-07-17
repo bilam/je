@@ -16,9 +16,25 @@ endif
 ifeq (1,$(USE_LINENOISE))
  READLINE = 1
 endif
+ifeq ($(OPTL),)
+ OPTL := -O2
+endif
+ifeq ($(OPTLD),)
+ OPTLD := -O2
+endif
 ifeq (3,$(_DEBUG))
- COPTION := $(COPTION) /FS /Z7 /DDEBUG=1
+ ifeq (-O0,$(OPTLD))
+  COPTION := $(COPTION) /Od /Z7 /DDEBUG=1 /DOPTMO0
+ else
+  COPTION := $(COPTION) $(OPTLD) /Z7 /DDEBUG=1
+ endif
  LDEBUG = /DEBUG
+else
+ ifeq (-O0,$(OPTL))
+  COPTION := $(COPTION) /Od /DOPTMO0
+ else
+  COPTION := $(COPTION) $(OPTL)
+ endif
 endif
 CINCLUDE = -I../mpir/include
 ifeq (1,$(USE_PYXES))
@@ -29,15 +45,15 @@ endif
 
 ifeq (arm64,$(TARGET_CPU))
  CF1 = -target arm64-pc-windows-msvc -march=armv8-a+crc+crypto -fno-strict-aliasing -Wno-parentheses -Wno-unused-variable -Wno-pointer-sign -Wno-missing-braces -Wno-missing-field-initializers -Wno-char-subscripts -Wno-unused-value -Wno-unused-function -Wno-empty-body -Wno-sometimes-uninitialized -Wno-string-plus-int -Wno-unknown-pragmas -Wno-delete-non-abstract-non-virtual-dtor -Wno-unused-variable
- CFLAGS = $(COPTION) $(CINCLUDE) /WX /W3 /O2 /GS /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
+ CFLAGS = $(COPTION) $(CINCLUDE) /WX /W3 /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
  FLAGS = $(LDEBUG) /STACK:0xc00000 /MACHINE:ARM64 /SUBSYSTEM:CONSOLE,5.02
 else ifeq (x64,$(TARGET_CPU))
  CF1 = -maes -msse3 -fno-strict-aliasing -Wno-parentheses -Wno-unused-variable -Wno-pointer-sign -Wno-missing-braces -Wno-missing-field-initializers -Wno-char-subscripts -Wno-unused-value -Wno-unused-function -Wno-empty-body -Wno-sometimes-uninitialized -Wno-string-plus-int -Wno-unknown-pragmas -Wno-delete-non-abstract-non-virtual-dtor -Wno-unused-variable
- CFLAGS = $(COPTION) $(CINCLUDE) /WX /W3 /O2 /GS /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
+ CFLAGS = $(COPTION) $(CINCLUDE) /WX /W3 /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
  FLAGS = $(LDEBUG) /STACK:0xc00000 /MACHINE:X64 /SUBSYSTEM:CONSOLE,5.02
 else
  CF1 = -m32 -msse2 -fno-strict-aliasing -Wno-parentheses -Wno-unused-variable -Wno-pointer-sign -Wno-missing-braces -Wno-missing-field-initializers -Wno-char-subscripts -Wno-unused-value -Wno-unused-function -Wno-empty-body -Wno-sometimes-uninitialized -Wno-string-plus-int -Wno-unknown-pragmas -Wno-delete-non-abstract-non-virtual-dtor -Wno-unused-variable
- CFLAGS = $(COPTION) $(CINCLUDE) /WX /W3 /O2 /GS /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
+ CFLAGS = $(COPTION) $(CINCLUDE) /WX /W3 /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
  FLAGS = $(LDEBUG) /STACK:0xc00000 /MACHINE:X86 /SUBSYSTEM:CONSOLE,5.01
 endif
 

@@ -8,39 +8,47 @@ unameop=$(uname -o || uname -s)
 eval "$(./jplatform64.sh)"
 
 OPTL=${OPTL:="-O2"}
-OPTLD=${OPTLD:="-Og"}
+OPTLD=${OPTLD:="-O2"}
 
 if [ "" = "$CFLAGS" ]; then
  # OPTLEVEL will be merged back into CFLAGS, further down
  # OPTLEVEL is probably overly elaborate, but it works
  case "$_DEBUG" in
-  3)
-   OPTLEVEL=" $OPTLD -g "
+  1|2|3)
+   if [ "$OPTLD" = "-O0" ]; then
+    OPTLEVEL=" $OPTLD -g -DOPTMO0 "
+   else
+    OPTLEVEL=" $OPTLD -g "
+   fi
    DEBUG=1
    NASM_FLAGS="-g"
-   ;;
-  2)
-   OPTLEVEL=" -O0 -ggdb -DOPTMO0 "
-   DEBUG=1
-   NASM_FLAGS="-g"
-   ;;
-  1)
-   OPTLEVEL=" $OPTLD -g "
-   DEBUG=1
-   NASM_FLAGS="-g"
-   j64x=$64x-debug
    ;;
   *)
-   OPTLEVEL=" $OPTL "
+   if [ "$OPTL" = "-O0" ]; then
+    OPTLEVEL=" $OPTL -DOPTMO0 "
+   else
+    OPTLEVEL=" $OPTL "
+   fi
    DEBUG=0
+   NASM_FLAGS=""
    ;;
  esac
 else
- case "$CFLAGS" in *-O0*)
-  OPTLEVEL=" -DOPTMO0 "
-  DEBUG=1
-  ;;
- *) DEBUG=0 ;; esac
+ case "$CFLAGS" in
+  *-O0*) OPTLEVEL=" -DOPTMO0 " ;;
+ esac
+ case "$CFLAGS" in
+  *\ -g\ *)
+   DEBUG=1
+   NASM_FLAGS="-g"
+   ;;
+  *\ -ggdb\ *)
+   DEBUG=1
+   NASM_FLAGS="-g"
+   ;;
+  *)
+   DEBUG=0 ;;
+ esac
 fi
 echo "jplatform=$jplatform"
 echo "j64x=$j64x"
