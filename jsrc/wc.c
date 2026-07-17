@@ -331,7 +331,7 @@ A jtspellcon(J jt,I c){
 static I jtconword(J jt,I n,C*s){
  I c1=s[n-1]; c1=n<3?0:c1; if(c1!='.')R 0;  // if not 3+ chars ending with '.', it's not a control word
  // here it should be a control word.  Check one by one to avoid search and misprediction overhead.  The top cases are dominant.
-#if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+#if defined(OPTMO0) && (defined(__aarch32__)||defined(__arm__)||defined(_M_ARM))
  C s1[8]; memset(s1,0,8); memcpy(s1,s,MIN(8,n)); // only works for little endian
  I8 c8=*(I8*)s1;  // *(I8*)s caused segfault
 #else

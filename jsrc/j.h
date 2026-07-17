@@ -2942,10 +2942,15 @@ static INLINE void aligned_free(void *ptr) {
   #define CRC32LL CRC32L                 // takes UIL (8 bytes), return UI
 #endif
 
+if defined(__has_builtin)
 #if !__has_builtin(__builtin_rotateleft16)
 #define __builtin_rotateleft16(v,n) (((US)(v)<<(n))|((US)(v)>>(16-(n))))
 #endif
 #if !__has_builtin(__builtin_rotateleft32)
+#define __builtin_rotateleft32(v,n) (((UI4)(v)<<(n))|((UI4)(v)>>(32-(n))))
+#endif
+#else
+#define __builtin_rotateleft16(v,n) (((US)(v)<<(n))|((US)(v)>>(16-(n))))
 #define __builtin_rotateleft32(v,n) (((UI4)(v)<<(n))|((UI4)(v)>>(32-(n))))
 #endif
 
