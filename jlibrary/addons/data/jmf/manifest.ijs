@@ -6,13 +6,13 @@ DESCRIPTION=: 0 : 0
 J Memory Mapped File
 )
 
-VERSION=: '1.0.44'
+VERSION=: '1.0.45'
 
 RELEASE=: ''
 
 FOLDER=: 'data/jmf'
 
-PLATFORMS=: ''
+PLATFORMS=: 'j9.8'
 
 FILES=: 0 : 0
 history.txt

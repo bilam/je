@@ -90,9 +90,9 @@ static REPF(jtrepbdx){F12IP;A z;I c,k,m,p;
   // Convert skipcount to bytes, and advance wvv to point to the first cell that may move
   n+=CTTZI(nextwd^VALIDBOOLEAN)>>LGBB;  // complement; count original 1s, add to n.  m cannot be 0 so there must be a valid 0 bit in nextwd
   zvv=wvv=(C*)wvv+k*n;  // step input over items left in place; use that as the starting output pointer also
-#if C_AVX2 || EMU_AVX2
+// obsolete #if C_AVX2 || EMU_AVX2
   flgs|=FLGSNOOSTORE*!!(k&(SZI-1));  // if items are not multiples of I, require exact len.  Since we skip an unchanged prefix, we will seldom have address contention during the copy
-#endif
+// obsolete #endif
   // since the input is abandoned and no cell is ever duplicated, pristinity is unchanged
  }
  AS(z)[wf]=p;  // move in length of item axis, #bytes per item of cell
@@ -222,7 +222,7 @@ static REPF(jtrepidx){F12IP;A y;I j,m,p=0,*v,*x;A z;
  ARGCHK2(a,w);
  RZ(a=vi(a)); x=IAV(a);
  m=AS(a)[0]; if(unlikely(m==0))RETF(RETARG(w));
-#if 0  // when the integer reductions get faster
+#if 0  // scaf use when the integer reductions get faster
  mininsI(1,m,1,x,&p,jt); ASSERT(p>=0,EVDOMAIN);  // verify all values >=0
  ASSERT(EVOK==plusinsI(1,m,1,x,&p,jt),EVLIMIT);  // get total number of result, error if overflow
 #else
