@@ -1012,7 +1012,7 @@ __EMU_M256_IMPL_M2( __m256, xor_ps );
 
 #if defined (__SSE4_2__) || defined (__SSE4_1__)
 
-#if defined(__clang__)
+#if defined(__clang__) || defined(OPTMO0)
 #define  __emu_mm256_blend_pd( m256_param1, m256_param2, param3 ) \
 ({   __emu__m256d res; \
     res.__emu_m128[0] = _mm_blend_pd( m256_param1.__emu_m128[0], m256_param2.__emu_m128[0], (param3) & ((1<<2)-1) ); \
