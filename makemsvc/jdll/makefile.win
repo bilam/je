@@ -20,9 +20,25 @@ TARGET_CPU = x86
 COPTION = $(COPTION) /DSLEEF=1 /DSLEEFQUAD=1
 !endif
 
+!if ""=="$(OPTL)"
+OPTL = -O2
+!endif
+!if ""=="$(OPTLD)"
+OPTLD = -O2
+!endif
 !if "3"=="$(_DEBUG)"
-COPTION = $(COPTION) /FS /Z7 /DDEBUG=1
+!if "-O0"=="$(OPTLD)"
+COPTION = $(COPTION) /Od /Z7 /DDEBUG=1 /DOPTMO0
+!else
+COPTION = $(COPTION) $(OPTLD) /Z7 /DDEBUG=1
+!endif
 LDEBUG = /DEBUG
+!else
+!if "-O0"=="$(OPTLD)"
+COPTION = $(COPTION) /Od /DOPTMO0
+!else
+COPTION = $(COPTION) $(OPTL)
+!endif
 !endif
 CINCLUDE = -I../mpir/include
 !if "1"=="$(USE_PYXES)"
@@ -117,20 +133,18 @@ COPTION = $(COPTION) -msse4.1 -msse4.2
 
 !if "arm64"=="$(TARGET_CPU)"
 CF1 = -target arm64-pc-windows-msvc -march=armv8-a+crc+crypto -fno-strict-aliasing -Wno-unknown-warning-option -Wsign-compare -Wno-int-conversion -Wno-incompatible-function-pointer-types -Wno-parentheses -Wno-unused-variable -Wno-pointer-sign -Wno-missing-braces -Wno-missing-field-initializers -Wno-null-pointer-arithmetic -Wno-char-subscripts -Wno-pointer-to-int-cast -Wno-unused-but-set-variable -Wno-unused-value -Wno-unused-function -Wno-empty-body -Wno-sometimes-uninitialized -Wno-string-plus-int -Wno-unknown-pragmas -Wno-delete-non-abstract-non-virtual-dtor -Wno-deprecated-non-prototype -Wno-unused-variable -Wno-single-bit-bitfield-constant-conversion
-CFLAGS = $(COPTION) $(CINCLUDE) /DHAVE_NEON64=1 /D_JDLL /DC_NA=0 /WX /W3 /O2 /GS- /Zc:strictStrings /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
+CFLAGS = $(COPTION) $(CINCLUDE) /DHAVE_NEON64=1 /D_JDLL /DC_NA=0 /WX /W3 /Zc:strictStrings /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
 FLAGS = $(LDEBUG) /DLL /MACHINE:ARM64 /SUBSYSTEM:WINDOWS,10.0
 ASMFLAGS = /Cx
 !elseif "x64"=="$(TARGET_CPU)"
 CF1 = -maes -msse3 -fno-strict-aliasing -Wno-unknown-warning-option -Wsign-compare -Wno-int-conversion -Wno-incompatible-function-pointer-types -Wno-parentheses -Wno-unused-variable -Wno-pointer-sign -Wno-missing-braces -Wno-missing-field-initializers -Wno-null-pointer-arithmetic -Wno-char-subscripts -Wno-pointer-to-int-cast -Wno-unused-but-set-variable -Wno-unused-value -Wno-unused-function -Wno-empty-body -Wno-sometimes-uninitialized -Wno-string-plus-int -Wno-unknown-pragmas -Wno-delete-non-abstract-non-virtual-dtor -Wno-deprecated-non-prototype -Wno-unused-variable -Wno-single-bit-bitfield-constant-conversion
-CFLAGS = $(COPTION) $(CINCLUDE) /D_JDLL /DC_NA=0 /WX /W3 /O2 /GS- /Zc:strictStrings /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
+CFLAGS = $(COPTION) $(CINCLUDE) /D_JDLL /DC_NA=0 /WX /W3 /Zc:strictStrings /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
 FLAGS = $(LDEBUG) /DLL /MACHINE:X64 /SUBSYSTEM:WINDOWS,10.0
 ASMFLAGS = /Cx
 NASM_FLAGS = -fwin64
 !else
 CF1 = -m32 -maes -msse2 -fno-strict-aliasing -Wno-unknown-warning-option -Wsign-compare -Wno-int-conversion -Wno-incompatible-function-pointer-types -Wno-parentheses -Wno-unused-variable -Wno-pointer-sign -Wno-missing-braces -Wno-missing-field-initializers -Wno-null-pointer-arithmetic -Wno-char-subscripts -Wno-pointer-to-int-cast -Wno-unused-but-set-variable -Wno-unused-value -Wno-unused-function -Wno-empty-body -Wno-sometimes-uninitialized -Wno-string-plus-int -Wno-unknown-pragmas -Wno-delete-non-abstract-non-virtual-dtor -Wno-deprecated-non-prototype -Wno-unused-variable -Wno-single-bit-bitfield-constant-conversion
-# /Og fail g310r
-# /Oy crash ]^:_"1[0
-CFLAGS = $(COPTION) $(CINCLUDE) $(DPYXES) /D_JDLL /WX /W3 /O2 /GS- /Zc:strictStrings /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
+CFLAGS = $(COPTION) $(CINCLUDE) $(DPYXES) /D_JDLL /WX /W3 /Zc:strictStrings /D_USING_V110_SDK71_ /D_CRT_SECURE_NO_WARNINGS /MT $(CF1)
 FLAGS = $(LDEBUG) psapi.lib /DLL /MACHINE:X86 /SUBSYSTEM:WINDOWS,5.01
 ASMFLAGS = /Cx /coff
 NASM_FLAGS = -fwin32
