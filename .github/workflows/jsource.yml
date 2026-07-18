@@ -445,11 +445,9 @@ jobs:
       USE_OPENMP: 0
       USE_PYXES: 0
       USE_EMU_AVX: 0
-#      _DEBUG: ${{ env.DEBUGLEVEL }}
-      _DEBUG: 3
+      _DEBUG: ${{ env.DEBUGLEVEL }}
       OPTL: ${{ env.OPTL }}
-#      OPTLD: ${{ env.OPTLD }}
-      OPTLD: -O0
+      OPTLD: ${{ env.OPTLD }}
       NO_UNDEFINED: ${{ env.NO_UNDEFINED }}
      run: |
       script/buildga.sh raspberry armv6l || exit 1
@@ -460,8 +458,7 @@ jobs:
       DEBUGCPU: arm6
       USE_OPENMP: 0
       USE_PYXES: 0
-#      _DEBUG: ${{ env.DEBUGLEVEL }}
-      _DEBUG: 3
+      _DEBUG: ${{ env.DEBUGLEVEL }}
      run: |
       script/testga.sh raspberry armv6l || exit 1
       cp jlibrary/bin32/* j32 || true
