@@ -632,8 +632,15 @@ static DF1(jtpackbytem1){F12IP;
 #ifdef PEXT
  DO((wn+8-1)>>3, zv[i]=PEXT(wv[i],VALIDBOOLEAN8);)   // read 8 bits, pack, write out.  This overfetches but does not overstore
 #else
+#if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+ UI8 wv1;
+ DO(((wn+8-1)>>3)-1, wv1=0; memcpy(&wv1, &wv[i], 8);zv[i]=(wv1*(UI8)0x0102040810204080LL)>>(64-8);)   // read 8 bits, pack, write out.  This overfetches but does not overstore
+ wv1=0; memcpy(&wv1, &wv[((wn+8-1)>>3)-1], 8);
+ zv[((wn+8-1)>>3)-1]=((wv1&VALIDBOOLEAN8)*(UI8)0x0102040810204080LL)>>(64-8);  // mask off invalid bits in last section
+#else
  DO(((wn+8-1)>>3)-1, zv[i]=(wv[i]*(UI8)0x0102040810204080LL)>>(64-8);)   // read 8 bits, pack, write out.  This overfetches but does not overstore
- zv[((wn+8-1)>>3)-1]=((wv[((wn+8-1)>>3)-1]&VALIDBOOLEAN8)*(UI8)(0x0102040810204080LL>>(64-8)));  // mask off invalid bits in last section
+ zv[((wn+8-1)>>3)-1]=((wv[((wn+8-1)>>3)-1]&VALIDBOOLEAN8)*(UI8)0x0102040810204080LL)>>(64-8);  // mask off invalid bits in last section
+#endif
 #endif
  if(wn&(BW-1))((I*)zv)[((wn+BW-1)>>(LGBW))-1]&=~((I)~0<<(wn&(BW-1)));   // if the last I is not full, mask out trailing upper bits
  RETF(z);

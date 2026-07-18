@@ -30,6 +30,13 @@ jobs:
   steps:
     - run: echo "Runall jobs"
 
+ release:
+  #if: false
+  if: true
+  runs-on: ubuntu-latest
+  steps:
+    - run: echo "Run release"
+
  slow:
   if: false
   #if: true
@@ -99,6 +106,7 @@ jobs:
       zip -r l64.zip j64
 
    - name: Release JE (Linux)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -108,6 +116,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (Linux)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -199,6 +208,7 @@ jobs:
       zip -r l32.zip j32
 
    - name: Release JE (Linux32)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -208,6 +218,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (Linux32)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -296,6 +307,7 @@ jobs:
       zip -r m64.zip j64
 
    - name: Release JE (macOS)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -305,6 +317,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (macOS)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -353,6 +366,7 @@ jobs:
       zip -r m64arm.zip j64
 
    - name: Release JE (macOS arm64)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -362,6 +376,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (macOS arm64)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -409,6 +424,7 @@ jobs:
       zip -r rpi64.zip j64
 
    - name: Release JE (Linux arm64)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -418,6 +434,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (Linux arm64)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -470,6 +487,7 @@ jobs:
       zip -r rpi32.zip j32
 
    - name: Release JE (Linux arm32)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -479,6 +497,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (Linux arm32)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -532,6 +551,7 @@ jobs:
 
    - name: Release JE (Raspberry)
      if: ${{ false }}
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -542,6 +562,7 @@ jobs:
 
    - name: Copy Test (Raspberry)
      if: ${{ false }}
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -596,6 +617,7 @@ jobs:
 
    - name: Release JE (Raspberry32)
      if: ${{ false }}
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -606,6 +628,7 @@ jobs:
 
    - name: Copy Test (Raspberry)
      if: ${{ false }}
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -659,6 +682,7 @@ jobs:
        zip -r obsd64.zip j64
 
    - name: Release JE (OpenBSD)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -668,6 +692,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (OpenBSD)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -721,6 +746,7 @@ jobs:
        zip -r obsdarm64.zip j64
 
    - name: Release JE (OpenBSD arm64)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -730,6 +756,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (OpenBSD arm64)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -787,6 +814,7 @@ jobs:
        zip -r fbsd64.zip j64
 
    - name: Release JE (FreeBSD)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -796,6 +824,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (FreeBSD)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -853,6 +882,7 @@ jobs:
        zip -r fbsdarm64.zip j64
 
    - name: Release JE (FreeBSD arm64)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -862,6 +892,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (FreeBSD arm64)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -894,6 +925,7 @@ jobs:
       script/buildga.sh android arm64 || exit 1
 
    - name: Release JE (android)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -932,6 +964,7 @@ jobs:
       zip -r wasm32.zip j32
 
    - name: Release JE (wasm)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -1012,6 +1045,7 @@ jobs:
       Compress-Archive j64 w64.zip
 
    - name: Release JE (Windows)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -1021,6 +1055,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (Windows)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -1095,6 +1130,7 @@ jobs:
       Compress-Archive j32 w32.zip
 
    - name: Release JE (Windows 32)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -1159,6 +1195,7 @@ jobs:
 
    - name: Release JE (Windows arm64 old)
      if: ${{ false }}
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -1169,6 +1206,7 @@ jobs:
 
    - name: Copy Test (Windows arm64 old)
      if: ${{ false }}
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -1243,6 +1281,7 @@ jobs:
       Compress-Archive j64 warm64.zip
 
    - name: Release JE (Windows arm64)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -1252,6 +1291,7 @@ jobs:
       replacesArtifacts: true
 
    - name: Copy Test (Windows arm64)
+     needs: release
      uses: actions/upload-artifact@v7
      with:
       name: dist
@@ -1329,6 +1369,7 @@ jobs:
       Compress-Archive j64 w64mwc.zip
 
    - name: Release JE (Windows MSYS2 x64 clang)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -1396,6 +1437,7 @@ jobs:
       Compress-Archive j64 w64mw.zip
 
    - name: Release JE (Windows MSYS2 x64)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -1462,6 +1504,7 @@ jobs:
       Compress-Archive j32 w32mw.zip
 
    - name: Release JE (Windows MSYS2 x86)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
@@ -1528,6 +1571,7 @@ jobs:
       Compress-Archive j64 warm64mw.zip
 
    - name: Release JE (Windows MSYS2 arm64)
+     needs: release
      uses: ncipollo/release-action@v1
      with:
       tag: build
