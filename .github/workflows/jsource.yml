@@ -460,7 +460,8 @@ jobs:
       DEBUGCPU: arm6
       USE_OPENMP: 0
       USE_PYXES: 0
-      _DEBUG: ${{ env.DEBUGLEVEL }}
+#      _DEBUG: ${{ env.DEBUGLEVEL }}
+      _DEBUG: 3
      run: |
       script/testga.sh raspberry armv6l || exit 1
       cp jlibrary/bin32/* j32 || true

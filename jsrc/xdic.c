@@ -1155,11 +1155,15 @@ static DF1(jtdicdel){F12IP;A z;
 // node here has LSB clear, index in upper bits
 #define RDIR(node,dir) (*(UI4*)&hashtbl[((node)+(dir))*(nodeb>>24)]&_bzhi_u64(~(UI8)1,nodeb))
 #define DLRC(name) UI8 name##ch; UI name##l,name##r,name##c;  // declare names for chrn etc
+#if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+#define RLRC(name,node) name##ch=0; memcpy(&name##ch,&hashtbl[(node)*(nodeb>>24)],8); name##l=name##ch&_bzhi_u64(~(UI8)1,nodeb); name##r=(name##ch>>(nodeb&0xff))&_bzhi_u64(~(UI8)1,nodeb); name##c=name##ch&1;  // clears LSBs in ##l and ##r
+#else
 #define RLRC(name,node) name##ch=*(UI8*)&hashtbl[(node)*(nodeb>>24)]; name##l=name##ch&_bzhi_u64(~(UI8)1,nodeb); name##r=(name##ch>>(nodeb&0xff))&_bzhi_u64(~(UI8)1,nodeb); name##c=name##ch&1;  // clears LSBs in ##l and ##r
+#endif
 #define DRLRC(name,node) DLRC(name) RLRC(name,node)
 #define DSOC(name) UI8 name##ch; UI name##s,name##o,name##c;  // declare names for chrn, ,clr, s (child in same direction as dir), o (child in opposite direction from dir)
-#if defined(RASPI) && !SY_64   // 32-bit Rpi has optimization error that loses a value
-#define RSOC(name,node,dir) {C taddr[30]; sprintf(taddr,"%p",(hashtbl+(node)*(nodeb>>24)));name##ch=*(UI8*)&hashtbl[(node)*(nodeb>>24)]; I ss=(dir)?(C)nodeb:0, os=(dir)?0:(C)nodeb; name##s=(name##ch>>ss)&_bzhi_u64(~(UI8)1,nodeb); name##o=(name##ch>>os)&_bzhi_u64(~(UI8)1,nodeb); name##c=name##ch&1;}
+#if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+#define RSOC(name,node,dir) {name##ch=0; memcpy(&name##ch,&hashtbl[(node)*(nodeb>>24)],8); I ss=(dir)?(C)nodeb:0, os=(dir)?0:(C)nodeb; name##s=(name##ch>>ss)&_bzhi_u64(~(UI8)1,nodeb); name##o=(name##ch>>os)&_bzhi_u64(~(UI8)1,nodeb); name##c=name##ch&1;}
 #else
 #define RSOC(name,node,dir) {name##ch=*(UI8*)&hashtbl[(node)*(nodeb>>24)]; I ss=(dir)?(C)nodeb:0, os=(dir)?0:(C)nodeb; name##s=(name##ch>>ss)&_bzhi_u64(~(UI8)1,nodeb); name##o=(name##ch>>os)&_bzhi_u64(~(UI8)1,nodeb); name##c=name##ch&1;}
 #endif
@@ -1248,7 +1252,11 @@ static INLINE B jtgetslotso(DIC *dic,void *k,I n,I8 *s,void *zv,J jt,A a, VIRT v
   // the root is pointed to by hash0/dir0.  In an empty database hash0/dir0=0.
   for(nodex=rootx;;){  // traverse the tree, searching for index k.  Current node is nodex
    if(unlikely(nodex<(TREENRES<<1))){s[i]=0; break;}  // not found.  Set s[i] that way
+#if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+   chirn=0; memcpy(&chirn,&hashtbl[nodex*(nodeb>>24)],8);  // fetch both children
+#else
    chirn=*(UI8*)&hashtbl[nodex*(nodeb>>24)];  // fetch both children
+#endif
    s[i]=nodex;  // remember the node where we checked, freeing the register
    comp=keysne((UI4)kib,kbase+(kib>>32)*(nodex>>1),ki,nodeb&(DICFICF<<8),exitkeyvals);  // compare node key vs k, so k > node is ~0
    if(comp==0){PREFETCH(vbase+(s[i]>>1)*vb); break;}  // found at node nodex.  chirn have the children, parent the parent\dir (also in pdir[])
@@ -1353,7 +1361,11 @@ static I searchtree(I type,J jt,C *hashtbl, UI8 kib, I nodeb, C *kbase, VIRT vir
  // the search ends on a match (LC=0), or on a leaf node whose successor (i. e. the parent on the stack) is > min (LC<0), or on the last leaf, if the result is empty (LC>0)
  // This search builds the parent list and is always for the left side of the interval
  do{  // traverse the tree, searching for index k.  Current node is nodex
+#if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+  chirn=0; memcpy(&chirn,&hashtbl[nodex*(nodeb>>24)],8);  // fetch both children
+#else
   chirn=*(UI8*)&hashtbl[nodex*(nodeb>>24)];  // fetch both children
+#endif
   if(!(type&4)){  // if stacking requested
    sp[zx][0]=nodex;  // store this node
    sp[zx][1]=(chirn>>(type&1?0:nodeb&0xff))&_bzhi_u64(~(UI8)1,nodeb);   // stack left/right child depending on flag
@@ -1615,7 +1627,11 @@ static INLINE UI8 jtputslotso(DIC *dic,void *k,I n,void *v,I vn,J jt,UI lv,VIRT 
   // the root is pointed to by hash0/dir0.  In an empty database hash0/dir0=0.  In that case we fiddle things so that the first key is called new and the others are called conflict.  They all point to
   // hash0/dir0 as the end-of-search point.  The new will fill hash0/dir0 with a node, and the rest will start their search at that node, which is the true root of the tree.
   for(nodex=rootx;nodex>=(TREENRES<<1);){  // traverse the tree, searching for index k.  Current node is nodex (includes LSB).  Stop when we have fallen off the end of the tree (or tree is empty)
+#if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+   chirn=0; memcpy(&chirn,&hashtbl[nodex*(nodeb>>24)],8);  // fetch both children
+#else
    chirn=*(UI8*)&hashtbl[nodex*(nodeb>>24)];  // fetch both children
+#endif
    pdir[pi++]=parent+SGNTO0(comp);  // stack parent/dir going into nodex
    comp=keysne((UI4)kib,kbase+(kib>>32)*(nodex>>1),k,nodeb&(DICFICF<<8),errexit);  // compare node key vs k, so k > node is ~0
    if(comp==0){nodex|=1; if(unlikely(!(nodeb&(DICFICF<<8))))unbiasforcomp; goto finput;}  // found at node nodex.  Set nodex bit0 to indicate key already in place.  chirn have the children, parent the parent\dir (also in pdir[])
@@ -1745,7 +1761,11 @@ static INLINE UI8 jtdelslotso(DIC *dic,void *k,I n,J jt,UI lv,VIRT virt,B *zv){I
   // hash0/dir0 as the end-of-search point.  The new will fill hash0/dir0 with a node, and the rest will start their search at that node, which is the true root of the tree.
   if(unlikely(rootx<(TREENRES<<1)))goto notfound; // empty database: nothing to do
   for(nodex=rootx;;){  // traverse the tree, searching for index k.  Current node is nodex
+#if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+   chirn=0; memcpy(&chirn,&hashtbl[nodex*(nodeb>>24)],8);  // fetch both children
+#else
    chirn=*(UI8*)&hashtbl[nodex*(nodeb>>24)];  // fetch both children
+#endif
    pdir[pi++]=parent+=SGNTO0(comp);  // stack parent/dir going into nodex
    comp=keysne((UI4)kib,kbase+(kib>>32)*(nodex>>1),k,nodeb&(DICFICF<<8),errexit);  // compare node key vs k, so k > node is ~0
    if(comp==0)break;  // found at node nodex.  chirn have the children, parent the parent\dir (also in pdir[])
