@@ -445,9 +445,11 @@ jobs:
       USE_OPENMP: 0
       USE_PYXES: 0
       USE_EMU_AVX: 0
-      _DEBUG: ${{ env.DEBUGLEVEL }}
+#      _DEBUG: ${{ env.DEBUGLEVEL }}
+      _DEBUG: 3
       OPTL: ${{ env.OPTL }}
-      OPTLD: ${{ env.OPTLD }}
+#      OPTLD: ${{ env.OPTLD }}
+      OPTLD: -O0
       NO_UNDEFINED: ${{ env.NO_UNDEFINED }}
      run: |
       script/buildga.sh raspberry armv6l || exit 1
