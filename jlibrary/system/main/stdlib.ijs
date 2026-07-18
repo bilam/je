@@ -2266,7 +2266,7 @@ Public=: i. 0 2
 UserFolders=: i. 0 2
 getignore=: 3 : 0
 r=. ' colib compare convert coutil dates dir dll files libpath strings text gl2 graphics/gl2'
-Ignore=: <;._1 r
+Ignore=: (<;._1 r), ((-.IFQT)#<'ide/qt'), ((-.IFJA)#<'ide/ja'), ((-.IFWIN)#<'ide/jnet'), ((IFQT+.IFJA+.IFJNET)#<'ide/jhs')
 )
 
 getignore''
@@ -2516,7 +2516,7 @@ empty''
 )
 loadd=: 1&load
 require=: 3 : 0
-fls=. (getscripts_j_ y) -. 4!:3''
+fls=. (getscripts_j_ y) -. jpathsep&.> 4!:3''
 if. # fls do. load fls else. empty'' end.
 )
 scripts=: scripts_j_
