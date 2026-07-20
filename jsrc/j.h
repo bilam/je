@@ -357,9 +357,9 @@ static inline omp_int_t omp_get_num_threads() { return 1;}
 
 #if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
 // 32-bit arm only
-#define ALIGNREQ 8 // defined if float/long long values must be aligned to 8-byte boundary
+#define ALIGNREQ 0b0110 // 2- and 4-byte loads must be aligned on a boundary of their size
 #else
-#define ALIGNREQ 0
+#define ALIGNREQ 0  // no alignment required
 #endif
 
 #if SY_WIN32
@@ -2958,3 +2958,19 @@ static INLINE void aligned_free(void *ptr) {
 #define __builtin_rotateleft32(v,n) (((UI4)(v)<<(n))|((UI4)(v)>>(32-(n))))
 #endif
 
+// Support for alignment
+
+#if ALIGNREQ&0xf  // load/store must be aligned.  We do not distinguish boundaries
+#define LDWALIGN(T,addr) ({T zzzv; I zzzi=sizeof(T)-1; do{zzzv=(zzzv<<BB)+((UI1*)(addr))[zzzi];}while(--zzzi>=0); zzzv;})
+#define STWALIGN(len,addr,data) ({I##len zzzv=data; I zzzi=0; do{((*UI1)(addr))[zzzi]=(UI1)zzzv; zzzz>>=BB;}while(++zzzi<len); zzzv;})
+#else
+#define LDWALIGN(T,addr) (*(T *)(addr))
+#define STWALIGN(len,addr,data) ((*(T *)(addr))=(data))
+#endif
+#define LDI4(addr) LDWALIGN(UI4,addr)
+#define LDI8(addr) LDWALIGN(I8,addr)
+#define LDUI8(addr) LDWALIGN(UI8,addr)
+#define LDI(addr) LDWALIGN(I,addr)
+#define ST4(addr) STWALIGN(len,addr,data)
+#define ST8(addr) STWALIGN(8,addr,data)
+#define STI(addr) STWALIGN(sizeof(I),addr,data)

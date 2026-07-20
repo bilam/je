@@ -20,7 +20,7 @@ NOINLINE static A jtssingleton1(J jtfg, A w,I caseno){F12JT;A z;void *zv;
  I ar=AR(w);
  // Start loading everything we will need as values before the pipeline break.  Tempting to convert int-to-float as well, but perhaps it will predict right?
  I wiv=IAV(w)[0],ziv;
-#if ALIGNREQ & 8
+#if ALIGNREQ & 0xf
  D wdv=*(D*)(intptr_t)((I)IAV(w)&-SZD);   // all atoms are aligned to a boundary of their size.  avoid spec check if loading an FL from a non-FL boundary (which must be invalid)
 #else
  D wdv=DAV(w)[0];
