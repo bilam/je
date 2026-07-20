@@ -1,3 +1,4 @@
+prolog './g1x30.ijs'
 NB. 1!:30 ---------------------------------------------------------------
 
 pc=: (9!:12 '') e. 0 1 2 6 7   NB. works on DOS or Windows only
@@ -66,3 +67,5 @@ end.
 4!:55 ;:'close f h k lock locks open pc unlock write '
 
 
+
+epilog''

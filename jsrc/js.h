@@ -1,4 +1,4 @@
-/* Copyright 1990-2014, Jsoftware Inc.  All rights reserved.               */
+/* Copyright (c) 1990-2026, Jsoftware Inc.  All rights reserved.           */
 /* Licensed use only. Any other use is in violation of copyright.          */
 /*                                                                         */
 /* SYS_ and friends                                                        */
@@ -9,16 +9,21 @@
 
 // C_? new style config - default value if not defined by builder
 
-#ifndef C_64 // 64/32 bits
+// #ifndef C_64 // 64/32 bits
+// #define C_64 1
+// #endif
+// auto config C_64
+#ifdef C_64
+#undef C_64
+#endif
+#if defined(_WIN64)||defined(__LP64__)
 #define C_64 1
+#else
+#define C_64 0
 #endif
 
 #ifndef C_LE // littleendian/bigendian
 #define C_LE 1
-#endif
-
-#ifndef C_NA // noasm/asm
-#define C_NA 1
 #endif
 
 /*
@@ -31,11 +36,35 @@ define one of the following in the build as required
  f result and f/d args gets 5 x error (rather than wrong result or crash when abi support not available)
 
 -DC_CD_ARMHF
- arm hardware float - result/args passed in float hardware - used by raspian
+ arm hardware float - result/args passed in float hardware - used by raspbian
 
 -DC_CD_ARMEL
  arm software float - result/args passed without using float hardware
 */
+
+// auto config
+
+#if defined(RASPI) && defined(__arm__)
+#ifndef C_CD_ARMHF
+#define C_CD_ARMHF
+#endif
+#endif
+
+#if defined(ANDROID) && defined(__arm__)
+#ifndef C_CD_ARMEL
+#define C_CD_ARMEL
+#endif
+#endif
+
+#if defined(_WIN32) && !defined(__MINGW32__)
+#ifdef SY_GETTOD
+#undef SY_GETTOD
+#endif
+#else
+#ifndef SY_GETTOD
+#define SY_GETTOD
+#endif
+#endif
 
 /* Inclusion of a system herein does not necessarily mean that the source  */
 /* compiles or works under that system.                                    */
@@ -63,26 +92,45 @@ define one of the following in the build as required
 #define SYS_NETBSD          1048576L        /* GCC                         */
 #define SYS_SUNSOL2         2097152L        /* GCC                         */
 #define SYS_MACOSX          4194304L        /* GCC (CC)                    */
+#define SYS_OPENBSD         8388608L        /* GCC                         */
+#define SYS_WASM            16777216L       /* clang                       */
 
-#define SY_WIN32            0    /* any windows intel version              */
+#define SY_WIN32            0    /* any windows intel Visual Studio        */
 #define SY_WINCE            0    /* any windows ce versions                */
 #define SY_LINUX            0    /* any linux intel version                */
-#define SY_MAC              0    /* any macosx intel or powerpc version    */
+#define SY_MAC              0    /* any macosx intel (once included ppc)   */
 #define SY_MACPPC           0    /* macosx powerpc                         */
+#define SY_FREEBSD          0    /* any freebsd version                    */
+#define SY_OPENBSD          0    /* any openbsd version                    */
+#define SY_WASM             0    /* any wasm version                       */
 
 #define SYS_DOS             (SYS_PC + SYS_PC386 + SYS_PCWIN)
 
 #define SYS_UNIX            (SYS_ATT3B1 + SYS_DEC5500 + SYS_IBMRS6000 + \
                              SYS_MIPS + SYS_NEXT + SYS_SGI + SYS_SUN3 + \
-                             SYS_SUN4 + SYS_VAX + SYS_LINUX + SYS_MACOSX + \
+                             SYS_SUN4 + SYS_VAX + SYS_LINUX + SYS_MACOSX + SYS_OPENBSD + SYS_WASM + \
                              SYS_FREEBSD + SYS_NETBSD + SYS_SUNSOL2 + SYS_HPUX)
 
 #if defined(__FreeBSD__)
 #define SYS SYS_FREEBSD
+#undef SY_FREEBSD
+#define SY_FREEBSD 1
 #endif
 
 #if defined(__NetBSD__)
 #define SYS SYS_NETBSD
+#endif
+
+#if defined(__OpenBSD__)
+#define SYS SYS_OPENBSD
+#undef SY_OPENBSD
+#define SY_OPENBSD 1
+#endif
+
+#if defined(__wasm__)
+#define SYS SYS_WASM
+#undef SY_WASM
+#define SY_WASM 1
 #endif
 
 #if defined(sparc) && ! defined(__svr4__)
@@ -148,7 +196,7 @@ define one of the following in the build as required
 
 // SY_ALIGN 1 for compilers requiring strict alignment
 //             e.g. if (I*)av is not allowed for arbitrary av of type C*
-#define SY_ALIGN 1 // always use 1 so all use same code
+#define SY_ALIGN 1 // always use 1 so all use same code; required by nvr stack in parser
 
 /* Windows CE target autoconfiguration: */
 #if SY_WINCE

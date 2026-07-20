@@ -1,3 +1,4 @@
+prolog './giscode.ijs'
 NB. i. special code -----------------------------------------------------
 
 test=: 2 : 0
@@ -20,3 +21,5 @@ test=: 2 : 0
 4!:55 ;:'test'
 
 
+
+epilog''

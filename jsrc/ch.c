@@ -70,7 +70,7 @@ static F2(jtcancel){A c,d,f,x,y;
  w=ravel(w); y=nub(w); d=df1(w,f);
  a=repeat(maximum(zero,minus(c,from(indexof(y,x),over(d,zero)))),x);
  w=repeat(maximum(zero,minus(d,from(indexof(x,y),over(c,zero)))),y);
- R link(a,w);
+ R jlink(a,w);
 }
 
 F2(jthgeom){A c,d,h=0;B p,q;I at,wt;

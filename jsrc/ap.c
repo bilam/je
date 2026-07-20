@@ -13,7 +13,7 @@
 #define MINUSPX(b,r,u,v)  if(b)r=xminus(u,v); else r=xplus(u,v);
 #define MINUSPQ(b,r,u,v)  if(b)r=qminus(u,v); else r=qplus(u,v);
 
-#define DIVPA(b,r,u,v)    r=b?(!u&&!v?0:u/(D)v):u*v;
+#define DIVPA(b,r,u,v)    r=b?(DIV(u,(D)v)):TYMES(u,v);
 #define DIVPZ(b,r,u,v)    if(b)r=zdiv(u,v); else r=ztymes(u,v);
 
 #define PREFIXPFX(f,Tz,Tx,pfx)  \
@@ -366,7 +366,7 @@ static A jtmovsumavg1(J jt,I m,A w,A fs,B avg){A y,z;D d=(D)m;I c,p,s,t,wt;
   case 0:       MOVSUMAVG(B,I,INT,I,INT,x,  SETZ ); break;
   case 1:       MOVSUMAVG(B,I,INT,D,FL, x/d,SETZD); break;
   case 2: 
-   irange(AN(w),AV(w),&s,&t); t=0<t&&IMAX>=d*((D)s+(D)t);
+   irange(AN(w),AV(w),&s,&t); t=0<t&&(D)IMAX>=d*((D)s+(D)t);
    if(t)        MOVSUMAVG(I,I,INT,I,INT,x,  SETZ )
    else         MOVSUMAVG(I,D,FL, D,FL, x,  SETZ ); break;
   case 3:       MOVSUMAVG(I,D,FL, D,FL, x/d,SETZD); break;

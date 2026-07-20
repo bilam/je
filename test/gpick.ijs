@@ -1,3 +1,4 @@
+prolog './gpick.ijs'
 NB. {:: -----------------------------------------------------------------
 
 boxed=: (32&=)@(3!:0)
@@ -30,3 +31,5 @@ t=: 5!:2 <'pick'
 4!:55 ;:'boxed cat map mapp pick S sc spread_temp si sz t'
 
 
+
+epilog''

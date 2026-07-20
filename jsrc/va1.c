@@ -7,11 +7,13 @@
 #include "ve.h"
 
 
-static AMON(floorDI,I,D, {D d=tfloor(*x); *z=(I)d; ASSERTW(d==*z,EWOV);})
+// static AMON(floorDI,I,D, {D d=tfloor(*x); *z=(I)d; ASSERTW(d==*z,EWOV);})
+static AMON(floorDI,I,D, {D d=tfloor(*x); ASSERTW(d>=FLIMIN&&d<FLIMAX,EWOV) *z=(I)d;})
 static AMON(floorD, D,D, *z=tfloor(*x);)
 static AMON(floorZ, Z,Z, *z=zfloor(*x);)
 
-static AMON(ceilDI, I,D, {D d=tceil(*x);  *z=(I)d; ASSERTW(d==*z,EWOV);})
+// static AMON(ceilDI, I,D, {D d=tceil(*x);  *z=(I)d; ASSERTW(d==*z,EWOV);})
+static AMON(ceilDI, I,D, {D d=tceil(*x); ASSERTW(d>=FLIMIN&&d<FLIMAX,EWOV) *z=(I)d;})
 static AMON(ceilD,  D,D, *z=tceil(*x);)
 static AMON(ceilZ,  Z,Z, *z=zceil(*x);)
 

@@ -1,0 +1,166 @@
+ODIR=../bin/$(jplatform)/$(j64x)
+
+.SUFFIXES: .o
+
+# note: the slowest builds have been placed at the top, to avoid starvation in parallel builds
+# (viavx is still longer than everything else combined--should maybe be broken up into multiple tus...)
+OBJS=  \
+ ../jsrc/vi.o \
+ ../jsrc/vcompsc.o \
+ ../jsrc/a.o \
+ ../jsrc/ab.o \
+ ../jsrc/af.o \
+ ../jsrc/ai.o \
+ ../jsrc/am.o \
+ ../jsrc/am1.o \
+ ../jsrc/amn.o \
+ ../jsrc/ao.o \
+ ../jsrc/ap.o \
+ ../jsrc/ar.o \
+ ../jsrc/as.o \
+ ../jsrc/au.o \
+ ../jsrc/c.o \
+ ../jsrc/ca.o \
+ ../jsrc/cc.o \
+ ../jsrc/cd.o \
+ ../jsrc/cf.o \
+ ../jsrc/cg.o \
+ ../jsrc/ch.o \
+ ../jsrc/cip.o \
+ ../jsrc/cl.o \
+ ../jsrc/cp.o \
+ ../jsrc/cpdtsp.o \
+ ../jsrc/cpuinfo.o \
+ ../jsrc/cr.o \
+ ../jsrc/crs.o \
+ ../jsrc/ct.o \
+ ../jsrc/cu.o \
+ ../jsrc/cv.o \
+ ../jsrc/cx.o \
+ ../jsrc/d.o \
+ ../jsrc/dc.o \
+ ../jsrc/dss.o \
+ ../jsrc/dstop.o \
+ ../jsrc/dsusp.o \
+ ../jsrc/dtoa.o \
+ ../jsrc/f.o \
+ ../jsrc/f2.o \
+ ../jsrc/i.o \
+ ../jsrc/io.o \
+ ../jsrc/j.o \
+ ../jsrc/jdlllic.o \
+ ../jsrc/k.o \
+ ../jsrc/m.o \
+ ../jsrc/mbx.o \
+ ../jsrc/p.o \
+ ../jsrc/pv.o \
+ ../jsrc/px.o \
+ ../jsrc/r.o \
+ ../jsrc/rl.o \
+ ../jsrc/rt.o \
+ ../jsrc/s.o \
+ ../jsrc/sc.o \
+ ../jsrc/sl.o \
+ ../jsrc/sn.o \
+ ../jsrc/t.o \
+ ../jsrc/u.o \
+ ../jsrc/v.o \
+ ../jsrc/v0.o \
+ ../jsrc/v1.o \
+ ../jsrc/v2.o \
+ ../jsrc/va1.o \
+ ../jsrc/va2.o \
+ ../jsrc/va2s.o \
+ ../jsrc/vamultsp.o \
+ ../jsrc/vb.o \
+ ../jsrc/vbang.o \
+ ../jsrc/vbit.o \
+ ../jsrc/vcant.o \
+ ../jsrc/vcat.o \
+ ../jsrc/vcatsp.o \
+ ../jsrc/vchar.o \
+ ../jsrc/vcomp.o \
+ ../jsrc/vd.o \
+ ../jsrc/vdx.o \
+ ../jsrc/ve.o \
+ ../jsrc/vf.o \
+ ../jsrc/vfft.o \
+ ../jsrc/vfrom.o \
+ ../jsrc/vfromsp.o \
+ ../jsrc/vg.o \
+ ../jsrc/vgauss.o \
+ ../jsrc/vgcomp.o \
+ ../jsrc/vgranking.o \
+ ../jsrc/vgsort.o \
+ ../jsrc/vgsp.o \
+ ../jsrc/viix.o \
+ ../jsrc/visp.o \
+ ../jsrc/vm.o \
+ ../jsrc/vo.o \
+ ../jsrc/vp.o \
+ ../jsrc/vq.o \
+ ../jsrc/vrand.o \
+ ../jsrc/vrep.o \
+ ../jsrc/vs.o \
+ ../jsrc/vsb.o \
+ ../jsrc/vt.o \
+ ../jsrc/vu.o \
+ ../jsrc/vx.o \
+ ../jsrc/vz.o \
+ ../jsrc/w.o \
+ ../jsrc/wc.o \
+ ../jsrc/wn.o \
+ ../jsrc/ws.o \
+ ../jsrc/x.o \
+ ../jsrc/x15.o \
+ ../jsrc/xa.o \
+ ../jsrc/xb.o \
+ ../jsrc/xc.o \
+ ../jsrc/xcrc.o \
+ ../jsrc/xd.o \
+ ../jsrc/xf.o \
+ ../jsrc/xfmt.o \
+ ../jsrc/xh.o \
+ ../jsrc/xi.o \
+ ../jsrc/xl.o \
+ ../jsrc/xo.o \
+ ../jsrc/xs.o \
+ ../jsrc/xt.o \
+ ../jsrc/xu.o \
+ ../jsrc/jconsole.o \
+ ../jsrc/jeload.o
+
+
+%.o: %.cpp
+	$(CXX) -c $(CPPFLAGS) -o$@ $^
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(CFLAGS_SIMD) $(CFLAGS_FMA) $(CFLAGS_AESNI) $(CFLAGS_AESARM) $(CFLAGS_BASE64)
+
+%.o: %.S
+	$(CC) $(GASM_FLAGS) -c -o $@ $<
+
+%.o: %.asm
+	$(NASM) $(NASM_FLAGS) -o $@ $<
+
+$(OBJS_FMA) : CFLAGS_FMA := -mfma
+$(OBJS_AESNI) : CFLAGS_AESNI := -maes
+$(OBJS_AESARM) : CFLAGS_AESARM := -march=armv8-a+crc+crypto
+$(OBJS_BASE64) : CFLAGS_BASE64 := $(FLAGS_BASE64)
+ifneq (windows,$(findstring windows,$(jplatform)))
+$(ODIR)/$(TARGET) : $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(SRC_ASM) $(OBJSLN) $(BACKTRACE_OBJS)
+	$(CC) -o $@ $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(OBJS_ASM) $(SRC_ASM) $(LDFLAGS) $(OBJSLN) $(BACKTRACE_OBJS)
+else
+$(ODIR)/$(TARGET) : $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(SRC_ASM) $(DLLOBJS) $(LIBJDEF) $(LIBJRES) $(OBJSLN) $(BACKTRACE_OBJS)
+	$(CXX) -o $@ $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(OBJS_ASM) $(SRC_ASM) $(DLLOBJS) $(LIBJDEF) $(LIBJRES) $(LDFLAGS) $(OBJSLN) $(BACKTRACE_OBJS)
+endif
+
+%.res: %.rc
+	$(WINDRES) -l 0x409 -D _USING_V110_SDK71_ -r -O COFF -o $@ $^
+
+all: $(ODIR)/$(TARGET)
+
+clean:
+	rm -f $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(SRC_ASM) $(DLLOBJS) $(LIBJRES) $(OBJSLN) $(BACKTRACE_OBJS)
+
+.PHONY: all clean

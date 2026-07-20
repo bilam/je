@@ -1,3 +1,4 @@
+prolog './glocale.ijs'
 NB. locatives -----------------------------------------------------------
 
 ab__=: x=: ?20$1e9
@@ -348,7 +349,7 @@ f2_c_ =: 3 : 0
 
 (<;._1 ' a b c asdf asdf a') -: x=: f_a_ 0
 
-18!:4 <'base'
+cocurrent <'base'
 (<'base') -: 18!:5 ''
 
 lswitch x=:<'NonExistent2'
@@ -548,3 +549,5 @@ x -: /:~ ('sum_',(":>k),'_');;:'a_baker_ k_base_ xy_z_'
 4!:55 ;:'not_a_locative spnow t test x xy_z_ y '
 
 
+
+epilog''

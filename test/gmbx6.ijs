@@ -1,3 +1,4 @@
+prolog './gmbx6.ijs'
 NB. mapped boxed arrays -------------------------------------------------
 
 0!:0 <testpath,'gmbx.ijs'
@@ -107,3 +108,5 @@ q=: x=: (<5!:2 <'g'), <"0 ;:'Cogito, ergo sum. boustrophedonic chthonic'
 4!:55 ;:'f f1 g j mean q r t x y'
 
 
+
+epilog''

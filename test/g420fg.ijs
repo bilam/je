@@ -1,3 +1,4 @@
+prolog './g420fg.ijs'
 NB. f/@:g for atomic verbs ----------------------------------------------
 
 f=: ;: '! % * + - < = > ^ | <. <: >. >: +. +: *. *: ~: o.'
@@ -103,3 +104,5 @@ y=: 30 7 ?@$ >.imax%8
 4!:55 ;:'f p q space test testsub x xx y yy'
 
 
+
+epilog''

@@ -1,3 +1,4 @@
+prolog './g1x7.ijs'
 NB. 1!:7 ----------------------------------------------------------------
 
 write =: 1!:2
@@ -78,3 +79,5 @@ perm =. 1!:7
 4!:55 ;:'close d erase f h mkdir nn open perm test unix write '
 
 
+
+epilog''

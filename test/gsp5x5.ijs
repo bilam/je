@@ -1,3 +1,4 @@
+prolog './gsp5x5.ijs'
 NB. 5!:5 sparse arrays --------------------------------------------------
 
 test=: 3 : 0
@@ -48,3 +49,5 @@ test 1$.s;(5?#s);-~4j1
 4!:55 ;:'c d r s test x xx yy'
 
 
+
+epilog''

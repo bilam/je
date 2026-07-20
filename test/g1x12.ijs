@@ -1,3 +1,4 @@
+prolog './g1x12.ijs'
 NB. 1!:12 ---------------------------------------------------------------
 
 read   =. 1!:1
@@ -99,3 +100,5 @@ erase h
 4!:55 ;:'erase f h iread iwrite open read write x y '
 
 
+
+epilog''

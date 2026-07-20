@@ -258,7 +258,7 @@ static A jtafrom2(J jt,A p,A q,A w,I r){A z;C*wv,*zv;I c,d,e,j,k,m,pn,pr,*pv,
 static A jtafi(J jt,I n,A w){A x;
  if(!(AN(w)&&BOX&AT(w)))R pind(n,w);
  ASSERT(!AR(w),EVINDEX);
- x=AAV0(w);
+ x=AAVR0(w);
  R AN(x)?less(IX(n),pind(n,x)):ace; 
 }
 
@@ -271,7 +271,7 @@ static F2(jtafrom){PROLOG;A c,ind,p=0,q,*v,x,y=w;B b=1,bb=1;I acr,ar,cd,i=0,j,k,
   R wr==wcr?rank2ex(a,w,0L,0L,wcr,jtafrom):
       df2(rank1ex(a,0L,acr,jtbox),rank1ex(w,0L,wcr,jtbox),amp(ds(CLBRACE),ds(COPE)));
  }
- c=AAV0(a); t=AT(c); n=IC(c); v=AAV(c); cd=(I)c*ARELATIVE(c); 
+ c=AAVR0(a); t=AT(c); n=IC(c); v=AAV(c); cd=(I)c*ARELATIVE(c); 
  k=bp(AT(w)); s=AS(w)+wr-r;
  ASSERT(1>=AR(c),EVRANK);
  ASSERT(n<=r,EVLENGTH);

@@ -1,3 +1,4 @@
+prolog './g430.ijs'
 NB. f/. f\  f\. models --------------------------------------------------
 
 en     =: #@]
@@ -490,3 +491,5 @@ f=: i.@:>:@:$
 4!:55 ;:'outfix prefix sd seg suffix t test w x y'
 
 
+
+epilog''

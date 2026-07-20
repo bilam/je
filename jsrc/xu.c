@@ -3,6 +3,8 @@
 /*                                                                         */
 /* Xenos: u: conversions                                                   */
 
+#include <wchar.h>
+
 #include "j.h"
 #include "x.h"
 
@@ -98,12 +100,12 @@ static I wtomsize(US* src, I srcn){ US w;I r=0;
  R r;
 }
 
-F1(jttoutf16){A z;I n,t,q,b=0; C* wv; US* c2v; 
+F1(jttoutf16){A z;I n,t,q,b=0; UC* wv; US* c2v; 
  RZ(w); ASSERT(1>=AR(w),EVRANK); n=AN(w); t=AT(w); wv=CAV(w);
  if(!n) {GA(z,LIT,n,1,0); R z;}; // empty lit list 
  if(LIT&t)
  {
-  DO(n, if(0>*wv++){b=1;break;});
+  DO(n, if(127<*wv++){b=1;break;});
   if(!b){ if(1==AR(w)) {R ca(w);}; GA(z,LIT,1,1,0); *CAV(z)=*CAV(w); R z;} // ascii list unchanged ascii scalar as list
   q=mtowsize(CAV(w),n);
   ASSERT(q>=0,EVDOMAIN);
@@ -147,7 +149,7 @@ R z; // u16 from u8
 }
 
 void jttoutf8x(J jt,C* f, I n, US* fw){I q;
-q=wtomsize(fw,wcslen(fw));
-wtom(fw,wcslen(fw),f);
+q=wtomsize(fw,wcslen((wchar_t*)fw));
+wtom(fw,wcslen((wchar_t*)fw),f);
 f[q]=0;
 }

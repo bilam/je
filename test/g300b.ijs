@@ -1,3 +1,4 @@
+prolog './g300b.ijs'
 NB. boolean inner products, +./ .*. and ~:/ .*. , etc. ------------------
 
 ip=: 4 : 0
@@ -138,3 +139,5 @@ sh =. $@(+./ .*.) -: }:@$@[ , }.@$@]
 4!:55 ;:'ip sh test xx yy'
 
 
+
+epilog''

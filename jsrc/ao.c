@@ -12,7 +12,7 @@ static DF1(jtoblique){A x,y;I m,n,r,*u,*v;
  RZ(y=gah(MAX(r-1,1),w));
  u=AS(w); v=AS(y);
  if(1>=r){*v=m=AN(w); n=1;}else{m=*u++; n=*u++; *v++=m*n; ICPY(v,u,r-2);}
- RZ(x=irs2(IX(m),IX(n),0L,0L,1L,jtplus)); AR(x)=1; *AS(x)=AN(x);
+ RZ(x=irs2(IX(m),IX(n),0L,0L,1L,jtplus)); ARINIT(x,1); *AS(x)=AN(x);
  R df2(x,y,sldot(VAV(self)->f));
 }
 

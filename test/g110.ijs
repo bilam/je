@@ -1,3 +1,4 @@
+prolog './g110.ijs'
 NB. *y ------------------------------------------------------------------
 
 qct  =: 2^_44
@@ -186,3 +187,5 @@ x           (* -: times"0) y*?($y)$2
 4!:55 ;:'dr eq exp f qct rk s sgn t test testa testb testc times x y'
 
 
+
+epilog''

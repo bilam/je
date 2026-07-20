@@ -75,7 +75,7 @@ AMON(factZ,  Z,Z, *z=zgamma(zplus(z1,*x));)
 
 #define PQLOOP(expr) while(n&&h&&h!=inf&&h!=infm){h*=expr; --n;}
 
-static D pq(D h,D m,D*c,D*d){D x=*c,y=*d;I n=(I)MIN(m,IMAX);
+static D pq(D h,D m,D*c,D*d){D x=*c,y=*d;I n=(I)MIN(m,(D)IMAX);
  if(0>=m)R h;
  switch(2*(0>x)+(0>y)){
   case 0: if(x!= y)PQLOOP(x--/y--); break;

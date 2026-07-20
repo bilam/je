@@ -317,7 +317,7 @@ static C*jtidenv0(J jt,A a,A w,V*sv,I zt,A*zz){A fs,y;
   else if(!allbx)*za++=y;                           \
   else{I ii=i-1;                                    \
    allbx=0;                                         \
-   za=AAV(z); DO(ii, RZ(*za++=box(*za));); *za++=y; \
+   za=AAV(z); DO(ii, RZ(*za=box(*za));za++;); *za++=y; \
    old=jt->tbase+jt->ttop;                          \
   }                                                 \
   gc(y,old);                                        \

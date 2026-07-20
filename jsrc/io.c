@@ -7,14 +7,25 @@
 #include <windows.h>
 #include <winbase.h>
 #else
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#else // Linux
+#include <link.h>
+#endif
+#include <ctype.h>
+#include <unistd.h>
 #include <sys/mman.h>
 #define _stdcall
 #endif
+#include <stdint.h>
 
 #include "j.h"
 #include "d.h"
@@ -102,7 +113,7 @@ void breakclose(J jt)
  if(jt->adbreak==&breakdata) return;
  munmap(jt->adbreak,1);
  jt->adbreak=&breakdata;
- close(jt->breakfh);
+ close((int)jt->breakfh);
  jt->breakfh=0;
  unlink(jt->breakfn);
  *jt->breakfn=0;
@@ -195,7 +206,7 @@ static char breaknone=0;
 
 B jtsesminit(J jt){jt->adbreak=&breakdata; R 1;}
 
-int _stdcall JDo(J jt, C* lp){int r;
+CDPROC int _stdcall JDo(J jt, C* lp){int r;
  r=(int)jdo(jt,lp);
  while(jt->nfe)
   r=(int)jdo(jt,nfeinput(jt,"input_jfe_'   '"));
@@ -203,7 +214,7 @@ int _stdcall JDo(J jt, C* lp){int r;
 } 
 
 /* socket protocol CMDGET name */
-A _stdcall JGetA(J jt, I n, C* name){A x;
+CDPROC A _stdcall JGetA(J jt, I n, C* name){A x;
  jt->jerr=0;
  RZ(x=symbrdlock(nfs(n,name)));
  ASSERT(!(FUNC&AT(x)),EVDOMAIN);
@@ -211,7 +222,7 @@ A _stdcall JGetA(J jt, I n, C* name){A x;
 }
 
 /* socket protocol CMDSET */
-I _stdcall JSetA(J jt,I n,C* name,I dlen,C* d){I old;
+CDPROC I _stdcall JSetA(J jt,I n,C* name,I dlen,C* d){I old;
  jt->jerr=0;
  if(!vnm(n,name)) R EVILNAME;
  old=jt->tbase+jt->ttop;
@@ -221,7 +232,7 @@ I _stdcall JSetA(J jt,I n,C* name,I dlen,C* d){I old;
 }
 
 /* set jclient callbacks */
-void _stdcall JSM(J jt, void* callbacks[])
+CDPROC void _stdcall JSM(J jt, void* callbacks[])
 {
 	jt->smoutput = (outputtype)callbacks[0];
 	jt->smdowd = (dowdtype)callbacks[1];
@@ -229,10 +240,21 @@ void _stdcall JSM(J jt, void* callbacks[])
 	jt->sm = (I)callbacks[4];
 }
 
-C* _stdcall JGetLocale(J jt){return getlocale(jt);}
+/* set jclient callbacks from values - easier for nodejs */
+CDPROC void _stdcall JSMX(J jt, void* out, void* wd, void* in, void* poll, I opts) {}
 
-A _stdcall Jga(J jt, I t, I n, I r, I*s){
+CDPROC C* _stdcall JGetLocale(J jt){return getlocale(jt);}
+
+CDPROC A _stdcall Jga(J jt, I t, I n, I r, I*s){
  return ga(t, n, r, s);
+}
+
+CDPROC void _stdcall JInterrupt(J jt){
+ // increment adbreak by 1, capping at 2
+ C old=lda(&jt->adbreak[0]);
+ while(1){
+  if(old>=2)break;
+  if(casa(&jt->adbreak[0],&old,1+old))break;}
 }
 
 void oleoutput(J jt, I n, char* s);	/* SY_WIN32 only */
@@ -285,7 +307,7 @@ F1(jtbreakfnq){
  R cstr(jt->breakfn);
 }
 
-F1(jtbreakfns){A z;I *fh,*mh; void* ad;
+F1(jtbreakfns){A z;I *fh,*mh=0; void* ad;
  ASSERT(1>=AR(w),EVRANK);
  ASSERT(!AN(w)||AT(w)&LIT,EVDOMAIN);
  ASSERT(AN(w)<NPATH,EVDOMAIN);
@@ -295,7 +317,7 @@ F1(jtbreakfns){A z;I *fh,*mh; void* ad;
  fh=(I*)(I)open(CAV(w),O_RDWR);
  ASSERT(-1!=(I)fh,EVDOMAIN);
  ad=mmap(0,1,PROT_READ|PROT_WRITE,MAP_SHARED,(I)fh,0);
- if(0==ad){close(fh); ASSERT(0,EVDOMAIN);}
+ if(0==ad){close((int)fh); ASSERT(0,EVDOMAIN);}
 #else
  RZ(z=toutf16x(w));
  fh=CreateFileW(USAV(z),GENERIC_READ|GENERIC_WRITE,FILE_SHARE_READ|FILE_SHARE_WRITE,0,OPEN_EXISTING,0,0);
@@ -323,7 +345,7 @@ int valid(C* psrc, C* psnk)
 	return 0;		
 }
 
-int _stdcall JGetM(J jt, C* name, I* jtype, I* jrank, I* jshape, I* jdata)
+CDPROC int _stdcall JGetM(J jt, C* name, I* jtype, I* jrank, I* jshape, I* jdata)
 {
 	A a; char gn[256];
 	if(strlen(name) >= sizeof(gn)) return EVILNAME;
@@ -377,7 +399,7 @@ static int setterm(J jt, C* name, I* jtype, I* jrank, I* jshape, I* jdata)
 	return jt->jerr;
 }
 
-int _stdcall JSetM(J jt, C* name, I* jtype, I* jrank, I* jshape, I* jdata)
+CDPROC int _stdcall JSetM(J jt, C* name, I* jtype, I* jrank, I* jshape, I* jdata)
 {
 	int er;
 
@@ -399,7 +421,7 @@ C* esub(J jt, I ec)
 	return (C*)AV(*(ec+AAV(jt->evm)));
 }
 
-int _stdcall JErrorTextM(J jt, I ec, I* p)
+CDPROC int _stdcall JErrorTextM(J jt, I ec, I* p)
 {
 	*p = (I)esub(jt, ec);
 	return 0;
