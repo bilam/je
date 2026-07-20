@@ -38,8 +38,8 @@ jobs:
     - run: echo "Run slow jobs"
 
  deprecated:
-  if: false
-  #if: true
+  #if: false
+  if: true
   runs-on: ubuntu-latest
   steps:
     - run: echo "Run deprecated jobs"
@@ -508,7 +508,8 @@ jobs:
        export USE_PYXES=1
        export USE_EMU_AVX=1
        export _DEBUG=0   # qemu-arm gdb not supported
-       export OPTL=${{ env.OPTL }}
+#       export OPTL=${{ env.OPTL }}
+       export OPTL=-O0
        export OPTLD=${{ env.OPTLD }}
        export NO_UNDEFINED=${{ env.NO_UNDEFINED }}
        script/buildga.sh raspberry arm64 || exit 1
@@ -575,7 +576,8 @@ jobs:
        export USE_PYXES=0
        export USE_EMU_AVX=0
        export _DEBUG=0   # qemu-arm gdb not supported
-       export OPTL=${{ env.OPTL }}
+#       export OPTL=${{ env.OPTL }}
+       export OPTL=-O0
        export OPTLD=${{ env.OPTLD }}
        export NO_UNDEFINED=${{ env.NO_UNDEFINED }}
        script/buildga.sh raspberry armv6l || exit 1
