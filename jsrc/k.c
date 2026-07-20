@@ -55,7 +55,7 @@ static KF1(jtBfromD){B*x;D p,*v;I n;
 
 static KF1(jtIfromD){D p,q,r,*v;I i,k=0,n,*x;
  n=AN(w); v=DAV(w); x=(I*)yv;
- q=IMIN*(1+jt->fuzz); r=IMAX*(1+jt->fuzz);
+ q=IMIN*(1+jt->fuzz); r=(D)IMAX*(1+jt->fuzz);
  DO(n, p=v[i]; if(p<q||r<p)R 0;);
  for(i=0;i<n;++i){
   p=v[i]; q=jfloor(p);
@@ -230,7 +230,8 @@ static B jtDXfI(J jt,I p,A w,DX*x){A y;I b,c,d,dd,e,i,m,n,q,r,*wv,*yv;
   x[i].e=e-1; x[i].p=p; x[i].x=y;
  }
  R !jt->jerr;
-}    /* most significant digit last, decimal point before last digit */
+}    // most significant digit last, decimal point before last digit
+*/
 
 
 static B jtccvt(J jt,I t,A w,A*y){A d;I n,r,*s,wt,*wv,*yv;
@@ -257,25 +258,25 @@ static B jtccvt(J jt,I t,A w,A*y){A d;I n,r,*s,wt,*wv,*yv;
  switch(CVCASE(t,wt)){
   case CVCASE(LIT, C2T ): R C1fromC2(w,yv);
   case CVCASE(C2T, LIT ): R C2fromC1(w,yv);
-  case CVCASE(BIT ,B01 ): R cvt2bit(w,yv);
+  case CVCASE(BITB,B01 ): R cvt2bit(w,yv);
   case CVCASE(INT ,B01 ): {I*x=    yv;B*v=(B*)wv; DO(n,*x++   =*v++;);} R 1;
   case CVCASE(XNUM,B01 ): R XfromB(w,yv);
   case CVCASE(RAT ,B01 ): GA(d,XNUM,n,r,s); R XfromB(w,AV(d))&&QfromX(d,yv);
   case CVCASE(FL  ,B01 ): {D*x=(D*)yv;B*v=(B*)wv; DO(n,*x++   =*v++;);} R 1;
   case CVCASE(CMPX,B01 ): {Z*x=(Z*)yv;B*v=(B*)wv; DO(n,x++->re=*v++;);} R 1;
-  case CVCASE(BIT ,INT ): R cvt2bit(w,yv);
+  case CVCASE(BITB,INT ): R cvt2bit(w,yv);
   case CVCASE(B01 ,INT ): R BfromI(w,yv);
   case CVCASE(XNUM,INT ): R XfromI(w,yv);
   case CVCASE(RAT ,INT ): GA(d,XNUM,n,r,s); R XfromI(w,AV(d))&&QfromX(d,yv);
   case CVCASE(FL  ,INT ): {D*x=(D*)yv;I*v=    wv; DO(n,*x++   =(D)*v++;);} R 1;
   case CVCASE(CMPX,INT ): {Z*x=(Z*)yv;I*v=    wv; DO(n,x++->re=(D)*v++;);} R 1;
-  case CVCASE(BIT ,FL  ): R cvt2bit(w,yv);
+  case CVCASE(BITB,FL  ): R cvt2bit(w,yv);
   case CVCASE(B01 ,FL  ): R BfromD(w,yv);
   case CVCASE(INT ,FL  ): R IfromD(w,yv);
   case CVCASE(XNUM,FL  ): R XfromD(w,yv);
   case CVCASE(RAT ,FL  ): R QfromD(w,yv);
   case CVCASE(CMPX,FL  ): {Z*x=(Z*)yv;D t,*v=(D*)wv; DO(n, t=*v++; x++->re=t||_isnan(t)?t:0.0;);} R 1;  /* -0 to 0*/
-  case CVCASE(BIT ,CMPX): GA(d,FL,n,r,s); RZ(DfromZ(w,AV(d))); R cvt2bit(d,yv);
+  case CVCASE(BITB,CMPX): GA(d,FL,n,r,s); RZ(DfromZ(w,AV(d))); R cvt2bit(d,yv);
   case CVCASE(B01 ,CMPX): GA(d,FL,n,r,s); RZ(DfromZ(w,AV(d))); R BfromD(d,yv);
   case CVCASE(INT ,CMPX): GA(d,FL,n,r,s); RZ(DfromZ(w,AV(d))); R IfromD(d,yv);
   case CVCASE(XNUM,CMPX): GA(d,FL,n,r,s); RZ(DfromZ(w,AV(d))); R XfromD(d,yv);
@@ -316,7 +317,7 @@ F1(jticvt){A z;D*v,x;I i,k=0,n,*u;
  n=AN(w); v=DAV(w);
  GA(z,INT,n,AR(w),AS(w)); u=AV(z);
  for(i=0;i<n;++i){
-  x=*v++; if(x<IMIN||IMAX<x)R w;
+  x=*v++; if(x<IMIN||(D)IMAX<x)R w;
 #if SY_64
   k=(I)x; *u++=SGN(k)==SGN(x)?k:0>x?IMIN:IMAX;
 #else

@@ -33,7 +33,7 @@ F jtvfn(J jt,F x){I*v=AV(jt->fopf); DO(jt->fopn,if(x==(F)*v++)R x;); ASSERT(0,EV
 I jtfnum(J jt,A w){A y;I h,j;
  if(AT(w)&B01+INT){ASSERT(h=i0(w),EVFNUM); R h;}
  ASSERT(AT(w)&BOX,EVDOMAIN);
- y=AAV0(w);
+ y=AAVR0(w);
  ASSERT(AN(y),EVLENGTH);
  if(AT(y)&B01+INT){ASSERT(h=i0(y),EVFNUM); R h;}
  RE(j=i0(indexof(vec(BOX,jt->fopn,AAV(jt->fopa)),box(fullname(vs(y)))))); 
@@ -54,15 +54,15 @@ F1(jtjfiles){A y;
 F jtjope(J jt,A w,C*mode){A t;F f;I n;static I nf=25; A z;
  RZ(w);
  ASSERT(BOX&AT(w),EVDOMAIN);
- RZ(t=str0(vs(AAV0(w))));
+ RZ(t=str0(vs(AAVR0(w))));
  n=AN(t)-1;
  ASSERT(n,EVLENGTH);
 #if (SYS&SYS_UNIX)
 {
  C* cs=CAV(t);
  f=fopen(cs,mode);
- if(!f&&errno==ENOENT&&!strcmp(mode,FUPDATE))f=fopen(cs,FUPDATEC);
- if(!f&&errno==EACCES&& strcmp(mode,FREAD  ))f=fopen(cs,FREAD);
+ if(!f&&errno==ENOENT&&!strcmp(mode,FUPDATE_O))f=fopen(cs,FUPDATEC_O);
+ if(!f&&errno==EACCES&& strcmp(mode,FREAD_O  ))f=fopen(cs,FREAD_O);
 }
 #else
 {
@@ -73,13 +73,13 @@ F jtjope(J jt,A w,C*mode){A t;F f;I n;static I nf=25; A z;
  usmode[i]=0;
 #if !SY_WINCE 
  f=_wfopen(s,usmode);
- if(!f&&errno==ENOENT&&!wcscmp(usmode,FLUPDATE))f=_wfopen(s,FLUPDATEC);
- if(!f&&errno==EACCES&& wcscmp(usmode,FLREAD  ))f=_wfopen(s,FLREAD);
+ if(!f&&errno==ENOENT&&!wcscmp(usmode,FLUPDATE_O))f=_wfopen(s,FLUPDATEC_O);
+ if(!f&&errno==EACCES&& wcscmp(usmode,FLREAD_O  ))f=_wfopen(s,FLREAD_O);
 #else
  {
  f=_wfopen(s,usmode);
- if(!f&&!wcscmp(usmode,FLUPDATE))f=_wfopen(s,FLUPDATEC); // no errno on wince
- if(!f&& wcscmp(usmode,FLREAD  ))f=_wfopen(s,FLREAD);
+ if(!f&&!wcscmp(usmode,FLUPDATE))f=_wfopen(s,FLUPDATEC_O); // no errno on wince
+ if(!f&& wcscmp(usmode,FLREAD  ))f=_wfopen(s,FLREAD_O);
  }
 #endif
 }
@@ -95,8 +95,8 @@ F1(jtjopen){A z;I h;
  if(h){RZ(z=sc(h)); ASSERT(fname(z),EVFNUM); R z;}
  else{
   if(jt->fopn==AN(jt->fopf)){RZ(jt->fopa=ext(1,jt->fopa)); RZ(jt->fopf=ext(1,jt->fopf));}
-  RZ(*(jt->fopn+IAV(jt->fopf))=h=(I)jope(w,FUPDATE));
-  RZ(*(jt->fopn+AAV(jt->fopa))=ra(fullname(AAV0(w))));
+  RZ(*(jt->fopn+IAV(jt->fopf))=h=(I)jope(w,FUPDATE_O));
+  RZ(*(jt->fopn+AAV(jt->fopa))=ra(fullname(AAVR0(w))));
   ++jt->fopn;
   R sc(h);
 }}   /* open the file named w if necessary; return file# */
@@ -130,7 +130,7 @@ F jtstdf(J jt,A w){A y;F f;I n,r,t;
  ASSERT(AN(w),EVLENGTH);
  ASSERT(!AR(w),EVRANK);
  if(BOX&AT(w)){
-  y=AAV0(w); t=AT(y); n=AN(y); r=AR(y);
+  y=AAVR0(w); t=AT(y); n=AN(y); r=AR(y);
   if(t&LIT){ASSERT(1>=r,EVRANK); ASSERT(n,EVLENGTH); R 0;}
 /*!
   if(t&C2T){ASSERT(1>=r,EVRANK); ASSERT(n,EVLENGTH); ASSERT(vc1(n,(US*)AV(y)),EVDOMAIN); R 0;}

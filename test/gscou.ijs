@@ -1,3 +1,4 @@
+prolog './gscou.ijs'
 NB. s: with unicode -----------------------------------------------------
 
 c=: ' a b cd chthonic boustrophedonic octothorpe'
@@ -61,3 +62,5 @@ s -: _5 s: <;._1 u: c
 4!:55 ;:'c d i s t u'
 
 
+
+epilog''

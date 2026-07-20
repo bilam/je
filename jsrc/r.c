@@ -25,7 +25,7 @@ static F1(jtdrr){PROLOG;A df,dg,fs,gs,hs,*x,z;B b,ex,xop;C c,id;I fl,*hv,m;V*v;
  m+=!b&&!xop||hs&&xop;
  GA(z,BOX,m,1,0); x=AAV(z);
  RZ(x[0]=df);
- RZ(x[1]=b||c||xop?dg:fl&VDDOP?(hv=AV(hs),link(sc(hv[0]),link(spellout(id),sc(hv[1])))):spellout(id));
+ RZ(x[1]=b||c||xop?dg:fl&VDDOP?(hv=AV(hs),jlink(sc(hv[0]),jlink(spellout(id),sc(hv[1])))):spellout(id));
  if(2<m)RZ(x[2]=c||xop?drr(hs):dg);
  EPILOG(z);
 }

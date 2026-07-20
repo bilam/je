@@ -204,18 +204,18 @@ static F1(jtrfc){A r,w1;I m=0,n,t;
   ASSERT(m||equ(zero,head(w)),EVDOMAIN);
  }
  switch(m){
-  case 0:  R link(zero,mtv);
+  case 0:  R jlink(zero,mtv);
   case 1:  r=ravel(negate(aslash(CDIV,take(num[2],w)))); break;
   default: if(t&CMPX)r=rfcz(m,w);
            else{RZ(rfcq(m,w,&r,&w1)); if(m>AN(r))r=over(r,rfcz(m-AN(r),w1));}
  }
- R link(from(sc(m),w),rsort(r));
+ R jlink(from(sc(m),w),rsort(r));
 }
 
 F1(jtpoly1){A c,e,x;
  F1RANK(1L,jtpoly1,0L); 
  if(!(AN(w)&&BOX&AT(w)))R rfc(w);
- x=AAV0(w);
+ x=AAVR0(w);
  if(1<AN(w)||1>=AR(x))R cfr(w);
  ASSERT(2==AR(x),EVRANK);
  ASSERT(2==*(1+AS(x)),EVLENGTH);

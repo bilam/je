@@ -1,3 +1,4 @@
+prolog './g310r.ijs'
 NB. : representations of explicit operators -----------------------------
 
 nl=: 10{a.
@@ -86,3 +87,5 @@ sum=: +/
 4!:55 ;:'F f F1 f1 F2 f2 G g G1 g1 G2 g2 nl nn sum'
 
 
+
+epilog''

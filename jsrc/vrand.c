@@ -399,17 +399,17 @@ static void jtmr_init(J jt,UI s){D*v=(D*)jt->rngv;I t[MRN];
 F1(jtmr_test){I j=jt->rng,x;
  ASSERTMTV(w);
  RZ(rngselects(sc(MRI))); mr_init(1UL);
- x=mr_next(); ASSERTSYS(x==3293966663UL, "mr_test 0");
- x=mr_next(); ASSERTSYS(x==3129388991UL, "mr_test 1");
- x=mr_next(); ASSERTSYS(x==2530141948UL, "mr_test 2");
- x=mr_next(); ASSERTSYS(x==1065433470UL, "mr_test 3");
- x=mr_next(); ASSERTSYS(x==1177634463UL, "mr_test 4");
+ x=mr_next(); ASSERTSYS(x==(I)3293966663UL, "mr_test 0");
+ x=mr_next(); ASSERTSYS(x==(I)3129388991UL, "mr_test 1");
+ x=mr_next(); ASSERTSYS(x==(I)2530141948UL, "mr_test 2");
+ x=mr_next(); ASSERTSYS(x==(I)1065433470UL, "mr_test 3");
+ x=mr_next(); ASSERTSYS(x==(I)1177634463UL, "mr_test 4");
  DO(40, mr_next(););
- x=mr_next(); ASSERTSYS(x==1134399356UL, "mr_test 45");
- x=mr_next(); ASSERTSYS(x== 630832201UL, "mr_test 46");
- x=mr_next(); ASSERTSYS(x==2411464992UL, "mr_test 47");
- x=mr_next(); ASSERTSYS(x== 762439568UL, "mr_test 48");
- x=mr_next(); ASSERTSYS(x==3245142153UL, "mr_test 49");
+ x=mr_next(); ASSERTSYS(x==(I)1134399356UL, "mr_test 45");
+ x=mr_next(); ASSERTSYS(x==(I) 630832201UL, "mr_test 46");
+ x=mr_next(); ASSERTSYS(x==(I)2411464992UL, "mr_test 47");
+ x=mr_next(); ASSERTSYS(x==(I) 762439568UL, "mr_test 48");
+ x=mr_next(); ASSERTSYS(x==(I)3245142153UL, "mr_test 49");
  RZ(rngselects(sc(j)));
  R one;
 }
@@ -779,7 +779,8 @@ static F1(jtroll){A z;D rl=jt->rl;static D dm=16807,p=2147483647L;I c,n,*v,*x;
  }
  jt->rl=(I)rl;
  R z;
-}    /* P.C. Berry, Sharp APL Reference Manual, 1979, p. 126. */
+}    // P.C. Berry, Sharp APL Reference Manual, 1979, p. 126.
+*/
 
 /*
 static A jtbigdeal(J jt,I m,I n){A t,x,y;
@@ -787,7 +788,8 @@ static A jtbigdeal(J jt,I m,I n){A t,x,y;
  RZ(y=sc(n));
  do{RZ(t=nub(roll(reshape(x,y))));}while(m>AN(t));
  R vec(INT,m,AV(t));
-}    /* E.E. McDonnell circa 1966, small m and large n */
+}    // E.E. McDonnell circa 1966, small m and large n
+*/
 
 /*
 static A jtdeal(J jt,I m,I n){A y;D rl=jt->rl;static D dm=16807,p=2147483647L;I j,k,*yv;
@@ -796,4 +798,5 @@ static A jtdeal(J jt,I m,I n){A y;D rl=jt->rl;static D dm=16807,p=2147483647L;I 
  DO(m, rl=fmod(rl*dm,p); j=i+(I)jfloor(rl*(n-i)/(1+p)); k=yv[i]; yv[i]=yv[j]; yv[j]=k;);
  jt->rl=(I)rl;
  R vec(INT,m,yv);
-}    /* P.C. Berry, Sharp APL Reference Manual, 1979, p. 178. */
+}    // P.C. Berry, Sharp APL Reference Manual, 1979, p. 178.
+*/

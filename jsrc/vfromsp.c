@@ -117,13 +117,13 @@ static A jtfrombs1(J jt,A ind,A w,I wf){A*iv,x,y,z;I id,j,m,n,old,wr,wcr;
  n=AN(ind); iv=AAV(ind); id=(I)ind*ARELATIVE(ind); wr=AR(w); wcr=wr-wf;
  ASSERT(1>=AR(ind),EVRANK);
  ASSERT(n<=wr-wf,EVLENGTH);
- j=n; DO(n, --j; x=AADR(id,iv[j]); if(BOX&AT(x)&&!AR(x)&&(y=AAV0(x),!AN(y)&&1==AR(y)))--n; else break;);
+ j=n; DO(n, --j; x=AADR(id,iv[j]); if(BOX&AT(x)&&!AR(x)&&(y=AAVR0(x),!AN(y)&&1==AR(y)))--n; else break;);
  z=w; old=jt->tbase+jt->ttop;
  for(j=0;j<n;++j){
   x=AADR(id,iv[j]); 
   if(BOX&AT(x)){
    ASSERT(!AR(x),EVINDEX);
-   x=AAV0(x); m=*(wf+j+AS(w));
+   x=AAVR0(x); m=*(wf+j+AS(w));
    if(!AN(x))continue;
    RZ(x=less(IX(m),pind(m,x)));
   }
@@ -138,7 +138,7 @@ F2(jtfrombs){A ind;I acr,af,ar,wcr,wf,wr;
  wr=AR(w); wcr=jt->rank?jt->rank[1]:wr; wf=wr-wcr; jt->rank=0;
  ASSERT(!af,EVNONCE);
  if(ar){RE(aindex(a,w,wf,&ind)); ASSERT(ind,EVNONCE); R frombsn(ind,w,wf);}
- else R frombs1(AAV0(a),w,wf);
+ else R frombs1(AAVR0(a),w,wf);
 }    /* a{"r w for boxed a and sparse w */
 
 F2(jtfromsd){A e,x,z;I acr,af,ar,*v,wcr,wf,wr,*ws;P*ap,*zp;

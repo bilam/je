@@ -1,3 +1,4 @@
+prolog './g18x.ijs'
 NB. 18!:30 y ------------------------------------------------------------
 
 x=: i.12
@@ -102,3 +103,5 @@ pcheck 18!:31 ''
 4!:55 ;:'a adv b f h i k li m p pcheck s sum t x y yy'
 
 
+
+epilog''

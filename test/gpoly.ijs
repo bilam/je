@@ -1,3 +1,4 @@
+prolog './gpoly.ijs'
 NB. p. y ----------------------------------------------------------------
 
 test =: 3 : 0
@@ -323,3 +324,5 @@ NB. (c;r) (p. -: pdot) z
 4!:55 ;:'rem rfc root rou rov rs s sq step test x y z '
 
 
+
+epilog''

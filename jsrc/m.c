@@ -213,7 +213,7 @@ static A jttraverse(J jt,A w,AF f){
 
 static A jttg(J jt){A t=jt->tstacka,z;
  RZ(z=ma(SZI*WP(BOX,NTSTACK,1L)));
- AT(z)=BOX; AC(z)=AR(z)=1; AN(z)=*AS(z)=NTSTACK; AM(z)=NTSTACK*SZA; AK(z)=AKX(z);
+ AT(z)=BOX; AC(z)=1; ARINIT(z,1); AN(z)=*AS(z)=NTSTACK; AM(z)=NTSTACK*SZA; AK(z)=AKX(z);
  jt->tstacka=z; jt->tstack=AAV(jt->tstacka); jt->tbase+=NTSTACK; jt->ttop=1;
  *jt->tstack=t;
  R z;
@@ -256,7 +256,8 @@ A jtraa(J jt,I k,A w){A z;I m=jt->arg; jt->arg=k; z=ra1(w); jt->arg=m; R z;}
 F1(jtrat){R ra(tpush(w));}
 
 A jtga(J jt,I t,I n,I r,I*s){A z;I m,w;
- if(t&BIT){const I c=8*SZI;              /* bit type: pad last axis to fullword */
+ ASSERT(RMAX>=r,EVLIMIT); 
+ if(t&BITB){const I c=8*SZI;              /* bit type: pad last axis to fullword */
   ASSERTSYS(1>=r||s,"ga bit array shape");
   if(1>=r)w=(n+c-1)/c; else RE(w=mult(prod(r-1,s),(s[r-1]+c-1)/c));
   w+=WP(INT,0L,r); m=SZI*w; 
@@ -268,7 +269,7 @@ A jtga(J jt,I t,I n,I r,I*s){A z;I m,w;
  RZ(z=ma(m));
  if(!(t&DIRECT))memset(z,C0,m);
  if(t&LAST0){I*v=(I*)z+w-2; *v++=0; *v=0;}
- AC(z)=1; AN(z)=n; AR(z)=r; AFLAG(z)=0; AK(z)=AKX(z); AM(z)=msize[((MS*)z-1)->j]-(AK(z)+sizeof(MS)); 
+ AC(z)=1; AN(z)=n; ARINIT(z,(RANKT)r); AFLAG(z)=0; AK(z)=AKX(z); AM(z)=msize[((MS*)z-1)->j]-(AK(z)+sizeof(MS)); 
  AT(z)=0; tpush(z); AT(z)=t;
  if(1==r&&!(t&SPARSE))*AS(z)=n; else if(r&&s)ICPY(AS(z),s,r);  /* 1==n always if t&SPARSE */
  R z;
@@ -276,10 +277,10 @@ A jtga(J jt,I t,I n,I r,I*s){A z;I m,w;
 
 A jtgah(J jt,I r,A w){A z;
  ASSERT(RMAX>=r,EVLIMIT); 
- RZ(z=ma(SZI*(AH+r)));
+ RZ(z=ma(SZI*(NORMAH+r)));
  AT(z)=0; ++AC(z); tpush(z);
  if(w){
-  AFLAG(z)=0; AM(z)=AM(w); AT(z)=AT(w); AN(z)=AN(w); AR(z)=r; AK(z)=CAV(w)-(C*)z;
+  AFLAG(z)=0; AM(z)=AM(w); AT(z)=AT(w); AN(z)=AN(w); ARINIT(z,(RANKT)r); AK(z)=CAV(w)-(C*)z;
   if(1==r)*AS(z)=AN(w);
  }
  R z;

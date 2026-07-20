@@ -14,8 +14,8 @@ LINK=" -shared -Wl,-soname,libj.so -m32 -lm -ldl -o libj.so "
 ;;
 linux_j64) # linux x86
 TARGET=libj.so
-COMPILE="$common -DC_NA=0"
-LINK=" $jgit/asm/linuxasm64.o -shared -Wl,-soname,libj.so -lm -ldl -o libj.so "
+COMPILE="$common"
+LINK=" -shared -Wl,-soname,libj.so -lm -ldl -o libj.so "
 ;;
 
 raspberry_j32) # linux raspian arm

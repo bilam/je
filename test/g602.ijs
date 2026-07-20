@@ -1,3 +1,4 @@
+prolog './g602.ijs'
 NB. ":y on non-empty numeric array y ------------------------------------
 
 sprintf =: ":
@@ -379,3 +380,5 @@ _14  (": -: (": x:)) 999996
 4!:55 ;:'sqz t take tcorn test th thbox thorn1 tint top '
 4!:55 ;:'topleft ubar width x y z ' 
 
+
+epilog''

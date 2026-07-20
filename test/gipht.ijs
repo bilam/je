@@ -1,3 +1,4 @@
+prolog './gipht.ijs'
 NB. prehashed i. family of functions ------------------------------------
 
 3 : 0 ''
@@ -8,7 +9,7 @@ end.
 
 f0=: 4 : 0
  f=: x&i.
- assert. IFRASPI +. </ (1,threshold) %~ t=: timer 'f y',:'x i. y'
+ assert. THRESHOLD +. IFRASPI +. </ (1,threshold) %~ t=: timer 'f y',:'x i. y'
  1
 )
 
@@ -56,7 +57,7 @@ g=: 4 : 0
 
 f1=: 3 : 0
  t=: (2e4*>:i.8) g"0 y
- assert. (1-threshold) > >./| t (- % ]) mean t
+ assert. THRESHOLD +. (1-threshold) > >./| t (- % ]) mean t
  1
 )
 
@@ -67,3 +68,5 @@ f1"0 ]1e1 1e3 1e5 1e7 1e9
 4!:55 ;:'f f0 f1 g m mean t x xx y yy'
 
  
+
+epilog''

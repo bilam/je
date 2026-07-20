@@ -1,3 +1,4 @@
+prolog './g431.ijs'
 NB. f/. f\  f\. models --------------------------------------------------
 en     =: #@]
 em     =: (en >.@% 1&>.@|@[)`(en 0&>.@>:@- [) @. (0&<:@[)
@@ -267,3 +268,5 @@ xover =: 3 : '~:/y'
 4!:55 ;:'plus prefix product sd seg suffix sum t times x xor xover '
 
 
+
+epilog''

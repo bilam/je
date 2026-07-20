@@ -1,3 +1,4 @@
+prolog './g1x1.ijs'
 NB. 1!:1 ----------------------------------------------------------------
 
 dir   =. 1!:0
@@ -69,3 +70,5 @@ t -: x
 4!:55 ;:'close d dir erase f h mac open p pc read size t unix win write x'
 
 
+
+epilog''

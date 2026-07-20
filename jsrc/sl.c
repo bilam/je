@@ -137,7 +137,11 @@ F2(jtlocnl2){UC*u;
  R locnlx(w); 
 }    /* 18!:1 locale name list */
 
+#if defined(__clang__) && (defined(DEBUG) || defined(__OpenBSD__))
+static A NOOPTIMIZE jtlocale(J jt,B b,A w){A g,*wv,y;I wd;
+#else
 static A jtlocale(J jt,B b,A w){A g,*wv,y;I wd;
+#endif
  RZ(vlocnl(1,w));
  wv=AAV(w); wd=(I)w*ARELATIVE(w);
  DO(AN(w), y=WVR(i); RZ(g=stfind(b,AN(y),CAV(y))););
@@ -159,7 +163,7 @@ F2(jtlocpath2){A g,x;
 static F2(jtloccre){A g,y;C*s;I n,p,*u;L*v;
  RZ(a&&w);
  if(MARK&AT(a))p=jt->locsize[0]; else{RE(p=i0(a)); ASSERT(0<=p,EVDOMAIN); ASSERT(p<nptab,EVLIMIT);}
- y=AAV0(w); n=AN(y); s=CAV(y);
+ y=AAVR0(w); n=AN(y); s=CAV(y);
  if(v=probe(nfs(n,s),jt->stloc)){
   g=v->val; 
   u=1+AV(g); DO(AN(g)-1, ASSERT(!u[i],EVLOCALE););

@@ -1,3 +1,4 @@
+prolog './gtrain.ijs'
 NB. (# i.@#) ------------------------------------------------------------
 
 NB. (# i.@#) y on boolean y is recognized as a special phrase by the interpreter
@@ -103,3 +104,5 @@ NB. adverb adverb trains ------------------------------------------------
 4!:55 ;:'b f g i x'
 
 
+
+epilog''

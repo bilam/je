@@ -1,3 +1,4 @@
+prolog './g331col.ijs'
 NB. x <;.n y for boxed x and matrix y -----------------------------------
 
 cutcol=: 2 : 0
@@ -42,3 +43,5 @@ test (0*b);(0*c);y
 
 4!:55 ;:'a b c cutcol m n test y yy'
 
+
+epilog''

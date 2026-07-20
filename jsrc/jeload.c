@@ -1,62 +1,131 @@
-/* Copyright 1990-2008, Jsoftware Inc.  All rights reserved.               */
+/* Copyright (c) 1990-2026, Jsoftware Inc.  All rights reserved.           */
 /* Licensed use only. Any other use is in violation of copyright.          */
+/*                                                                         */
+/* utilities for JFE to load JE, initiallize, and run profile sentence     */
+
 // utilities for JFE to load JE, initiallize, and run profile sentence
 // JFEs are jconsole, jwdw, and jwdp
-#define PLEN 1000 // path length
 #ifdef _WIN32
+ #define __iamcu__
+ #define WIN32_LEAN_AND_MEAN
  #include <windows.h>
-
-#ifdef UNDER_CE
- #define GETPROCADDRESS(h,p) GetProcAddress(h,_T(p))
-#else
  #define GETPROCADDRESS(h,p) GetProcAddress(h,p)
-#endif
- #define JDLLNAME "\\j.dll"
+ #define PLEN _MAX_PATH // path length
+ #define JDLLNAME "j"
+ #define JDLLEXT ".dll"
  #define filesep '\\'
  #define filesepx "\\"
-// setfocus e required for pocketpc and doesn't hurt others
-#define ijx "11!:0'pc ijx closeok;xywh 0 0 300 200;cc e editijx rightmove bottommove ws_vscroll ws_hscroll;setfont e \"Courier New\" 12;setfocus e;pas 0 0;pgroup jijx;pshow;'[18!:4<'base'"
-
+ #ifdef MMSC_VER
+ #define strcasecmp _stricmp
+ #endif
 #else
+ #include <unistd.h>
+ #if !defined(__wasm__)
  #include <dlfcn.h>
  #define GETPROCADDRESS(h,p)	dlsym(h,p)
+ #endif
  #define _stdcall
+ #define PLEN PATH_MAX // path length
  #define filesep '/'
  #define filesepx "/"
- #define ijx "11!:0'pc ijx closeok;xywh 0 0 300 200;cc e editijx rightmove bottommove ws_vscroll ws_hscroll;setfont e monospaced 12;pas 0 0;pgroup jijx;pshow;'[18!:4<'base'"
- #ifdef __MACH__ 
-  #define JDLLNAME "/libj.dylib"
+ #define JDLLNAME "libj"
+ #ifdef __APPLE__
+  extern int _NSGetExecutablePath(char*, int*);
+  #define JDLLEXT ".dylib"
  #else
-  #define JDLLNAME "/libj.so"
+  #include <sys/utsname.h>
+  #define JDLLEXT ".so"
  #endif
 #endif
 #include "j.h"
+#include "jversion.h"
+#include <stdint.h>
 
-static void* hjdll;
-static J jt;
+static void* hjdll=0;
+extern JST* jt;
 static JDoType jdo;
+static JInterruptType jinterrupt;
 static JFreeType jfree;
 static JgaType jga;
 static JGetLocaleType jgetlocale;
-static char path[PLEN];
-static char pathdll[PLEN];
+static JGetAType jgeta;
+static JSetAType jseta;
+char path[PLEN];
+char libpathj[PLEN];
+char pathdll[PLEN];
+static char pathetcpx[PLEN];
+static char pathexec0[PLEN];
+static char pathexec[PLEN];
+static char jdllver[20];
+static int FHS=0;
 #ifdef ANDROID
+#define AndroidPackage "com.jsoftware.j.android"
+#define AndroidPackageBeta "com.jsoftware.j.beta.android"
+#include <sys/system_properties.h>
+#include <android/log.h>
 static char install[PLEN];
+
+#if __ANDROID_API__ >= 21
+// Android 'L' makes __system_property_get a non-global symbol.
+// Here we provide a stub which loads the symbol from libc via dlsym.
+typedef int (*PFN_SYSTEM_PROP_GET)(const char *, char *);
+static int _system_property_get(const char* name, char* value)
+{
+    static PFN_SYSTEM_PROP_GET _real_system_property_get = NULL;
+    if (!_real_system_property_get) {
+        // libc.so should already be open, get a handle to it.
+        void *handle = dlopen("libc.so", RTLD_NOLOAD);
+        if (!handle) {
+            __android_log_print(ANDROID_LOG_ERROR, "foobar", "Cannot dlopen libc.so: %s.\n", dlerror());
+        } else {
+            _real_system_property_get = (PFN_SYSTEM_PROP_GET)dlsym(handle, "__system_property_get");
+        }
+        if (!_real_system_property_get) {
+            __android_log_print(ANDROID_LOG_ERROR, "foobar", "Cannot resolve __system_property_get(): %s.\n", dlerror());
+        }
+    }
+    return (*_real_system_property_get)(name, value);
+}
+#else
+#define _system_property_get __system_property_get
+#endif
 #endif
 
 int jedo(char* sentence)
 {
-	return jdo(jt,sentence);
+	return jdo(jt,(C*)sentence);
 }
 
+void jeinterrupt()
+{
+
+	jinterrupt(jt);
+}
+
+A jegeta(I n, char* s){return jgeta(jt,n,(C*)s);}
+I jeseta(I n,char* name,I x,char* d){return jseta(jt,n,(C*)name,x,(C*)d);}
 void jefree(){jfree(jt);}
-char* jegetlocale(){return jgetlocale(jt);}
+char* jegetlocale(){return (char*)jgetlocale(jt);}
 A jega(I t, I n, I r, I*s){return jga(jt,t,n,r,s);}
 void* jehjdll(){return hjdll;}
 
 // load JE, Jinit, getprocaddresses, JSM
-J jeload(void* callbacks)
+JST* jeload(void* callbacks)
 {
+#if defined(JAMALGAM)
+ jt=JInit();
+ if(!jt) return 0;
+ JSM(jt,callbacks);
+ jdo=JDo;
+ jinterrupt=JInterrupt;
+ jfree=JFree;
+ jga=Jga;
+ jgetlocale=JGetLocale;
+ jgeta=JGetA;
+ jseta=JSetA;
+// #elif defined(__wasm__) || defined(TARGET_IOS)
+// exit(1);    /* not applicable to these platforms */
+#else
 #ifdef _WIN32
  WCHAR wpath[PLEN];
  MultiByteToWideChar(CP_UTF8,0,pathdll,1+(int)strlen(pathdll),wpath,PLEN);
@@ -65,39 +134,87 @@ J jeload(void* callbacks)
  hjdll=dlopen(pathdll,RTLD_LAZY);
 #endif
  if(!hjdll)return 0;
+// jt=((JInit2Type)GETPROCADDRESS(hjdll,"JInit2"))((C*)libpathj);
  jt=((JInitType)GETPROCADDRESS(hjdll,"JInit"))();
  if(!jt) return 0;
  ((JSMType)GETPROCADDRESS(hjdll,"JSM"))(jt,callbacks);
  jdo=(JDoType)GETPROCADDRESS(hjdll,"JDo");
+ jinterrupt=(JInterruptType)GETPROCADDRESS(hjdll,"JInterrupt");
  jfree=(JFreeType)GETPROCADDRESS(hjdll,"JFree");
  jga=(JgaType)GETPROCADDRESS(hjdll,"Jga");
  jgetlocale=(JGetLocaleType)GETPROCADDRESS(hjdll,"JGetLocale");
+ jgeta=(JGetAType)GETPROCADDRESS(hjdll,"JGetA");
+ jseta=(JSetAType)GETPROCADDRESS(hjdll,"JSetA");
+#endif
  return jt;
 }
 
 // set path and pathdll (wpath also set for win)
 // WIN arg is 0, Unix arg is argv[0]
-void jepath(char* arg)
+void jepath(char* arg,char* lib)
 {
+#if defined(__wasm__) || defined(TARGET_IOS) || defined(JAMALGAM)
+ *pathdll = *libpathj = *path = 0;  /* libj is static library */
+ return;
+#else
+ char tmp[PLEN];
+#ifndef _WIN32
+ struct stat st;
+#endif
 #ifdef _WIN32
  WCHAR wpath[PLEN];
- GetModuleFileNameW(0,wpath,_MAX_PATH);
+ GetModuleFileNameW(0,wpath,PLEN);
  *(wcsrchr(wpath, '\\')) = 0;
  WideCharToMultiByte(CP_UTF8,0,wpath,1+(int)wcslen(wpath),path,PLEN,0,0);
-#elif defined(ANDROID)
-#define AndroidPackage "com.jsoftware.j.android"
- struct stat st; int qsdcard; char tmp[PLEN];
+ strcpy(libpathj,path);
+#elif defined(ANDROID) && !defined(JAMALGAM)
+ char pkg[100];
+ if(strstr(jversion,"beta")) strcpy(pkg,AndroidPackageBeta); else strcpy(pkg,AndroidPackage);
  strcpy(path,"/data/data/");
- strcat(path,AndroidPackage);
+ strcat(path,pkg);
  strcpy(pathdll,path);
- strcat(pathdll,"/lib");
+ strcat(pathdll,"/lib/");
+ strcpy(libpathj,pathdll);
  strcat(pathdll,JDLLNAME);
- strcpy(tmp, "/sdcard/Android/data");
- qsdcard=stat(tmp,&st);
- strcpy(install,(qsdcard)?"/storage/emulated/0/Android/data/":"/sdcard/Android/data/");
- strcat(install,AndroidPackage);
+ strcat(pathdll,JDLLEXT);
+ if(stat(path,&st)){ /* android 5 or newer */
+ strcpy(path,"/data/user/0/");
+ strcat(path,pkg);
+ }
+ if(stat(pathdll,&st)){ /* android 4 or newer */
+#if defined(__aarch64__)||defined(_M_ARM64)
+#define arch "arm64"
+#elif defined(__x86_64__)
+#define arch "x86_64"
+#elif defined(__i386__)
+#define arch "x86"
+#else
+#define arch "arm"
+#endif
+ int i;
+ for(i=0;i<40;i++){
+  if(i)
+   sprintf(pathdll,"/data/app/%s-%d/lib/%s/%s%s",pkg,i,arch,JDLLNAME,JDLLEXT);
+  else
+   sprintf(pathdll,"/data/app/%s/lib/%s/%s%s",pkg,arch,JDLLNAME,JDLLEXT);
+  if(!stat(pathdll,&st))break;
+  if(i)
+   sprintf(pathdll,"/data/app-lib/%s-%d/%s%s",pkg,i,JDLLNAME,JDLLEXT);
+  else
+   sprintf(pathdll,"/data/app-lib/%s/%s%s",pkg,JDLLNAME,JDLLEXT);
+  if(!stat(pathdll,&st))break;
+  if(i)
+   sprintf(pathdll,"/mnt/asec/%s-%d/lib/%s%s",pkg,i,JDLLNAME,JDLLEXT);
+  else
+   sprintf(pathdll,"/mnt/asec/%s/lib/%s%s",pkg,JDLLNAME,JDLLEXT);
+  if(!stat(pathdll,&st))break;
+ }
+ }
+ strcpy(tmp, "/mnt/sdcard/Android/data");
+ strcpy(install,(stat(tmp,&st))?((stat(tmp+4,&st))?"/storage/emulated/0/Android/data/":"/sdcard/Android/data/"):"/mnt/sdcard/Android/data/");
+ strcat(install,pkg);
  strcat(install,"/files");
- setenv("HOME",(qsdcard)?"/storage/emulated/0":"/sdcard",1);
+ setenv("HOME",install,1);
  if(!getenv("TMPDIR")) {
   strcpy(tmp, path);
   strcat(tmp, "/app_jandroid/tmp");
@@ -107,31 +224,34 @@ void jepath(char* arg)
  }
  chmod(getenv("TMPDIR"), S_IRWXU | S_IRWXG | S_IRWXO);
  strcat(path,"/app_jandroid/bin");
-#else
+#endif
 
+#ifndef _WIN32
 #define sz 4000
  char arg2[sz],arg3[sz];
  char* src,*snk;int n,len=sz;
  // fprintf(stderr,"arg0 %s\n",arg);
  // try host dependent way to get path to executable
  // use arg if they fail (arg command in PATH won't work)
-#ifdef __MACH__ 
+#ifdef __APPLE__
  n=_NSGetExecutablePath(arg2,&len);
  if(0!=n) strcat(arg2,arg);
 #else
  n=readlink("/proc/self/exe",arg2,sizeof(arg2));
  if(-1==n) strcpy(arg2,arg); else arg2[n]=0;
 #endif
+ strcpy(pathexec0,arg2);
  // fprintf(stderr,"arg2 %s\n",arg2);
  // arg2 is path (abs or relative) to executable or soft link
  n=readlink(arg2,arg3,sz);
  if(-1==n) strcpy(arg3,arg2); else arg3[n]=0;
  // fprintf(stderr,"arg3 %s\n",arg3);
+ strcpy(pathexec,arg3);
  if('/'==*arg3)
   strcpy(path,arg3);
  else
  {
-  getcwd(path,sizeof(path));
+  if(!getcwd(path,sizeof(path)))path[0]=0;
   strcat(path,"/");
   strcat(path,arg3);
  }
@@ -156,11 +276,89 @@ void jepath(char* arg)
  snk=path+strlen(path)-1;
  if('/'==*snk) *snk=0;
 #endif
-#ifndef ANDROID
- strcpy(pathdll,path);
- strcat(pathdll,JDLLNAME);
+#if defined(ANDROID) && !defined(JAMALGAM)
+ strcpy(tmp,pathdll);
+#else
+ strcpy(tmp,path);
 #endif
- // fprintf(stderr,"arg4 %s\n",path);
+ strcpy(pathdll,path);
+ strcpy(libpathj,pathdll);
+ strcat(pathdll,filesepx);
+ strcat(pathdll,JDLLNAME);
+ strcat(pathdll,JDLLEXT);
+#if defined(ANDROID) && !defined(JAMALGAM)
+ if(stat(pathdll,&st))strcpy(pathdll,tmp);
+#endif
+#if !defined(_WIN32) && !defined(ANDROID) && !defined(__wasm__) && !defined(TARGET_IOS) // FHS ?
+ if(stat(pathdll,&st)||strncmp(pathexec0,"/usr/bin/",9)||strncmp(pathexec0,"/usr/local/bin/",15)||strncmp(pathexec0,"/opt/homebrew/bin/",18)){
+ char pathpx[PLEN];
+ if('/'==*pathexec){
+ if(!strncmp(pathexec,"/opt/homebrew/bin/",strlen("/opt/homebrew/bin/"))){FHS=1; strcat(pathetcpx,"/opt/homebrew");}
+ else if(!strncmp(pathexec,"/usr/local/bin/",strlen("/usr/local/bin/"))){FHS=1; strcat(pathetcpx,"/usr/local");}
+ else if(!strncmp(pathexec,"/usr/bin/",strlen("/usr/bin/"))){FHS=1; pathetcpx[0]=0; }
+ }else{
+ strcpy(pathpx,"/opt/homebrew/bin/"); strcat(pathpx,pathexec); if(!stat(pathpx,&st)){FHS=1; strcat(pathetcpx,"/opt/homebrew"); }
+ else {strcpy(pathpx,"/usr/local/bin/"); strcat(pathpx,pathexec); if(!stat(pathpx,&st)){FHS=1; strcat(pathetcpx,"/usr/local"); }
+ else {strcpy(pathpx,"/usr/bin/"); strcat(pathpx,pathexec); if(!stat(pathpx,&st)){FHS=1; pathetcpx[0]=0; }
+ }}
+ }
+ if (FHS) {
+  char *jv1;
+// jversion   "9.8.1" "9.8.0-betaX"
+  if (jv1=strchr(jversion,'.')) if (jv1=strchr(jv1+1,'.')){ memcpy(jdllver,jversion,jv1-(jversion));jdllver[jv1-jversion]=0; }
+  if (!jv1) strcpy(jdllver,"9.8");
+  if (5<strlen(jdllver)) strcpy(jdllver,"9.8");
+#if defined(__APPLE__)
+  strcpy(pathdll,pathetcpx);
+  strcat(pathdll,"/lib/");
+  strcat(pathdll,JDLLNAME);
+  strcat(pathdll,".");
+  strcat(pathdll,jdllver);
+  strcat(pathdll,JDLLEXT);
+#else
+  strcpy(pathdll,JDLLNAME);
+  strcat(pathdll,JDLLEXT);
+  strcat(pathdll,".");
+  strcat(pathdll,jdllver);
+#endif
+ }  // if (FHS)
+ }
+#endif  // FHS ?
+ if(lib&&*lib)
+ {
+	 if(filesep==*lib || ('\\'==filesep && ':'==lib[1]))
+		 strcpy(pathdll,lib); // absolute path
+	 else
+	 {
+		 strcpy(pathdll,path);
+		 strcat(pathdll,filesepx);
+		 strcat(pathdll,lib); // relative path
+	 }
+#ifdef _WIN32
+	 char *p1,*p2;
+	 p1=strrchr(pathdll,filesep); p2=strrchr(pathdll,'/');
+	 if(p1&&p2){strcpy(libpathj,pathdll);libpathj[((p1>p2)?p1:p2)-pathdll]=0;}
+	 else if(p1){strcpy(libpathj,pathdll);libpathj[p1-pathdll]=0;}
+	 else if(p2){strcpy(libpathj,pathdll);libpathj[p2-pathdll]=0;}
+#else
+	 char *p1;
+	 if((p1=strrchr(pathdll,filesep))){strcpy(libpathj,pathdll);libpathj[p1-pathdll]=0;}
+#if defined(ANDROID) && defined(JAMALGAM)
+ strcpy(install,path);
+ if(p1=strrchr(install,filesep))*p1=0;
+ setenv("HOME",install,1);
+ if(!getenv("TMPDIR")) {
+  strcpy(tmp, install);
+  strcat(tmp, "/temp");
+  if(stat(tmp,&st)) mkdir(tmp, S_IRWXU | S_IRWXG | S_IRWXO);
+  chmod(tmp, S_IRWXU | S_IRWXG | S_IRWXO);
+  setenv("TMPDIR",tmp,1);
+ }
+ chmod(getenv("TMPDIR"), S_IRWXU | S_IRWXG | S_IRWXO);
+#endif
+#endif
+ }
+#endif
 }
 
 // called by jwdp (java jnative.c) to set path
@@ -168,26 +366,38 @@ void jesetpath(char* arg)
 {
 	strcpy(pathdll,arg); // jwdp gives path to j.dll
 	strcpy(path,arg);
-	*(strrchr(path,filesep)) = 0;
+	if(strrchr(path,filesep))*(strrchr(path,filesep)) = 0;
+	strcpy(libpathj,path);
 }
 
 // build and run first sentence to set BINPATH, ARGV, and run profile
 // arg is command line ready to set in ARGV_z_
 // type is 0 normal, 1 -jprofile xxx, 2 ijx basic, 3 nothing
+// type mask 256 runjscript
 // profile[ARGV_z_=:...[BINPATH=:....
 // profile is from BINPATH, ARGV, ijx basic, or nothing
 int jefirst(int type,char* arg)
 {
-	int r; char* p,*q;
+	int r; char* p,*q,*p1;
 	char* input=malloc(2000+strlen(arg));
+	int runjscript=!!(type&256);
+	type=type&255;
 	*input=0;
 	if(0==type)
 	{
 #ifdef ANDROID
-		strcat(input,"(3 : '0!:0 y')<INSTALLROOT,'");
-		strcat(input,"/bin");
-#else
+//		strcat(input,"(3 : '0!:0 y')<INSTALLROOT,'");
+//		strcat(input,"/bin");
 		strcat(input,"(3 : '0!:0 y')<BINPATH,'");
+#else
+  if (!FHS)
+		strcat(input,"(3 : '0!:0 y')<BINPATH,'");
+  else {
+		strcat(input,"(3 : '0!:0 y')<'");
+		strcat(input,pathetcpx);
+		strcat(input,"/etc/j/");
+		strcat(input,jdllver);
+	}
 #endif
 		strcat(input,filesepx);
 		strcat(input,"profile.ijs'");
@@ -195,21 +405,71 @@ int jefirst(int type,char* arg)
 	else if(1==type)
 		strcat(input,"(3 : '0!:0 y')2{ARGV");
 	else if(2==type)
-		strcat(input,ijx);
+		strcat(input,"");
 	else
 		strcat(input,"i.0 0");
 	strcat(input,"[ARGV_z_=:");
 	strcat(input,arg);
 #ifdef ANDROID
+  char propval[PROP_VALUE_MAX+1];
+  if (_system_property_get("ro.build.version.sdk", propval)){
+	strcat(input,"[APILEVEL_ja_=:");
+	strcat(input,propval);
+  }
+  if (_system_property_get("ro.build.version.release", propval)){
+	strcat(input,"[OSRELEASE_ja_=:'");
+	strcat(input,propval);
+	strcat(input,"'");
+  }
 	strcat(input,"[UNAME_z_=:'Android'");
+#if 0
 	strcat(input,"[INSTALLROOT_z_=:'");
+#if defined(JAMALGAM)
+	strcpy(install,path);
+	if((p1=strrchr(install,filesep)))*p1=0;
 	strcat(input,install);
+#else
+	strcat(input,install);
+#endif
 	strcat(input,"'");
 	strcat(input,"[AndroidPackage_z_=:'");
-	strcat(input,AndroidPackage);
+	if(strstr(jversion,"beta")) strcat(input,AndroidPackageBeta); else strcat(input,AndroidPackage);
 	strcat(input,"'");
 #endif
+#endif
+#if defined(RASPI)
+	strcat(input,"[IFRASPI_z_=:1");
+#else
+	strcat(input,"[IFRASPI_z_=:0");
+#endif
+#if defined(__wasm__)
+	strcat(input,"[UNAME_z_=:'Wasm'");
+#elif defined(_WIN32)
+	strcat(input,"[UNAME_z_=:'Win'");
+#elif defined(__APPLE__)
+	strcat(input,"[UNAME_z_=:'Darwin'");
+#elif defined(__FreeBSD__)
+	strcat(input,"[UNAME_z_=:'FreeBSD'");
+#elif defined(__OpenBSD__)
+ strcat(input,"[UNAME_z_=:'OpenBSD'");
+#elif !defined(ANDROID)
+	strcat(input,"[UNAME_z_=:'Linux'");
+#endif
+	if(FHS) strcat(input,"[FHS_z_=:1");
+	else strcat(input,"[FHS_z_=:0");
+	if(runjscript) strcat(input,"[RUNJSCRIPT_z_=:1");
+	else strcat(input,"[RUNJSCRIPT_z_=:0");
 	strcat(input,"[BINPATH_z_=:'");
+#if defined(__wasm__)
+  char* homedir;
+  if((homedir = getenv("HOME"))) strcat(input,homedir);
+  strcat(input,"/j/bin");
+#elif defined(TARGET_IOS)
+  char* homedir;
+  if((homedir = getenv("HOME"))) strcat(input,homedir);
+  strcat(input,"/Documents/j/bin");
+#else
+	if(!FHS){
 	p=path;
 	q=input+strlen(input);
 	while(*p)
@@ -218,7 +478,24 @@ int jefirst(int type,char* arg)
 		*q++=*p++;
 	}
 	*q=0;
+	} else {
+	if(0==*pathetcpx) strcat(input,"/usr/bin");
+	else {strcat(input,pathetcpx); strcat(input,"/bin"); }
+	}
+#endif
 	strcat(input,"'");
+
+	strcat(input,"[LIBFILE_z_=:'");
+	p=pathdll;
+	q=input+strlen(input);
+	while(*p)
+	{
+		if(*p=='\'') *q++='\'';	// 's doubled
+		*q++=*p++;
+	}
+	*q=0;
+	strcat(input,"'");
+
 	r=jedo(input);
 	free(input);
 	return r;
@@ -228,5 +505,21 @@ void jefail(char* msg)
 {
 	strcpy(msg, "Load library ");
 	strcat(msg, pathdll);
-	strcat(msg," failed.");
+	strcat(msg," failed: ");
+#ifdef _WIN32
+	char buf[256];
+	FormatMessageA(
+	 FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+	 NULL, GetLastError(),
+	 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  /* Default language */
+	 buf, (sizeof(buf)/sizeof(char)), 0);
+	 strcat(msg,buf);
+#elif !defined(__wasm__)
+	char *dlerr=dlerror();
+	if(dlerr)strcat(msg,dlerr);
+	else{
+		char ermsg[1024];
+		if(errno&&!strerror_r(errno,ermsg,1024))strcat(msg,ermsg);}
+#endif
+	strcat(msg,"\n");
 }

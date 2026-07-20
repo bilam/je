@@ -1,3 +1,4 @@
+prolog './g1x3.ijs'
 NB. 1!:3 ----------------------------------------------------------------
 
 read   =. 1!:1
@@ -55,3 +56,5 @@ f   =. mac{'no/such/dir/or/file';':no:such:dir:or:file'
 4!:55 ;:'append erase f mac read write x y '
 
 
+
+epilog''

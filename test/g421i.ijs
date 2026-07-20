@@ -1,3 +1,4 @@
+prolog './g421i.ijs'
 NB.  x f//. y special code for + +. *. >. <. = ~: -----------------------
 
 test=: 1 : 0
@@ -155,3 +156,5 @@ x (>.//. -: 3 : '>./y'/.) y=: o.?($x)$1e6
 
 4!:55 ;:'test v x xx y yy'
 
+
+epilog''

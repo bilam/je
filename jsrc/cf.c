@@ -69,7 +69,7 @@ A jtfolk(J jt,A f,A g,A h){A p,q,x,y;AF f1=jtfolk1,f2=jtfolk2;B b;C c,fi,gi,hi;I
   case CFORK:  /* (x i. ]) { y"_ */
    if(hi==CQQ&&(y=hv->f,LIT&AT(y)&&1==AR(y))&&equ(ainf,hv->g)&&
        (x=fv->f,LIT&AT(x)&&1==AR(x))&&CIOTA==ID(fv->g)&&
-       (fi==CAMP||CRIGHT==ID(fv->h)))f1=jtcharmapb; break;
+       (fi==CAMP||CRIGHT==ID(fv->h))){f1=jtcharmapb;} break;
   case CAT:    /* <"1@[ { ] */
    if(gi==CLBRACE&&hi==CRIGHT){                                   
     p=fv->f; q=fv->g; 
@@ -176,7 +176,7 @@ F2(jthook){AF f1=0,f2=0;C c,d,e,id;I flag=0;V*u,*v;
     case CDROP:   f2=jthkdrop;  break;
     case CEPS:    f2=jthkeps;
    }else        switch(c){
-    case CSLDOT:  if(COMPOSE(d)&&e==CIOTA&&CPOUND==ID(v->g)&&CBOX==ID(u->f))f1=jtgroup; break;
+    case CSLDOT:  if(COMPOSE(d)&&e==CIOTA&&CPOUND==ID(v->g)&&CBOX==ID(u->f)){f1=jtgroup;} break;
     case CPOUND:  if(COMPOSE(d)&&e==CIOTA&&CPOUND==ID(v->g))f1=jthkiota; break;
     case CABASE:  if(COMPOSE(d)&&e==CIOTA&&CSLASH==ID(v->g)&&CSTAR==ID(VAV(v->g)->f))f1=jthkodom; break;
     case CIOTA:   

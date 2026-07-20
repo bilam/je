@@ -1,6 +1,7 @@
+prolog './gmmf.ijs'
 NB. memory mapped files -------------------------------------------------
 
-1 [ 18!:4 <'base' [ load 'jmf'
+1 [ cocurrent <'base' [ load 'jmf'
 1 [ unmapall_jmf_ ''
 
 fdir  =: 1!:0
@@ -8,7 +9,7 @@ fread =: 1!:1
 fwrite=: 1!:2
 ferase=: 1!:55
 
-f0 =: <jpath '~temp\t.txt'
+f0 =: <jpath '~temp/t.txt'
 
 t=: 'testing testing 1 2 3'  
 t fwrite f0
@@ -30,15 +31,15 @@ t fwrite f0
 t -: fread f0
 JCHAR map_jmf_ 'abc';f0     NB. map abc to file characters
 abc -: t
-2 = >(<(({."1 t) i. <'abc_base_');9){t=: showmap_jmf_ ''
+2 = >(<(({."1 t) i. <'abc_base_');MAPREFS_jmf_){t=: showmap_jmf_ ''
 4!:55 ;:'abc'
-1 = >(<(({."1 t) i. <'abc_base_');9){t=: showmap_jmf_ ''
+1 = >(<(({."1 t) i. <'abc_base_');MAPREFS_jmf_){t=: showmap_jmf_ ''
 0 -: unmap_jmf_ 'abc'
 -. (<'abc_base_') e. {."1 t=: showmap_jmf_ ''
 
 ferase f0
 
-f=: <jpath '~temp\jdata.jmf'
+f=: <jpath '~temp/jdata.jmf'
 1 [ createjmf_jmf_ f,<1000  NB. 1000 bytes for data
 t=: fdir f
 1 = #t
@@ -75,7 +76,7 @@ t=: showmap_jmf_''          NB. mapping information
 
 ((<1;0){t) = <'jdata_base_'
 ((<1;1){t) = f
-((<1;8){t) = <,1000
+((<1;MAPMSIZE_jmf_){t) = <,1000
 
 0 -: unmap_jmf_ 'jdata'     NB. 0 result is success
 1 -: # showmap_jmf_ ''
@@ -85,11 +86,11 @@ map_jmf_ 'jdata';f
 jdata=: x
 abc=: jdata
 abc -: x
-3 = >(<(({."1 t) i. <'jdata_base_'),9){t=: showmap_jmf_ 'jdata'
+3 = >(<(({."1 t) i. <'jdata_base_'),MAPREFS_jmf_){t=: showmap_jmf_ 'jdata'
 2 -: unmap_jmf_ 'jdata'
-2 = >(<(({."1 t) i. <'jdata_base_'),9){t=: showmap_jmf_ 'jdata'
+2 = >(<(({."1 t) i. <'jdata_base_'),MAPREFS_jmf_){t=: showmap_jmf_ 'jdata'
 4!:55 ;:'abc'
-1 = >(<(({."1 t) i. <'jdata_base_'),9){t=: showmap_jmf_ 'jdata'
+1 = >(<(({."1 t) i. <'jdata_base_'),MAPREFS_jmf_){t=: showmap_jmf_ 'jdata'
 0 -: unmap_jmf_ 'jdata'
 
 map_jmf_ 'jdata'; (>f); ''; 1  NB. read-only
@@ -118,3 +119,5 @@ ferase f
 4!:55 ;:'f f0 fdir ferase fread fwrite i jdata t x '
 
 
+
+epilog''

@@ -1,3 +1,4 @@
+prolog './g332s.ijs'
 NB. x;:y ----------------------------------------------------------------
 
 NB. example 0: English words
@@ -178,3 +179,5 @@ x testj y
 4!:55 ;:'t testj x y'
 
 
+
+epilog''

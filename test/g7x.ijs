@@ -1,3 +1,4 @@
+prolog './g7x.ijs'
 NB. 7!: -----------------------------------------------------------------
 
 NB. Testing malloc/free; try  f 200  or  g 40000, etc.
@@ -86,3 +87,5 @@ t -: /:~t
 4!:55 ;:'f g h n old pr s sp space t x y '
 
 
+
+epilog''

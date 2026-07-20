@@ -57,40 +57,10 @@ static F2(jtpdtby){A z;B b,*u,*v,*wv;C er=0;I at,m,n,p,t,wt,zk;
      DO(nn, if(*u++){vi=(UI*)v; d=ti; DO(nw, *d+++=*vi++;);} v+=n;);  \
      x=zv; c=tc; DO(n, *x+++=*c++;);
 
-#if C_NA
-/*
-*** from asm64noovf.c
 C asminnerprodx(I m,I*z,I u,I*y)
 {
- I i=-1,t;
-l1:
- ++i;
- if(i==m) return 0;
- t= u FTIMES y[i];
- ov(t)
- t= t FPLUS z[i];
- ov(t)
- z[i]=t;
- goto l1;
+ I t; DO(m, if(unlikely(__builtin_mul_overflow(*y,u,&t)))R EWOV; if(unlikely(__builtin_add_overflow(t,*z,z)))R EWOV; z++; y++;) R 0;
 }
-*/
-
-C asminnerprodx(I m,I*z,I u,I*y)
-{
- I i=-1,t,p;DI tdi;
-l1:
- ++i;
- if(i==m) return 0;
- tdi = u * (DI)y[i];
- t=(I)tdi;
- if (tdi<IMIN||IMAX<tdi) R EWOV;
- p=0>t;
- t= t + z[i];
- if (p==0>z[i]&&p!=0>t) R EWOV;
- z[i]=t;
- goto l1;
-}
-#endif
 
 F2(jtpdt){PROLOG;A z;I ar,at,i,m,n,p,p1,t,wr,wt;
  RZ(a&&w);
@@ -123,12 +93,6 @@ F2(jtpdt){PROLOG;A z;I ar,at,i,m,n,p,p1,t,wr,wt;
 #if SY_64
    {C er=0;I c,*u,*v,*wv,*x,*zv;
     u=AV(a); v=wv=AV(w); zv=AV(z);
- /*
-   for(i=0;i<m;++i,v=wv,zv+=n){
-     x=zv; c=*u++; er=asmtymes1v(n,x,c,v);    if(er)break; v+=n;
-     DO(p1, x=zv; c=*u++; er=asminnerprodx(n,x,c,v); if(er)break; v+=n;);
-
- */
     for(i=0;i<m;++i,v=wv,zv+=n){
      x=zv; c=*u++; TYMES1V(n,x,c,v); if(er)break; v+=n;
      DO(p1, x=zv; c=*u++; er=asminnerprodx(n,x,c,v); if(er)break; v+=n;);
@@ -157,10 +121,10 @@ F2(jtpdt){PROLOG;A z;I ar,at,i,m,n,p,p1,t,wr,wt;
    {D c,s,t,*u,*v,*wv,*x,*zv;
     u=DAV(a); v=wv=DAV(w); zv=DAV(z);
     NAN0;
-    if(1==n){DO(m, v=wv; c=0.0; DO(p, s=*u++; t=*v++; c+=s&&t?s*t:0;); *zv++=c;);}
+    if(1==n){DO(m, v=wv; c=0.0; DO(p, s=*u++; t=*v++; c+=s&&t?dmul2(s,t):0;); *zv++=c;);}
     else for(i=0;i<m;++i,v=wv,zv+=n){
-            x=zv; if(c=*u++){if(INF(c))DO(n, *x++ =*v?c**v:0.0; ++v;)else DO(n, *x++ =c**v++;);}else{v+=n; DO(n, *x++=0.0;);}
-     DO(p1, x=zv; if(c=*u++){if(INF(c))DO(n, *x+++=*v?c**v:0.0; ++v;)else DO(n, *x+++=c**v++;);}else v+=n;);
+            x=zv; if(c=*u++){if(INF(c))DO(n, *x++ =*v?dmul2(c,*v):0.0; ++v;)else DO(n, *x++ =c**v++;);}else{v+=n; DO(n, *x++=0.0;);}
+     DO(p1, x=zv; if(c=*u++){if(INF(c))DO(n, *x+++=*v?dmul2(c,*v):0.0; ++v;)else DO(n, *x+++=c**v++;);}else v+=n;);
     }
     NAN1;
    }

@@ -1,0 +1,171 @@
+ODIR=../bin/$(jplatform)/$(j64x)
+
+.SUFFIXES: .o
+
+# note: the slowest builds have been placed at the top, to avoid starvation in parallel builds
+# (viavx is still longer than everything else combined--should maybe be broken up into multiple tus...)
+OBJS=  \
+ vi.o \
+ vcompsc.o \
+ a.o \
+ ab.o \
+ af.o \
+ ai.o \
+ am.o \
+ am1.o \
+ amn.o \
+ ao.o \
+ ap.o \
+ ar.o \
+ as.o \
+ au.o \
+ c.o \
+ ca.o \
+ cc.o \
+ cd.o \
+ cf.o \
+ cg.o \
+ ch.o \
+ cip.o \
+ cl.o \
+ cp.o \
+ cpdtsp.o \
+ cpuinfo.o \
+ cr.o \
+ crs.o \
+ ct.o \
+ cu.o \
+ cv.o \
+ cx.o \
+ d.o \
+ dc.o \
+ dss.o \
+ dstop.o \
+ dsusp.o \
+ dtoa.o \
+ f.o \
+ f2.o \
+ i.o \
+ io.o \
+ j.o \
+ jdlllic.o \
+ k.o \
+ m.o \
+ mbx.o \
+ p.o \
+ pv.o \
+ px.o \
+ r.o \
+ rl.o \
+ rt.o \
+ s.o \
+ sc.o \
+ sl.o \
+ sn.o \
+ t.o \
+ u.o \
+ v.o \
+ v0.o \
+ v1.o \
+ v2.o \
+ va1.o \
+ va2.o \
+ va2s.o \
+ vamultsp.o \
+ vb.o \
+ vbang.o \
+ vbit.o \
+ vcant.o \
+ vcat.o \
+ vcatsp.o \
+ vchar.o \
+ vcomp.o \
+ vd.o \
+ vdx.o \
+ ve.o \
+ vf.o \
+ vfft.o \
+ vfrom.o \
+ vfromsp.o \
+ vg.o \
+ vgauss.o \
+ vgcomp.o \
+ vgranking.o \
+ vgsort.o \
+ vgsp.o \
+ viix.o \
+ visp.o \
+ vm.o \
+ vo.o \
+ vp.o \
+ vq.o \
+ vrand.o \
+ vrep.o \
+ vs.o \
+ vsb.o \
+ vt.o \
+ vu.o \
+ vx.o \
+ vz.o \
+ w.o \
+ wc.o \
+ wn.o \
+ ws.o \
+ x.o \
+ x15.o \
+ xa.o \
+ xb.o \
+ xc.o \
+ xcrc.o \
+ xd.o \
+ xf.o \
+ xfmt.o \
+ xh.o \
+ xi.o \
+ xl.o \
+ xo.o \
+ xs.o \
+ xt.o \
+ xu.o \
+
+
+%.o: %.cpp
+	$(CXX) -c $(CPPFLAGS) -o$@ $^
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(CFLAGS_SIMD) $(CFLAGS_FMA) $(CFLAGS_AESNI) $(CFLAGS_AESARM) $(CFLAGS_BASE64)
+
+%.o: %.S
+	$(CC) $(GASM_FLAGS) -c -o $@ $<
+
+%.o: %.asm
+	$(NASM) $(NASM_FLAGS) -o $@ $<
+
+$(OBJS_FMA) : CFLAGS_FMA := -mfma
+$(OBJS_AESNI) : CFLAGS_AESNI := -maes
+$(OBJS_AESARM) : CFLAGS_AESARM := -march=armv8-a+crc+crypto
+$(OBJS_BASE64) : CFLAGS_BASE64 := $(FLAGS_BASE64)
+ifdef TARGET
+ifneq (windows,$(findstring windows,$(jplatform)))
+$(ODIR)/$(TARGET) : $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(SRC_ASM)
+	$(CC) -o $@ $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(OBJS_ASM) $(SRC_ASM) $(LDFLAGS)
+else
+$(ODIR)/$(TARGET) : $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(OBJS_PTHREADS4W) $(SRC_ASM) $(DLLOBJS) $(LIBJDEF) $(LIBJRES)
+	$(CXX) -o $@ $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(OBJS_PTHREADS4W) $(OBJS_ASM) $(SRC_ASM) $(DLLOBJS) $(LIBJDEF) $(LIBJRES) $(LDFLAGS)
+endif
+endif
+
+ifdef TARGET_a
+$(ODIR)/$(TARGET_a) : $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(SRC_ASM) $(DLLOBJS)
+	$(AR) $(LDFLAGS_a) $@ $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(OBJS_ASM) $(SRC_ASM) $(DLLOBJS) $(LDFLAGS_b)
+endif
+
+%.res: %.rc
+	$(WINDRES) -l 0x409 -D _USING_V110_SDK71_ -r -O COFF -o $@ $^
+
+all: $(ODIR)/$(TARGET) $(ODIR)/$(TARGET_a)
+
+clean:
+	rm -f $(OBJS) $(OBJS_BASE64) $(OBJS_FMA) $(OBJS_AESNI) $(OBJS_AESARM) $(OBJS_SIMDUTF8) $(SRC_ASM) $(DLLOBJS) $(LIBJRES)
+
+.PHONY: all clean

@@ -1,3 +1,4 @@
+prolog './go.ijs'
 NB. x o.y for x e.i.13 --------------------------------------------------
 
 z =: (_10+?20$20) j. _4+?20$20
@@ -351,3 +352,5 @@ _1 -: 7 o. _710j1e9
 4!:55 ;:'zatanh zcos zcosh zm4 zp4 zp8 zsin zsinh ztan ztanh '
 
 
+
+epilog''
