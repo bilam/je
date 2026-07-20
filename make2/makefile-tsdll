@@ -1,0 +1,26 @@
+ODIR=../bin/$(jplatform)/$(j64x)
+
+.SUFFIXES: .o
+
+OBJS=  \
+ tsdll.o
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+ifdef TARGET
+$(ODIR)/$(TARGET) : $(OBJS)
+	$(CC) -o $@ $(OBJS) $(LDFLAGS) $(LIBJDEF)
+endif
+
+ifdef TARGET_a
+$(ODIR)/$(TARGET_a) : $(OBJS)
+	$(AR) $(LDFLAGS_a) $@ $(OBJS) $(LDFLAGS_b)
+endif
+
+all: $(ODIR)/$(TARGET) $(ODIR)/$(TARGET_a)
+
+clean:
+	rm -f $(OBJS)
+
+.PHONY: all clean

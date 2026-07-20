@@ -45,7 +45,7 @@ static F2(jtpdtspmv){A ax,b,g,x,wx,y,yi,yj,z;B*bv;I m,n,s[2],*u,*v,*yv;P*ap,*wp,
  ap=PAV(a); y=SPA(ap,i); yv=AV(y); s[0]=n=*AS(y); s[1]=1;
  GA(yj,INT,n,2,s);
  if(DENSE&AT(w)){
-  GA(yi,INT,n,2,s); u=AV(yi); AR(yj)=1; v=AV(yj);
+  GA(yi,INT,n,2,s); u=AV(yi); ARINIT(yj,1); v=AV(yj);
   DO(n, *u++=*yv++; *v++=*yv++;);
   ax=SPA(ap,x); RZ(wx=from(yj,w));
  }else{

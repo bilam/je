@@ -1,3 +1,4 @@
+prolog './gdll_df.ijs'
 NB. DLL call with d f declarations
 NB. these will fail on builds with C_DF=0
 NB. as cd on these platforms can not handle f results
@@ -31,8 +32,8 @@ NB. alternate (__cdecl) calling convention
 (24;23) -: 'altinci + i i'  dcd 23
 
 NB. *j
-(1.6;a)= 'complex d i *j' dcd a=.0;,1.6j2.7
-(2.7;a)= 'complex d i *j' dcd a=.1;,1.6j2.7
+(1.6;a)= 'dcomplex0 d i *j' dcd a=.0;,1.6j2.7
+(2.7;a)= 'dcomplex0 d i *j' dcd a=.1;,1.6j2.7
 
 NB. test f and d results and scalars
 (<1.5)= 'f f' dcd ''
@@ -191,3 +192,5 @@ obj_add=:    <>{.'obj_add x' dcd ''
 4!:55 ;:'a add address b dcd f lib obj_add pc s0 s1 td td1a td3 td4 tf tf3'
 4!:55 ;:'v0 v1 v2 v3 v4 v5 x xbasic_add xx yy z'
 
+
+epilog''

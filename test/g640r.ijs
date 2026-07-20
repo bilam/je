@@ -1,3 +1,4 @@
+prolog './g640r.ijs'
 NB. ? different RNGs ----------------------------------------------------
 
 NRNG=: 5  NB. number of RNGs
@@ -107,3 +108,5 @@ test2a"0 i.NRNG
 4!:55 ;:'test0 test1 test2 test2a u xx yarg yy'
 
 
+
+epilog''

@@ -1,3 +1,4 @@
+prolog './g1x20.ijs'
 NB. 1!:20 ---------------------------------------------------------------
 
 dir   =. 1!:0
@@ -96,3 +97,5 @@ t=.(pc#'does\not\exist\no.x'),(mac#':does:not:exist:no.x'),unix#'does/not/exist/
 4!:55 ;:'close d dir erase f files g h mac open pc q t unix win write x'
 
 
+
+epilog''

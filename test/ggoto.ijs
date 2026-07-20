@@ -1,3 +1,4 @@
+prolog './ggoto.ijs'
 NB. goto ----------------------------------------------------------------
 
 fc =: 3 : 0
@@ -178,3 +179,5 @@ bod=: (<;._2) 0 : 0
 4!:55 ;:'b bod build def fc goto i lab xx yy'
 
 
+
+epilog''

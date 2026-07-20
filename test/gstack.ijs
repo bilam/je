@@ -1,3 +1,4 @@
+prolog './gstack.ijs'
 NB. stack issues (function call limit) ----------------------------------
 
 0 0 $  0 : 0
@@ -79,3 +80,5 @@ NB. ". t=: '".t [ c=:>:c' [ c=: 0
 4!:55 ;:'c f f5 f6 g t'
 
 
+
+epilog''

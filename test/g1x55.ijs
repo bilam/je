@@ -1,3 +1,4 @@
+prolog './g1x55.ijs'
 NB. 1!:55 ---------------------------------------------------------------
 
 write =. 1!:2
@@ -66,3 +67,5 @@ f   =. mac{'no/such/dir/or/file';':no:such:dir:or:file'
 4!:55 ;:'erase f files g h lock mac open q write '
 
 
+
+epilog''

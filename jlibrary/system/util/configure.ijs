@@ -10,19 +10,27 @@ DirTreeX
 Format
 MemoryLimit
 EPSReader
+ImageViewer
+ImageViewer_nox
 PDFReader
+PDFReader_nox
 ReadCatalog
 RecentMax
 XDiff
-Tags
-UserDict
 Editor
 Editor_nox
+TermEmu
+TermEmu_nox
 RGBSEQ
 )
 
 cbname=: {.~ i.&' ' <. i.&'='
 foldernub=: #~ [: ~:&.|. {."1
+
+NB. =========================================================
+cfcase=: 3 : 0
+({."1 y),.filecase each {:"1 y
+)
 
 NB. =========================================================
 cpath=: 3 : 0
@@ -63,34 +71,58 @@ r1,new
 
 NB. =========================================================
 configbase=: 3 : 0
-Snapshots_j_=: 0
 0!:100 ;LF ,each cbread2 'base.cfg'
 9!:3 DisplayForm
 9!:7 BoxForm { Boxes
 9!:17 BoxPos
-9!:21 (2&^ ^: (<&_)) MemoryLimit
+if. MemoryLimit<1000 do.
+  9!:21[2^MemoryLimit
+elseif. MemoryLimit<_ do.
+  9!:21 MemoryLimit
+end.
 9!:37 Output
 0!:100 ;(}:,'_j_=:',]) each <;.2 jdefs
+nox=. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') *. (0;'') e.~ <2!:5 'DISPLAY'
+TermEmu_j_=: nox{::TermEmu_j_;TermEmu_nox_j_
+if. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') *. 0 = #TermEmu_j_ do.
+  TermEmu_j_=: TermEmu_nox_j_=: dflttermemu_j_''
+end.
+PDFReader_j_=: nox{::PDFReader_j_;PDFReader_nox_j_
+if. 0 = #PDFReader_j_ do.
+  PDFReader_j_=: PDFReader_nox_j_=: dfltpdfreader_j_''
+end.
 EMPTY
+)
+
+NB. =========================================================
+configcase=: 3 : 0
+CasePaths_j_=: ''
+dat=. cbread1 'case.cfg'
+if. (0=#dat) +. dat -: _1 do. return. end.
+dat=. jpathsep each dat
+dat=. (-'/'={:&> dat) }.each dat
+CasePaths_j_=: dat -. a:
 )
 
 NB. =========================================================
 configfolders=: 3 : 0
 UserFolders_j_=: i.0 2
 BINPATH_z_=: filecase BINPATH_z_
-sf=. filecase each {:"1 SystemFolders_j_
-SystemFolders_j_=: ({."1 SystemFolders_j_),.sf
 dat=. cbread1 'folders.cfg'
-if. (0=#dat) +. dat -: _1 do. return. end.
+if. (0=#dat) +. dat -: _1 do.
+  SystemFolders_j_=: cfcase SystemFolders_j_ return.
+end.
 ndx=. dat i.&> ' '
 ids=. ndx {.each dat
-pts=. jpath each filecase each (ndx+1) }. each dat
-uf=. ids,.pts
-msk=. (=tolower) {.&>ids
-SystemFolders_j_=: foldernub SystemFolders,msk#uf
-UserFolders_j_=: foldernub (-.msk)#uf
+pts=. jpath each (ndx+1) }. each dat
+dat=. foldernub SystemFolders_j_,ids,.pts
+msk=. (=tolower) {.&> {."1 dat
+SystemFolders_j_=: msk#dat
+UserFolders_j_=: (-.msk)#dat
 SystemFolders_j_=: cpath SystemFolders_j_
 UserFolders_j_=: cpath UserFolders_j_
+SystemFolders_j_=: cfcase SystemFolders_j_
+UserFolders_j_=: cfcase UserFolders_j_
 EMPTY
 )
 
@@ -110,10 +142,11 @@ EMPTY
 NB. =========================================================
 configrun=: 3 : 0
 configbase''
+configcase''
 configfolders''
 configrecent''
 coerase <'jcfg'
-18!:4<'z'
+cocurrent <'z'
 )
 
 configrun$0

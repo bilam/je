@@ -1,3 +1,4 @@
+prolog './gicap.ijs'
 NB. I.y -----------------------------------------------------------------
 
 ifb=: (# i.@#)
@@ -40,3 +41,5 @@ test@:(t"_ {~ 877&, ?@$ (#t)"_)"0 >:i.3 5 [ t=: s:' miasma chthonic chronic kaki
 4!:55 ;:'f ifb n t test yy'
 
 
+
+epilog''

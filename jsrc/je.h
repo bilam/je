@@ -37,10 +37,14 @@ extern F1(jtcasev);
 extern F1(jtcatalog);
 extern F1(jtcder);
 extern F1(jtcderx);
+extern F1(jtcddlclose);
+extern F1(jtcddlopen);
 extern F1(jtcdf);
 extern F1(jtcdot1);
+extern F1(jtcdq);
 extern F1(jtceil1);
 extern F1(jtconjug);
+extern F1(jtcpufeature);
 extern F1(jtcrc1);
 extern F1(jtcrccompile);
 extern F1(jtctq);
@@ -275,6 +279,7 @@ extern F1(jtscm01);
 extern F1(jtscm10);
 extern F1(jtscm11);
 extern F1(jtsct1);
+extern F1(jtscy1);
 extern F1(jtscz1);
 extern F1(jtseclevq);
 extern F1(jtseclevs);
@@ -381,9 +386,11 @@ extern F2(jtbitwiseshift);
 extern F2(jtbitwiseshifta);
 extern F2(jtcant2);
 extern F2(jtcd);
+extern F2(jtcddlsym);
 extern F2(jtcdot2);
 extern F2(jtcircle);
 extern F2(jtcolon);
+extern F2(jtcpufeature2);
 extern F2(jtcrc2);
 extern F2(jtcut);
 extern F2(jtdbrr2);
@@ -511,6 +518,7 @@ extern F2(jtscm012);
 extern F2(jtscm102);
 extern F2(jtscm112);
 extern F2(jtsct2);
+extern F2(jtscy2);
 extern F2(jtscz2);
 extern F2(jtself2);
 extern F2(jtsetfv);
@@ -829,6 +837,13 @@ extern A        ynam;
 extern A        zero;
 extern Z        zeroZ;
 extern A        zpath;
+
+/* cpu feature */
+extern int numberOfCores;        // number of cpu cores
+extern UC       hwaes;
+extern UC       hwfma;
+extern UC       supportaffinity;
+extern UC       fboxedsparse;       // enable boxed sparse
 
 #if (SYS & SYS_ATARIST+SYS_ATT3B1)
 extern int      memcmp();       /* C library fn                            */

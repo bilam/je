@@ -1,3 +1,4 @@
+prolog './g421.ijs'
 NB. f/. f\  f\. models --------------------------------------------------
 
 en     =: #@]
@@ -196,3 +197,5 @@ test=: 2 : 0
 4!:55 ;:'s sd seg suffix t test x xx'
 
 
+
+epilog''

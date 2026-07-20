@@ -26,6 +26,11 @@ typedef struct {I*a;S j;C mflag,unused;} MS;
 
 #define MFHEAD  1      /* head of 64k block (returned by malloc() */
 
+#define PSIZE       65536L         /* size of each pool                    */
+#define PLIM        1024L          /* pool allocation for blocks <= PLIM   */
+#define PLIML       10L            /* base 2 log of PLIM                   */
+#define PMINL       6              /* ((AH*SZI+mhb+SZI)<=64?6:7) smaller buffers possible on 32-bit, but we don't bother */
+
 
 extern I mhb;
 extern I mhw;

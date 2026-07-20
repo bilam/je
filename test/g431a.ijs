@@ -1,3 +1,4 @@
+prolog './g431a.ijs'
 NB. f/. f\  f\. models --------------------------------------------------
 en     =: #@]
 em     =: (en >.@% 1&>.@|@[)`(en 0&>.@>:@- [) @. (0&<:@[)
@@ -109,3 +110,5 @@ testb"0 ] 16 17 19 21 23 31
 4!:55 ;:'a base bs bsd em en f iind infix k kay key ob oind omask osub outfix'
 4!:55 ;:'prefix sd seg suffix t testb'
 
+
+epilog''

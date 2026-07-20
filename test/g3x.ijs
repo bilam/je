@@ -1,3 +1,4 @@
+prolog './g3x.ijs'
 NB. 3!:0 ----------------------------------------------------------------
 
 NB. Boolean
@@ -401,3 +402,5 @@ rx=: 3 : 0
 4!:55 ;:'rb rbi rx test unbin WS x xr xrh y'
 
 
+
+epilog''

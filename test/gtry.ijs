@@ -1,3 +1,4 @@
+prolog './gtry.ijs'
 NB. try/catch -----------------------------------------------------------
 
 fa =: 3 : 'try. 3+y catch. ''bad'' end.'
@@ -320,3 +321,5 @@ t=: 0 : 0
 4!:55 ;:'erase f fa fb fc fd fe ff fg fh fi fj goo sub t write x y'
 
 
+
+epilog''

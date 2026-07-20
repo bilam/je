@@ -1,3 +1,4 @@
+prolog './gqnonrat.ijs'
 NB. rational approximations of non-rational functions -------------------
 
 NB. e f  x -- compute f x within error e
@@ -100,3 +101,5 @@ sin=: nsin sin0 ]
 4!:55 ;:'cos cos0 exp exp0 ln ln0 ncos nexp nln nsin sin sin0 sqrt'
 
 
+
+epilog''

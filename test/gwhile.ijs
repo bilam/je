@@ -1,3 +1,4 @@
+prolog './gwhile.ijs'
 NB. while ---------------------------------------------------------------
 
 fa =. 3 : 0
@@ -141,3 +142,5 @@ ge =. 3 : 0
 4!:55 ;:'fa fb fc fd fe ga gb gc gcd gd ge x'
 
 
+
+epilog''

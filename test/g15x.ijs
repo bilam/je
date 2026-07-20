@@ -1,3 +1,4 @@
+prolog './g15x.ijs'
 NB. 15!: ----------------------------------------------------------------
 
 NB. runs as noop as winapi.ijs is no longer supported - might be resurrected some day
@@ -6,7 +7,7 @@ pc=: 0 NB. (9!:12 '') e. 2 6  NB. Windows only
 NB. a small memory leak is expected on the next line
 2 = {:15!:1 ((15!:8) 10),0 5 4  NB. reference count
 
-require'socket'
+NB. require'socket'
 require 'dll'         NB. DLL utils
 
 
@@ -63,10 +64,10 @@ fread  =: 3 : 0   NB. fread handle
 test=: 3 : 0   NB. windows only
 if. pc do.
 assert. 1 -: fcreatedir <'testtemp'
-assert. 0 -: fdelete <'testtemp\non_existent_file'
+assert. 0 -: fdelete <'testtemp/non_existent_file'
 assert. 2 -: >{.cderx ''
 
-assert. _1 ~: h=: fcreate <'testtemp\test.jnk'
+assert. _1 ~: h=: fcreate <'testtemp/test.jnk'
 
 s=: 'boustrophedonic paracletic kerygmatic'
 assert. 1 -: s fwrite h
@@ -83,24 +84,24 @@ assert. (i+#t) -: fsize h
 assert. ((i{.s),t) -: fread h
 assert. 1 -: fclose h
 
-assert. 1 -: fcreatedir <'testtemp\tempdir'
+assert. 1 -: fcreatedir <'testtemp/tempdir'
 
-assert. (<'testtemp\test.jnk') fcopyto <'testtemp\test1.jnk'
-assert. _1 ~: h=: fopen <'testtemp\test1.jnk'
+assert. (<'testtemp/test.jnk') fcopyto <'testtemp/test1.jnk'
+assert. _1 ~: h=: fopen <'testtemp/test1.jnk'
 assert. ((i{.s),t) -: fread h
 assert. 1 -: fclose h
 
-assert. (<'testtemp\test1.jnk') fmoveto <'testtemp\tempdir\test2.jnk'
-assert. _1 ~: h=: fopen <'testtemp\tempdir\test2.jnk'
+assert. (<'testtemp/test1.jnk') fmoveto <'testtemp/tempdir/test2.jnk'
+assert. _1 ~: h=: fopen <'testtemp/tempdir/test2.jnk'
 assert. ((i{.s),t) -: fread h
 assert. 1 -: fclose h
 
-assert. 1 -: fdelete <'testtemp\test.jnk'
+assert. 1 -: fdelete <'testtemp/test.jnk'
 
-assert. 0 -: fdeletedir <'testtemp\tempdir'
+assert. 0 -: fdeletedir <'testtemp/tempdir'
 assert. (>{.cderx '') e. 5 145
-assert. 1 -: fdelete <'testtemp\tempdir\test2.jnk'
-assert. 1 -: fdeletedir <'testtemp\tempdir'
+assert. 1 -: fdelete <'testtemp/tempdir/test2.jnk'
+assert. 1 -: fdeletedir <'testtemp/tempdir'
 assert. 1 -: fdeletedir <'testtemp'
 end.
 1
@@ -108,7 +109,7 @@ end.
 
 test ''
 
-0 -: sdclose_jsocket_ >1{sdsocket_jsocket_''  NB. all systems
+NB. 0 -: sdclose_jsocket_ >1{sdsocket_jsocket_''  NB. all systems
 
 t=: 100 ?@$ 1e6
 t -:      15!:1 (15!:14 <'t'),0,(*/$t),3!:0 t
@@ -134,3 +135,5 @@ t -: ($t)$15!:1 (15!:14 <'t'),0,(*/$t),3!:0 t
 4!:55 ;:'h i pc s t test'
 
 
+
+epilog''

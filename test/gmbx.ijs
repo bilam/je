@@ -1,7 +1,8 @@
+NB. prolog './gmbx.ijs'
 NB. mapped boxed arrays -------------------------------------------------
 
 load 'jmf'
-18!:4 <'base'
+cocurrent <'base'
 
 1 [ unmap_jmf_ 'q'
 f=: <jpath'~temp/q.jmf'
@@ -19,3 +20,8 @@ g   =: 6 7 4 5 2 3 0 1&{"1 @: (5&}.) @: (3!:3) @: ({."1)
 mean=: +/ % #
 
 
+
+NB. do not erase names in this script
+NB. 4!:55 ;:'f f1 g mean q r'
+
+NB. epilog''

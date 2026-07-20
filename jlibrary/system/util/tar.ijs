@@ -18,7 +18,7 @@ J tar
 
 for example,
  on computer
-  $> tar -c -f ~/j64-801-user/temp/math.tar -C ~/j64-801/addons finance
+  $> tar -c -f ~/j9/temp/math.tar -C ~/j9/addons finance
   iTunes connect - move math.tar to J app folder
 
  on J
@@ -30,7 +30,6 @@ J gzip
   data gzip '~/temp/f.gz' - write data to f.gz
 )
 
-NB. !!! 801
 NB. for windows, copy zlib1.dll from gtk binary to j.dll folder or windows/system32
 libz=: IFUNIX{::'zlib1.dll';unxlib^:IFUNIX 'z'
 cv=: IFWIN#'+'
@@ -121,7 +120,7 @@ NB. tarx tar;path - write tar files to path
 tarx=: 3 : 0
 'file path'=. y
 file=. jpathsep^:IFWIN file [ path=. jpathsep^:IFWIN path
-mkdir_j_ jpath path
+mkdir_j_ path
 assert. 2=ftype path['path folder must exist'
 d=. fread file
 assert. _1-.@-:d['can not read file'
@@ -139,12 +138,15 @@ while. #d do.
   select. type
   case. '5' do.
     d=. 512}.d
-    mkdir_j_ jpath f
+    mkdir_j_ f
     assert. 2=ftype f
   case. '0' do.
+    mkdir_j_ (f i: '/'){.f
     data=. count{.512}.d
     d=. (512*1+>.count%512)}.d
     assert. (#data)=data fwrite f
+  case. 'g';'x' do.    NB. type in POSIX.1-2001 standard (pax) ignored
+    d=. (512*1+>.count%512)}.d
   case. do.
     assert. 'bad file'
   end.
@@ -243,7 +245,7 @@ gzip=: 3 : 0
 r=. ''
 d=. (128*1024)$' '
 h=. gzopen y;'rb'
-while. c=. (libz,' gzread >',cv,' i x *c i') cd h;d;#d do.
+while. 0{:: 'c h d nd'=. (libz,' gzread ',cv,' i x *c i') cd h;d;#d do.
   assert. _1~:c
   r=. r,c{.d
 end.

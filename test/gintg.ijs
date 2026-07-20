@@ -1,3 +1,4 @@
+prolog './gintg.ijs'
 NB. scalar function integrals -------------------------------------------
 
 I      =: 1 : 'x d. _1'
@@ -132,3 +133,5 @@ _1:  testlr z
 
 
 4!:55 ;:'D I t test testl testlr testr z'
+
+epilog''

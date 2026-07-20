@@ -1,3 +1,4 @@
+prolog './gxco2.ijs'
 NB. extended precision integers -----------------------------------------
 
 NB. create test data
@@ -66,3 +67,5 @@ g=. (<.&# {. [) -: (<.&# {. ])
 4!:55 ;:'f g x x1 x2 x3 y y1 y2 y3'
 
 
+
+epilog''

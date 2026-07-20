@@ -1,3 +1,4 @@
+prolog './gt.ijs'
 NB. t. ------------------------------------------------------------------
 
 (%!i.5)        = ^       t. i.5
@@ -237,3 +238,5 @@ phi=: -:%:5
 4!:55 ;:'m n p phi pp q r rp s sin sinh tangent taysqrt x y '
 
 
+
+epilog''

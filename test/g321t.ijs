@@ -1,3 +1,4 @@
+prolog './g321t.ijs'
 NB. ,.&.>/y timing tests ------------------------------------------------
 
 f  =: >@(,.&.>/)
@@ -13,9 +14,11 @@ rsq=: [: -. ss@(- +/ % #)@[ %~ ss@:-
 (|:>34$<x) -: f 17$<x,.x=:(10?@$#a.){a.
 
 y=: ". 'timer ''f t'' [ t=: (<12?@$1e9) $~ ',"1 ": ,. x=: 11000*1+i.9
-threshold < y rsq y (] +/ .* %.) x^/0 1
+THRESHOLD +. threshold < y rsq y (] +/ .* %.) x^/0 1
 
 
 4!:55 ;:'f rsq ss t x y '
 
 
+
+epilog''

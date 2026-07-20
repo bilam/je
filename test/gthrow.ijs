@@ -1,3 +1,4 @@
+prolog './gthrow.ijs'
 NB. throw./catcht. ------------------------------------------------------
 
 f=: 3 : 0
@@ -156,3 +157,5 @@ main5=: 3 : 0   NB. catcht at multiple levels
 4!:55 ;:'f main main1 main2 main3 main4 main5 sub t'
 
 
+
+epilog''

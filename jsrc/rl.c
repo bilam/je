@@ -105,7 +105,7 @@ static F1(jtlchar){A y;B b,p=1,r1;C c,d,*u,*v;I j,k,m,n;
 
 static F1(jtlbox){A p,*v,*vv,*wv,x,y;B b=0;I n,wd;
  RZ(w);
- if(equ(ace,w)&&B01==AT(AAV0(w)))R cstr("a:");
+ if(equ(ace,w)&&B01==AT(AAVR0(w)))R cstr("a:");
  n=AN(w); wv=AAV(w); wd=(I)w*ARELATIVE(w);
  DO(n, x=WVR(i); if(BOX&AT(x)){b=1; break;}); b=b||1==n;
  GA(y,BOX,n+n-!b,1,0); v=vv=AAV(y);

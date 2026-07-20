@@ -1,3 +1,4 @@
+prolog './goox.ijs'
 NB. order of execution --------------------------------------------------
 
 g=: 3 : 0
@@ -34,3 +35,5 @@ xx -: 'hbha'
 4!:55 ;:'f g h xx'
 
 
+
+epilog''

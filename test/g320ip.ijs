@@ -1,3 +1,4 @@
+prolog './g320ip.ijs'
 NB. x,y Append in place -------------------------------------------------
 
 f=: 3 : 0
@@ -131,3 +132,5 @@ testa=: 4 : 0
 4!:55 ;:'a a1 b f f1 f2 f3 f4 f5 f6 f7 f8 f9 global local test testa'
 
 
+
+epilog''

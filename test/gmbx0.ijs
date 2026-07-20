@@ -1,3 +1,4 @@
+prolog './gmbx0.ijs'
 NB. mapped boxed arrays -------------------------------------------------
 
 0!:0 <testpath,'gmbx.ijs'
@@ -87,3 +88,5 @@ q=: x=: ((<4$<'x'),<<"0 ]2 3$'abcdef') ((1;0;2);<0;1;0)} <"0 <"0 i.2 3 4
 4!:55 ;:'f f1 g j mean q r t x y'
 
 
+
+epilog''

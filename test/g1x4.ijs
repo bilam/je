@@ -1,3 +1,4 @@
+prolog './g1x4.ijs'
 NB. 1!:4 ----------------------------------------------------------------
 
 dir   =. 1!:0
@@ -55,3 +56,5 @@ f   =. mac{'no/such/dir/or/file';':no:such:dir:or:file'
 4!:55 ;:'close d dir f h j mac open p pc s size unix win x ' 
 
 
+
+epilog''

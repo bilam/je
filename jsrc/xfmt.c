@@ -126,7 +126,7 @@ static B jtwidthdp(J jt, A a, I *w, I *d){I n,x,y; C *v;
 static F1(jtfmtparse){A x,z,*zv;B ml[2+NMODVALS],mod,t;C c,*cu="srqpnmdblc",*cu1="?bdmnpqrs",d,*s,*wv;
      I fb,i,j,mi,n,n1,p,q,vals[3]={-1,-1,0};
  RZ(w);
- w=AAV0(w); n=AN(w);
+ w=AAVR0(w); n=AN(w);
  GA(z,BOX,1+NMODVALS,1,0); zv=AAV(z); 
  DO(NMODVALS, zv[1+i]=mtv;);
  if(n&&C2T&AT(w))RZ(w=uco2(num[5],w));
@@ -434,7 +434,7 @@ static A jtfmtallcol(J jt, A a, A w, I mode) {A *a1v,base,fb,len,strs,*u,v,x;
   k=l=ib[0]; d=ib[1]; mods=ib[2]; coll=ib[3+(1==nf)*j];
   nB= AN(uB); nD= AN(uD); nM= AN(uM); nN= AN(uN); nP= AN(uP); nQ= AN(uQ); nR= AN(uR);
   cB=CAV(uB); cD=CAV(uD); cM=CAV(uM); cN=CAV(uN); cP=CAV(uP); cQ=CAV(uQ); cR=CAV(uR);
-  subs=AN(uS)?CAV(uS):"e,.-*";
+  subs=AN(uS)?CAV(uS):(C*)"e,.-*";
   switch(mode) {
    case 0: v=*a1v; cv=CAV(v); break;
    case 1: k=0<l?l:coll; cv=cvv[j]; cvv[j]+=k; break;
@@ -510,8 +510,15 @@ static A jtfmtxi(J jt, A a, A w, I mode, I *omode){I lvl;
  if(JCHAR&AT(a)||!AN(a)) RZ(a=fmtbfc(a));
  ASSERT(1>=AR(a), EVRANK);
  ASSERT(0==AR(a) || AN(a)==AS(w)[AR(w)-1], EVLENGTH);
+#if defined(_WIN32) && (defined(__x86_64__)||defined(_M_X64))
+// workaround setjmp crash
+ jmp_buf _env;
+ if(setjmp(_env))ASSERTSYS(jt->jerr, "dtoa");
+ memcpy(&(((struct dtoa_info*)jt->dtoa)->_env),&_env,sizeof(_env));
+#else
  /* catch out-of-memory errors from dtoa.c */
  if(setjmp(((struct dtoa_info*)jt->dtoa)->_env))ASSERTSYS(jt->jerr, "dtoa");
+#endif
  if(lvl=level(w)){A*wv=AAV(w),x;I wd=(I)w*ARELATIVE(w);
   ASSERT(1>=lvl, EVDOMAIN);
   DO(AN(w), x=WVR(i); ASSERT(1>=AR(x),EVRANK); if(AN(x)){ASSERT(AT(x)&JCHAR+NUMERIC,EVDOMAIN);

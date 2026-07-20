@@ -1,3 +1,4 @@
+prolog './gd.ijs'
 NB. D. scalar functions -------------------------------------------------
 
 D =: D. 1
@@ -95,3 +96,5 @@ _0.5 1&p. eq (2&! d. 1)
 4!:55 ;:'D E b dc eq f g h test x '
 
 
+
+epilog''

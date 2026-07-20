@@ -1,3 +1,4 @@
+prolog './gfor.ijs'
 NB. for. ----------------------------------------------------------------
 
 f0=: 3 : 0
@@ -259,3 +260,5 @@ f=: 4 : 0  NB. assertions on queens n
 4!:55 ;:'g0 g1 n queens x '
 
 
+
+epilog''

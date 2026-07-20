@@ -297,7 +297,7 @@ F1(jtthorn1){PROLOG;A z;
   case XNUM: case RAT: case XD: case XZ:
              z=thxqe(w);                  break;
 #endif
-  case BIT:  z=thbit(w);                  break;
+  case BITB: z=thbit(w);                  break;
   case B01:  z=thb(w);                    break;
   case LIT:  z=ca(w);                     break;
   case C2T:  z=rank1ex(w,0L,1L,jttoutf8); break;
@@ -380,7 +380,7 @@ static A jtjprx(J jt,I ieol,I maxlen,I lb,I la,A w){A y,z;B ch;C e,eo,*eov,*v,x,
  if(ieol){m=2; *eov=CCR; *(1+eov)=CLF;}else{m=1; *eov=eo=CLF;}
  c1=MIN(c,maxlen); lba=(D)lb+la;
  p=2<r?2-r:0; h=1; DO(r-2, if(s[i]){h*=s[i]; p+=h;}else{p=0; break;});
- h=lba<IMAX?lb+la:IMAX; h=MIN(nq,h); 
+ h=lba<(D)IMAX?lb+la:IMAX; h=MIN(nq,h); 
  RE(zn=(3+m)+(q?p*m:0)+mult(h,ch?c+m+(3+m)*(1+c/maxlen):c1+m+3*(c1<c)));
  if(ch&&1<m             )zn+=    scaneol(v,h,nq,c,lb,la);
  if(ch||AT(w)&BOX+SPARSE)zn+=nbx=scanbdc(v,h,nq,c,lb,la);

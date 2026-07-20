@@ -5,6 +5,7 @@
 
 #include "j.h"
 #include "jversion.h"
+#define jtype     "release"
 
 A   a0j1=0;               /* 0j1                                  */
 A   ace=0;                /* a:                                   */
@@ -55,28 +56,89 @@ DX  zeroDX={0,0};         /* 0                                    */
 Z   zeroZ={0,0};          /* 0j0                                  */
 A   zpath=0;              /* default locale search path           */
 
-/* version text up to first / is the J System ID and it */
-/* identifies the J Front Ends, J Engine, and J Library */
-/* and is used in Unix to find profile.ijs              */
-/* j804/j64/windows/release/a/GPL3/unknown/datetime */
-F1(jtversq){
-	char m[1000]; char d[12]; char months[] = "Jan01Feb02Mar03Apr04May05Jun06Jul07Aug08Sep09Oct10Nov11Dec12";
-	ASSERTMTV(w);
-	strcpy(m,"j"jversion"/");
-#if SY_64
-	strcat(m,"j64/");
+uint64_t g_cpuFeatures,g0_cpuFeatures;   // blis
+uint64_t g_cpuFeatures2,g0_cpuFeatures2;  // fsgsbase
+int numberOfCores;        // number of cpu cores
+UC  hwaes=0;              // hardware aes support
+UC  hwfma=0;              // blis cpu tuning
+#if SUPPORT_AFFINITY && !defined(__FreeBSD__)
+UC  supportaffinity=1;
 #else
-	strcat(m,"j32/");
+UC  supportaffinity=0;
 #endif
-	strcat(m,jplatform"/"jtype"/"jlicense"/"jbuilder"/");
-	strcpy(d,__DATE__);
-	if(' '== d[4]) d[4] = '0';
-	strncat(m,d+7,4);
-	strcat(m,"-");
-	d[3] = 0;
-	strncat(m, 3 + strstr(months, d), 2);
-	strcat(m,"-");
-	strncat(m,d + 4, 3);
-	strcat(m,__TIME__);
-	R cstr(m);
+#ifdef BOXEDSPARSE
+UC  fboxedsparse=1;       // enable boxed sparse
+#endif
+
+void*libcblas=0;
+char hascblas=0;
+C    cblasfile[1000]="";
+char hasopenmp=0;
+
+// global const end 
+
+
+#if SY_64
+#define bits "64"
+#else
+#define bits "32"
+#endif
+
+#if C_AVX512
+#define hw "avx512"
+#elif C_AVX2
+#define hw "avx2"
+#elif __arm64__ || __aarch64__ || __arm__
+#define hw "arm"
+#elif defined(__wasm__)
+#define hw "wasm"
+#else
+#define hw ""
+#endif
+
+const char jeversion[]= "je9!:14 j"jversion"/j"bits""hw"/"jplatform"/"jlicense"/"jbuilder"/"__DATE__"T"__TIME__;
+
+F1(jtversq){
+ char m[1000];char d[21]; char months[] = "Jan01Feb02Mar03Apr04May05Jun06Jul07Aug08Sep09Oct10Nov11Dec12"; C* p;
+ ASSERTMTV(w);
+ strcpy(m,jeversion+8);
+ p= m+strlen(m)-20;
+ strcpy(d,p);
+ *p=0;
+ if(' '== d[4]) d[4] = '0';
+ strncat(p,d+7,4);
+ strcat(p,"-");
+ d[3] = 0;
+ strncat(p,3 + strstr(months,d),2);
+ strcat(p,"-");
+ strncat(p,d + 4,2);
+ strcat(p,d+11);
+#if defined(__clang__)
+ strcat(p, "/clang-");
+ sprintf(p + strlen(p), "%i", __clang_major__);
+ strcat(p, "-");
+ sprintf(p + strlen(p), "%i", __clang_minor__);
+ strcat(p, "-");
+ sprintf(p + strlen(p), "%i", __clang_patchlevel__);
+#elif defined(_MSC_FULL_VER)
+ strcat(p, "/ms-");
+ sprintf(p + strlen(p), "%i", _MSC_FULL_VER);
+#elif defined(__GNUC__)
+ strcat(p, "/gcc-");
+ sprintf(p + strlen(p), "%i", __GNUC__);
+ strcat(p, "-");
+ sprintf(p + strlen(p), "%i", __GNUC_MINOR__);
+#endif
+ 
+#if SLEEF
+ strcat(p,"/SLEEF=1");
+#else
+ strcat(p,"/SLEEF=0");
+#endif
+#if MEMAUDIT
+ strcat(p,"/MEMAUDIT=0x");
+ sprintf(p + strlen(p), "%x", MEMAUDIT);
+#endif
+ R cstr(m);
 }
+

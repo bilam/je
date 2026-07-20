@@ -6,8 +6,35 @@
 /* File functions accept file number or boxed file name or 1 or 2          */
 
 #ifdef _WIN32
+#define __iamcu__
 #include <windows.h>
 #include <winbase.h>
+#define filesep '\\'
+#else
+#if defined(__GNUC__) && defined(_GNU_SOURCE)
+#if !defined(__wasm__)
+#include <dlfcn.h>
+#endif
+#endif
+#include <sys/types.h>
+#include <unistd.h>
+#if !defined(__wasm__)
+#include <fts.h>
+#endif
+#define filesep '/'
+#ifdef ANDROID
+/*
+ * Strictly these functions were available before Lollipop/21, but there was an accidental ABI
+ * breakage in 21 that means you can't write code that runs on current devices and pre-21 devices,
+ * so we break the tie in favor of current and future devices.
+ */
+
+FTSENT* fts_children(FTS* __fts, int __options);
+int fts_close(FTS* __fts);
+FTS* fts_open(char* const* __path, int __options, int (*__comparator)(const FTSENT** __lhs, const FTSENT** __rhs));
+FTSENT* fts_read(FTS* __fts);
+int fts_set(FTS* __fts, FTSENT* __entry, int __options);
+#endif
 #endif
 
 #include "j.h"
@@ -20,32 +47,48 @@
 #if (SYS & SYS_UNIX)
 #include <stdlib.h>
 typedef long long INT64;
+static int rmdir2(const char *dir);
 #endif
 
 #if SY_WIN32 && !SY_WINCE
 #include <direct.h>
 #include <io.h>
+static int rmdir2(J jt, const wchar_t *dir);
 #endif
 
 
 #if SY_64
-static I fsize(F f){fpos_t z;
- RZ(f);
+static I fsize(F f){
+ if(!f)R 0;
 #if SY_WIN32
- _lseeki64(_fileno(f),0,SEEK_END); 
+ R _filelengthi64(_fileno(f));
+#elif defined(__linux__)
+ //work around strange linux issue: for certain files in /proc (eg /proc/meminfo), fstat will return with S_ISREG set, but a size of 0 (even
+ //though the file is not empty), and glibc gets confused; work around it by prodding the fd directly
+ int fd=fileno(f);
+ off_t c=lseek(fd,0,SEEK_CUR);if(c<0)R -1; //save current fd position, to avoid messing with libc internal state
+ off_t z=lseek(fd,0,SEEK_END);if(z<0)R -1;
+ lseek(fd,c,SEEK_SET); //restore fd position.  Nothing really to be done if this fails...
+ R z;
 #else
- fseek(f,0L,SEEK_END);
+ struct stat stat;
+ if(fstat(fileno(f),&stat))R -1;
+ if(!S_ISREG(stat.st_mode))R -1;
+ R stat.st_size;
 #endif
- fgetpos(f,&z);
- R *(I*)&z;
 }
 #else
 static I fsize(F f){
  RZ(f);
+#if SY_WIN32
+ R _filelength(_fileno(f));
+#else
  if(fseek(f,0L,SEEK_END))R -1;
  R ftell(f);
+#endif
 }
 #endif
+
 
 static A jtrdns(J jt,F f){A za,z;I n;size_t r,tr=0;
  GA(za,LIT,n=1024,1,0); clearerr(f);
@@ -99,7 +142,7 @@ F1(jtjfread){A z;F f;
  F1RANK(0,jtjfread,0);
  RE(f=stdf(w));
  if(f)R 1==(I)f?jgets("\001"):3==(I)f?rdns(stdin):rd(vfn(f),0L,-1L);
- RZ(f=jope(w,FREAD)); z=rd(f,0L,-1L); fclose(f); 
+ RZ(f=jope(w,FREAD_O)); z=rd(f,0L,-1L); fclose(f); 
  R z;
 }
 
@@ -110,7 +153,7 @@ F2(jtjfwrite){B b;F f;
  if(2==(I)f){b=jt->tostdout; jt->tostdout=1; jt->mtyo=MTYOFILE; jpr(a); jt->mtyo=0; jt->tostdout=b; R a;}
  if(4==(I)f){R (U)AN(a)!=fwrite(CAV(a),sizeof(C),AN(a),stdout)?jerrno():a;}
  if(5==(I)f){R (U)AN(a)!=fwrite(CAV(a),sizeof(C),AN(a),stderr)?jerrno():a;}
- if(b=!f)RZ(f=jope(w,FWRITE)) else RE(vfn(f)); 
+ if(b=!f)RZ(f=jope(w,FWRITE_O)) else RE(vfn(f)); 
  wa(f,0L,a); 
  if(b)fclose(f);else fflush(f);
  RNE(mtm);
@@ -122,7 +165,7 @@ F2(jtjfappend){B b;F f;
  if(2==(I)f){B b=jt->tostdout; jt->tostdout=1; jpr(a); jt->tostdout=b; R a;}
  ASSERT(!AN(a)||AT(a)&LIT+C2T,EVDOMAIN);
  ASSERT(1>=AR(a),EVRANK);
- if(b=!f)RZ(f=jope(w,FAPPEND)) else RE(vfn(f));
+ if(b=!f)RZ(f=jope(w,FAPPEND_O)) else RE(vfn(f));
  wa(f,fsize(f),a);
  if(b)fclose(f);else fflush(f);
  RNE(mtm);
@@ -131,7 +174,7 @@ F2(jtjfappend){B b;F f;
 F1(jtjfsize){B b;F f;I m;
  F1RANK(0,jtjfsize,0);
  RE(f=stdf(w));
- if(b=!f)RZ(f=jope(w,FREAD)) else RE(vfn(f)); 
+ if(b=!f)RZ(f=jope(w,FREAD_O)) else RE(vfn(f)); 
  m=fsize(f); 
  if(b)fclose(f);else fflush(f);
  RNE(sc(m));
@@ -159,21 +202,23 @@ static B jtixin(J jt,A w,I s,I*i,I*n){A in,*wv;I j,k,m,*u,wd;
  R 1;
 }    /* process index file arg for index and length */
 
+// 1!:11
 F1(jtjiread){A z=0;B b;F f;I i,n;
  F1RANK(1,jtjiread,0);
- RE(f=ixf(w)); if(b=!f)RZ(f=jope(w,FREAD));
+ RE(f=ixf(w)); if(b=!f)RZ(f=jope(w,FREAD_O));  // b=filename, not number; if name, open the named file
  if(ixin(w,fsize(f),&i,&n))z=rd(f,i,n);
- if(b)fclose(f);else fflush(f);
+ if(b)fclose(f);else{fflush(f);}  // if numbered file, remove the inuse mark
  R z;
 }
 
+// 1!:12
 F2(jtjiwrite){B b;F f;I i;
  F2RANK(RMAX,1,jtjiwrite,0);
  ASSERT(!AN(a)||AT(a)&LIT+C2T,EVDOMAIN);
  ASSERT(1>=AR(a),EVRANK);
- RE(f=ixf(w)); if(b=!f)RZ(f=jope(w,FUPDATE));
- if(ixin(w,fsize(f),&i,0L))wa(f,i,a); 
- if(b)fclose(f);else fflush(f);
+ RE(f=ixf(w)); if(b=!f)RZ(f=jope(w,FUPDATE_O));  // b=filename, not number; if name, open the named file
+ if(ixin(w,fsize(f),&i,0L))wa(f,i,a);
+ if(b)fclose(f);else{fflush(f);}  // if numbered file, remove the inuse mark
  RNE(mtm);
 }
 
@@ -208,7 +253,7 @@ static B rmdir(C*v){R!rmdir1(v);}
 F1(jtjmkdir){A y,z;
  F1RANK(0,jtjmkdir,0);
  ASSERT(AT(w)&BOX,EVDOMAIN);
- RZ(y=str0(vs(AAV0(w))));
+ RZ(y=str0(vs(AAVR0(w))));
 #if (SYS & SYS_UNIX)
  R mkdir(CAV(y),0775)?jerrno():one;
 #else
@@ -220,7 +265,7 @@ F1(jtjmkdir){A y,z;
 F1(jtjferase){A y,fn;US*s;I h;
  F1RANK(0,jtjferase,0);
  RE(h=fnum(w));
- if(h) y=str0(fname(sc(h))); else y=AAV0(w);
+ if(h) y=str0(fname(sc(h))); else y=AAVR0(w);
  ASSERT(y,EVFNUM);
  if(h)RZ(jclose(sc(h)));
 #if (SYS&SYS_UNIX)

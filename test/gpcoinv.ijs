@@ -1,3 +1,4 @@
+prolog './gpcoinv.ijs'
 NB. p:^:_1 --------------------------------------------------------------
 
 f =. p:^:_1
@@ -32,3 +33,5 @@ NB. LeVeque, Fundamentals of Number Theory, Addison-Wesley, 1977, p. 5.
 4!:55 ;:'f v x'
 
 
+
+epilog''

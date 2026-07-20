@@ -1,3 +1,4 @@
+prolog './gix.ijs'
 NB. x i.y with wrong rank/shape -----------------------------------------
 
 f0=: 4 : 0
@@ -164,3 +165,5 @@ fb&>/~ 0;'a';4;4.5;4j5;4x;4r5
 4!:55 ;:'f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb'
 
 
+
+epilog''

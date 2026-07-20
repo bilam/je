@@ -1,3 +1,4 @@
+prolog './grefcount.ijs'
 NB. reference count ------------------------------------------------------
 
 x=: 89$<'x=: 11 22 33'
@@ -86,3 +87,5 @@ _1 = 4!:0 <'f6'
 
 4!:55 ;:'cycle f f0 f1 f2 f3 g3 f4 g4 f5 g5 f6 g6 t x'
 
+
+epilog''

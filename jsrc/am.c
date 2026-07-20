@@ -123,13 +123,13 @@ A jtjstd(J jt,A w,A ind){A j=0,k,*v,x;B b;I d,i,id,n,r,*s,*u,wr,*ws;
    DO(AN(x), ASSERT(*u,EVDOMAIN); --*u; ++u;); 
    R x;
   }
-  k=AAV0(ind); n=AN(k);
+  k=AAVR0(ind); n=AN(k);
   GA(x,INT,wr,1,0); u=wr+AV(x); s=wr+ws; d=1; DO(wr, *--u=d; d*=*--s;);
   R n==wr?pdt(j,x):irs2(pdt(j,vec(INT,n,AV(x))),iota(vec(INT,wr-n,ws+n)),0L,0L,RMAX,jtplus);
  }
  if(!b){n=1; RZ(j=pind(*ws,ind));}
  else{
-  ind=AAV0(ind); n=AN(ind); r=AR(ind);
+  ind=AAVR0(ind); n=AN(ind); r=AR(ind);
   ASSERT(!n&&1==r||AT(ind)&BOX+NUMERIC,EVINDEX);
   if(n&&!(BOX&AT(ind)))RZ(ind=every(ind,0L,jtright1));
   v=AAV(ind); id=(I)ind*ARELATIVE(ind);
@@ -141,7 +141,7 @@ A jtjstd(J jt,A w,A ind){A j=0,k,*v,x;B b;I d,i,id,n,r,*s,*u,wr,*ws;
    x=AADR(id,v[i]); d=ws[i];
    if(AN(x)&&BOX&AT(x)){
     ASSERT(!AR(x),EVINDEX); 
-    x=AAV0(x); k=IX(d);
+    x=AAVR0(x); k=IX(d);
     if(AN(x))k=less(k,pind(d,1<AR(x)?ravel(x):x));
    }else k=pind(d,x);
    RZ(j=irs2(tymes(j,sc(d)),k,0L,0L,RMAX,jtplus));
@@ -194,7 +194,7 @@ static DF1(mergv1){DECLF; R merge1(w,CALL1(f1,w,fs));}
 static B ger(A w){A*wv,x;I wd;
  if(!(BOX&AT(w)))R 0;
  wv=AAV(w); wd=(I)w*ARELATIVE(w);
- DO(AN(w), x=WVR(i); if(BOX&AT(x)&&1==AR(x)&&2==AN(x))x=AAV0(x); if(!(LIT&AT(x)&&1>=AR(x)&&AN(x)))R 0;);
+ DO(AN(w), x=WVR(i); if(BOX&AT(x)&&1==AR(x)&&2==AN(x))x=AAVR0(x); if(!(LIT&AT(x)&&1>=AR(x)&&AN(x)))R 0;);
  R 1;
 }    /* 0 if w is definitely not a gerund; 1 if possibly a gerund */
 

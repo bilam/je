@@ -4,39 +4,63 @@
 /* Xenos: File Lock/Unlock                                                 */
 
 #include "j.h"
+#ifdef link
+#undef link           /* name conflict ? */
+#endif
 #include "x.h"
 
-#if SY_WINCE || !(SYS & SYS_DOS+SYS_MACINTOSH)
+#if SY_WINCE || !(SYS & SYS_DOS+SYS_MACINTOSH+SYS_UNIX)
 #define LOCK 1
 static B jtdolock(J jt,B lk,F f,I i,I n){ASSERT(0,EVNONCE);}
 #endif
 
-#if SY_WIN32 && SYS&SYS_DOS && !SY_WINCE
+#if (SYS & SYS_UNIX) || (SY_WIN32 && SYS&SYS_DOS && !SY_WINCE)
+typedef long long INT64;
+#include <stdint.h>
 #define LOCK 1
+#if (SYS & SYS_UNIX)
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/file.h>
+#else
 #include <sys/locking.h>
+#include <io.h>
+#endif
 
-extern int _locking(int,int,long);
+// extern int _locking(int,int,long);
 
 static B jtdolock(J jt,B lk,F f,I i,I n){I e;long c;fpos_t v; fpos_t q;
  c=fgetpos(f,(fpos_t*)&q);
- if(0!=c)R (B)jerrno();
- v=i;
+ if(0!=c)R (B)(intptr_t)jerrno();
+ {INT64 vv; vv=i; v=*(fpos_t*)&vv;}
  c=fsetpos(f,(fpos_t*)&v);
- if(0!=c)R (B)jerrno();
+ if(0!=c)R (B)(intptr_t)jerrno();
+#if SY_WIN32
  e=_locking(_fileno(f),lk?_LK_NBLCK:_LK_UNLCK,(long)n);
+#else
+#ifdef ANDROID
+ e=flock(fileno(f),lk?LOCK_EX+LOCK_NB:LOCK_UN);
+#else
+ e=lockf(fileno(f),lk?F_TLOCK:F_ULOCK,(I)n);
+#endif
+#endif
  fsetpos(f,(fpos_t*)&q);
- R !e?1:errno==EACCES?0:(B)jerrno();
+#ifdef __MINGW32__
+ R !e?1:(errno==EEXIST||errno==ENOENT||errno==EACCES)?0:(B)(intptr_t)jerrno();
+#else
+ R !e?1:errno==EACCES?0:(B)(intptr_t)jerrno();
+#endif
 }
 #endif
 
 #ifndef LOCK
 static B jtdolock(J jt,B lk,F f,I i,I n){I e;
  e=lk?lock(fileno(f),i,n):unlock(fileno(f),i,n);
- R !e?1:errno==EACCES?0:jerrno();
+ R !e?1:errno==EACCES?0:(intptr_t)jerrno();
 }
 #endif
 
-#define LKC  3      /* number of columns in jt->flkd table       */
+#define LKC  3      /* number of columns in JT(jt,flkd) table       */
 
 B jtxlinit(J jt){A x;I*s;
  GA(x,INT,20*LKC,2,0); s=AS(x); s[0]=20; s[1]=LKC; ra(x); 
