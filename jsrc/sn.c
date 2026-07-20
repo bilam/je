@@ -249,7 +249,7 @@ DF2(jtex){F12IP;jtfg=jt;A*wv,y,z;B*zv;I i,n;  // clear all jt flags in jtfg
  ASSERT(((n-1)|SGNIF(AT(w),BOXX))<0,EVDOMAIN);
  I zr=AR(w); GATV(z,B01,n,AR(w),AS(w)); zv=BAVn(zr,z);
  for(i=0;i<n;++i){
-  y=stdnm(C(wv[i])); if(unlikely(jt->jerr!=0)){z = 0; break;}   // scaf why jt->jerr?
+  y=stdnm(C(wv[i])); if(unlikely(jt->jerr!=0)){z=0; break;}   // scaf why jt->jerr?
   zv[i]=1&&y;
   // If the name is defined and is an ACV, invalidate all looked-up ACVs
   A locfound;  // get the locale in which the name is defined - must exist.
