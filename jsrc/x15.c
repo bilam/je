@@ -28,22 +28,27 @@ The XP64 double_trick puts the 1st four parameters in mmx regs.
 XP64 runs no code, it just does a call with 4 doubles to get the mmx
 regs loded before the switchcall.
 
-Linux64/Mac64 pass the 1st 8 float/double args in mmx regs and they are
-NOT in the switchcall parameters. Float/double parms after the 1st 8 are
-pushed on the stack differently than I parameters and are not supported
-by switchcall. More than 8 float/double parameters returns an error.
-
-Linux64/Mac64/... DELIMIT error if more than 8 D arg. Don't know how to do this call.
-Treating D as I after the 8th doesn't work.
-Treating all D as I if there are more than 8 doesn't work.
+Linux64/Mac64 pass the 1st 8 float/double args in mmx regs and they
+are NOT in the switchcall parameters.  If more than 8 f/D args exist,
+putting D after the 8th on stack starting from the 7th I.  Note
+that the first 6 I args will be in regs that are unavailable to D..
 
 double_trick call must be immediately before SWITCHCALL
 otherwise the regs may be used and the parameter lost.
 */
 
+#if defined(C_CD_ARMHF) || defined(C_CD_ARMEL)
+#define ARMARGS 1
+#else
+#define ARMARGS 0
+#endif
+
 #if _WIN32
+#define __iamcu__
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
+#define FIXWINUTF8 // possibly should not be defined for MINGW32
 #ifdef __MINGW32__
 #ifndef _stdcall
 #define _stdcall __stdcall
@@ -52,14 +57,52 @@ otherwise the regs may be used and the parameter lost.
 #endif
 #else
 #include <stdlib.h>
+#include <unistd.h>
 typedef unsigned char       BYTE;
 #define CALLBACK
-#define FIXWINUTF8
+#endif
+#include <stdint.h>
+#include <wchar.h>
+#include <complex.h>
+#undef I
+#if defined(_WIN32) && !defined(__MINGW32__)
+typedef _Fcomplex float_complex;
+typedef _Dcomplex double_complex;
+#else
+typedef float complex float_complex;
+typedef double complex double_complex;
+#endif
+
+#ifdef ANDROID
+#if __ANDROID_API__ < 23
+#undef creal
+#undef cimag
+#undef crealf
+#undef cimagf
+#define creal(x)  (*(double*)&x)
+#define cimag(x)  (*(1+(double*)&x))
+#define crealf(x)  (*(float*)&x)
+#define cimagf(x)  (*(1+(float*)&x))
+#endif
 #endif
 
 #include "j.h"
 
-#define SY_UNIX64 (SY_64 && !defined(ANDROID) && (SY_LINUX || SY_MAC || SY_FREEBSD))
+// align memory pointer to natural alignment
+#define alignto(dvc,align) (void*)((uintptr_t)((dvc)+((align)-1)) & ~((align)-1))
+/*
+static void* alignto(void* dvc, int align){
+// fprintf(stderr,"%p %d %p \n", dvc, align, (void*)((uintptr_t)((dvc)+((align)-1)) & ~((align)-1)) );
+return (void*)((uintptr_t)((dvc)+((align)-1)) & ~((align)-1));
+}
+*/
+
+/* windows arm64 also uses generic arm64 abi like other *nix */
+#if defined(__aarch64__)
+#define SY_UNIX64 1
+#else
+#define SY_UNIX64 (SY_64 && (SY_LINUX || SY_MAC || SY_FREEBSD || SY_OPENBSD))
+#endif
 
 #if SY_WINCE
 #define HINSTANCE_ERROR 0
@@ -77,7 +120,9 @@ char *toascbuf(wchar_t *src);
 
 #if (SYS & SYS_UNIX)
 
+#if !defined(__wasm__)
 #include <dlfcn.h>
+#endif
 
 #if SYS & SYS_FREEBSD
 /* resolve some harmless name clashes */
@@ -93,8 +138,8 @@ char *toascbuf(wchar_t *src);
 typedef void *HMODULE;
 typedef char *LPSTR;
 typedef I (*FARPROC)();
-#define __stdcall              
-#define _cdecl                            
+#define __stdcall
+#define _cdecl
 #endif
 
 /* windows has 2 dll calling conventions - __stdcall and _cdecl */
@@ -113,28 +158,28 @@ typedef float              DoF;
 typedef double             DoF;
 #endif
 
-#if SY_64 || defined(__arm__)  /* J64 requires special float result */
+#if SY_64 || defined(__arm__)   /* J64 requires special float result */
 typedef float (__stdcall *STDCALLF)();
 typedef float (_cdecl    *ALTCALLF)();
-#endif 
+#endif
 
 /* error return codes */
 #define DEOK            0
 #define DEBADLIB        1
-#define DEBADFN         2                    
+#define DEBADFN         2
 #define DETOOMANY       3       /* too many dlls loaded                 */
 #define DECOUNT         4       /* too many args or (#args)~:#parms     */
 #define DEDEC           5
 #define DEPARM          6
 #define DELIMIT         7       /* too many float/double args  */
 
-#define NCDARGS         32      /* hardwired max number of arguments    */
+#define NCDARGS         64      /* hardwired max number of arguments    */
 #define NLIBS           100     /* max number of libraries              */
 
 #define NLEFTARG        (2*NPATH+4+3*(1+NCDARGS))
                                 /* max length of 15!:0 left argument    */
 
-#define CDASSERT(p,c)   {if(!(p)){jt->dlllasterror=c; ASSERT(0,EVDOMAIN);}}
+#define CDASSERT(p,c)   {if(unlikely(!(p))){jt->dlllasterror=c; ASSERT(0,EVDOMAIN);}}
 
 typedef struct {
  FARPROC fp;                    /* proc function address                */
@@ -156,16 +201,22 @@ typedef struct {
  C tletter[NCDARGS];            /* arguments type letters, cwsi etc.    */
 } CCT;
 
-#if SY_64 && SY_WIN32
+#if SY_64 && SY_WIN32 && !defined(__aarch64__)
 extern void double_trick(D,D,D,D);
-#endif
-
-#if SYS & (SYS & SYS_LINUX)
-#ifdef C_CD_ARMHF
-extern void double_trick(float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float);
-#else
+#elif SY_64 && SY_WIN32 && defined(__aarch64__)
 extern void double_trick(D,D,D,D,D,D,D,D);
 #endif
+
+#if SYS & (SYS_MACOSX | SYS_LINUX | SYS_FREEBSD | SYS_OPENBSD)
+ #ifdef C_CD_ARMHF
+ extern void double_trick(float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float);
+ #else
+  #ifdef __PPC64__
+  extern void double_trick(D,D,D,D,D,D,D,D,D,D,D,D,D);
+  #else
+  extern void double_trick(D,D,D,D,D,D,D,D);
+  #endif
+ #endif
 #endif
 #if SY_MACPPC
 static void double_trick(double*v, I n){I i=0;
@@ -193,9 +244,9 @@ static void double_trick(double*v, I n){I i=0;
 /*
 #if SYS & SYS_MACOSX
  #define dtrick double_trick(dd,dcnt);
-#elif SY_64 && SY_WIN32
+#elif SY_64 && SY_WIN32 && !defined(__aarch64__)
  #define dtrick {D*pd=(D*)d; double_trick(pd[0],pd[1],pd[2],pd[3]);}
-#elif SY_64 && SY_LINUX
+#elif SY_UNIX64
  #define dtrick double_trick(dd[0],dd[1],dd[2],dd[3],dd[4],dd[5],dd[6],dd[7]);
 #elif 1
  #define dtrick ;
@@ -203,28 +254,49 @@ static void double_trick(double*v, I n){I i=0;
 */
 
 #if SY_64
- #if SY_WIN32
+ #if SY_WIN32 && !defined(__aarch64__)
   #define dtrick {D*pd=(D*)d; double_trick(pd[0],pd[1],pd[2],pd[3]);}
  #elif SY_UNIX64
-  #define dtrick double_trick(dd[0],dd[1],dd[2],dd[3],dd[4],dd[5],dd[6],dd[7]);
- #elif SY_MAC
-  #define dtrick;
+  #ifdef __PPC64__
+   #define dtrick double_trick(dd[0],dd[1],dd[2],dd[3],dd[4],dd[5],dd[6],dd[7],dd[8],dd[9],dd[10],dd[11],dd[12]);
+  #elif defined(__x86_64__)
+   #if 0
+   #define dtrick double_trick(dd[0],dd[1],dd[2],dd[3],dd[4],dd[5],dd[6],dd[7]);
+   #else
+/* might be faster */
+   #define dtrick \
+  __asm__ ("movq (%0),%%xmm0\n\t"       \
+        "movq  8(%0), %%xmm1\n\t"       \
+        "movq 16(%0), %%xmm2\n\t"       \
+        "movq 24(%0), %%xmm3\n\t"       \
+        "movq 32(%0), %%xmm4\n\t"       \
+        "movq 40(%0), %%xmm5\n\t"       \
+        "movq 48(%0), %%xmm6\n\t"       \
+        "movq 56(%0), %%xmm7\n\t"       \
+        : /* no output operands */      \
+        : "r" (dd)                      \
+        : "xmm0","xmm1","xmm2","xmm3","xmm4","xmm5","xmm6","xmm7","cc");
+   #endif
+  #elif defined(__aarch64__)
+   #define dtrick double_trick(dd[0],dd[1],dd[2],dd[3],dd[4],dd[5],dd[6],dd[7]);
+  #endif
+ #else
+  #define dtrick ;
  #endif
 #else
  #if SY_WIN32
   #define dtrick ;
  #elif SY_LINUX
- #ifdef C_CD_ARMHF
-  #undef dtrick
-  #define dtrick double_trick(dd[0],dd[1],dd[2],dd[3],dd[4],dd[5],dd[6],dd[7],dd[8],dd[9],dd[10],dd[11],dd[12],dd[13],dd[14],dd[15]);
- #else
-  #define dtrick ;
- #endif
+  #ifdef C_CD_ARMHF
+   #define dtrick double_trick(dd[0],dd[1],dd[2],dd[3],dd[4],dd[5],dd[6],dd[7],dd[8],dd[9],dd[10],dd[11],dd[12],dd[13],dd[14],dd[15]);
+  #else
+   #define dtrick ;
+  #endif
  #elif SY_FREEBSD
   #define dtrick ;
  #elif SY_MACPPC
   #define dtrick double_trick(dd,dcnt);
- #elif SY_MAC
+ #else
   #define dtrick ;
  #endif
 #endif
@@ -314,31 +386,239 @@ static void double_trick(double*v, I n){I i=0;
                   d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
                   d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
                   d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31]);break;  \
+  case 33: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32]);break;                                            \
+  case 34: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33]);break;                                      \
+  case 35: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34]);break;                                \
+  case 36: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35]);break;                          \
+  case 37: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36]);break;                    \
+  case 38: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37]);break;              \
+  case 39: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38]);break;        \
+  case 40: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39]);break;  \
+  case 41: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40]);break;                                            \
+  case 42: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41]);break;                                      \
+  case 43: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42]);break;                                \
+  case 44: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43]);break;                          \
+  case 45: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44]);break;                    \
+  case 46: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45]);break;              \
+  case 47: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46]);break;        \
+  case 48: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47]);break;  \
+  case 49: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48]);break;                                            \
+  case 50: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49]);break;                                      \
+  case 51: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50]);break;                                \
+  case 52: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51]);break;                          \
+  case 53: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52]);break;                    \
+  case 54: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53]);break;              \
+  case 55: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54]);break;        \
+  case 56: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54],d[55]);break;  \
+  case 57: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54],d[55],         \
+                  d[56]);break;                                            \
+  case 58: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54],d[55],         \
+                  d[56],d[57]);break;                                      \
+  case 59: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54],d[55],         \
+                  d[56],d[57],d[58]);break;                                \
+  case 60: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54],d[55],         \
+                  d[56],d[57],d[58],d[59]);break;                          \
+  case 61: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54],d[55],         \
+                  d[56],d[57],d[58],d[59],d[60]);break;                    \
+  case 62: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54],d[55],         \
+                  d[56],d[57],d[58],d[59],d[60],d[61]);break;              \
+  case 63: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54],d[55],         \
+                  d[56],d[57],d[58],d[59],d[60],d[61],d[62]);break;        \
+  case 64: r = fp(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],          \
+                  d[8], d[9], d[10],d[11],d[12],d[13],d[14],d[15],         \
+                  d[16],d[17],d[18],d[19],d[20],d[21],d[22],d[23],         \
+                  d[24],d[25],d[26],d[27],d[28],d[29],d[30],d[31],         \
+                  d[32],d[33],d[34],d[35],d[36],d[37],d[38],d[39],         \
+                  d[40],d[41],d[42],d[43],d[44],d[45],d[46],d[47],         \
+                  d[48],d[49],d[50],d[51],d[52],d[53],d[54],d[55],         \
+                  d[56],d[57],d[58],d[59],d[60],d[61],d[62],d[63]);break;  \
 }
 
-static I     stdcalli(STDCALLI fp,I*d,I cnt,DoF*dd,I dcnt){I r;
+static I     NOOPTIMIZE stdcalli(STDCALLI fp,I*d,I cnt,DoF*dd,I dcnt){I r;
  SWITCHCALL;
  R r;
 }  /* I result */
-static I     altcalli(ALTCALLI fp,I*d,I cnt,DoF*dd,I dcnt){I r;
+static I     NOOPTIMIZE altcalli(ALTCALLI fp,I*d,I cnt,DoF*dd,I dcnt){I r;
  SWITCHCALL;
  R r;
 }
-static D     stdcalld(STDCALLD fp,I*d,I cnt,DoF*dd,I dcnt){D r;
+static D     NOOPTIMIZE stdcalld(STDCALLD fp,I*d,I cnt,DoF*dd,I dcnt){D r;
  SWITCHCALL;
  R r;
 }  /* D result */
-static D     altcalld(ALTCALLD fp,I*d,I cnt,DoF*dd,I dcnt){D r;
+static D     NOOPTIMIZE altcalld(ALTCALLD fp,I*d,I cnt,DoF*dd,I dcnt){D r;
  SWITCHCALL;
  R r;
 }
 
 #if SY_64 || defined(__arm__)
-static float stdcallf(STDCALLF fp,I*d,I cnt,DoF*dd,I dcnt){float r;
+static float NOOPTIMIZE stdcallf(STDCALLF fp,I*d,I cnt,DoF*dd,I dcnt){float r;
 SWITCHCALL;
 R r;
 }  /* J64 float result */
-static float altcallf(ALTCALLF fp,I*d,I cnt,DoF*dd,I dcnt){float r;
+static float NOOPTIMIZE altcallf(ALTCALLF fp,I*d,I cnt,DoF*dd,I dcnt){float r;
   SWITCHCALL;
  R r;
 }
@@ -463,7 +743,7 @@ static CCT*jtcdload(J jt,CCT*cc,C*lib,C*proc){B ha=0;FARPROC f;HMODULE h;
  /* search path and case can cause us to reload the same dll         */
  if(cc->cc){C buf[SY_64?21:12];I k,n;
   n=strlen(proc);
-  CDASSERT(n&&n<sizeof(buf),DEBADFN);
+  CDASSERT(n&&n<(int)sizeof(buf),DEBADFN);
   k='_'==*proc?-strtoI(1+proc,0L,10):strtoI(proc,0L,10);
   CDASSERT(k&&'0'==*lib||0<=k&&'1'==*lib,DEBADFN);
   sprintf(buf,FMTI,k); if(0>k)*buf='_';
@@ -494,7 +774,7 @@ static CCT*jtcdload(J jt,CCT*cc,C*lib,C*proc){B ha=0;FARPROC f;HMODULE h;
   cc->h=h; ha=1;
  }
 #if SY_WIN32 && !SY_WINCE
- f=GetProcAddress(h,'#'==*proc?(LPCSTR)(I)atoi(proc+1):proc);    
+ f=GetProcAddress(h,'#'==*proc?(LPCSTR)(I)atoi(proc+1):(LPCSTR)proc);    
 #endif
 #if SY_WINCE
  f=GetProcAddress(h,tounibuf(proc));
@@ -627,7 +907,7 @@ static I*jtconvert0(J jt,I zt,I*v,I wt,C*u){D p,q;I k=0;S s;
   case CDT(INT,INT): *    v=*(I*)u; break;
   case CDT(INT,FL ):
    p=*(D*)u; q=jfloor(p);
-   if(p<IMIN*(1+jt->fuzz)||IMAX*(1+jt->fuzz)<p)R 0; 
+   if(p<IMIN*(1+jt->fuzz)||(D)IMAX*(1+jt->fuzz)<p)R 0; 
 #if SY_64
    if         (FEQ(p,q)){k=(I)q; *v=SGN(k)==SGN(q)?k:0>q?IMIN:IMAX;}
    else if(++q,FEQ(p,q)){k=(I)q; *v=SGN(k)==SGN(q)?k:0>q?IMIN:IMAX;}
@@ -639,58 +919,150 @@ static I*jtconvert0(J jt,I zt,I*v,I wt,C*u){D p,q;I k=0;S s;
  R v;
 }    /* convert a single atom. I from D code adapted from IfromD() in k.c */  
 
+// make one call to the DLL.
+// if cc->zbx is true, zv0 points to AAV(z) where z is the block that will hold the list of boxes that
+// will be the result of 15!:0.
 static B jtcdexec1(J jt,CCT*cc,C*zv0,C*wu,I wk,I wt,I wd){A*wv=(A*)wu,x,y,*zv;B zbx,lit,star;
     C c,cipt[NCDARGS],*u;FARPROC fp;float f;I cipcount=0,cipn[NCDARGS],*cipv[NCDARGS],cv0[2],
     data[NCDARGS*2],dcnt=0,fcnt=0,*dv,i,n,per,t,xn,xr,xt,*xv; DoF dd[NCDARGS];
+#if defined(__aarch64__)
+// parameter in stack is not fixed size
+ char *dvc;        // character pointer to data[]
+ int rcnt=0;       // next general purpose register number
+#define maxrcnt 8  // number of register for passing integral parameter
+#define maxdcnt 8  // number of simd register for passing float/double parameter
+#endif
  n=cc->n;
- CDASSERT(!n||wt&BOX||!(u=memchr(cc->star,C1,n)),DEPARM+256*(((B*)u)-cc->star));
+ if(n&&!(wt&BOX)){DO(n, CDASSERT(!cc->star[i],DEPARM+256*i));}
  zbx=cc->zbx; zv=1+(A*)zv0; dv=data; u=wu; xr=0;
- for(i=0;i<n;++i){
-  per=DEPARM+i*256; star=cc->star[i]; c=cc->tletter[i]; t=cdjtype(c);
+#if defined(__aarch64__)
+ dvc=maxrcnt*sizeof(I)+(char*)data;
+#endif
+ for(i=0;i<n;++i,++zv){  // for each input field
+#if SY_UNIX64 && defined(__x86_64__)
+  if(dv-data>=6&&dv-data<dcnt-2)dv=data+dcnt-2;
+#elif SY_UNIX64 && defined(__aarch64__)
+//  if(dcnt>8&&dvc-(char*)data==64)dvc=(char*)(data+dcnt);    /* v0 to v7 fully filled before x0 to x7 */
+#elif defined(C_CD_ARMHF)
+  if((fcnt>16||dcnt>16)&&dv-data==4)dv=data+MAX(fcnt,dcnt)-12;  /* v0 to v15 fully filled before x0 to x3 */
+#endif
+  per=DEPARM+i*256; star=cc->star[i]; c=cc->tletter[i]; t=cdjtype(c);  // c is type in the call, t is the J type for that.  star in the * qualifier
+   // should convert or store c as a bit for comp ease here
   if(wt&BOX){
-   x=WVR(i); xt=AT(x); xn=AN(x); xr=AR(x);
+   x=wv[i]; xt=AT(x); xn=AN(x); xr=AR(x);
    CDASSERT(!xr||star,per);         /* non-pointers must be scalars */
-   lit=star&&xt&LIT&&(c=='s'&&0==xn%2||c=='f'&&0==xn%4);
+   lit=star&&xt&LIT&&(c=='s'&&0==(xn&1)||c=='f'&&0==(xn&3));
    if(t&&t!=xt&&!(lit||star&&!xr&&xt&BOX)){x=cvt(xt=t,x); CDASSERT(x,per);}
-   xv=AV(x); if(zbx)*zv++=x;
+   xv=AV(x); if(zbx)*zv=x;
   }else{
    xv=convert0(t,cv0,wt,u); xt=t; u+=wk;
-   CDASSERT(xv,per); 
-   if(zbx){GA(y,t,1,0,0); MC(AV(y),xv,bp(t)); *zv++=y;}
+   CDASSERT(xv!=0,per);
+   if(zbx){GA(y,t,1,0,0); MC(AV(y),xv,bp(t)); *zv=y;}
   }
-  if(star&&!xr&&xt==BOX){           /* scalar boxed integer/boolean scalar is a pointer */
-   y=AAV0(x);
+  // now xv points to the actual arg data for arg i
+  // if wt&BOX only
+  if(star&&!xr&&xt&BOX){           /* scalar boxed integer/boolean scalar is a pointer */
+   y=AAV(x)[0];
    CDASSERT(!AR(y)&&AT(y)&B01+INT,per);
-   if(AT(y)&B01){CDASSERT(0==*BAV(y),per); *dv++=0;}else *dv++=*AV(y);
+#if defined(__aarch64__)
+   if(unlikely(AT(y)&B01)){CDASSERT(0==BAV(y)[0],per);
+   if(rcnt<maxrcnt) data[rcnt++]=0; else{
+    dvc=alignto(dvc,sizeof(void*)); *(I*)dvc=0; dvc+=sizeof(void*);}  // get nullptr or intptr, save in *dv
+   }else{
+   if(rcnt<maxrcnt) data[rcnt++]=AV(y)[0]; else{
+    dvc=alignto(dvc,sizeof(void*)); *(I*)dvc=AV(y)[0]; dvc+=sizeof(void*);}
+} // get nullptr or intptr, save in *dv
+#else
+   if(unlikely(AT(y)&B01)){CDASSERT(0==BAV(y)[0],per); *dv++=0;}else *dv++=AV(y)[0];  // get nullptr or intptr, save in *dv
+#endif
   }else if(star){
    CDASSERT(xr,per);                /* pointer can't point at scalar */
+#if defined(__aarch64__)
+   if(rcnt<maxrcnt) data[rcnt++]=(I)xv; else{
+   dvc=alignto(dvc,sizeof(void*));
+   *(I*)dvc=(I)xv; dvc+=sizeof(void*); /* pointer to J array memory     */
+   }
+#else
    *dv++=(I)xv;                     /* pointer to J array memory     */
+#endif
    CDASSERT(xt&LIT+C2T+INT+FL+CMPX,per);
    if(!lit&&(c=='s'||c=='f'||SY_64&&c=='i')){
     cipv[cipcount]=xv;              /* convert in place arguments */
-    cipn[cipcount]=xn; 
-    cipt[cipcount]=c; 
+    cipn[cipcount]=xn;
+    cipt[cipcount]=c;
     ++cipcount;
-  }}else switch(c){
-   case 'c': *dv++=*(C*)xv;  break;
-   case 'w': *dv++=*(S*)xv;  break;
-   case 's': *dv++=(S)*xv;   break;
-   case 'i': *dv++=(int)*xv; break;
-   case 'x': *dv++=*xv;      break;
+   }
+  }else if ('c'==c||'w'==c||'s'==c||'i'==c||'x'==c) { 
+   I iwd=0;
+   switch(c){      // boxed atom
+   case 'c': iwd=*(C*)xv;  break;
+   case 'w': iwd=*(US*)xv; break;
+   case 's': iwd=(S)*xv;   break;
+   case 'i': iwd=(int)*xv; break;
+   case 'x': iwd=*xv;      break;
+   }
+#if defined(__aarch64__)
+   if(rcnt<maxrcnt) data[rcnt++]=iwd; else{
+ #if defined(__APPLE__)
+    dvc=alignto(dvc,sizeof(I));
+    *(I*)dvc=iwd; // write extended result
+    dvc+=sizeof(I);
+ #else
+    dvc=alignto(dvc,sizeof(I));
+    *(I*)dvc=iwd; // write extended result
+    dvc+=sizeof(I);
+ #endif
+    }
+#else
+    *dv++=iwd;  // write extended result
+#endif
+  }else { 
+   switch(c){      // boxed atom
    case 'f':
 #if SY_MACPPC
           dd[dcnt++]=(float)*(D*)xv;
 #endif
-#if SY_64 && (SY_LINUX  || SY_MAC)
-     {f=(float)*(D*)xv; dd[dcnt]=0; *(float*)(dd+dcnt++)=f;}
+#if SY_UNIX64
+  #if defined(__PPC64__)
+     /* +1 put the float in low bits in dv, but dd has to be D */
+   #if C_LE
+     *dv=0; *(((float*)dv++))=(float)(dd[dcnt++]=*(D*)xv);
+   #else
+     *dv=0; *(((float*)dv++)+1)=(float)(dd[dcnt++]=*(D*)xv);
+   #endif
+  /* *dv=0; *(((float*)dv++)+1)=dd[dcnt++]=(float)*(D*)xv; */
+  #elif defined(__aarch64__)
+     {f=(float)*(D*)xv;
+      if (dcnt<maxdcnt){dd[dcnt]=0; *(float*)(dd+dcnt++)=f;}
+   #if defined(__APPLE__)
+      else {dvc=alignto(dvc,sizeof(float)); *(float*)dvc=f; dvc+=sizeof(float); }
+   #else
+      else {dvc=alignto(dvc,sizeof(I)); *(I*)dvc=0; *(float*)dvc=f; dvc+=sizeof(I); }
+   #endif
+     }
+  #elif defined(__x86_64__)
+     {f=(float)*(D*)xv; dd[dcnt]=0; *(float*)(dd+dcnt++)=f;
+      if(dcnt>8){ /* push the 9th F and more on to stack (must be the 7th I onward) */
+        if(dv-data>=6)*(float*)(dv++)=f;else *(float*)(data+dcnt-3)=f;}}
+  #endif
 #else
-#ifdef C_CD_ARMHF
-             f=(float)*(D*)xv; dd[fcnt]=0; *(float*)(dd+fcnt++)=f;
-             if ((0==fcnt%2) && (fcnt<dcnt)) fcnt=dcnt;
-             if ((1==fcnt%2) && (fcnt>dcnt)) dcnt=fcnt+1;
-#else
+  #ifdef C_CD_ARMHF
+            {f=(float)*(D*)xv;
+             if(fcnt<16&&dcnt<=16){
+               dd[fcnt]=0; *(float*)(dd+fcnt++)=f;
+               if ((0==(fcnt&1)) && (fcnt<dcnt)) fcnt=dcnt;
+               if ((1==(fcnt&1)) && (fcnt>dcnt)) dcnt=fcnt+1;
+             }else{
+               if(dv-data>=4){
+                 *(float*)(dv++)=f;
+                 fcnt=(dv-data)+12;
+               }else{
+                 fcnt=MAX(fcnt,dcnt);
+                 *(((float*)data)+fcnt++ -12)=f;
+             }}}
+  #else
              f=(float)*(D*)xv; *dv++=*(int*)&f;
-#endif
+  #endif
 #endif
              break;
    case 'd':
@@ -698,15 +1070,36 @@ static B jtcdexec1(J jt,CCT*cc,C*zv0,C*wu,I wk,I wt,I wd){A*wv=(A*)wu,x,y,*zv;B 
              dd[dcnt++]=*(D*)xv;
 #endif
 #if SY_UNIX64
+#if defined(__PPC64__)
+             /* always need to increment dv, the contents get used from the 14th D */
+             *(D*)dv++=dd[dcnt++]=*(D*)xv;
+#elif defined(__aarch64__)
+             if(dcnt<maxdcnt) dd[dcnt++]=*(D*)xv;
+             else { dvc=alignto(dvc,sizeof(D)); *(I*)dvc=*xv; dvc+=sizeof(D); }
+#elif defined(__x86_64__)
              dd[dcnt++]=*(D*)xv;
+             if(dcnt>8){ /* push the 9th D and more on to stack (must be the 7th I onward) */
+               if(dv-data>=6)*dv++=*xv;else data[dcnt-3]=*xv;}
+#endif
 #endif
 #if !SY_UNIX64
 #ifdef C_CD_ARMHF
-             if (dcnt==fcnt) fcnt+=2;
-             *(D*)(dd+dcnt++)= *(D*)xv; dcnt++;
+            {if(dcnt<16){
+               if (dcnt==fcnt) fcnt+=2;
+               *(D*)(dd+dcnt++)= *(D*)xv; dcnt++;
+             }else{
+               if(dv-data>=4){
+                 if((dv-data)&1)dv++;
+                 *(D*)(dv++)=*(D*)xv; dv++;
+                 dcnt=(dv-data)+12;
+               }else{
+                 dcnt=MAX(fcnt,dcnt);
+                 dcnt = (dcnt+1)&-2;
+                 *(D*)(data+dcnt++ -12)=*(D*)xv; dcnt++;
+             }}}
 #else
 #ifdef C_CD_ARMEL
-             if((data-dv)%2) *dv++=0;   /* 8-byte alignment for double */
+             if((data-dv)&1) *dv++=0;   /* 8-byte alignment for double */
 #endif
              *dv++=xv[0];
 #if !SY_64
@@ -714,19 +1107,29 @@ static B jtcdexec1(J jt,CCT*cc,C*zv0,C*wu,I wk,I wt,I wd){A*wv=(A*)wu,x,y,*zv;B 
 #endif
 #endif
 #endif
- }}
+  }
+ }
+ }  // end of loop for each argument
 #ifdef C_CD_ARMHF
- CDASSERT(16>=fcnt,DELIMIT);
- CDASSERT(16>=dcnt,DELIMIT);
-#elif SY_UNIX64
- CDASSERT(8>=dcnt,DELIMIT);
+// CDASSERT(16>=fcnt,DELIMIT);
+// CDASSERT(16>=dcnt,DELIMIT);
+ if((fcnt>16||dcnt>16)&&dv-data<=4)dv=data+MAX(fcnt,dcnt)-12;  /* update dv to point to the end */
+#elif SY_UNIX64 && defined(__x86_64__)
+ if(dcnt>8&&dv-data<=6)dv=data+dcnt-2; /* update dv to point to the end */
+#elif SY_UNIX64 && defined(__aarch64__)
+ if(rcnt==maxrcnt||dcnt==8) dv=(I*)alignto(dvc,sizeof(I));   /* update (char*) dvc to (I*) dv , 8 byte aligned but will be 16 aligned during stdcalli etc */
+ else dv=data+rcnt;                                          /* stack memory not used dv to point to the end of data */
+#elif !SY_64
+ CDASSERT(dv-data<=NCDARGS,DECOUNT); /* D needs 2 I args in 32bit system, check it again. */
 #endif
 
  DO(cipcount, convertdown(cipv[i],cipn[i],cipt[i]););  /* convert I to s and int and d to f as required */
+ // allocate the result area
  if(zbx){GA(x,cc->zt,1,0,0); xv=AV(x); *(A*)zv0=x;}else xv=(I*)zv0;
- if('1'==cc->cc){fp=(FARPROC)*((I)cc->fp+(I*)*(I*)*data); CDASSERT(fp,DEBADFN);}else fp=cc->fp;
- docall(fp, data, dv-data, dd, dcnt, cc->zl, xv, cc->alternate);
-    
+ // get the address of the function
+ if('1'==cc->cc){fp=(FARPROC)*((I)cc->fp+(I*)*(I*)*data); CDASSERT(fp!=0,DEBADFN);}else fp=cc->fp;
+ docall(fp, data, dv-data, dd, dcnt, cc->zl, xv, cc->alternate);  // call the function, set the result
+
  DO(cipcount, convertup(cipv[i],cipn[i],cipt[i]);); /* convert s and int to I and f to d as required */
 #if SY_WIN32
  t= GetLastError();
@@ -813,7 +1216,7 @@ F1(jtcderx){I t;C buf[1024];
 #if SYS&SYS_UNIX
  {const char *e = dlerror(); strcpy (buf, e?e:"");}
 #endif
- R link(sc(t),cstr(buf));
+ R jlink(sc(t),cstr(buf));
 }    /* 15!:11  GetLastError information */
 
 F1(jtmema){I k; RE(k=i0(w)); R sc((I)MALLOC(k));} /* ce */
@@ -867,9 +1270,9 @@ F1(jtdllsymset){RZ(w); R (A)i0(w);}      /* do some validation here */
      /* 15!:7 */
 
 /* dll callback routines */
-J static cbjt; /* callbacks require jt and can only use the one */
+static J cbjt; /* callbacks require jt and can only use the one */
 
-I static cbold(I n,I *pi){char d[256],*p;A r;I i;
+static I cbold(I n,I *pi){char d[256],*p;A r;I i;
  J jt=cbjt;
  strcpy(d, "cdcallback ");
  p=d+strlen(d);
@@ -883,7 +1286,7 @@ I static cbold(I n,I *pi){char d[256],*p;A r;I i;
  R 0;
 }
 
-I static cbnew(){A r;
+static I cbnew(){A r;
  J jt=cbjt;
  r=exec1(cstr("cdcallback''"));
  if(!r||AR(r)) R 0;
@@ -898,45 +1301,45 @@ int x15lseek32(int fh,int off, int type){R (int)lseek(fh,(off_t)off,type);}// ma
 
 /* start of code generated by J script x15_callback.ijs */
 #define CBTYPESMAX 10 /* result and 9 args */
-I static cbx[CBTYPESMAX-1];
+static I cbx[CBTYPESMAX-1];
 I cbxn=0;
 
-I static CALLBACK cb0(){I x[]={0};R cbold(0,x);}
-I static CALLBACK cb1(I a){I x[]={a};R cbold(1,x);}
-I static CALLBACK cb2(I a,I b){I x[]={a,b};R cbold(2,x);}
-I static CALLBACK cb3(I a,I b,I c){I x[]={a,b,c};R cbold(3,x);}
-I static CALLBACK cb4(I a,I b,I c,I d){I x[]={a,b,c,d};R cbold(4,x);}
-I static CALLBACK cb5(I a,I b,I c,I d,I e){I x[]={a,b,c,d,e};R cbold(5,x);}
-I static CALLBACK cb6(I a,I b,I c,I d,I e,I f){I x[]={a,b,c,d,e,f};R cbold(6,x);}
-I static CALLBACK cb7(I a,I b,I c,I d,I e,I f,I g){I x[]={a,b,c,d,e,f,g};R cbold(7,x);}
-I static CALLBACK cb8(I a,I b,I c,I d,I e,I f,I g,I h){I x[]={a,b,c,d,e,f,g,h};R cbold(8,x);}
-I static CALLBACK cb9(I a,I b,I c,I d,I e,I f,I g,I h,I i){I x[]={a,b,c,d,e,f,g,h,i};R cbold(9,x);}
-I static cbv[]={(I)&cb0,(I)&cb1,(I)&cb2,(I)&cb3,(I)&cb4,(I)&cb5,(I)&cb6,(I)&cb7,(I)&cb8,(I)&cb9};
+static I CALLBACK cb0(){I x[]={0};R cbold(0,x);}
+static I CALLBACK cb1(I a){I x[]={a};R cbold(1,x);}
+static I CALLBACK cb2(I a,I b){I x[]={a,b};R cbold(2,x);}
+static I CALLBACK cb3(I a,I b,I c){I x[]={a,b,c};R cbold(3,x);}
+static I CALLBACK cb4(I a,I b,I c,I d){I x[]={a,b,c,d};R cbold(4,x);}
+static I CALLBACK cb5(I a,I b,I c,I d,I e){I x[]={a,b,c,d,e};R cbold(5,x);}
+static I CALLBACK cb6(I a,I b,I c,I d,I e,I f){I x[]={a,b,c,d,e,f};R cbold(6,x);}
+static I CALLBACK cb7(I a,I b,I c,I d,I e,I f,I g){I x[]={a,b,c,d,e,f,g};R cbold(7,x);}
+static I CALLBACK cb8(I a,I b,I c,I d,I e,I f,I g,I h){I x[]={a,b,c,d,e,f,g,h};R cbold(8,x);}
+static I CALLBACK cb9(I a,I b,I c,I d,I e,I f,I g,I h,I i){I x[]={a,b,c,d,e,f,g,h,i};R cbold(9,x);}
+static I cbv[]={(I)&cb0,(I)&cb1,(I)&cb2,(I)&cb3,(I)&cb4,(I)&cb5,(I)&cb6,(I)&cb7,(I)&cb8,(I)&cb9};
 
-I static CALLBACK cbx0(){cbxn=0;R cbnew();}
-I static CALLBACK cbx1(I a){cbxn=1;cbx[0]=a;R cbnew();}
-I static CALLBACK cbx2(I a,I b){cbxn=2;cbx[0]=a;cbx[1]=b;R cbnew();}
-I static CALLBACK cbx3(I a,I b,I c){cbxn=3;cbx[0]=a;cbx[1]=b;cbx[2]=c;R cbnew();}
-I static CALLBACK cbx4(I a,I b,I c,I d){cbxn=4;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;R cbnew();}
-I static CALLBACK cbx5(I a,I b,I c,I d,I e){cbxn=5;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;R cbnew();}
-I static CALLBACK cbx6(I a,I b,I c,I d,I e,I f){cbxn=6;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;R cbnew();}
-I static CALLBACK cbx7(I a,I b,I c,I d,I e,I f,I g){cbxn=7;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;R cbnew();}
-I static CALLBACK cbx8(I a,I b,I c,I d,I e,I f,I g,I h){cbxn=8;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;cbx[7]=h;R cbnew();}
-I static CALLBACK cbx9(I a,I b,I c,I d,I e,I f,I g,I h,I i){cbxn=9;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;cbx[7]=h;cbx[8]=i;R cbnew();}
-I static cbvx[]={(I)&cbx0,(I)&cbx1,(I)&cbx2,(I)&cbx3,(I)&cbx4,(I)&cbx5,(I)&cbx6,(I)&cbx7,(I)&cbx8,(I)&cbx9};
+static I CALLBACK cbx0(){cbxn=0;R cbnew();}
+static I CALLBACK cbx1(I a){cbxn=1;cbx[0]=a;R cbnew();}
+static I CALLBACK cbx2(I a,I b){cbxn=2;cbx[0]=a;cbx[1]=b;R cbnew();}
+static I CALLBACK cbx3(I a,I b,I c){cbxn=3;cbx[0]=a;cbx[1]=b;cbx[2]=c;R cbnew();}
+static I CALLBACK cbx4(I a,I b,I c,I d){cbxn=4;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;R cbnew();}
+static I CALLBACK cbx5(I a,I b,I c,I d,I e){cbxn=5;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;R cbnew();}
+static I CALLBACK cbx6(I a,I b,I c,I d,I e,I f){cbxn=6;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;R cbnew();}
+static I CALLBACK cbx7(I a,I b,I c,I d,I e,I f,I g){cbxn=7;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;R cbnew();}
+static I CALLBACK cbx8(I a,I b,I c,I d,I e,I f,I g,I h){cbxn=8;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;cbx[7]=h;R cbnew();}
+static I CALLBACK cbx9(I a,I b,I c,I d,I e,I f,I g,I h,I i){cbxn=9;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;cbx[7]=h;cbx[8]=i;R cbnew();}
+static I cbvx[]={(I)&cbx0,(I)&cbx1,(I)&cbx2,(I)&cbx3,(I)&cbx4,(I)&cbx5,(I)&cbx6,(I)&cbx7,(I)&cbx8,(I)&cbx9};
 
 #if SY_WIN32 
-I static _cdecl cbxalt0(){cbxn=0;R cbnew();}
-I static _cdecl cbxalt1(I a){cbxn=1;cbx[0]=a;R cbnew();}
-I static _cdecl cbxalt2(I a,I b){cbxn=2;cbx[0]=a;cbx[1]=b;R cbnew();}
-I static _cdecl cbxalt3(I a,I b,I c){cbxn=3;cbx[0]=a;cbx[1]=b;cbx[2]=c;R cbnew();}
-I static _cdecl cbxalt4(I a,I b,I c,I d){cbxn=4;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;R cbnew();}
-I static _cdecl cbxalt5(I a,I b,I c,I d,I e){cbxn=5;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;R cbnew();}
-I static _cdecl cbxalt6(I a,I b,I c,I d,I e,I f){cbxn=6;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;R cbnew();}
-I static _cdecl cbxalt7(I a,I b,I c,I d,I e,I f,I g){cbxn=7;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;R cbnew();}
-I static _cdecl cbxalt8(I a,I b,I c,I d,I e,I f,I g,I h){cbxn=8;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;cbx[7]=h;R cbnew();}
-I static _cdecl cbxalt9(I a,I b,I c,I d,I e,I f,I g,I h,I i){cbxn=9;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;cbx[7]=h;cbx[8]=i;R cbnew();}
-I static cbvxalt[]={(I)&cbxalt0,(I)&cbxalt1,(I)&cbxalt2,(I)&cbxalt3,(I)&cbxalt4,(I)&cbxalt5,(I)&cbxalt6,(I)&cbxalt7,(I)&cbxalt8,(I)&cbxalt9};
+static I _cdecl cbxalt0(){cbxn=0;R cbnew();}
+static I _cdecl cbxalt1(I a){cbxn=1;cbx[0]=a;R cbnew();}
+static I _cdecl cbxalt2(I a,I b){cbxn=2;cbx[0]=a;cbx[1]=b;R cbnew();}
+static I _cdecl cbxalt3(I a,I b,I c){cbxn=3;cbx[0]=a;cbx[1]=b;cbx[2]=c;R cbnew();}
+static I _cdecl cbxalt4(I a,I b,I c,I d){cbxn=4;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;R cbnew();}
+static I _cdecl cbxalt5(I a,I b,I c,I d,I e){cbxn=5;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;R cbnew();}
+static I _cdecl cbxalt6(I a,I b,I c,I d,I e,I f){cbxn=6;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;R cbnew();}
+static I _cdecl cbxalt7(I a,I b,I c,I d,I e,I f,I g){cbxn=7;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;R cbnew();}
+static I _cdecl cbxalt8(I a,I b,I c,I d,I e,I f,I g,I h){cbxn=8;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;cbx[7]=h;R cbnew();}
+static I _cdecl cbxalt9(I a,I b,I c,I d,I e,I f,I g,I h,I i){cbxn=9;cbx[0]=a;cbx[1]=b;cbx[2]=c;cbx[3]=d;cbx[4]=e;cbx[5]=f;cbx[6]=g;cbx[7]=h;cbx[8]=i;R cbnew();}
+static I cbvxalt[]={(I)&cbxalt0,(I)&cbxalt1,(I)&cbxalt2,(I)&cbxalt3,(I)&cbxalt4,(I)&cbxalt5,(I)&cbxalt6,(I)&cbxalt7,(I)&cbxalt8,(I)&cbxalt9};
 #endif
 /* end of code generated by J script x15_callback.ijs */
 
@@ -970,7 +1373,7 @@ F1(jtcallback){
  {
   I k;
   RE(k=i0(w));
-  ASSERT(k>=0&&k<sizeof(cbv)/SZI, EVINDEX);
+  ASSERT(k>=0&&k<(int)sizeof(cbv)/SZI, EVINDEX);
   R sc(cbv[k]);
  }
 }    /* 15!:13 */
@@ -990,5 +1393,81 @@ F1(jtcallbackx){
 F1(jtnfeoutstr){I k;
  RE(k=i0(w));
  ASSERT(0==k,EVDOMAIN);
- R cstr(jt->mtyostr?jt->mtyostr:"");
+ R cstr(jt->mtyostr?jt->mtyostr:(C*)"");
 } /* 15!:18 return last jsto output */
+
+F1(jtcddlopen){HMODULE h;
+ ASSERT(LIT&AT(w),EVDOMAIN);  // w must be a literal string or atom
+ ASSERT(1>=AR(w),EVRANK);
+ if(AN(w)){  // w is nonnull
+C*lib=CAV(str0(w));
+#ifdef _WIN32
+ wchar_t wlib[_MAX_PATH];
+ MultiByteToWideChar(CP_UTF8,0,lib,1+(int)strlen(lib),wlib,_MAX_PATH);
+ h=LoadLibraryW(wlib);
+#else
+#if defined(__wasm__)
+ CDASSERT(0,DEBADLIB);
+#else
+ h=dlopen((*lib)?lib:0,RTLD_LAZY);
+#endif
+#endif
+ }else{  // w is empty - get handle for current module
+#ifdef _WIN32
+ h=GetModuleHandle(NULL);
+#else
+#if defined(__wasm__)
+ CDASSERT(0,DEBADLIB);
+#else
+ h=dlopen(0,RTLD_LAZY);
+#endif
+#endif
+ }
+R sc((I)(intptr_t)h);
+}    /* 15!:20 return library handle */
+
+F2(jtcddlsym){C*proc;FARPROC f;HMODULE h;
+ ASSERT(LIT&AT(w),EVDOMAIN);  // w must be nonempty byte string
+ ASSERT(1>=AR(w),EVRANK);
+ ASSERT(AN(w),EVLENGTH);
+ proc=CAV(str0(w));
+ h=(HMODULE)i0(a);  // a must be an atomiic integer
+#ifdef _WIN32
+ f=GetProcAddress(h,(LPCSTR)proc);
+#else
+#if defined(__wasm__)
+ CDASSERT(0,DEBADLIB);
+#else
+ f=(FARPROC)dlsym(h,proc);
+#endif
+/*
+ char *error;
+ if(!f){
+  if ((error = dlerror()) != NULL)  {
+   fprintf(stderr, "%s\n", error);
+  }
+ }
+*/
+#endif
+ R sc((I)(intptr_t)f);
+}    /* 15!:21 return proc address */
+
+F1(jtcddlclose){HMODULE h;I rc;
+ h=(HMODULE)i0(w);
+#ifdef _WIN32
+ rc= !FREELIB(h);       /* FreeLibrary return non-zero on success */
+#else
+ rc= !!FREELIB(h);      /* dlcose return zero on success */
+#endif
+R sc(!rc);   /* return one on success */
+}    /* 15!:22 close library handle */
+
+F1(jtcdq){I rc;
+ ASSERTMTV(w); 
+#if defined(__wasm__)
+ R sc(0);
+#else
+ R sc(1);
+#endif
+}    /* 15!:23 query 15!:0 availability */
+

@@ -1,3 +1,4 @@
+prolog './g0.ijs'
 NB. handling -0 (-0 on some systems) ------------------------------------
 
 test=: 3 : 0
@@ -296,3 +297,5 @@ g =: 3: 4: 5:
 4!:55 ;:'mac nine one rk seven six test three tr two x z zero '
 
 
+
+epilog''

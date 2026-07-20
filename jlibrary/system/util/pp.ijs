@@ -16,13 +16,13 @@ arguments=: 'm n u v x y'
 t=. '= < <. <: > >. >: _: + +. +: * *. *: - -. -: % %. %: ^ ^.'
 t=. t,' $ $. $: ~. ~: | |. |: , ,. ,: ; ;: # #. #: ! /: \: [ [: ]'
 t=. t,' { {. {: {:: }. }: ". ": ? ?.'
-t=. t,' A. c. C. e. E. i. i: I. j. L. o. p. p: q: r. s: u: x:'
+t=. t,' A. c. C. e. E. i. i: I. j. L. o. p. p: q: r. s: u: x: Z:'
 t=. t,' _9: _8: _7: _6: _5: _4: _3: _2: _1:'
 t=. t,' 0: 1: 2: 3: 4: 5: 6: 7: 8: 9:'
 verbs=: t
 
 t=. '^: . .. .: :  :. :: ;. !. !: " ` `: @ @. @: & &. &: &.:'
-t=. t,' d. D. D: H. L: S: T.'
+t=. t,' d. D. D: F. F.. F.: F: F:. F:: H. L: S: T.'
 conjunctions=: t
 
 t=. 'assert. break. case. catch. catchd. catcht. continue. do.'
@@ -61,9 +61,8 @@ noun \: 0
 noun \define
 )
 findfor=: 'for_'&-: @ (4&{.) *. ('.'&=) @ {:
-info=: mbinfo @ ('Lint'&;)
+info=: sminfo @ ('Lint'&;)
 lastones=: > (}. , 0:)
-tolist=: }.@;@:(LF&,@,@":&.>)
 findcontrols=: (1: e. (CONTS"_ (1: e. E.) &> <)) &>
 firstones=: > (0 , }:)
 maskselectside=: +./\ *. +./\.
@@ -104,9 +103,9 @@ if. -. 'NB. ' -: 4 {. ndx }. line do.
 end.
 pre=. ndx {. line
 len=. 57 - +/ 1 + 3 * pre = TAB
-if. (,'=') -: ~. (4+ndx) }. line do.
+if. (2<#s) *. (,'=') -: ~. s=. (4+ndx) }. line do.
   line=. pre,'NB. ',len#'='
-elseif. (,'-') -: ~. (4+ndx) }. line do.
+elseif. (2<#s) *. (,'-') -: ~. s=. (4+ndx) }. line do.
   line=. pre,'NB. ',len#'-'
 end.
 line
@@ -114,6 +113,7 @@ line
 dellb=: #~ +./\ @: -. @ e.&(' ',TAB)
 deltb=: #~ +./\.@: -. @ e.&(' ',TAB)
 indent1=: 3 : 0
+if. 0=L.y do. 0 return. end.
 tok=. y
 x=. I. findfor &> tok
 tok=. (<'for.') x} tok
@@ -141,6 +141,7 @@ masknoun1=: 3 : 0
 if. 0=#y do. 0 return. end.
 if. 1 e. NOUNDEFINE 1&e.@E. &> <,y do. 1 return. end.
 if. (<'Note') ~: {.y do. 0 return. end.
+if. (,<'Note') -: y do. 1 return. end.
 if. -. (#y) e. 2 3 do. 0 return. end.
 ('NB.'-:3{.2 pick y,<'NB.') > (1{y) e. SystemDefs
 )
@@ -170,7 +171,7 @@ txt=. msk#y
 com=. (-.msk)#y
 
 if. #txt do.
-  tok=. words txt
+  tok=. words1 txt
   if. tok -: 0 do. return. end.
   if. #tok do.
     in=. indent1 tok
@@ -189,7 +190,8 @@ end.
 
 in;bgn;<<txt,com
 )
-words=: 7&u:&.>@:;:@(8&u:) :: 0:
+words=: 7&u:&.>@:;:@(8&u:) :: ]`]@.(2 131072 262144 -.@e.~ 3!:0)
+words1=: 7&u:&.>@:;:@(8&u:) :: 0:`0:@.(2 131072 262144 -.@e.~ 3!:0)
 f=. #~ (=&' ') *: 1: |. notquotes *. '=:'&E. +. '=.'&E.
 noblankbefore=: f f. ^: _
 
@@ -228,9 +230,9 @@ else.
 end.
 )
 pplint=: 3 : 0
-dat=. ucp y
+dat=. y
 
-'fmt wid rms exp sel'=. Format_j_
+'fmt wid rms exp sel blk'=. 6 {. Format_j_
 if. wid=0 do. spc=. TAB else. spc=. wid#' ' end.
 dat=. dat -. 26{a.
 if. 0 = #dat do. return. end.
@@ -257,8 +259,13 @@ if. (<0) e. indat do.
   else.
     msg=. 'Could not parse line'
   end.
-  lin;msg
-  return.
+  if. 2>fmt do.
+    lin;msg return.
+  else.
+    txt=. dat{~ g=. I.indat=<0
+    indat=. ((0;0)&,@<@<@]&.> txt) g} indat
+    echo lin;msg
+  end.
 end.
 
 'in begin dat'=. |: > indat
@@ -277,11 +284,15 @@ if. 0 ~: +/ in do.
       msg=. 'Mismatched control words'
     end.
   end.
-  lin;msg return.
+  if. 2>fmt do.
+    lin;msg return.
+  else.
+    echo lin;msg
+  end.
 end.
 res=. ppval dat
-if. -. res -: 0 do. return. end.
-if. -. fmt do. '' return. end.
+if. -. res -: 0 do. if. 2>fmt do. return. else. echo res end. end.
+if. 0=fmt do. '' return. end.
 in=. +/\ in
 ins=. _1 |. in
 ins=. 0 >. ins - begin
@@ -297,17 +308,21 @@ if. exp do.
   msk=. (dat=<,')') < maskexps dat
   dat=. msk (([ # spc"_),]) each dat
 end.
+if. -.blk do.
+  ndx=. I. (maskexps dat) *. ' ' *./ . = &> dat
+  dat=. (<'') ndx} dat
+end.
 dat=. commentline each dat
 dat=. nouns nounx } dat
 dat=. ; dat ,each LF
 dat=. (- -.iftermLF) }. dat
 
-utf8 dat
+dat
 )
 ppval=: 3 : 0
 dat=. words each y
 pos=. <: +/\ # &> dat
-dat=. ; dat
+dat=. ; boxxopen&.> dat
 bgn=. (dat e. CONTROLB) +. findfor &> dat
 end=. dat = <'end.'
 lvl=. +/\bgn-end
@@ -344,7 +359,10 @@ case. 'if.' do.
   b=. 0 = +/ dat e. CONTROLM -. ;: 'else. elseif. do.'
   e0=. +/ dat = <'else.'
   e1=. +/ dat = <'elseif.'
-  b=. b *. (2 > e0) *. 0 = e0 *. e1
+  b=. b *. e0 <: 1
+  if. e0 *. e1 do.
+    b=. b *. *./ (dat i. <'else.') > I. dat = <'elseif.'
+  end.
   b=. b *. (+/ dat = <'do.') = 1 + e1
   if. e1 do.
     ix=. I. dat = <'elseif.'
@@ -381,4 +399,3 @@ if. 0=L.res do. '0',res return. end.
 'line msg'=. res
 '1',(":line),' ',msg
 )
-

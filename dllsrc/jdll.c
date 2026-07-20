@@ -21,8 +21,8 @@
 // 10. run jreg with new tlb files
 
 #include <windows.h>
-#include "..\jsrc\j.h"
-#include "..\jsrc\jlib.h"
+#include "../jsrc/j.h"
+#include "../jsrc/jlib.h"
 
 void wtom(US* src, I srcn, UC* snk);
 int valid(C* psrc, C* psnk);
@@ -58,9 +58,9 @@ void toasc(WCHAR* src, C* sink)
 	*sink++=0;
 }
 
-int _stdcall JBreak(J jt){ return 0;}
+CDPROC int _stdcall JBreak(J jt){ return 0;}
 
-int _stdcall JIsBusy(J jt){	return 0;}
+CDPROC int _stdcall JIsBusy(J jt){	return 0;}
 
 #if !SY_WINCE
 
@@ -87,7 +87,7 @@ static int a2v (J jt, A a, VARIANT *v, int dobstrs)
 		  kw=tounin((C*)pi, k, wstr, k);
 		  bstr = SysAllocStringLen(wstr, (UINT)kw);
     } else
-		  bstr = SysAllocStringLen((C*)pi, (UINT)k);
+		  bstr = SysAllocStringLen((WCHAR*)pi, (UINT)k);
 		v->vt=VT_BSTR;
 		v->bstrVal=bstr;
     if (LIT==t) free(wstr);
@@ -190,7 +190,7 @@ static int a2v (J jt, A a, VARIANT *v, int dobstrs)
 		A* ap;
 		VARIANT *v;
 
-		for (ap=AAV(a), SafeArrayAccessData(psa, &v);
+		for (ap=AAV(a), SafeArrayAccessData(psa, (void **)&v);
 			 ap<AAV(a)+k;
 			 ++ap, ++v)
 		{
@@ -241,12 +241,12 @@ int jget(J jt, C* name, VARIANT* v, int dobstr)
 	return er;
 }
 
-int _stdcall JGet(J jt, C* name, VARIANT* v)
+CDPROC int _stdcall JGet(J jt, C* name, VARIANT* v)
 {
 	return jget(jt, name, v, 0); // no bstrs
 }
 
-int _stdcall JGetB(J jt, C* name, VARIANT* v)
+CDPROC int _stdcall JGetB(J jt, C* name, VARIANT* v)
 {
 	return jget(jt, name, v, 1); // do bstrs
 }
@@ -325,7 +325,7 @@ static A v2a(J jt, VARIANT* v, int dobstrs)
 			r = 0;
 		}
 		RE(a=ga(BOX, k, r, (I*)&shape));
-		ASSERT(S_OK==SafeArrayAccessData(psa, &pv),EVFACE);
+		ASSERT(S_OK==SafeArrayAccessData(psa, (void **)&pv),EVFACE);
 		boxes = AAV(a);
 		while(k--)
 		{
@@ -371,7 +371,7 @@ static A v2a(J jt, VARIANT* v, int dobstrs)
 	case VT_I4 | VT_ARRAY:
 		RE(a=ga(INT, k, r, (I*)&shape));
 #if SY_64
-		pint32src = (long*)psa->pvData;
+		pint32src = (int*)psa->pvData;
 		pintsnk = AV(a);
 		while(k--)
 			*pintsnk++ = *pint32src++;
@@ -448,7 +448,7 @@ static A v2a(J jt, VARIANT* v, int dobstrs)
 	}
 	return a;
 }
-#endif wince
+#endif // wince
 
 // copy non-nulls only
 static void touninx(C* src, WCHAR* sink, UI n)
@@ -521,7 +521,7 @@ void oleoutput(J jt, I n, char* s)
 	else
 	{
 		I len = SysStringLen(jt->opbstr);
-		SysReAllocStringLen(&(BSTR)jt->opbstr, 0, (UINT)(len+n+k));
+		SysReAllocStringLen((BSTR*)&jt->opbstr, 0, (UINT)(len+n+k));
 		fixoutput(s, (BSTR)jt->opbstr + len, n);
 	}
 }
@@ -543,17 +543,17 @@ int jsetx(J jt, C* name, VARIANT* v, int dobstrs)
 	return er;
 }
 
-int _stdcall JSet(J jt, C* name, VARIANT* v)
+CDPROC int _stdcall JSet(J jt, C* name, VARIANT* v)
 {
 	return jsetx(jt, name, v, 0);	// no bstrs
 }
 
-int _stdcall JSetB(J jt, C* name, VARIANT* v)
+CDPROC int _stdcall JSetB(J jt, C* name, VARIANT* v)
 {
 	return jsetx(jt, name, v, 1);	// do bstrs
 }
 
-int _stdcall JErrorText(J jt, long ec, VARIANT* v)
+CDPROC int _stdcall JErrorText(J jt, long ec, VARIANT* v)
 {
 	C* p;
 	SAFEARRAY FAR* psa; 
@@ -572,15 +572,15 @@ int _stdcall JErrorText(J jt, long ec, VARIANT* v)
 	return 0;
 }
 
-int _stdcall JClear(J jt){ return 0;};
+CDPROC int _stdcall JClear(J jt){ return 0;};
 
-int _stdcall JTranspose(J jt, long b)
+CDPROC int _stdcall JTranspose(J jt, long b)
 {
 	jt->transposeflag = b;
 	return 0;
 }
 
-int _stdcall JErrorTextB(J jt, long ec, VARIANT* v)
+CDPROC int _stdcall JErrorTextB(J jt, long ec, VARIANT* v)
 {
 	C* p;
 	BSTR bstr;
@@ -593,7 +593,7 @@ int _stdcall JErrorTextB(J jt, long ec, VARIANT* v)
 	R 0;
 }
 
-int _stdcall JDoR(J jt, C* p, VARIANT* v)
+CDPROC int _stdcall JDoR(J jt, C* p, VARIANT* v)
 {
 	int e;
 	
@@ -605,7 +605,7 @@ int _stdcall JDoR(J jt, C* p, VARIANT* v)
 	v->bstrVal=jt->opbstr;
 	R e;
 }
-#endif wince
+#endif // wince
 
 // previously in separate file when jdll.c and jcom.c both exisited
 char modulepath[_MAX_PATH];
@@ -699,7 +699,7 @@ int WINAPI DllMain (HINSTANCE hDLL, DWORD dwReason, LPVOID lpReserved)
 return TRUE;
 }
 
-J _stdcall JInit()
+CDPROC J _stdcall JInit()
 {
 	JST* jt;
 
@@ -714,7 +714,7 @@ J _stdcall JInit()
 }
 
 // clean up at the end of a J instance
-int _stdcall JFree(J jt)
+CDPROC int _stdcall JFree(J jt)
 {
 
 	if(!jt) return 0;

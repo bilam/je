@@ -1,3 +1,4 @@
+prolog './giph.ijs'
 NB. prehashed i. family of functions ------------------------------------
 
 g=: 4 : 0
@@ -114,3 +115,4 @@ f=: x&i.
 
 
  
+epilog''

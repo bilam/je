@@ -196,7 +196,7 @@ A jtgconj(J jt,A a,A w,C id){A hs,y;B na;I n;
  ASSERT(1>=AR(y),EVRANK);
  ASSERT(2==n||3==n,EVLENGTH);
  ASSERT(BOX&AT(y),EVDOMAIN);
- RZ(hs=fxeach(3==n?y:link(scc(CLEFT),y)));
+ RZ(hs=fxeach(3==n?y:jlink(scc(CLEFT),y)));
  R fdef(id,VERB, na?jtgcl1:jtgcr1,na?jtgcl2:jtgcr2, a,w,hs, na?VGERL:VGERR, RMAX,RMAX,RMAX);
 }
 

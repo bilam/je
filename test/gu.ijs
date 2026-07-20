@@ -1,3 +1,4 @@
+prolog './gu.ijs'
 NB. Unicode 2-byte characters -------------------------------------------
 
 UTYPE=: 131072   NB. type code for Unicode
@@ -363,7 +364,7 @@ x -: 1!:1 <8 u: u: 'asdf'
 'abcde' -: 1!:11 (8 u: 'asdf');(#x),5
 
 t=: 1!:21 <8 u: u: 'asdf'
-+./@('asdf'&E.)&> {:"1 (1!:20) ''
++./ +./@('asdf'&E.)&> {:"1 (1!:20) ''
 1!:22 t
 
 1!:55 <8 u: u: 'asdf'
@@ -557,3 +558,5 @@ y=: u: x
 4!:55 ;:'domerr f g i j k lr sq t UTYPE x y z'
 
 
+
+epilog''

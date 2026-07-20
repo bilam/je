@@ -366,7 +366,7 @@ XF1(jtxfact){I n;
 static XF2(jtxbinp){PROLOG;D m;I i,n;X c,d,p,q,r,s;
  RZ(d=xminus(w,a)); s=1==xcompare(a,d)?d:a; RE(n=xint(s));
  m=xdouble(w);
- if(m<=IMAX){
+ if(m<=(D)IMAX){
   RZ(p=less(ravel(factor(apv(n,(I)m,-1L))),zero));
   RZ(q=less(ravel(factor(apv(n,1L,   1L))),zero));
   c=over(p,q);

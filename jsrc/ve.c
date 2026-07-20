@@ -6,7 +6,7 @@
 #include "j.h"
 #include "vasm.h"
 
-#define DIVI(u,v)     (u||v ? u/(D)v : 0.0) 
+#define DIVI(u,v)     (u||v ? ddiv2(u,(D)v) : 0.0)
 #define DIVBB(u,v)    (v?u:u?inf:0.0)
 
 #define TYMESBX(u,v)  (u?v:0)
@@ -103,21 +103,11 @@ D jtdgcd(J jt,D a,D b){D a1,b1,t;
  while(remdd(a1/jfloor(0.5+a1/a),b1)){t=a; a=remdd(a,b); b=t;}
  R a;
 }    /* D.L. Forkes 1984; E.E. McDonnell 1992 */
-#if SY_64
-#if SY_WIN32 && !C_NA
+
 static I jtilcm(J jt,I a,I b){C er=0;I b1,d,z;
- if(a&&b){RZ(d=igcd(a,b)); b1=b/d; TYMESVV(1L,&z,&a,&b1); if(er)jt->jerr=EWOV; R    z;}else R 0;
+// if(a&&b){RZ(d=igcd(a,b)); b1=b/d; TYMESVV(1L,&z,&a,&b1); if(er)jt->jerr=EWOV; R    z;}else R 0;
+ if(a&&b){RZ(d=igcd(a,b)); b1=b/d; if(unlikely(__builtin_mul_overflow(a,b1,&z)))er=EWOV; if(er)jt->jerr=EWOV; R    z;}else R 0;
 }
-#else
-static I jtilcm(J jt,I a,I b){LD z;I b1,d;
- if(a&&b){RZ(d=igcd(a,b)); b1=b/d; z=a*(LD)b1; if(z<IMIN||IMAX<z)jt->jerr=EWOV; R (I)z;}else R 0;
-}
-#endif
-#else
-static I jtilcm(J jt,I a,I b){D z;I b1,d;
- if(a&&b){RZ(d=igcd(a,b)); b1=b/d; z=a*(D)b1; if(z<IMIN||IMAX<z)jt->jerr=EWOV; R (I)z;}else R 0;
-}
-#endif
 
 #define GCDIO(u,v)      (dgcd((D)u,(D)v))
 #define LCMIO(u,v)      (dlcm((D)u,(D)v))
@@ -146,8 +136,17 @@ F2(jtintdiv){A z;B b,flr;I an,ar,*as,*av,c,d,j,k,m,n,p,p1,r,*s,wn,wr,*ws,*wv,*zv
  ASSERT(!ICMP(as,ws,r),EVLENGTH);
  if(an&&wn){m=prod(r,s); n=prod(b?ar-r:wr-r,r+s);}else m=n=0; 
  GA(z,INT,b?an:wn,b?ar:wr,s); zv=AV(z);
- d=wn?*wv:0; p=0<d?d:-d; p1=d==IMIN?p:p-1; flr=XMFLR==jt->xmode;
+ d=wn?*wv:0; p=0<d?d:-d;
+#if defined(__clang__) && !SY_64
+ if(d==IMIN){CCBLOCK;p1=p;}else{CCBLOCK;p1=p-1;}  // workaround clang optimization issue
+#else
+ p1=d==IMIN?p:p-1;
+#endif
+ flr=XMFLR==jt->xmode;
  if(!wr&&p&&!(p&p1)){
+#if defined(__GNUC__) && !defined(__clang__) && !SY_64
+ volatile I c;  // workaround gcc optimization issue
+#endif
   k=0; j=1; while(p>j){++k; j<<=1;}
   switch((0<d?0:2)+(flr?0:1)){
    case 0: DO(n,          *zv++=*av++>>k;);                    break;

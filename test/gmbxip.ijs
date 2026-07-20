@@ -1,3 +1,4 @@
+prolog './gmbxip.ijs'
 NB. mapped boxed arrays -------------------------------------------------
 
 0!:0 <testpath,'gmbx.ijs'
@@ -157,3 +158,5 @@ mbxcheck_jmf_ q
 4!:55 ;:'f f1 g j mean q r t x y'
 
 
+
+epilog''

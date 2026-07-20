@@ -33,14 +33,14 @@ F2(jtbitmatch){B*v;I ar,*as,at,c,d,i,q,r,r1,rc,m,wr,*ws,wt;UC k,p,*u;
  RZ(a&&w);
  ar=AR(a); as=AS(a); at=AT(a); 
  wr=AR(w); ws=AS(w); wt=AT(w);
- ASSERTSYS(at&BIT||wt&BIT,"bitmatch");
- ASSERT(at&BIT+B01&&wt&BIT+B01,EVNONCE);
+ ASSERTSYS(at&BITB||wt&BITB,"bitmatch");
+ ASSERT(at&BITB+B01&&wt&BITB+B01,EVNONCE);
  if(ar!=wr)R zero;
  if(memcmp(as,ws,ar))R zero;
  c=ar?as[ar-1]:1; m=c?AN(a)/c:0; d=(c+BW-1)/BW;
  q=c/BB; r=c%BB; rc=c%BW; r1=rc?(BW-rc)/BB:0;
- if(at&BIT&&wt&BIT)R memcmp(AV(a),AV(w),m*d*SZI)?zero:one;
- if(at&BIT){u=UAV(a); v=BAV(w);}
+ if(at&BITB&&wt&BITB)R memcmp(AV(a),AV(w),m*d*SZI)?zero:one;
+ if(at&BITB){u=UAV(a); v=BAV(w);}
  else      {u=UAV(w); v=BAV(a);}
  for(i=0;i<m;++i){
   DO(q, k=*u++; p=(UC)128; DO(BB, if((1&&*v++)!=(1&&k&p))R zero; p>>=1;););
@@ -61,11 +61,11 @@ static UI bitmask(I c){I rc;UI mask;
  R mask;
 }    /* bit mask for an array c columns wide */
 
-static F1(jtbitcvt){R cvt(BIT,w);}
+static F1(jtbitcvt){R cvt(BITB,w);}
 
 static F1(jtbitvfypad){I c,d,i,m,rc,wn,wr,*ws;UI mask,*u;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  wn=AN(w); wr=AR(w); ws=AS(w);
  c=wr?ws[wr-1]:1; m=c?wn/c:0; rc=c%BW;
  if(!rc)R w;
@@ -91,7 +91,7 @@ static I bitsum(I n,UC*b){I z=0;
 
 static F1(jtbitslplus){A t,z;I i,m,mm,n,n1,p,q,*u,wr,*ws,*zv;UC c,*vc,*wv;UI*v,*v0;static UI ptab[256];
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  wr=AR(w);
  if(1>=wr)R sc(bitsum(AN(w),UAV(w)));
  ws=AS(w); m=*ws; if(m)n=AN(w)/m; else RE(n=prod(wr-1,1+ws)); 
@@ -121,7 +121,7 @@ static F1(jtbitslplus){A t,z;I i,m,mm,n,n1,p,q,*u,wr,*ws,*zv;UC c,*vc,*wv;UI*v,*
 
 static F1(jtbitsland){I n;UI ff,*v;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
  n=AN(w); v=(UI*)AV(w);
  ff=~(UI)0;
@@ -132,7 +132,7 @@ static F1(jtbitsland){I n;UI ff,*v;
 
 static F1(jtbitslor){I n;UI*v;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
  n=AN(w); v=(UI*)AV(w);
  DO(n/BW, if(*v++)R one;);
@@ -142,7 +142,7 @@ static F1(jtbitslor){I n;UI*v;
 
 static F1(jtbitslne){I n;UC c,*v;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
  n=AN(w); c=0; v=UAV(w);
 #if SY_64
@@ -155,7 +155,7 @@ static F1(jtbitslne){I n;UC c,*v;
 
 static F1(jtbitsleq){I n;UC c,*v;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
  n=AN(w); c=0; v=UAV(w);
 #if SY_64
@@ -169,10 +169,10 @@ static F1(jtbitsleq){I n;UC c,*v;
 
 static F1(jtbitscanand){A z;I c,j,m,n;UC ffc,k,p,*u;UI ff,*v,*zv;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
  n=AN(w); v=(UI*)AV(w);
- GA(z,BIT,n,AR(w),AS(w)); zv=(UI*)AV(z);
+ GA(z,BITB,n,AR(w),AS(w)); zv=(UI*)AV(z);
  m=(n+BW-1)/BW; j=-1; ff=~(UI)0;
  DO(m, if(ff==*v++)*zv++=ff; else{j=i; --v; break;});
  if(0<=j){
@@ -192,11 +192,11 @@ static UC eqpfx[256];
 
 static F1(jtbitscanne){A z;I n;UC c,d,p,*v,x,*zv;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
  if(!nepfx[255])DO(256, p=(UC)i; c=128; x=d=p&c; DO(7, c>>=1; d|=x=p&c?(x?0:c):(x?c:0);); nepfx[i]=d;);
  x=0; n=AN(w); v=UAV(w);
- GA(z,BIT,n,AR(w),AS(w)); zv=UAV(z);
+ GA(z,BITB,n,AR(w),AS(w)); zv=UAV(z);
  DO((n+BB-1)/BB, d=nepfx[*v++]; *zv++=x=1&x?~d:d;);
  if(n%BW)*(n/BW+(UI*)AV(z))&=bitmask(n);
  R z;
@@ -204,11 +204,11 @@ static F1(jtbitscanne){A z;I n;UC c,d,p,*v,x,*zv;
 
 static F1(jtbitscaneq){A z;I n;UC c,d,p,*v,x,*zv;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
  if(!eqpfx[255])DO(256, p=(UC)i; c=128; x=d=p&c; DO(7, c>>=1; d|=x=p&c?(x?c:0):(x?0:c);); eqpfx[i]=d;);
  x=1; n=AN(w); v=UAV(w);
- GA(z,BIT,n,AR(w),AS(w)); zv=UAV(z);
+ GA(z,BITB,n,AR(w),AS(w)); zv=UAV(z);
  DO((n+BB-1)/BB, d=eqpfx[*v++]; *zv++=x=1&x?d:~d;);
  if(n%BW)*(n/BW+(UI*)AV(z))&=bitmask(n);
  R z;
@@ -217,11 +217,11 @@ static F1(jtbitscaneq){A z;I n;UC c,d,p,*v,x,*zv;
 
 static F1(jtbitnot){A z;I c,m,rc,wn,wr,*ws;UI mask,*u,*zv;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN); 
+ ASSERT(BITB&AT(w),EVDOMAIN); 
  wn=AN(w); wr=AR(w); ws=AS(w); u=(UI*)AV(w); 
  c=wr?ws[wr-1]:1; m=c?wn/c:0; rc=c%BW;
  mask=bitmask(c);
- GA(z,BIT,wn,wr,ws); zv=(UI*)AV(z);
+ GA(z,BITB,wn,wr,ws); zv=(UI*)AV(z);
  if(rc)DO(m, DO(c/BW, *zv++=~*u++;); *zv++=~*u++&mask;)
  else  DO(m, DO(c/BW, *zv++=~*u++;););
  R z;
@@ -229,10 +229,10 @@ static F1(jtbitnot){A z;I c,m,rc,wn,wr,*ws;UI mask,*u,*zv;
 
 static F1(jtbitravel){A z;I c,m,rw,wn,wr,*ws;UC*wv,*zv;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN); 
+ ASSERT(BITB&AT(w),EVDOMAIN); 
  wn=AN(w); wr=AR(w); ws=AS(w); wv=UAV(w); 
  c=wr?ws[wr-1]:1; m=c?wn/c:0; rw=c%BW; 
- GA(z,BIT,wn,1,0); zv=UAV(z);
+ GA(z,BITB,wn,1,0); zv=UAV(z);
  if(rw){I j,q,r,r1,t,ti;UC k,y;
   q=c/BB; r=c%BB; r1=rw?(BW-rw)/BB:0;
   k=0; t=0; ti=BB-t;
@@ -250,11 +250,11 @@ static F1(jtbitravel){A z;I c,m,rw,wn,wr,*ws;UC*wv,*zv;
 
 static F2(jtbitcat){A z;I an,ar,*as,t,ti,wn,wr,*ws;UC*zv;
  RZ(a&&w);
- ASSERT(BIT&AT(a)&&BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(a)&&BITB&AT(w),EVDOMAIN);
  an=AN(a); ar=AR(a); as=AS(a);
  wn=AN(w); wr=AR(w); ws=AS(w);
  ASSERT(1>=ar&&1>=wr,EVNONCE);
- GA(z,BIT,an+wn,1,0); zv=UAV(z);
+ GA(z,BITB,an+wn,1,0); zv=UAV(z);
  memcpy(zv,AV(a),SZI*((an+BW-1)/BW));
  zv+=an/BB;
  if(t=an%BB){UC k,*wv,y;
@@ -268,11 +268,11 @@ static F2(jtbitcat){A z;I an,ar,*as,t,ti,wn,wr,*ws;UC*zv;
 static F2(jtbitfrom){A z;I an,ar,*as,c,i,j,m,n,q,r,rc,r1,wr,*ws;UC k,*v,*zv;
  RZ(a&&w);
  ASSERT(INT&AT(a),EVNONCE);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  an=AN(a); ar=AR(a); as=AS(a); wr=AR(w); ws=AS(w);
  if(1>=wr){I*u;
   c=ar?as[ar-1]:1; m=c?an/c:0; q=c/BB; r=c%BB; rc=c%BW; r1=rc?(BW-rc)/BB:0;
-  GA(z,BIT,an,ar,as); zv=(UC*)AV(z);
+  GA(z,BITB,an,ar,as); zv=(UC*)AV(z);
   u=AV(a); v=UAV(w); n=AN(w);
   for(i=0;i<m;++i){
    DO(q, k=0; DO(BB, j=*u++; if(0>j)j+=n; ASSERT(0<=j&&j<n,EVINDEX); if(v[j/BB]&(UC)128>>j%BB)k|=bit[i];); *zv++=k;);
@@ -282,7 +282,7 @@ static F2(jtbitfrom){A z;I an,ar,*as,c,i,j,m,n,q,r,rc,r1,wr,*ws;UC k,*v,*zv;
   zr=ar+wr-1;
   GA(x,INT,zr,1,0); u=AV(x); 
   ICPY(u,as,ar); ICPY(u+ar,1+ws,wr-1); RE(zn=prod(zr,u));
-  GA(z,BIT,zn,zr,u); zv=AV(z);
+  GA(z,BITB,zn,zr,u); zv=AV(z);
   n=*ws; c=(ws[wr-1]+BW-1)/BW; RE(m=mult(prod(wr-2,1+ws),c));
   u=AV(a); v=AV(w); 
   DO(an, j=*u++; if(0>j)j+=n; ASSERT(0<=j&&j<n,EVINDEX); ICPY(zv,v+j*m,m); zv+=m;);
@@ -297,13 +297,13 @@ static F2(jtbiterror){ASSERT(0,EVNONCE);}
  F2(f){A z;I c,m,mask,rc,wn,wr,*ws;UI*u,*v,*zv;  \
   RZ(a&&w);                                      \
   wn=AN(w); wr=AR(w); ws=AS(w);                  \
-  ASSERT(BIT&AT(a)&&BIT&AT(w),EVDOMAIN);         \
+  ASSERT(BITB&AT(a)&&BITB&AT(w),EVDOMAIN);       \
   ASSERT(wr==AR(a),EVRANK);                      \
   ASSERT(!memcmp(ws,AS(a),wr),EVLENGTH);         \
   c=wr?ws[wr-1]:1; m=c?wn/c:0; rc=c%BW;          \
   u=(UI*)AV(a); v=(UI*)AV(w);                    \
   mask=bitmask(c);                               \
-  GA(z,BIT,wn,wr,ws); zv=(UI*)AV(z);             \
+  GA(z,BITB,wn,wr,ws); zv=(UI*)AV(z);            \
   if(rc)DO(m, DO(c/BW, *zv++=OP(*u++,*v++);); *zv++=OP(*u++,*v++)&mask;)  \
   else  DO(m, DO(c/BW, *zv++=OP(*u++,*v++);););  \
   R z;                                           \
@@ -317,7 +317,7 @@ static F2(jtbiterror){ASSERT(0,EVNONCE);}
   ASSERT(AR(a)==AR(w),EVRANK);                                 \
   ASSERT(!memcmp(as,AS(w),ar),EVLENGTH);                       \
   c=ar?as[ar-1]:1; m=c?an/c:0; q=c/BB; r=c%BB; rc=c%BW; r1=rc?(BW-rc)/BB:0;  \
-  GA(z,BIT,an,ar,as); zv=(UC*)AV(z);                           \
+  GA(z,BITB,an,ar,as); zv=(UC*)AV(z);                          \
   u=AV(a); v=AV(w); zv=(UC*)AV(z);                             \
   for(i=0;i<m;++i){                                            \
    DO(q, k=0; DO(BB, if(OP(*u++,*v++))k|=bit[i];); *zv++=k;);  \
@@ -331,8 +331,8 @@ static F2(jtbiterror){ASSERT(0,EVNONCE);}
  F2(f){I at;                                    \
   RZ(a&&w);                                     \
   at=AT(a);                                     \
-  ASSERT(at==AT(w)&&at&BIT+INT,EVNONCE);        \
-  R at&BIT?fBB(a,w):fII(a,w);                   \
+  ASSERT(at==AT(w)&&at&BITB+INT,EVNONCE);       \
+  R at&BITB?fBB(a,w):fII(a,w);                  \
  }
 
 #define BBEQ(x,y)   (~(x^y))
@@ -384,7 +384,7 @@ static BITF(jtbitne,  bitneBB,  bitneII  )
 
 static F1(jtbitgrade){A x;I r,*s;
  RZ(w);
- ASSERT(BIT&AT(w),EVDOMAIN);
+ ASSERT(BITB&AT(w),EVDOMAIN);
  r=AR(w);
  ASSERT(2<=r,EVNONCE);
  RZ(x=gah(r,w));
@@ -395,9 +395,9 @@ static F1(jtbitgrade){A x;I r,*s;
 
 static F2(jtbitindexof){I j,n;UC*u,y;UI*v,x;
  RZ(a&&w);
- ASSERT(BIT&AT(a),EVDOMAIN);
+ ASSERT(BITB&AT(a),EVDOMAIN);
  ASSERT(1>=AR(a)&&!AR(w),EVNONCE);
- if(!(AT(w)&BIT+B01))RZ(w=cvt(BIT,w));
+ if(!(AT(w)&BITB+B01))RZ(w=cvt(BITB,w));
  x=*UAV(w)?0:~(UI)0; 
  n=AN(a); v=(UI*)AV(a); j=n;
  DO((n+BW-1)/BW, if(x!=*v++){j=BW*i; --v; break;});
@@ -435,14 +435,14 @@ static F2(jtbitindexof){I j,n;UC*u,y;UI*v,x;
 
 static F2(jtbitrepeat){A z;I c,c1,m,n,p,wr,wk,wt;UC*av,k;
  RZ(a&&w);
- ASSERT(BIT&AT(a),EVDOMAIN);
+ ASSERT(BITB&AT(a),EVDOMAIN);
  n=AN(a); av=UAV(a); wr=AR(w); wt=AT(w);
  p=AR(w)?*AS(w):1; m=AN(w)/p; c=wr?*(AS(w)+wr-1):1; c1=(c+BW-1)/BW;
- wk=wt&BIT?SZI*c1*(m/c):m*bp(wt);
+ wk=wt&BITB?SZI*c1*(m/c):m*bp(wt);
  ASSERT(n==p,EVLENGTH);
  p=bitsum(n,av);
  GA(z,wt,p*m,AR(w),AS(w)); *AS(z)=p;
- if(BIT&wt&&1>=wr){I j;UC c,d,*wv,*zv;
+ if(BITB&wt&&1>=wr){I j;UC c,d,*wv,*zv;
   wv=UAV(w); zv=UAV(z); j=0;
   DO((n+BB-1)/BB, k=*av++; c=*wv++; d=0; DO(BB, if(k&bit[i]){d|=k&bit[i]&c;}); *zv++=d;);
  }else{I*wv,*zv;

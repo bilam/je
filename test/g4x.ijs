@@ -1,3 +1,4 @@
+prolog './g4x.ijs'
 NB. 4!:0 ----------------------------------------------------------------
 
 jnc   =: 4!:0
@@ -307,3 +308,5 @@ erase ;:'abc abc_z_ ces_exist_ sum_z_'
 4!:55 ;:'sum__ sum_z_ t v verbx x y '
 
 
+
+epilog''

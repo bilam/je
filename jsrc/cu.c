@@ -40,9 +40,9 @@ A jtevery2(J jt,A a,A w,A fs,AF f2){A*av,*wv,x,z,*zv;B ab,b,wb;I ad,an,ar,*as,wd
  if(ar&&!ab)RZ(a=box0(a)); av=AAV(a);
  if(wr&&!wb)RZ(w=box0(w)); wv=AAV(w);
  if(ar&&wr)                   DO(an, EVERYI(CALL2(f2,AVR(i),      WVR(i),      fs))) 
- else if(wr){if(ab)a=AAV0(a); DO(wn, EVERYI(CALL2(f2,a,           WVR(i),      fs)));}
- else if(ar){if(wb)w=AAV0(w); DO(an, EVERYI(CALL2(f2,AVR(i),      w,           fs)));}
- else                                EVERYI(CALL2(f2,ab?AAV0(a):a,wb?AAV0(w):w,fs)) ;
+ else if(wr){if(ab)a=AAVR0(a); DO(wn, EVERYI(CALL2(f2,a,           WVR(i),      fs)));}
+ else if(ar){if(wb)w=AAVR0(w); DO(an, EVERYI(CALL2(f2,AVR(i),      w,           fs)));}
+ else                                EVERYI(CALL2(f2,ab?AAVR0(a):a,wb?AAVR0(w):w,fs)) ;
  R z;
 }
 

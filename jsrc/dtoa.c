@@ -565,7 +565,7 @@ d2a_Balloc
 #else
   len = (sizeof(Bigint) + (x-1)*sizeof(ULong) + sizeof(double) - 1)
    /sizeof(double);
-  if (pmem_next - private_mem + len <= PRIVATE_mem) {
+  if (pmem_next - private_mem + len <= (ULong)PRIVATE_mem) {
    rv = (Bigint*)pmem_next;
    pmem_next += len;
    }
@@ -3419,7 +3419,7 @@ B jtecvt(J jt, D dw, I ndp, int *decpt, int *sign, C *dest)
 
  ASSERTSYS(ndp<=INT_MAX, "jtecvt: too long");
  di->ndp=(int)ndp; di->result=dest;
- y=d2a_dtoa(di, dw, 2, (int)ndp, decpt, sign, &z);
+ y=d2a_dtoa(di, dw, 2, (int)ndp, decpt, sign, (char**)&z);
  RZ(y&&z);
  memset(z, '0', ndp-(z-y));
  R 1;

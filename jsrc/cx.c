@@ -59,7 +59,7 @@ static B jtforinit(J jt,CDATA*cv,A t){A x;C*s,*v;I k;
 }    /* for. do. end. initializations */
 
 static B jtunstackcv(J jt,CDATA*cv){
- if(cv->x){ex(link(cv->x,str(cv->k,cv->iv))); fa(cv->x);}
+ if(cv->x){ex(jlink(cv->x,str(cv->k,cv->iv))); fa(cv->x);}
  fa(cv->t); 
  memset(cv,C0,WCD*SZI); 
  R 1;
@@ -270,7 +270,7 @@ static B jtsent12b(J jt,A w,A*m,A*d){A t,*wv,y,*yv;I j,*v,wd;
  wv=AAV(w); wd=(I)w*ARELATIVE(w);
  GA(y,BOX,AN(w),AR(w),AS(w)); yv=AAV(y);
  DO(AN(w), RZ(yv[i]=vs(WVR(i))););
- RZ(t=indexof(y,link(chr[':'],str(1L,":")))); v=AV(t); j=MIN(*v,*(1+v));
+ RZ(t=indexof(y,jlink(chr[':'],str(1L,":")))); v=AV(t); j=MIN(*v,*(1+v));
  *m=take(sc(j  ),y); 
  *d=drop(sc(j+1),y);
  R 1;

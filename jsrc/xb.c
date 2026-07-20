@@ -39,7 +39,7 @@ F1(jtstype){RZ(w); R sc(AT(w));}
 static I bsize(B d,B tb,I t,I n,I r,I*s){I c,k,m,w,z;
  w=WS(d);
  z=BH(d)+w*r;
- if(t&BIT){
+ if(t&BITB){
   c=r?s[r-1]:1; m=c?n/c:0; 
   R z+w*m*((c+w*BB-1)/(w*BB));
  }else{
@@ -58,7 +58,7 @@ static I bsize(B d,B tb,I t,I n,I r,I*s){I c,k,m,w,z;
 
 #define MVCS(a,b,c,d)  (8*(a)+4*(b)+2*(c)+(d))
 
-static B jtmvw(J jt,C*v,C*u,I n,B bv,B bu,B dv,B du){C c;
+static B jtmvw(J jt,signed char*v,signed char*u,I n,B bv,B bu,B dv,B du){signed char c;
  switch((dv?8:0)+(du?4:0)+(bv?2:0)+bu){
   case MVCS(0,0,0,0): MC(v,u,n*4);                             break;
   case MVCS(0,0,0,1): DO(n, DO(4, v[3-i]=u[i];); v+=4; u+=4;); break;
@@ -85,7 +85,8 @@ static C*jtbrephdr(J jt,B b,B d,A w,A y){A q;I f,r;
  RZ(mvw(BF(d,q),(C*)&f,    1L,b,BU,d,SY_64)); *CAV(y)=d?(b?0xe3:0xe2):(b?0xe1:0xe0);
  RZ(mvw(BT(d,q),(C*)&AT(w),1L,b,BU,d,SY_64));
  RZ(mvw(BN(d,q),(C*)&AN(w),1L,b,BU,d,SY_64));
- RZ(mvw(BR(d,q),(C*)&AR(w),1L,b,BU,d,SY_64));
+ // RZ(mvw(BR(d,q),(C*)&AR(w),1L,b,BU,d,SY_64));
+ RZ(mvw(BR(d,q),(C*)&r,1L,b,BU,d,SY_64));
  RZ(mvw(BS(d,q),(C*) AS(w),r, b,BU,d,SY_64));
  R BV(d,q,r);
 }
@@ -317,7 +318,7 @@ F1(jtbit1){A z;B*wv;BT*zv;I c,i,j,n,p,q,r,*s;UI x,y;
  RZ(w);
  if(!(B01&AT(w)))RZ(w=cvt(B01,w));
  n=AN(w); r=AR(w); wv=BAV(w); s=AS(w);
- GA(z,BIT,n,AR(w),AS(w)); zv=(BT*)AV(z);
+ GA(z,BITB,n,AR(w),AS(w)); zv=(BT*)AV(z);
  if(!r)*zv=*wv?'\200':0;
  else if(n){
   c=8*SZI; 

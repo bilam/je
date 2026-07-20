@@ -1,3 +1,4 @@
+prolog './gsp600.ijs'
 NB. " monad -------------------------------------------------------------
 
 d=: (13 5 7?@$2)*13 5 7?@$5
@@ -137,3 +138,5 @@ f&>c
 4!:55 ;:'A A2 c cat d double f mean minus q r ravel rev rot s sum t x x0 xx y y0 yy'
 
 
+
+epilog''

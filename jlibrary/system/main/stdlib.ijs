@@ -1,5 +1,7 @@
-18!:4 <'z'
+cocurrent <'z'
 3 : 0 ''
+
+JLIB=: '9.8.6'
 
 notdef=. 0: ~: 4!:0 @ <
 hostpathsep=: ('/\'{~6=9!:12'')&(I. @ (e.&'/\')@] })
@@ -8,28 +10,31 @@ winpathsep=: '\'&(('/' I.@:= ])})
 PATHJSEP_j_=: '/'
 IFDEF=: 3 : '0=4!:0<''DEF'',y,''_z_'''
 IF64=: 16={:$3!:3[2
+IFBE=: 'a'~:{.2 (3!:4) a.i.'a'
 'IFUNIX IFWIN IFWINCE'=: 5 6 7 = 9!:12''
 IFJHS=: 0
-IFWINE=: (0 ~: 'ntdll wine_get_version >+ x'&(15!:0)) ::0:`0:@.IFUNIX ''
+IFWINE=: (0 ~: 'ntdll wine_get_version >+ x'&(15!:0)) ::(0:@(15!:10))`0:@.IFUNIX ''
+IFWA64=: IFWIN*.'arm64'-:9!:56'cpu'
 if. notdef 'IFIOS' do.
   IFIOS=: 0
 end.
-if. notdef 'IFQT' do.
-  IFQT=: 0
-  libjqt=: 'libjqt'
+if. notdef 'IFJA' do.
+  IFJA=: 0
 end.
-if. notdef 'IFJCDROID' do.
-  IFJCDROID=: 0
+if. notdef 'IFJNET' do.
+  IFJNET=: 0
 end.
-
-assert. IFQT *: IFJCDROID
-if. notdef 'FHS' do.
-  FHS=: 0
+if. notdef 'BINPATH' do.
+  BINPATH=: '/j/bin'
 end.
 if. notdef 'UNAME' do.
   if. IFUNIX do.
     if. -.IFIOS do.
-      UNAME=: (2!:0 'uname')-.10{a.
+      if. 'wasm'-:4{.9!:56 ::('Unknown'"_)'cpu' do.
+        UNAME=: 'Wasm'
+      else.
+        UNAME=: (2!:0 ::('Unknown'"_)'uname')-.10{a.
+      end.
     else.
       UNAME=: 'Darwin'
     end.
@@ -37,40 +42,57 @@ if. notdef 'UNAME' do.
     UNAME=: 'Win'
   end.
 end.
+if. notdef 'LIBFILE' do.
+  LIBFILE=: BINPATH,'/',IFUNIX{::'j.dll';(UNAME-:'Darwin'){::'libj.so';'libj.dylib'
+else.
+  LIBFILE=: jpathsep LIBFILE
+end.
+if. notdef 'FHS' do.
+  FHS=: IFUNIX>'/'e.LIBFILE
+end.
+if. notdef 'RUNJSCRIPT' do.
+  RUNJSCRIPT=: 0
+end.
 if. notdef 'IFRASPI' do.
-  if. UNAME -: 'Linux' do.
-    IFRASPI=: 1 e. 'BCM2708' E. 2!:0 'cat /proc/cpuinfo'
+  if. ((<UNAME)e.<'Linux') do.
+    IFRASPI=: (<9!:56'cpu') e. 'arm';'arm64'
   else.
     IFRASPI=: 0
   end.
 end.
-if. IF64 +. IFIOS +. IFRASPI +. UNAME-:'Android' do.
+if. IF64 +. IFIOS +. UNAME -: 'Wasm' do.
   IFWOW64=: 0
 else.
   if. IFUNIX do.
-    IFWOW64=: '64'-:_2{.(2!:0 'uname -m')-.10{a.
+    IFWOW64=: '64'-:_2{.(2!:0 ::(''"_)(UNAME-:'Android'){::'uname -m';'getprop ro.product.cpu.abi')-.10{a.
   else.
     IFWOW64=: 'AMD64'-:2!:5'PROCESSOR_ARCHITEW6432'
   end.
 end.
-if. UNAME-:'Android' do.
-  if. IFQT do.
-    AndroidLibPath=: ({.~i:&'/') libjqt
-  else.
-    AndroidLibPath=: '/lib',~ ({.~i:&'/')^:2 BINPATH
+if. notdef 'IFQT' do.
+  IFQT=: 0
+  libjqt=: IFUNIX{::'jqt.dll';'libjqt',(UNAME-:'Darwin'){::'.so';'.dylib'
+  if. 0 ~: 1!:4 :: 0: < ((BINPATH,'/')&,) libjqt do.
+    libjqt=: ((BINPATH,'/')&,) libjqt
   end.
 end.
+if. UNAME-:'Android' do.
+  AndroidLibPath=: '/lib',~ ({.~i:&'/')^:2 BINPATH
+end.
+
+assert. IFQT *: IFJA
 )
-jcwdpath=: (1!:43@(0&$),])@jpathsep@((*@# # '/'"_),])
+jcwdpath=: jpathsep@(1!:43@(0&$) ,`(, }.)@.(('/' = {:)@:[ *. ('/' = {.)@:]) ])@((*@# # '/'"_) , ])
 jsystemdefs=: 3 : 0
 xuname=. UNAME
+xuname=. 'Linux'"_^:(xuname-:'Wasm') xuname
 if. 0=4!:0 <f=. y,'_',(tolower xuname),(IF64#'_64'),'_j_' do.
   0!:100 toHOST f~
 else.
   0!:0 <jpath '~system/defs/',y,'_',(tolower xuname),(IF64#'_64'),'.ijs'
 end.
 )
-18!:4 <'j'
+cocurrent <'j'
 
 setjdefs=: 4 : 'if. _1=4!:0 y do. (>y)=: x end.'
 
@@ -91,8 +113,7 @@ end.
 if. (<'home') -.@e. {."1 SystemFolders do.
   if. 'Win'-:UNAME do. t=. 2!:5'USERPROFILE'
   elseif. 'Android'-:UNAME do. t=. '/sdcard'
-  elseif. 'Darwin'-:UNAME do. t=. (0-:t){::'';~t=. 2!:5'HOME'
-  elseif. 'Linux'-:UNAME do. t=. (0-:t){::'';~t=. 2!:5'HOME'
+  elseif. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD';'Darwin') do. t=. (0-:t){::'';~t=. 2!:5'HOME'
   elseif. do. t=. ''
   end.
   if. (''-:t)+.((,'/')-:t)+.('/root'-:t)+.('/usr/'-:5{.t) do.
@@ -105,8 +126,7 @@ end.
 if. (<'temp') -.@e. {."1 SystemFolders do.
   if. 'Win'-:UNAME do. 1!:5 ::] <t=. (2!:5'USERPROFILE'),'\Temp'
   elseif. 'Android'-:UNAME do. t=. '/sdcard'
-  elseif. 'Darwin'-:UNAME do. 1!:5 ::] <t=. '/tmp/',":2!:6''
-  elseif. 'Linux'-:UNAME do. 1!:5 ::] <t=. '/tmp/',":2!:6''
+  elseif. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD';'Darwin') do. 1!:5 ::] <t=. '/tmp/',":2!:6''
   elseif. do. t=. ''
   end.
   SystemFolders=: SystemFolders, 'temp';t
@@ -116,22 +136,42 @@ end.
 
 4!:55 <'setjdefs'
 
-18!:4 <'z'
-18!:4 <'z'
+cocurrent <'z'
+cocurrent <'z'
 UNXLIB=: ([: <;._1 ' ',]);._2 (0 : 0)
-libc.so.6 libc.so libc.dylib libc.dylib
-libz.so.1 libz.so libz.dylib libz.dylib
-libsqlite3.so.0 libsqlite.so libsqlite3.dylib libsqlite3.dylib
-libxml2.so.2 libxml2.so libxml2.dylib libxml2.dylib
+libc.so.6 libc.so.7 libc.so.7 libc.so libc.dylib libc.so
+libz.so.1 libz.so.7 libz.so.6 libz.so libz.dylib libz.so
+libsqlite3.so.0 libsqlite3.so.0 libsqlite3.so.0 libsqlite.so libsqlite3.dylib libsqlite3.so
+libxml2.so.2 libxml2.so.18.0 libxml2.so.2 libxml2.so libxml2.dylib libxml2.so
+libpcre2-8.so.0 libpcre2-8.so.0.6 libpcre2-8.so.0 libpcre2-8.so libpcre2-8.dylib libpcre2-8.so
+)
+3 : 0^:((<UNAME)e.'Linux';'OpenBSD';'FreeBSD')''
+b=. (<UNAME)i.~'Linux';'OpenBSD';'FreeBSD'
+a=. 2!:0 ::(''"_) b{::'/usr/sbin/ldconfig -p';'/sbin/ldconfig -r';'/sbin/ldconfig -r'
+if. #a1=. I. '/libc.so.' E. a do.
+  UNXLIB=: (<({.~i.&(10{a.))}.a}.~{.a1) (<0,b)}UNXLIB
+end.
+if. #a1=. I. '/libz.so.' E. a do.
+  UNXLIB=: (<({.~i.&(10{a.))}.a}.~{.a1) (<1,b)}UNXLIB
+end.
+if. #a1=. I. '/libsqlite3.so.' E. a do.
+  UNXLIB=: (<({.~i.&(10{a.))}.a}.~{.a1) (<2,b)}UNXLIB
+end.
+if. #a1=. I. '/libxml2.so.' E. a do.
+  UNXLIB=: (<({.~i.&(10{a.))}.a}.~{.a1) (<3,b)}UNXLIB
+end.
+if. #a1=. I. '/libpcre2-8.so.' E. a do.
+  UNXLIB=: (<({.~i.&(10{a.))}.a}.~{.a1) (<4,b)}UNXLIB
+end.
+''
 )
 unxlib=: 3 : 0
-r=. (;: 'c z sqlite3') i. <,y
-c=. IFIOS + (;: 'Linux Android Darwin') i. <UNAME_z_
+r=. (;: 'c z sqlite3 libxml2 pcre2') i. <,y
+c=. (;: 'Linux OpenBSD FreeBSD Android Darwin') i. <UNAME_z_
 (<r,c) {:: UNXLIB_z_
 )
-18!:4 <'z'
+cocurrent <'z'
 anddf=: 4 : '''libj.so android_download_file > i *c *c'' 15!:0 x;y'
-andurl=: 'http://www.jsoftware.com/moin_static180/common/jwlogo.png'
 andunzip=: 3 : 0
 '' andunzip y
 :
@@ -141,54 +181,85 @@ android_exec_am=: 3 : 0
 'intent uri mimetype flags'=. 4{.y
 user=. (UserNumber_ja_"_)^:(0=4!:0<'UserNumber_ja_') (_1)
 2!:0 ::0: utf8 'am start ',((user>:0)#'--user ', ":user),' -a ', intent, ' -d ', (dquote uri), ((*#mimetype)#' -t ', mimetype), ((0~:flags)#' -f ', ":flags)
-EMPTY
+i.0 0
 )
 
-android_exec_host=: 2!:1`android_exec_am`StartActivityImplicit_ja_@.(IFQT+0=4!:0<'AndroidPackage')
-18!:4 <'z'
+android_exec_host=: 2!:1@(3&{.)`android_exec_am@.(0=4!:0<'AndroidPackage')
+android_getdisplaymetrics=: 3 : 0
+dm=. 0 2 320 1280 2 720 243.247 244.273
+if. 18<:APILEVEL_ja_ do.
+  if. 0=4!:0<'android_getdisplaymetrics_memo_ja_' do.
+    dm=. android_getdisplaymetrics_memo_ja_
+  else.
+    try.
+      densityDpi=. 0&". ' '-.~ (}.~ i:&' ') LF-.~ 2!:0 'wm density'
+      ('widthPixels heightPixels')=: 0&". ;._1 'x', ' '-.~ (}.~ i:&' ') LF-.~ 2!:0 'wm size'
+      density=. (0.5*heightPixels>480) + (0.5*heightPixels>320) + densityDpi% 160
+      dm=. 1 2 3 4 5 (density, densityDpi, heightPixels, density, widthPixels)}dm
+    catch. end.
+    android_getdisplaymetrics_memo_ja_=: dm
+  end.
+end.
+'DM_density_ja_ DM_densityDpi_ja_ DM_scaledDensity_ja_'=: 1 2 4{dm
+dm
+)
+cocurrent <'z'
 'TAB LF FF CR DEL EAV'=: 9 10 12 13 127 255{a.
 LF2=: LF,LF
 CRLF=: CR,LF
-EMPTY=: i.0 0
+EMPTY=: 0 0$0
 Debug=: 0
 'noun adverb conjunction verb monad dyad'=: 0 1 2 3 3 4
-alpha27=: (27 b.) & 16bffffff
-alpha17=: (17 b.) & 16bffffff
+setalpha=: 16bff&$: : (4 : 0)
+((_32&(34 b.))^:IF64 _8 (32 b.) x)&(23 b.) 16bffffff (17 b.) y
+)
+getalpha=: 16bff (17 b.) _24&(34 b.)
+abspath=: 3 : 0
+if. (1 e. '://'&E.) y=. ,jpathsep y do. y return. end.
+if. IFWIN do.
+  assert. 0<rc=. >@{. cdrc=. 'kernel32 GetFullPathNameW   i *w i *w *w'&cd (uucp y);((#;])1024$u:' '),<<0
+  y=. jpathsep utf8 rc{.3{::cdrc
+elseif. ('/' ~: {.) y do.
+  y=. iospath^:IFIOS (1!:43'') , '/' , utf8 y
+end.
+y
+)
 apply=: 128!:2
 assert=: 0 0 $ 13!:8^:((0 e. ])`(12"_))
-bind=: 2 : 'x@(y"_)'
-boxopen=: <^:(L.=0:)
-boxxopen=: <^:(L.<*@#)
+bind=: 2 : 'u@(v"_)'
+boxopen=: <^:(0&(>: L.))
+boxxopen=: <^:((> L.)~ *@#)
 bx=: I.
 clear=: 3 : 0
 ". 'do_',(' '-.~y),'_ '' (#~ -.@(4!:55)) (4!:1) 0 1 2 3'''
 )
-cutLF=: 3 : 'if. L. y do. y else. a: -.~ <;._2 y,LF end.'
+cutLF=: 3 : 'if. 0 (<L.) y do. y else. a: -.~ <;._2 y,LF end.'
 cutopen=: 3 : 0
 y cutopen~ (' ',LF) {~ LF e. ,y
 :
-if. L. y do. y return. end.
+if. 0 (<L.) y do. y return. end.
 if. 1 < #$y do. <"_1 y return. end.
 (<'') -.~ (y e.x) <;._2 y=. y,1{.x
 )
 datatype=: 3 : 0
-n=. 1 2 4 8 16 32 64 128 1024 2048 4096 8192 16384 32768 65536 131072
+n=. 1 2 4 8 16 32 64 128 1024 2048 4096 8192 16384 32768 65536 131072 262144
+n=. n,5 6 7 9 10 11
 t=. '/boolean/literal/integer/floating/complex/boxed/extended/rational'
 t=. t,'/sparse boolean/sparse literal/sparse integer/sparse floating'
-t=. t,'/sparse complex/sparse boxed/symbol/unicode'
+t=. t,'/sparse complex/sparse boxed/symbol/unicode/unicode4'
+t=. t,'/integer1/integer2/integer4/floating2/floating4/floating16'
 (n i. 3!:0 y) pick <;._1 t
 )
 def=: :
 define=: : 0
 H=. '0123456789ABCDEF'
 h=. '0123456789abcdef'
-dfh=: 16 #. 16 | (H,h) i. ]
-hfd=: h {~ 16 #.^:_1 ]
+dfh=: (16 #. 16 | (H,h) i. ]) :.hfd
+hfd=: (h {~ 16 #.^:_1 ]) :.dfh
 4!:55 'H';'h'
 do=: ".
 drop=: }.
 each=: &.>
-echo=: 0 0&$ @ (1!:2&2)
 empty=: EMPTY"_
 erase=: [: 4!:55 ;: ::]
 every=: &>
@@ -196,13 +267,16 @@ evtloop=: EMPTY"_
 exit=: 2!:55
 expand=: #^:_1
 file2url=: 3 : 0
-y=. (' ';'%20';'\';'/') stringreplace y -. '"'
+if. (1 e. '://'&E.) ,y do. y return. end.
+y=. (' ';'%20') stringreplace abspath y -. '"'
 if. IFWIN do.
-  if. ':'~:{:2{.y do. ((' ';'%20';'\';'/') stringreplace 1!:43''),'/',y end.
-  'file:///', y
+  if. '//'-:2{.y do.
+    'file:',y
+  else.
+    'file:///',y
+  end.
 else.
-  if. '/'~:{.y do. ((' ';'%20') stringreplace 1!:43''),'/',y end.
-  'file://', y
+  'file://',y
 end.
 )
 fixdotdot=: 3 : 0
@@ -238,7 +312,8 @@ else.
 end.
 ''
 )
-isutf8=: 1:@(7&u:) :: 0:
+isutf8=: 0:`(1:@(7&u:) :: 0:)@.(2=3!:0)
+isutf16=: 0:`(1:@(8&u:) :: 0:)@.(131072=3!:0)
 items=: "_1
 fetch=: {::
 leaf=: L:0
@@ -271,11 +346,13 @@ if. 0 e. #nms do. return. end.
 
 if. #t=. x -. ' ' do.
   'n s'=. '~*' e. t
-  t=. t -. '~*'
+  l=. '_' = {.t
+  t=. }.^:l t -. '~*'
   b=. t&E. &> nms
   if. s do. b=. +./"1 b
   else. b=. {."1 b end.
   nms=. nms #~ n ~: b
+  if. l do.nms=. nms (,'_',,&'_') each coname '' end.
 end.
 )
 names=: list_z_ @ nl
@@ -283,17 +360,21 @@ Note=: 3 : '0 0 $ 0 : 0' : [
 on=: @:
 pick=: >@{
 rows=: "1
-script=: [: 3 : '0!:0 y [ 4!:55<''y''' jpath_z_ &.: >
-scriptd=: [: 3 : '0!:1 y [ 4!:55<''y''' jpath_z_ &.: >
+script=: [: 3 : '0!:0 y' jpath_z_ &.: >
+scriptd=: [: 3 : '0!:1 y' jpath_z_ &.: >
 stdout=: 1!:2&4
 stderr=: 1!:2&5
 stdin=: 1!:1@3: :. stdout
 sign=: *
 sminfo=: 3 : 0
-if. IFQT do. wdinfo_jqtide_ y
-elseif. ('Android'-:UNAME) *. 3=4!:0<'mbinfo_ja_' do. mbinfo_ja_ y
-elseif. do. smoutput >_1{.boxopen y end.
+if. IFJHS do. smoutput >{:boxopen y
+elseif. IFQT do. wdinfo_jqtide_ y
+elseif. IFJA do. wdinfo_ja_ y
+elseif. IFJNET do. wdinfo_jnet_ y
+elseif. (0-:11!:0 ::0:'qwd') < 3=4!:0<'wdinfo' do. wdinfo y
+elseif. do. smoutput >{:boxopen y end.
 )
+echo=: 0 0 $ 1!:2&2
 smoutput=: 0 0 $ 1!:2&2
 tmoutput=: 0 0 $ 1!:2&4
 sort=: /:~ : /:
@@ -305,6 +386,7 @@ table=: 1 : 0~
 take=: {.
 timespacex=: 6!:2 , 7!:2@]
 timex=: 6!:2
+tolist=: }.@;@:(LF&,@,@":&.>)
 tolower=: 3 : 0
 x=. I. 26 > n=. ((65+i.26){a.) i. t=. ,y
 ($y) $ ((x{n) { (97+i.26){a.) x}t
@@ -314,6 +396,7 @@ toupper=: 3 : 0
 x=. I. 26 > n=. ((97+i.26){a.) i. t=. ,y
 ($y) $ ((x{n) { (65+i.26){a.) x}t
 )
+
 t=. <;._1 '/invalid name/not defined/noun/adverb/conjunction/verb/unknown'
 type=: {&t@(2&+)@(4!:0)&boxopen
 ucp=: 7&u:
@@ -328,22 +411,19 @@ EMPTY
 )
 utf8=: 8&u:
 uucp=: u:@(7&u:)
-3 : 0''
-h=. 9!:12''
-subs=. 2 : 'x I. @(e.&y)@]} ]'
-toJ=: (LF subs CR) @: (#~ -.@(CRLF&E.@,))
+toJ=: (LF I.@(CR=])}]) @: (#~ -.@(CRLF&E.@,))
 toCRLF=: 2&}. @: ; @: (((CR&,)&.>)@<;.1@(LF&,)@toJ)
-if. h=5 do.
+
+3 : 0''
+if. 5=9!:12'' do.
   toHOST=: ]
 else.
   toHOST=: toCRLF
 end.
 1
 )
-18!:4 <'z'
-coclass=: 18!:4 @ boxxopen
+cocurrent <'z'
 cocreate=: 18!:3
-cocurrent=: 18!:4 @ boxxopen
 codestroy=: coerase @ coname
 coerase=: 18!:55
 cofullname=: 3 : 0
@@ -442,14 +522,14 @@ memr=: 15!:1
 memw=: 15!:2
 mema=: 15!:3
 memf=: 15!:4
+memu=: '' 1 : 'try. 15!:15 m catch. a: { ] return. end. 15!:15'
 cdf=: 15!:5
 cder=: 15!:10
 cderx=: 15!:11
-gh=. 15!:8
-fh=. 15!:9
-symget=: 15!:6
 symset=: 15!:7
+symdad=: 15!:14
 symdat=: 15!:14
+memhad=: (15!:12)@<
 cdcb=: 15!:13
 JB01=: 1
 JCHAR=: 2
@@ -459,8 +539,14 @@ JPTR=: JINT
 JFL=: 8
 JCMPX=: 16
 JBOXED=: 32
-JTYPES=: JB01,JCHAR,JINT,JPTR,JFL,JCMPX,JBOXED
-JSIZES=: >IF64{1 1 4 4 8 16 4;1 1 8 8 8 16 8
+JSB=: 65536
+JCHAR2=: 131072
+JSTR2=: _1,JCHAR2
+JCHAR4=: 262144
+JSTR4=: _1,JCHAR4
+JTYPES=: JB01,JCHAR,JINT,JPTR,JFL,JCMPX,JBOXED,JSB,JCHAR2,JCHAR4
+JSIZES=: >IF64{1 1 4 4 8 16 4 4 2 4;1 1 8 8 8 16 8 8 2 4
+SZI=: IF64{4 8
 ic=: 3!:4
 fc=: 3!:5
 endian=: |.^:('a'={.2 ic a.i.'a')
@@ -468,28 +554,6 @@ Endian=: |.^:('a'~:{.2 ic a.i.'a')
 AND=: $:/ : (17 b.)
 OR=: $:/ : (23 b.)
 XOR=: $:/ : (22 b.)
-break=: 3 : 0
-class=. >(0=#y){y;'default'
-p=. 9!:46''
-q=. (>:p i: '/'){.p
-fs=. (<q),each {."1[1!:0<q,'*.',class
-fs=. fs-.<p
-for_f. fs do.
-  v=. 2<.>:a.i.1!:11 f,<0 1
-  (v{a.) 1!:12 f,<0
-end.
-i.0 0
-)
-setbreak=: 3 : 0
-try.
-  p=. jpath '~break/'
-  1!:5 ::] <p
-  f=. p,(":2!:6''),'.',y
-  ({.a.) 1!:12 f;0
-  9!:47 f
-  f
-catch. '' end.
-)
 cocurrent 'z'
 calendar=: 3 : 0
 0 calendar y
@@ -677,12 +741,16 @@ dblxs=: 13!:15
 dbtrace=: 13!:16
 dbq=: 13!:17
 dbst=: 13!:18
-dbctx=: 3 3&$: : (4 : 0)
+dbcut=: 13!:19
+dbover=: 13!:20
+dbinto=: 13!:21
+dbout=: 13!:22
+dbctx=: 10 10&$: : (4 : 0)
 if. -.13!:17'' do. 0 0$'' return. end.
 try.
-  'before after'=. 2{. <. , x, 3 3
+  'before after'=. 2{. <. , x, 10 10
 catch.
-  'before after'=. 3 3
+  'before after'=. 10 10
 end.
 if. 0= #d=. 13!:13'' do. 0 0$'' return. end.
 if. '*' -.@e. sus=. >{:"1 d do. 0 0$'' return. end.
@@ -702,14 +770,31 @@ if. def e.~ <,':' do.
 end.
 min=. 0>.ln-before [ max=. (<:#def)<.ln+after
 ctx=. ((,.ln=range){' >'),"1 '[',"1 (":,.range) ,"1 ('] ') ,"1 >def{~range=. min + i. >:max-min
-> (<'@@ ', name, '[', (dyad#':'), (":ln) ,'] *', (nc{' acv'),' @@ ', src), def0, <"1 ctx
+; ,&LF&.> (<'@@ ', name, '[', (dyad#':'), (":ln) ,'] *', (nc{' acv'),' @@ ', src), def0, <@dtb "1 ctx
 )
-dbg=: 13!:0
+dbg=: 3 : 0
+if. -.IFQT do.
+  13!:0 y return.
+end.
+if. y do.
+  if. _1 = 4!:0 <'jdb_open_jdebug_' do.
+    0!:0 <jpath '~addons/ide/qt/debugs.ijs'
+  end.
+  jdb_open_jdebug_ y
+  13!:0 y
+else.
+  jdb_close_jdebug_ :: ] ''
+  13!:15 ''
+  13!:0 [ 0
+end.
+)
 dblocals=: _1&$: : (4 : 0)
 stk=. }. 13!:13''
 if. 0=#y do. y=. a: else. y=. (y e. i.#stk) # y end.
 loc=. (<y ; 0 7) { stk
-if. -. x-:_1 do.
+if. x-: 0 do.
+  {."1 &.>@:{:"1 loc
+elseif. -. x-:_1 do.
   t=. ;: ::] x
   f=. ({."1 e. t"_) # ]
   ({."1 loc) ,. f &.> {:"1 loc
@@ -764,6 +849,7 @@ if. y do.
 end.
 )
 dbview=: 3 : 0
+if. -.IFQT do. return. end.
 if. _1 = 4!:0 <'jdbview_jdbview_' do.
   'require'~'~addons/ide/qt/dbview.ijs'
 end.
@@ -786,26 +872,31 @@ f is the name of a verb
       dbss 'f :2'  dyadic line 2
       dbss 'f *:*' all lines
 
-dbr     reset, set suspension mode (0=disable, 1=enable)
-dbs     display stack
-dbsq    stop query
-dbss    stop set
-dbrun   run again (from current stop)
-dbnxt   run next (skip line and run)
-dbret   exit and return argument
-dbjmp   jump to line number
-dbsig   signal error
-dbrr    re-run with specified arguments
-dbrrx   re-run with specified executed arguments
-dberr   last error number
-dberm   last error message
-dbstk   call stack
-dblxq   latent expression query
-dblxs   latent expression set
-dbtrace trace control
-dbq     queries suspension mode (set by dbr)
-dbst    returns stack text
-
+dbr     13!:0  reset, set suspension mode (0=disable, 1=enable)
+dbs     13!:1  display stack
+dbsq    13!:2  stop query
+dbss    13!:3  stop set
+dbrun   13!:4  run again (from current stop)
+dbnxt   13!:5  run next (skip line and run)
+dbret   13!:6  exit and return argument
+dbjmp   13!:7  jump to line number
+dbsig   13!:8  signal error
+dbrr    13!:9  re-run with specified arguments
+dbrrx   13!:10 re-run with specified executed arguments
+dberr   13!:11 last error number
+dberm   13!:12 last error message
+dbstk   13!:13 call stack
+dblxq   13!:14 latent expression query
+dblxs   13!:15 latent expression set
+dbtrace 13!:16 trace control
+dbq     13!:17 queries suspension mode (set by dbr)
+dbst    13!:18 returns stack text
+(these 4 verbs are subject to change without notice)
+dbcut   13!:19 cut back
+dbover  13!:20 step over (13!:20'' or moveline 13!:20'')
+dbinto  13!:21 step into ...
+dbout   13!:22 step out  ...
+(utilities)
 dbctx       display context
 dbg         turn debug window on/off
 dblocals    display local names on stack
@@ -814,7 +905,7 @@ dbstop      add stop definitions
 dbstops     set all stop definitions
 dbstopme    stop current definition
 dbstopnext  stop current definition at next line
-dbview      view stack
+dbview      (GUI only) view stack
 )
 cocurrent 'z'
 dir=: 3 : 0
@@ -835,9 +926,6 @@ if. 0={:opt do. fls=. 1#~#dr=. fls#dr end.
 if. 0=#dr do. empty'' return. end.
 nms=. {."1 dr
 nms=. nms ,&.> fls{ps;''
-if. IFWIN do.
-  nms=. tolower &.> nms
-end.
 ndx=. /: (":,.fls),.>nms
 if. 0=opt do.
   list >ndx{nms
@@ -848,9 +936,6 @@ elseif. fmt<2=opt do.
   ndx{nms,.}."1 dr
 elseif. fmt do.
   'nms ts size'=. |:3{."1 dr
-  if. IFWIN do.
-    nms=. tolower L:0 nms
-  end.
   ds=. '   <dir>    ' ((-.fls)#i.#fls) } 12 ":,.size
   mth=. _3[\'   JanFebMarAprMayJunJulAugSepOctNovDec'
   f=. > @ ([: _2&{. [: '0'&, ": )&.>
@@ -901,7 +986,7 @@ if. +/ # &> c do.
 
 end.
 
-if. 0=#;res do. r=. r,'no difference',LF end.
+if. 0=+/# S:0 res do. r=. r,'no difference',LF end.
 
 }:r
 )
@@ -997,9 +1082,6 @@ if. x do.
   r=. r #~ h &> r
 end.
 if. #t do. r=. r,<}:t end.
-if. IFWIN do.
-  r=. tolower each r
-end.
 /:~ r
 )
 dirss=: 4 : 0
@@ -1037,7 +1119,7 @@ dirtree=: 3 : 0
 0 dirtree y
 :
 if. 0=4!:0 <'DirTreeX_j_' do.
-  ex=. boxxopen DirTreeX_j_
+  ex=. cutopen DirTreeX_j_
 else.
   ex=. ''
 end.
@@ -1072,10 +1154,7 @@ if. #dl=. 1!:0 path,'*' do.
     r=. r,;x&dirtree@(path&,@,&(ps,ext)) &.> dr
   end.
 end.
-r=. r #~ (ts x) <: ts &> 1{"1 r
-if. IFWIN *. #r do.
-  (tolower L:0 {."1 r) 0 }"0 1 r
-end.
+r #~ (ts x) <: ts &> 1{"1 r
 )
 dirused=: [: (# , +/ @ ; @ (2: {"1 ])) 0&dirtree
 cocurrent 'z'
@@ -1148,13 +1227,15 @@ end.
 x freads y
 )
 freadblock=: 3 : 0
+1e6 freadblock y
+:
 'f p'=. y
 f=. > fboxname f
 s=. 1!:4 <f
 if. s = _1 do. return. end.
 if. (s = 0) +. p >: s do. '';p return. end.
-if. 1e6 < s-p do.
-  dat=. 1!:11 f;p,1e6
+if. x < s-p do.
+  dat=. 1!:11 f;p,x
   len=. 1 + dat i: LF
   if. len > #dat do.
     'file not in LF-delimited lines' 13!:8[3
@@ -1247,8 +1328,8 @@ else.
 end.
 )
 ftype=: 3 : 0
-d=. (}: ^: ('/'={:)) ucp y
-d=. 1!:0 fboxname d
+(1:@(1!:4) :: 0:)^:IFWIN < f=. }: ^: ('/' = {:) , > fboxname y
+d=. 1!:0 f
 if. #d do.
   >: 'd' = 4 { > 4 { ,d
 else.
@@ -1278,15 +1359,12 @@ fwrites=: 4 : 0
 )
 cocurrent 'z'
 install=: 3 : 0
-if. IFQT+.IFIOS+.'Android'-:UNAME do.
-  smoutput 'must run from jconsole' return.
-end.
 require 'pacman'
 do_install_jpacman_ y
 )
 getqtbin=: 3 : 0
-if. (<UNAME) -.@e. 'Linux';'Darwin';'Win' do. return. end.
-if. IFQT+.IFIOS+.'Android'-:UNAME do.
+if. (<UNAME) -.@e. 'Linux';'OpenBSD';'FreeBSD';'Darwin';'Win' do. return. end.
+if. IFQT do.
   smoutput 'must run from jconsole' return.
 end.
 require 'pacman'
@@ -1305,9 +1383,19 @@ deb=: #~ (+. 1: |. (> </\))@(' '&~:)
 debc=: #~"1 [: (+. (1: |. (> </\))) ' '&(+./ .~:)
 delstring=: 4 : ';(x E.r) <@((#x)&}.) ;.1 r=. x,y'
 detab=: ' ' I.@(=&TAB@])} ]
-dlb=: }.~ =&' ' i. 0:
-dltb=: #~ [: (+./\ *. +./\.) ' '&~:
-dtb=: #~ [: +./\. ' '&~:
+3 : 0''
+try.
+  [:0
+  dlb=: 1&(128!:11)
+  dltb=: 2&(128!:11)
+  dtb=: 0&(128!:11)
+catch.
+  dlb=: }.~ =&' ' i. 0:
+  dltb=: #~ [: (+./\ *. +./\.) ' '&~:
+  dtb=: #~ [: +./\. ' '&~:
+end.
+''
+)
 joinstring=: ''&$: : (#@[ }. <@[ ;@,. ])
 ljust=: (|.~ +/@(*./\)@(' '&=))"1
 rjust=: (|.~ -@(+/)@(*./\.)@(' '&=))"1
@@ -1324,21 +1412,21 @@ c=. l = #f
 c } x ,: y
 )
 chopstring=: 3 : 0
-(' ';'""') chopstring y
+(' ';'"') chopstring y
 :
 dat=. y
 'fd sd'=. 2{. boxopen x
 assert. 1 = #fd
 if. #sd do.
-  if. 1=#~.sd do. sd=. ,{.sd
-  else.
-    s=. {.('|'=fd){ '|`'
-    dat=. dat rplc ({.sd);s;({:sd);s
+  sd=. ~.sd
+  if. 1 < #sd do.
+    s=. {. '|`' -. fd
+    dat=. dat charsub~ ,sd,.s
     sd=. s
   end.
   dat=. dat,fd
-  b=. dat e. fd
-  c=. dat e. sd
+  b=. dat = fd
+  c=. dat = {.sd
   d=. ~:/\ c
   fmsk=. b > d
   smsk=. (> (0 , }:)) c
@@ -1359,6 +1447,11 @@ d=. ~: /\ a #^:_1 c ~: }: 0, c
 }. (a >: d) # txt
 )
 dquote=: ('"'&,@(,&'"'))@ (#~ >:@(=&'"'))
+dquotex=: 3 : 0
+s=. y#~ >: m=. (=&'"') y
+p=. (i.#y)#~>: m
+('"'&,@(,&'"')) '\' (p i.(I.m))}s
+)
 dtbs=: 3 : 0
 CRLF dtbs y
 :
@@ -1370,9 +1463,10 @@ msk=. blk >: ndx e. b # ndx
 }: msk # txt
 )
 rplc=: stringreplace~
+rplci=: stringreplacei~
 fstringreplace=: 4 : 0
 nf=. 'no match found'
-y=. boxopen y
+y=. fboxname y
 try. size=. 1!:4 y catch. nf return. end.
 if. size=0 do. nf return. end.
 old=. freads y
@@ -1453,6 +1547,74 @@ ind=. ; bgn + each hnx { cnt # i.each newlen
 rep=. ; hnx { cnt # new
 rep ind} exp # txt
 )
+stringreplacei=: 4 : 0
+
+txt=. ,y
+t=. _2 [\ ,x
+old=. {."1 t
+new=. {:"1 t
+oldlen=. # &> old
+newlen=. # &> new
+
+if. *./ 1 = oldlen do.
+
+  hit=. (;old) i.&tolower txt
+  ndx=. I. hit < #old
+
+  if. 0 e. $ndx do. txt return. end.
+
+  cnt=. 1
+  exp=. hit { newlen,1
+  hnx=. ndx { hit
+  bgn=. ndx + +/\ 0, (}: hnx) { newlen - 1
+
+else.
+
+  hit=. old (I. @ E.)&tolower each <txt
+  cnt=. # &> hit
+
+  if. 0 = +/ cnt do. txt return. end.
+
+  bgn=. set=. ''
+
+  pick=. > @ {
+  diff=. }. - }:
+
+  for_i. I. 0 < cnt do.
+    ln=. i pick oldlen
+    cx=. (i pick hit) -. set, ,bgn -/ i.ln
+    while. 0 e. b=. 1, <:/\ ln <: diff cx do. cx=. b#cx end.
+    hit=. (<cx) i} hit
+    bgn=. bgn, cx
+    set=. set, ,cx +/ i.ln
+  end.
+
+  cnt=. # &> hit
+  msk=. 0 < cnt
+  exp=. (#txt) $ 1
+  del=. newlen - oldlen
+
+  if. #add=. I. msk *. del > 0 do.
+    exp=. (>: (add{cnt) # add{del) (;add{hit) } exp
+  end.
+
+  if. #sub=. I. msk *. del < 0 do.
+    sbx=. ; (;sub{hit) + each (sub{cnt) # i. each sub{del
+    exp=. 0 sbx } exp
+  end.
+
+  hit=. ; hit
+  ind=. /: (#hit) $ 1 2 3
+  hnx=. (/: ind { hit) { ind
+  bgn=. (hnx { hit) + +/\ 0, }: hnx { cnt # del
+
+end.
+
+ind=. ; bgn + each hnx { cnt # i.each newlen
+rep=. ; hnx { cnt # new
+rep ind} exp # txt
+)
+undquote=: (#~ -.@('""'&E.))@}:@}.^:(('"' = {.) *. '"' = {:)
 cutpara=: 3 : 0
 txt=. topara y
 txt=. txt,LF -. {:txt
@@ -1480,10 +1642,136 @@ r
 )
 topara=: 3 : 0
 if. 0=#y do. '' return. end.
+y=. toJ y
 b=. y=LF
 c=. b +. y=' '
 b=. b > (1,}:b) +. }.c,0
 ' ' (I. b) } y
+)
+cocurrent <'z'
+3 : 0''
+if. IFIOS>IFQT do.
+  r=. 'Engine: ',9!:14''
+  r=. r,LF,'Library: ',JLIB
+  r=. r,LF,'J/iOS Version: ',VERSION
+  r=. r,LF,'Platform: ',UNAME,' ',IF64 pick '32';'64'
+  r=. r,LF,'InstallPath: ', (2!:5'HOME'), '/Documents/j'
+  JVERSION=: toJ r
+end.
+EMPTY
+)
+NB. break
+NB.%break.ijs - break utilities
+NB.-This script defines break utilities and is included in the J standard library.
+NB.-Definitions are loaded into the z locale.
+NB.-
+NB.-`setbreak 'default'` is done by profile for Jqt. JHS and jconsole can use ctrl+c.
+NB.-
+NB.-setbreak creates file `~break/Pid.Class` and writes 0 to the first byte.
+NB.-
+NB.-Pid is the process id and Class is normally 'default'.
+NB.-
+NB.-setbreak calls 9!:47 with this file.
+NB.-
+NB.-9!:47 maps the first byte of file, and JE tests this byte for break requests.
+NB.-
+NB.-Another task writes 1 or 2 to the file for attention/break.
+NB.-
+NB.-9!:46 returns the filename.
+NB.-
+NB.-`break 'abc'` sets break for JEs with class abc.
+NB.-
+NB.-JEs with the same class all get the break. A non-default class protects JE from the default break.
+NB.-
+NB.- A new setbreak replaces the old.
+NB.-
+NB.-`break 0'` shows breakhelp
+
+cocurrent'z'
+
+NB. =========================================================
+NB.*break v break J execution
+NB. y is class to signal - '' treated as 'default'
+break=: 3 : 0
+if. y-:0 do. breakhelp_j_ return. end.
+breakclean_j_''
+p=. jpath'~break/'
+fs=. ((<p),each{."1[1!:0 p,'*')-.<9!:46''
+pc=. (>:;fs i:each'/')}.each fs
+i=. ;pc i.each'.'
+pids=. _1".each i{.each pc
+classes=. (>:i)}.each pc
+if. y-:1 do. /:~(>":each pids),.>' ',each classes return. end.
+'no task to break'assert #fs
+if. (0=#y)+.2=3!:0 y do.
+  b=. classes= (0=#y){y;'default'
+  'bad class'assert +/b
+  fs=. (<p),each (":each b#pids),each '.',each b#classes
+else.
+  i=. pids i.<y
+  'bad pid'assert i~:#pids
+  fs=. <p,(":;i{pids),'.',;i{classes
+end.
+for_f. fs do.
+  v=. 2<.>:a.i.1!:11 f,<0 1
+  (v{a.) 1!:12 f,<0
+end.
+i.0 0
+)
+
+NB. =========================================================
+NB.*setbreak v set break file
+NB.-Set break
+NB. y is class
+NB. Creates unique file ~break/Pid.Class
+setbreak=: 3 : 0
+if. (-.IFQT)*.y-:'default' do. i.0 0 return. end. NB. only for qt and not default
+try.
+  assert #y
+  q=. jpath '~break/'
+  1!:5 ::] <q
+  f=. q,(":2!:6''),'.',y
+  ({.a.) 1!:12 f;0
+  9!:47 f
+  breakclean_j_''
+  f
+catch. 13!:12'' end.
+)
+
+NB. =========================================================
+NB.*breakclean v erase orphan break files
+breakclean_j_=: 3 : 0
+q=. jpath '~break/'
+fs=. ((<q),each{."1[1!:0 q,'*')-.9!:46''
+if. UNAME-:'Win' do.
+  ferase fs NB. windows erase has not effect while file is in use
+else.
+  d=. dltb each}.<;._2 spawn_jtask_'ps -e'
+  allpids=. ;0".each (d i.each ' '){.each d
+  pc=. (>:;fs i:each'/')}.each fs
+  pids=. ;_1".each (;pc i.each'.'){.each pc
+  ferase (-.pids e. allpids)#fs
+end.
+)
+
+NB. =========================================================
+NB.*breakhelp n break help
+breakhelp_j_=: 0 : 0
+   break 0     NB. help
+   break 1     NB. list other ~break pids and classes
+   break ''    NB. break to all default class tasks
+   break '...' NB. break to all ... class tasks
+   break pid   NB. break to that pid
+
+1st break stops execution at line start
+2nd break stops execution mid-line, 6!:3 , socket select
+
+profile does setbreak'default' for Jqt
+profile does not do it for jconsole or JHS (use ctrl+c)
+
+   setbreak'abc' NB. set break file for this pid and class abc
+
+https://code.jsoftware.com/wiki/Standard_Library/break
 )
 
 cocurrent <'j'
@@ -1502,6 +1790,7 @@ addfname=: , ('/' ~: {:) # i:&'/' }. ]
 boxdraw=: 3 : '9!:7 y { Boxes'
 hostcmd=: [: 2!:0 '(' , ,&' || true)'
 fpath=: [: }: +./\.@:=&'/' # ]
+isURL=: 1 e. '://'&E.
 maxrecent=: 3 : '(RecentMax <. #r) {. r=. ~.y'
 pack=: [: (,. ".&.>) ;: ::]
 pdef=: 3 : '0 0$({."1 y)=: {:"1 y'
@@ -1509,20 +1798,31 @@ seldir=: #~ '-d'&-:"1 @ (1 4&{"1) @ > @ (4&{"1)
 spath=: #~ [: *./\. '/'&~:
 termLF=: , (0 < #) # LF -. {:
 termsep=: , (0 < #) # '/' -. {:
-tolist=: }.@;@:(LF&,each)
 remsep=: }.~ [: - '/' = {:
 
 path2proj=: ,'/',ProjExt ,~ spath
+win2lower=: 3 : 0
+if. 0=#CasePaths_j_ do. tolower y return. end.
+p=. jpathsep y
+n=. 1 + p i. ':'
+d=. n {. p
+if. (<d) e. CasePaths_j_ do. y return. end.
+b=. n }. p
+p=. d,(('/'~:{.b)#'/'), b,'/'
+p=. (1 + p i: '/') {. p
+p=. (I.p='/') {.each <p
+if. 1 e. p e. CasePaths_j_ do. y else. tolower y end.
+)
 3 : 0''
 if. UNAME-:'Darwin' do.
-  filecase=: tolower
+  filecase=: tolower`]@.IFIOS
   isroot=: '/' = {.
 elseif. IFUNIX do.
   filecase=: ]
   isroot=: '/' = {.
 elseif. do.
-  filecase=: tolower
-  isroot=: ':' = {.@}.
+  filecase=: win2lower
+  isroot=: ('\\' -: 2&{.) +. ('//' -: 2&{.) +. (':' = {.@}.)
 end.
 0
 )
@@ -1578,7 +1878,7 @@ t=. {.>'kernel32.dll GetConsoleWindow x'cd''
 i.0 0
 )
 mkdir=: 3 : 0
-a=. termsep y
+a=. termsep jpath y
 if. #1!:0 }:a do. 1 return. end.
 for_n. I. a='/' do.
   1!:5 :: 0: < n{.a
@@ -1625,7 +1925,32 @@ n=. I. m=. m +. u < x > 126
 s=. '\',.}.1 ": 8 (#.^:_1) 255,n{x
 s ((n+3*i.#n)+/i.4)} (>:3*m)#t
 )
-
+revinfo=: 3 : 0
+v=. 9!:14''
+if. '.' e. (v i. '/') {. v do.
+  res=. 8 {. <;._1 '/',v
+  a=. 0 pick res
+  ndx=. a i. '-'
+  beta=. {. 0 ". (ndx+5) }. a
+  vno=. 100 #. (0 ".&> <;._1 '.' 0} ndx {. a), beta
+  vno;res
+else.
+  res=. 9 {. <;._1 '/',v
+  'a b'=. 0 3 { res
+  res=. (<<<0 3) {res
+  res=. (('www.jsoftware.com' -: 3 pick res){'na';'GPL3') 2} res
+  'm n'=. ": each ver=. 0 100 #: 0 ". }. a
+  num=. _97 + a.i. {:b
+  if. 'r' = {. b do.
+    rev=. (num+1),0
+    vst=. 'j',m,'.',n,'.',":num+1
+  else.
+    rev=. 0,num
+    vst=. 'j',m,'.',n,'.0-beta',":num
+  end.
+  (100 #.ver,rev);vst;res
+end.
+)
 rmdir=: 3 : 0
 r=. 1;'not a directory: ',":y
 if. 0=#y do. r return. end.
@@ -1633,9 +1958,9 @@ d=. 1!:0 y
 if. 1 ~: #d do. r return. end.
 if. 'd' ~: 4 { 4 pick {. d do. r return. end.
 if. IFWIN do.
-  shell_jtask_ 'rmdir ',y,' /S /Q'
+  shell_jtask_ 'rmdir "',y,'" /S /Q'
 else.
-  hostcmd_j_ 'rm -rf --preserve-root ',y
+  hostcmd_j_ 'rm -rf ',((UNAME-:'Linux')#'--preserve-root '),y
 end.
 (#1!:0 y);''
 )
@@ -1707,15 +2032,6 @@ if. #err do.
 end.
 res
 )
-htmlhelp=: 3 : 0
-f=. jpath '~addons/docs/help/',y
-if. fexist ({.~ i:&'#') f do.
-  browse 'file://',f
-else.
-  f=. 'http://www.jsoftware.com/docs/help',}.(i.&'/'{.]) 9!:14''
-  browse f,'/',y
-end.
-)
 browseref=: 3 : 0
 htmlhelp 'dictionary/',y
 )
@@ -1723,15 +2039,14 @@ dquote=: 3 : 0
 if. '"' = {.y do. y else. '"',y,'"' end.
 )
 browse=: 3 : 0
-cmd=. dlb@dtb y
-isURL=. 1 e. '://'&E.
+if. -. isURL cmd=. dltb y do.
+  if. -.fexist cmd do. EMPTY return. end.
+end.
 if. IFJHS do.
-  cmd=. '/' (I. cmd='\') } cmd
-  if. -. isURL cmd do.
-    if. -.fexist cmd do. EMPTY return. end.
-    cmd=. 'file://',cmd
-  end.
-  redirecturl_jijxm_=: (' ';'%20') stringreplace cmd
+  redirecturl_jijxm_=: file2url cmd
+  EMPTY return.
+elseif. IFIOS>IFQT do.
+  jh '<a href="',(file2url cmd),'"</a>'
   EMPTY return.
 end.
 browser=. Browser_j_
@@ -1740,32 +2055,19 @@ case. 'Win' do.
   ShellExecute=. 'shell32 ShellExecuteW > i x *w *w *w *w i'&cd
   SW_SHOWNORMAL=. 1
   NULL=. <0
-  cmd=. '/' (I. cmd='\') } cmd
-  if. -. isURL cmd do.
-    if. -.fexist cmd do. EMPTY return. end.
-    cmd=. 'file://',cmd
-  end.
   if. 0 = #browser do.
-    r=. ShellExecute 0;(uucp 'open');(uucp cmd);NULL;NULL;SW_SHOWNORMAL
+    r=. ShellExecute 0;(uucp 'open');(uucp winpathsep cmd);NULL;NULL;SW_SHOWNORMAL
   else.
-    r=. ShellExecute 0;(uucp 'open');(uucp browser);(uucp dquote cmd);NULL;SW_SHOWNORMAL
+    r=. ShellExecute 0;(uucp 'open');(uucp winpathsep browser);(uucp dquote winpathsep cmd);NULL;SW_SHOWNORMAL
   end.
   if. r<33 do. sminfo 'browse error:',browser,' ',cmd,LF2,1{::cderx'' end.
 case. 'Android' do.
-  cmd=. '/' (I. cmd='\') } cmd
-  if. -. isURL cmd do.
-    cmd=. 'file://',cmd
-  end.
-  android_exec_host 'android.intent.action.VIEW';(utf8 cmd);'text/html';16b0004000
+  android_exec_host 'android.intent.action.VIEW';(utf8 ('file://'&,)@abspath^:(-.@isURL) cmd);'text/html';16b0004000
 case. do.
   if. 0 = #browser do.
     browser=. dfltbrowser''
   end.
-  browser=. dquote (browser;Browser_nox_j_){::~ nox=. (UNAME-:'Linux') *. (0;'') e.~ <2!:5 'DISPLAY'
-  cmd=. '/' (I. cmd='\') } cmd
-  if. -. isURL cmd do.
-    cmd=. 'file://',cmd
-  end.
+  browser=. dquote (browser;Browser_nox_j_){::~ nox=. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') *. (0;'') e.~ <2!:5 'DISPLAY'
   cmd=. browser,' ',dquote cmd
   try.
     2!:1 cmd, (0=nox)#' >/dev/null 2>&1 &'
@@ -1782,37 +2084,43 @@ EMPTY
 )
 dfltbrowser=: verb define
 select. UNAME
+case. 'Android' do. ''
 case. 'Win' do. ''
 case. 'Darwin' do. 'open'
 case. do.
   try.
-    2!:0'which google-chrome'
+    2!:0'which x-www-browser 2>/dev/null'
+    'x-www-browser' return. catch. end.
+  try.
+    2!:0'which google-chrome 2>/dev/null'
     'google-chrome' return. catch. end.
   try.
-    2!:0'which chromium'
+    2!:0'which chromium 2>/dev/null'
     'chromium' return. catch. end.
   try.
-    2!:0'which firefox'
+    2!:0'which chromium-browser 2>/dev/null'
+    'chromium-browser' return. catch. end.
+  try.
+    2!:0'which firefox 2>/dev/null'
     'firefox' return. catch. end.
   try.
-    2!:0'which konqueror'
+    2!:0'which konqueror 2>/dev/null'
     'konqueror' return. catch. end.
   try.
-    2!:0'which netscape'
-    'netscape' return. catch. end.
+    2!:0'which opera 2>/dev/null'
+    'opera' return. catch. end.
   '' return.
 end.
 )
 viewpdf=: 3 : 0
-cmd=. dlb@dtb y
-isURL=. 1 e. '://'&E.
-if. IFJHS do.
-  cmd=. '/' (I. cmd='\') } cmd
+if. -. isURL cmd=. dltb y do.
   if. -.fexist cmd do. EMPTY return. end.
-  redirecturl_jijxm_=: (' ';'%20') stringreplace cmd
+end.
+if. IFJHS do.
+  redirecturl_jijxm_=: file2url cmd
   EMPTY return.
-elseif. IFIOS do.
-  jh '<a href="file://',(iospath y),'" >',cmd,'</a>'
+elseif. IFIOS>IFQT do.
+  jh '<a href="',(file2url cmd),'"</a>'
   EMPTY return.
 end.
 PDFReader=. PDFReader_j_
@@ -1821,27 +2129,17 @@ case. 'Win' do.
   ShellExecute=. 'shell32 ShellExecuteW > i x *w *w *w *w i'&cd
   SW_SHOWNORMAL=. 1
   NULL=. <0
-  cmd=. '/' (I. cmd='\') } cmd
-  if. -.fexist cmd do. EMPTY return. end.
   if. 0 = #PDFReader do.
-    r=. ShellExecute 0;(uucp 'open');(uucp cmd);NULL;NULL;SW_SHOWNORMAL
+    r=. ShellExecute 0;(uucp 'open');(uucp winpathsep cmd);NULL;NULL;SW_SHOWNORMAL
   else.
-    r=. ShellExecute 0;(uucp 'open');(uucp PDFReader);(uucp dquote cmd);NULL;SW_SHOWNORMAL
+    r=. ShellExecute 0;(uucp 'open');(uucp winpathsep PDFReader);(uucp dquote winpathsep cmd);NULL;SW_SHOWNORMAL
   end.
   if. r<33 do. sminfo 'view pdf error:',PDFReader,' ',cmd,LF2,1{::cderx'' end.
 case. 'Android' do.
-  cmd=. '/' (I. cmd='\') } cmd
-  if. -. isURL cmd do.
-    cmd=. 'file://',cmd
-  end.
-  android_exec_host 'android.intent.action.VIEW';(utf8 cmd);'application/pdf';0
+  android_exec_host 'android.intent.action.VIEW';(utf8 ('file://'&,)@abspath^:(-.@isURL) cmd);'application/pdf';0
 case. do.
-  if. 0 = #PDFReader do.
-    PDFReader=. dfltpdfreader''
-  end.
   PDFReader=. dquote PDFReader
-  cmd=. '/' (I. cmd='\') } cmd
-  cmd=. PDFReader,' ',dquote cmd
+  cmd=. PDFReader,' ',(dquote cmd),' &'
   try.
     2!:1 cmd
   catch.
@@ -1855,27 +2153,31 @@ case. do.
 end.
 EMPTY
 )
+
+linux_pdfreader=: <;._2]0 :0
+xdg-open
+evince
+kpdf
+xpdf
+okular
+acroread
+)
 dfltpdfreader=: verb define
 select. UNAME
 case. 'Win' do. ''
+case. 'Android' do. ''
 case. 'Darwin' do. 'open'
 case. do.
-  try.
-    2!:0'which evince'
-    'evince' return. catch. end.
-  try.
-    2!:0'which kpdf'
-    'kpdf' return. catch. end.
-  try.
-    2!:0'which xpdf'
-    'xpdf' return. catch. end.
-  try.
-    2!:0'which okular'
-    'okular' return. catch. end.
-  try.
-    2!:0'which acroread'
-    'acroread' return. catch. end.
-  '' return.
+  nox=. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') *. (0;'') e.~ <2!:5 'DISPLAY'
+  if. (((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') > nox) *. ''-: te=. nox{::PDFReader_j_;PDFReader_nox_j_ do.
+    for_t. linux_pdfreader do.
+      try. 2!:0'which ',(>t),' 2>/dev/null'
+        te=. >t
+        break.
+      catch. end.
+    end.
+  end.
+  te
 end.
 )
 Folder=: ''
@@ -1954,31 +2256,14 @@ for_i. i.#res do.
 end.
 if. L. y do. res else. >res end.
 )
-Loaded=: ''
 Public=: i. 0 2
 UserFolders=: i. 0 2
-Ignore=: 3 : 0''
-r=. ' colib convert coutil dates debug dir dll files libpath strings text'
-if. IFIOS do.
-  r=. r, ' qtide ide/qt viewmat'
-else.
-  r=. r, ' ide/ios'
-end.
-if. -.IFQT do.
-  r=. r, ' qtide ide/qt'
-end.
-if. (((UNAME-:'Android')>IFQT+.IFJCDROID)+.IFIOS+.IFJHS) do.
-  r=. r,' gl2 graphics/gl2'
-end.
-if. -.IFJCDROID +. IFQT*.'Android'-:UNAME do.
-  r=. r,' android gui/android'
-end.
-if. -.IFJCDROID do.
-  r=. r,' droidwd gui/droidwd'
-end.
-<;._1 r
+getignore=: 3 : 0
+r=. ' colib compare convert coutil dates dir dll files libpath strings text gl2 graphics/gl2'
+Ignore=: (<;._1 r), ((-.IFQT)#<'ide/qt'), ((-.IFJA)#<'ide/ja'), ((-.IFWIN)#<'ide/jnet'), ((IFQT+.IFJA+.IFJNET)#<'ide/jhs')
 )
 
+getignore''
 buildpublic=: 3 : 0
 dat=. deb toJ y
 dat=. a: -.~ <;._2 dat, LF
@@ -1988,7 +2273,8 @@ long=. ndx }. each dat
 long=. extsrc@jpathsep@deb each long
 msk=. (<'system','/') = 7 {. each long
 long=. (msk{'';'~') ,each long
-Public=: sort ~. Public,~ short,.long
+msk=. (i. ~.) {."1 Public=: Public,~ short,.long
+Public=: sort msk{Public
 empty''
 )
 cutnames=: 3 : 0
@@ -2044,7 +2330,9 @@ if. #ind do.
   ind=. (-.msk)#ind
   if. #ind do.
     bal=. (-.msk)#bal
-    msk=. -. '.' e. &> bal
+    msk=. -. '.'&e.@(}.~i:&'/') &> bal
+    msk=. msk *. *./@:((a.{~, 65 97 +/i.26)e.~])@:({.~i.&'/') &> bal
+    msk=. msk > isroot &> bal
     cnt=. ('/' +/ .= ]) &> bal
     ndx=. I. msk *. cnt=1
     bal=. (addfname each ndx { bal) ndx } bal
@@ -2058,22 +2346,38 @@ fullname each y
 getpath=: ([: +./\. =&'/') # ]
 xedit=: 0&$: : (4 : 0)
 'file row'=. 2{.(boxopen y),<0
-file=. ,file
-isURL=. 1 e. '://'&E.
+file=. dltb file
+if. -.fexist file do. EMPTY return. end.
 if. IFJHS do.
   xmr ::0: file
   EMPTY return.
 end.
 if. UNAME-:'Android' do.
-  file=. '/' (I. file='\') } file
-  if. -. isURL file do.
-    file=. 'file://',file
+  if. IFJA do.
+    android_exec_host 'android.intent.action.VIEW';(utf8 ('file://'&,)@abspath^:(-.@isURL) file);'text/plain';0
+  elseif. 1=ftype '/system/bin/vi' do.
+    2!:1 '/system/bin/vi', ' ', (dquote >@fboxname file)
+  elseif. 1=ftype '/system/xbin/vi' do.
+    2!:1 '/system/xbin/vi', ' ', (dquote >@fboxname file)
+  elseif. #Editor_j_ do.
+    2!:1 Editor_j_, ' ', (dquote >@fboxname file)
   end.
-  android_exec_host 'android.intent.action.VIEW';(utf8 file);'text/plain';0
   EMPTY return.
 end.
-editor=. (Editor_j_;Editor_nox_j_){::~ nox=. (UNAME-:'Linux') *. (0;'') e.~ <2!:5 'DISPLAY'
+editor=. (Editor_j_;Editor_nox_j_){::~ nox=. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') *. (0;'') e.~ <2!:5 'DISPLAY'
 if. 0=#editor do. EMPTY return. end.
+nox=. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') *. (0;'') e.~ <2!:5 'DISPLAY'
+if. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD')>nox do.
+  if. 1 e. r=. 'term' E. editor do.
+    if. '-e ' -: 3{. editor=. dlb (}.~ i.&' ') ({.I.r)}.editor do.
+      editor=. TermEmu, (('gnome-terminal'-:TermEmu){::' -e ';' -- '), dlb 3}.editor
+    else.
+      editor=. TermEmu, ' ', editor
+    end.
+  else.
+    editor=. TermEmu, (('gnome-terminal'-:TermEmu){::' -e ';' -- '), editor
+  end.
+end.
 if. 1 e. '%f' E. editor do.
   cmd=. editor stringreplace~ '%f';(dquote >@fboxname file);'%l';(":>:row)
 else.
@@ -2084,7 +2388,7 @@ try.
     if. x do.
       2!:1 cmd
     else.
-      2!:1 cmd, (0=nox+.(1 -.@e. 'term' E. editor)*.(1 e. '/vi' E. editor)+.'vi'-:2{.editor)#' &'
+      2!:1 cmd, (0=nox)#' 1>/dev/null &'
     end.
   else.
     (x{0 _1) fork_jtask_ cmd
@@ -2096,26 +2400,117 @@ catch.
 end.
 EMPTY
 )
+
+linux_terminal=: <;._2]0 :0
+x-terminal-emulator
+gnome-terminal
+mate-terminal
+konsole
+urxvt
+rxvt
+lxterminal
+xfce4-terminal
+eterm
+terminator
+terminology
+st
+xterm
+)
+dflttermemu=: verb define
+nox=. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') *. (0;'') e.~ <2!:5 'DISPLAY'
+if. (((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') > nox) *. ''-: te=. nox{::TermEmu_j_;TermEmu_nox_j_ do.
+  for_t. linux_terminal do.
+    try. 2!:0'which ',(>t),' 2>/dev/null'
+      te=. >t
+      break.
+    catch. end.
+  end.
+end.
+te
+)
+viewimage=: 3 : 0
+if. -. isURL cmd=. dltb y do.
+  if. -.fexist cmd do. EMPTY return. end.
+end.
+if. IFJHS do.
+  redirecturl_jijxm_=: file2url cmd
+  EMPTY return.
+elseif. IFIOS>IFQT do.
+  jh '<a href="',(file2url cmd),'"</a>'
+  EMPTY return.
+end.
+nox=. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') *. (0;'') e.~ <2!:5 'DISPLAY'
+ImageViewer=. nox{::ImageViewer_j_;ImageViewer_nox_j_
+select. UNAME
+case. 'Win' do.
+  ShellExecute=. 'shell32 ShellExecuteW > i x *w *w *w *w i'&cd
+  SW_SHOWNORMAL=. 1
+  NULL=. <0
+  r=. ShellExecute 0;NULL;(uucp winpathsep cmd);NULL;NULL;SW_SHOWNORMAL
+  if. r<33 do. sminfo 'view image error: ',cmd,LF2,1{::cderx'' end.
+case. 'Android' do.
+  android_exec_host 'android.intent.action.VIEW';(utf8 ('file://'&,)@abspath^:(-.@isURL) cmd);'image/*';0
+case. do.
+  if. 0 = #ImageViewer do.
+    ImageViewer=. dfltimageviewer''
+  end.
+  if. 0 = #ImageViewer do.
+    browser=. Browser_j_
+    if. 0 = #browser do.
+      browser=. dfltbrowser''
+    end.
+    browser=. dquote (browser;Browser_nox_j_){::~ nox=. ((<UNAME)e.'Linux';'OpenBSD';'FreeBSD') *. (0;'') e.~ <2!:5 'DISPLAY'
+  else.
+    browser=. dquote ImageViewer
+  end.
+  cmd=. browser,' ',dquote cmd
+  try.
+    2!:1 cmd, (0=nox)#' >/dev/null 2>&1 &'
+  catch.
+    msg=. 'Could not run the image viewer with the command:',LF2
+    msg=. msg, cmd,LF2
+    if. IFQT do.
+      msg=. msg, 'You can change the imageviewer definition in Edit|Configure|Base',LF2
+    end.
+    sminfo 'Run image viewer';msg
+  end.
+end.
+EMPTY
+)
+dfltimageviewer=: verb define
+select. UNAME
+case. 'Win' do. ''
+case. 'Android' do. ''
+case. 'Darwin' do. 'open'
+case. do.
+  try.
+    2!:0'which xdg-open 2>/dev/null'
+    'xdg-open' return. catch. end.
+  try.
+    2!:0'which eog 2>/dev/null'
+    'eog' return. catch. end.
+  '' return.
+end.
+)
 cocurrent 'z'
 jpath=: jpath_j_
 load=: 3 : 0
 0 load y
 :
 fls=. getscripts_j_ y
-fn=. ('script',x#'d')~
+fn=. x & (4 : '0!:x y')
 for_fl. fls do.
   if. Displayload_j_ do. smoutput > fl end.
   if. -. fexist fl do.
     smoutput 'not found: ',>fl
   end.
   fn fl
-  Loaded_j_=: ~. Loaded_j_,fl
 end.
 empty''
 )
 loadd=: 1&load
 require=: 3 : 0
-fls=. Loaded_j_ -.~ getscripts_j_ y
+fls=. (getscripts_j_ y) -. jpathsep&.> 4!:3''
 if. # fls do. load fls else. empty'' end.
 )
 scripts=: scripts_j_
@@ -2126,17 +2521,17 @@ else. y=. (4!:1 y) -. (,'y');,'y.' end.
 wid=. {.wcsize''
 sub=. '.'&(I. @(e.&(9 10 12 13 127 254 255{a.))@]})
 j=. '((1<#$t)#(":$t),''$''),":,t'
-j=. 'if. L. t=. ".y do. 5!:5 <y return. end.';j
+j=. 'if. L. t=. $.^:_1 ".y do. 5!:5 <y return. end.';j
 j=. 'if. 0~:4!:0 <y do. 5!:5 <y return. end.';j
 a=. (,&'=: ',sub @ (3 : j)) each y
-; ((wid <. #&> a) {.each a) ,each LF
+}: ; ((wid <. #&> a) {.each a) ,each LF
 )
 xedit=: xedit_j_
 wcsize=: 3 : 0
-if. (-.IFQT+.IFJHS+.IFIOS) *. UNAME-:'Linux' do.
+if. (IFQT+.IFJNET+.IFJHS+.IFIOS+.UNAME-:'Android') < IFUNIX do.
   |.@".@(-.&LF)@(2!:0) :: (Cwh_j_"_) '/bin/stty size 2>/dev/null'
 else.
-  Cwh_j_
+  (Cwh_j_"_)`((0 ". wd) :: (Cwh_j_"_))@.IFQT 'sm get termcwh'
 end.
 )
 coclass 'jcompare'

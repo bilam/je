@@ -1,3 +1,4 @@
+prolog './gpi.ijs'
 NB. pi ------------------------------------------------------------------
 
 NB. pi and the common mean (AGM, arithmetic-geometric mean)
@@ -15,3 +16,5 @@ t=: (am,gm)^:(i.10) 1,%%:2
 4!:55 ;:'a am b cm gm t'
 
 
+
+epilog''

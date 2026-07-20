@@ -1,3 +1,4 @@
+prolog './g420.ijs'
 NB. f/y for atomic verbs ------------------------------------------------
 
 insert =: 1 : '{. ` ({. x $:@}.) @. (1&<@#)'     NB. one or more items
@@ -689,3 +690,5 @@ test 29
 4!:55 ;:'rand s t test x y z'
 
 
+
+epilog''

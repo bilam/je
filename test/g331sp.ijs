@@ -1,3 +1,4 @@
+prolog './g331sp.ijs'
 NB. x f;.n y for sparse x, n e. _2 _1 1 2 -------------------------------
 
 box=: 3 : '<y'
@@ -80,3 +81,5 @@ _2 test t
 4!:55 ;:'b box C f t test x'
 
 
+
+epilog''

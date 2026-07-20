@@ -126,7 +126,7 @@ static B jtwidthdp(J jt, A a, I *w, I *d){I n,x,y; C *v;
 static F1(jtfmtparse){A x,z,*zv;B ml[2+NMODVALS],mod,t;C c,*cu="srqpnmdblc",*cu1="?bdmnpqrs",d,*s,*wv;
      I fb,i,j,mi,n,n1,p,q,vals[3]={-1,-1,0};
  RZ(w);
- w=AAV0(w); n=AN(w);
+ w=AAVR0(w); n=AN(w);
  GA(z,BOX,1+NMODVALS,1,0); zv=AAV(z); 
  DO(NMODVALS, zv[1+i]=mtv;);
  if(n&&C2T&AT(w))RZ(w=uco2(num[5],w));
@@ -434,7 +434,7 @@ static A jtfmtallcol(J jt, A a, A w, I mode) {A *a1v,base,fb,len,strs,*u,v,x;
   k=l=ib[0]; d=ib[1]; mods=ib[2]; coll=ib[3+(1==nf)*j];
   nB= AN(uB); nD= AN(uD); nM= AN(uM); nN= AN(uN); nP= AN(uP); nQ= AN(uQ); nR= AN(uR);
   cB=CAV(uB); cD=CAV(uD); cM=CAV(uM); cN=CAV(uN); cP=CAV(uP); cQ=CAV(uQ); cR=CAV(uR);
-  subs=AN(uS)?CAV(uS):"e,.-*";
+  subs=AN(uS)?CAV(uS):(C*)"e,.-*";
   switch(mode) {
    case 0: v=*a1v; cv=CAV(v); break;
    case 1: k=0<l?l:coll; cv=cvv[j]; cvv[j]+=k; break;

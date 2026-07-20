@@ -1,3 +1,4 @@
+prolog './gxco1.ijs'
 NB. extended precision integers -----------------------------------------
 
 NB. create test data
@@ -867,3 +868,5 @@ det=: -/ .*
 4!:55 ;:'num pf root t test x x1 x2 x3 y y1 y2 y3'
 
 
+
+epilog''

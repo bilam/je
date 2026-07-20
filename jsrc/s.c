@@ -44,7 +44,7 @@ B jtsymext(J jt,B b){A x,y;I j,m,n,s[2],*v,xn,yn;L*u;
  if(b){y=jt->symp; j=((MS*)y-1)->j; n=*AS(y); yn=AN(y);}
  else {            j=12;            n=1;      yn=0;    }
  m=msize[1+j];                              /* new size in bytes           */
- m-=sizeof(MS)+SZI*(AH+2);                  /* less array overhead         */
+ m-=sizeof(MS)+SZI*(NORMAH+2);              /* less array overhead         */
  m/=symcol*SZI;                             /* new # rows                  */
  s[0]=m; s[1]=symcol; xn=m*symcol;          /* new pool array shape        */
  GA(x,INT,xn,2,s); v=AV(x);                 /* new pool array              */
@@ -183,7 +183,7 @@ static A jtlocindirect(J jt,I n,C*u){A a,g=jt->global,x,y;B lcl=1;C*s,*v,*xv;I k
   y=e->val;  
   ASSERTN(!AR(y),EVRANK,a); 
   ASSERTN(BOX&AT(y),EVDOMAIN,a);
-  x=AAV0(y); xn=AN(x); xv=CAV(x); 
+  x=AAVR0(y); xn=AN(x); xv=CAV(x); 
   ASSERTN(1>=AR(x),EVRANK,a); 
   ASSERTN(xn,EVLENGTH,a);
   ASSERTN(LIT&AT(x),EVDOMAIN,a); 
@@ -264,7 +264,7 @@ A jtsymbis(J jt,A a,A w,A g){A x;I m,n,wn,wr,wt;NM*v;L*e;V*wv;
   wn=AN(w); wr=AR(w); m=wn*bp(wt);
   ASSERT(wt&B01+INT+FL+CMPX+LIT,EVDOMAIN);
   ASSERT(AM(x)>=m,EVALLOC);
-  AT(x)=wt; AN(x)=wn; AR(x)=wr; ICPY(AS(x),AS(w),wr); MC(AV(x),AV(w),m);
+  AT(x)=wt; AN(x)=wn; ARINIT(x,(RANKT)wr); ICPY(AS(x),AS(w),wr); MC(AV(x),AV(w),m);
  }
  e->sn=jt->slisti;
  if(jt->stch&&(m<n||jt->local!=g&&jt->stloc!=g))e->flag|=LCH;

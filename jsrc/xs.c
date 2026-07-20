@@ -65,7 +65,7 @@ static A jtlinf(J jt,A a,A w,C ce,B tso){A x,y,z;B lk=0;C*s;I i=-1,n,oldi=jt->sl
  RZ(a&&w);
  ASSERT(AT(w)&BOX,EVDOMAIN);
  if(jt->seclev){
-  y=AAV0(w); n=AN(y); s=CAV(y); 
+  y=AAVR0(w); n=AN(y); s=CAV(y); 
   ASSERT(LIT&AT(y),EVDOMAIN); 
   ASSERT(3<n&&!memcmp(s+n-3,".js",3L)||4<n&&!memcmp(s+n-4,".ijs",4L),EVSECURE);
  }
@@ -75,7 +75,7 @@ static A jtlinf(J jt,A a,A w,C ce,B tso){A x,y,z;B lk=0;C*s;I i=-1,n,oldi=jt->sl
   ASSERT(CFF!=*CAV(x),EVDOMAIN);
   lk=1;
  }
- RZ(y=fullname(AAV0(w)));
+ RZ(y=fullname(AAVR0(w)));
  RE(i=i0(indexof(vec(BOX,jt->slistn,AAV(jt->slist)),box(y))));
  if(jt->slistn==i){
   if(jt->slistn==AN(jt->slist))RZ(jt->slist=ext(1,jt->slist)); 
@@ -97,6 +97,7 @@ F1(jtscm10 ){I r; RZ(w);    r=1&&AT(w)&LIT+C2T; F1RANK(     r,jtscm10, 0); R r?l
 F1(jtscm11 ){I r; RZ(w);    r=1&&AT(w)&LIT+C2T; F1RANK(     r,jtscm11, 0); R r?line(w,-1L,1,1):linf(mark,w,1,1);}
 F1(jtsct1  ){I r; RZ(w);    r=1&&AT(w)&LIT+C2T; F1RANK(     r,jtsct1,  0); R r?line(w,-1L,2,1):linf(mark,w,2,1);}
 F1(jtscz1  ){I r; RZ(w);    r=1&&AT(w)&LIT+C2T; F1RANK(     r,jtscz1,  0); R r?line(w,-1L,3,0):linf(mark,w,3,0);}
+F1(jtscy1  ){I r; RZ(w);    r=1&&AT(w)&LIT+C2T; F1RANK(     r,jtscy1,  0); R r?line(w,-1L,3,1):linf(mark,w,3,1);}
 
 F2(jtscm002){I r; RZ(a&&w); r=1&&AT(w)&LIT+C2T; F2RANK(RMAX,r,jtscm002,0); R r?line(w,-1L,0,0):linf(a,   w,0,0);}
 F2(jtscm012){I r; RZ(a&&w); r=1&&AT(w)&LIT+C2T; F2RANK(RMAX,r,jtscm012,0); R r?line(w,-1L,0,1):linf(a,   w,0,1);}
@@ -104,3 +105,4 @@ F2(jtscm102){I r; RZ(a&&w); r=1&&AT(w)&LIT+C2T; F2RANK(RMAX,r,jtscm102,0); R r?l
 F2(jtscm112){I r; RZ(a&&w); r=1&&AT(w)&LIT+C2T; F2RANK(RMAX,r,jtscm112,0); R r?line(w,-1L,1,1):linf(a,   w,1,1);}
 F2(jtsct2  ){I r; RZ(a&&w); r=1&&AT(w)&LIT+C2T; F2RANK(RMAX,r,jtsct2,  0); R r?line(w,-1L,2,1):linf(a,   w,2,1);}
 F2(jtscz2  ){I r; RZ(a&&w); r=1&&AT(w)&LIT+C2T; F2RANK(RMAX,r,jtscz2,  0); R r?line(w,-1L,3,0):linf(a,   w,3,0);}
+F2(jtscy2  ){I r; RZ(a&&w); r=1&&AT(w)&LIT+C2T; F2RANK(RMAX,r,jtscy2,  0); R r?line(w,-1L,3,1):linf(a,   w,3,1);}

@@ -5,6 +5,7 @@
 
 #include "j.h"
 #include "jversion.h"
+#define jtype     "release"
 
 A   a0j1=0;               /* 0j1                                  */
 A   ace=0;                /* a:                                   */
@@ -55,6 +56,25 @@ DX  zeroDX={0,0};         /* 0                                    */
 Z   zeroZ={0,0};          /* 0j0                                  */
 A   zpath=0;              /* default locale search path           */
 
+uint64_t g_cpuFeatures,g0_cpuFeatures;   // blis
+uint64_t g_cpuFeatures2,g0_cpuFeatures2;  // fsgsbase
+int numberOfCores;        // number of cpu cores
+UC  hwaes=0;              // hardware aes support
+UC  hwfma=0;              // blis cpu tuning
+#if SUPPORT_AFFINITY && !defined(__FreeBSD__)
+UC  supportaffinity=1;
+#else
+UC  supportaffinity=0;
+#endif
+#ifdef BOXEDSPARSE
+UC  fboxedsparse=1;       // enable boxed sparse
+#endif
+
+void*libcblas=0;
+char hascblas=0;
+C    cblasfile[1000]="";
+char hasopenmp=0;
+
 /* version text up to first / is the J System ID and it */
 /* identifies the J Front Ends, J Engine, and J Library */
 /* and is used in Unix to find profile.ijs              */
@@ -63,7 +83,11 @@ F1(jtversq){
 	char m[1000]; char d[12]; char months[] = "Jan01Feb02Mar03Apr04May05Jun06Jul07Aug08Sep09Oct10Nov11Dec12";
 	ASSERTMTV(w);
 	strcpy(m,"j"jversion"/");
-#if SY_64
+#if defined(__aarch64__)||defined(_M_ARM64)
+	strcat(m,"j64arm/");
+#elif defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+	strcat(m,"j32arm/");
+#elif SY_64
 	strcat(m,"j64/");
 #else
 	strcat(m,"j32/");
