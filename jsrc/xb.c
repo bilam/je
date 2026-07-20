@@ -632,7 +632,7 @@ static DF1(jtpackbytem1){F12IP;
 #ifdef PEXT
  DO((wn+8-1)>>3, zv[i]=PEXT(wv[i],VALIDBOOLEAN8);)   // read 8 bits, pack, write out.  This overfetches but does not overstore
 #else
-#if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+#if ALIGNREQ & 8
  UI8 wv1;
  DO(((wn+8-1)>>3)-1, wv1=0; memcpy(&wv1, &wv[i], 8);zv[i]=(wv1*(UI8)0x0102040810204080LL)>>(64-8);)   // read 8 bits, pack, write out.  This overfetches but does not overstore
  wv1=0; memcpy(&wv1, &wv[((wn+8-1)>>3)-1], 8);

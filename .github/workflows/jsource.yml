@@ -13,9 +13,9 @@ on:
 # if: ${{ false }}
 
 env:
- DEBUGLEVEL: 0
- OPTL: -O2
- OPTLD: -O2
+ DEBUGLEVEL: 3
+ OPTL: -O0
+ OPTLD: -O0
  NO_UNDEFINED: 1
 
 jobs:
@@ -508,6 +508,9 @@ jobs:
        export USE_PYXES=1
        export USE_EMU_AVX=1
        export _DEBUG=0   # qemu-arm gdb not supported
+       export OPTL=${{ env.OPTL }}
+       export OPTLD=${{ env.OPTLD }}
+       export NO_UNDEFINED=${{ env.NO_UNDEFINED }}
        script/buildga.sh raspberry arm64 || exit 1
        script/testga.sh raspberry arm64 || exit 1
        cp jlibrary/bin/* j64 || true
@@ -572,6 +575,9 @@ jobs:
        export USE_PYXES=0
        export USE_EMU_AVX=0
        export _DEBUG=0   # qemu-arm gdb not supported
+       export OPTL=${{ env.OPTL }}
+       export OPTLD=${{ env.OPTLD }}
+       export NO_UNDEFINED=${{ env.NO_UNDEFINED }}
        script/buildga.sh raspberry armv6l || exit 1
        script/testga.sh raspberry armv6l || exit 1
        find j32 -type d -exec chmod a+rwx {} \;
@@ -887,6 +893,10 @@ jobs:
       USE_OPENMP: 0
       USE_PYXES: 1
       USE_EMU_AVX: 1
+      _DEBUG: ${{ env.DEBUGLEVEL }}
+      OPTL: ${{ env.OPTL }}
+      OPTLD: ${{ env.OPTLD }}
+      NO_UNDEFINED: ${{ env.NO_UNDEFINED }}
      run: |
       script/buildga.sh android arm64 || exit 1
 
@@ -922,6 +932,10 @@ jobs:
       USE_OPENMP: 0
       USE_PYXES: 0
       USE_EMU_AVX: 0
+      _DEBUG: ${{ env.DEBUGLEVEL }}
+      OPTL: ${{ env.OPTL }}
+      OPTLD: ${{ env.OPTLD }}
+      NO_UNDEFINED: ${{ env.NO_UNDEFINED }}
      run: |
       script/buildga.sh wasm wasm32 || exit 1
       script/testga.sh wasm wasm32 || exit 1

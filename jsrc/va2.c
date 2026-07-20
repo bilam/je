@@ -49,7 +49,7 @@ INLINE static A jtssingleton(J jtfg,A a,A w,I af,A self){F12JT;
  I caseno=opcode-VA2CBW1111; caseno=caseno<0?0:caseno; caseno&=31; caseno=SSINGCASE(caseno,bidcase>>INTX);  // case # for eventual switch.  Lump all Booleans at 0. &31 to remove comparison flag and to help the compiler
  // Start loading everything we will need as values before the pipeline break.
  I aiv=*(I*)av; I wiv=*(I*)wv; D adv,wdv;  // arg values, as I and D
-#ifdef ALIGNEDMEMD
+#if ALIGNREQ & 8
  adv=*(D*)(intptr_t)((I)av&-SZD); wdv=*(D*)(intptr_t)((I)wv&-SZD);   // all atoms are aligned to a boundary of their size.  avoid spec check if loading an FL from a non-FL boundary (which must be invalid)
 #else
  adv=*(D*)av,wdv=*(D*)wv;
