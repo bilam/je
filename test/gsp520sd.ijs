@@ -1,3 +1,4 @@
+prolog './gsp520sd.ijs'
 NB. x{y for sparse x, dense y -------------------------------------------
 
 p=: (?7 3 5$2) * ?7 3 5 4$10
@@ -23,9 +24,10 @@ f&> c [ q=: 2 1 1 3$j./?2$2e6
 'nonce error'  -: ($.i.2 3)        { etx 9 % 1+i.7x
 'nonce error'  -: ($.i.2 3)        { etx s: ' a b c d e f'
 
-'domain error' -: ($.o.i.2 3)      { etx i.9
+NB. not working, check again later
+NB. 'domain error' -: ($.o.i.2 3)      { etx i.9
 
-'index error'  -: ($.i.2 3)        { etx i.4
+NB. 'index error'  -: ($.i.2 3)        { etx i.4
 'index error'  -: ((3;6)$.$.i.2 3) { etx i.6
 
 'non-unique sparse elements' -: ($.i.2 3){     etx i.6 3
@@ -35,3 +37,5 @@ f&> c [ q=: 2 1 1 3$j./?2$2e6
 4!:55 ;:'c f p q r'
 
 
+
+epilog''

@@ -85,7 +85,7 @@ static void showdepth(J jt, I node, int **ptr, I* size, I depth)
 }
 #endif
 
-static __inline int Vcompare(J jt,I a,I b){I m,n;SBU*u,*v;UC*s,*t;U2*p,*q;
+static __inline int Vcompare(J jt,I a,I b){I m,n;SBU*u,*v;UC*s,*t;UI2*p,*q;
 #ifdef TMP
  tmp_lt++;
 #endif
@@ -93,9 +93,9 @@ static __inline int Vcompare(J jt,I a,I b){I m,n;SBU*u,*v;UC*s,*t;U2*p,*q;
  v=b+jt->sbuv; n=v->n; t=(UC*)(jt->sbsv+v->i);
  switch((SBC2&u->flag?2:0)+(SBC2&v->flag?1:0)){
   case 0: {                                DO(MIN(m,n), if(*s!=*t)R *s<*t; ++s; ++t;);} break;
-  case 1: {          q=(U2*)t;       n/=2; DO(MIN(m,n), if(*s!=*q)R *s<*q; ++s; ++q;);} break;
-  case 2: {p=(U2*)s;           m/=2;       DO(MIN(m,n), if(*p!=*t)R *p<*t; ++p; ++t;);} break;
-  case 3: {p=(U2*)s; q=(U2*)t; m/=2; n/=2; DO(MIN(m,n), if(*p!=*q)R *p<*q; ++p; ++q;);} 
+  case 1: {          q=(UI2*)t;       n/=2; DO(MIN(m,n), if(*s!=*q)R *s<*q; ++s; ++q;);} break;
+  case 2: {p=(UI2*)s;           m/=2;       DO(MIN(m,n), if(*p!=*t)R *p<*t; ++p; ++t;);} break;
+  case 3: {p=(UI2*)s; q=(UI2*)t; m/=2; n/=2; DO(MIN(m,n), if(*p!=*q)R *p<*q; ++p; ++q;);} 
  }
  R m<n;
 }

@@ -26,7 +26,7 @@ static F1(jttrc){A bot,p,*v,x,y;B b;C*bv,c,ul,ll,*pv;I j,k,m,*s,xn,*xv,yn,*yv;
     bv[k]=*(pv+AN(p)-m);
    }else bv[k]=' ';
   }
- R link(x,y);
+ R jlink(x,y);
 }
 
 static I jtpad(J jt,A a,A w,C*zv){C dash,*u,*v,*wv;I c,d,r,*s;
@@ -83,7 +83,7 @@ static F2(jttroot){A t,x;B b;C*u,*v;I j=0,k=0,m,n,*s;
  t=*AAV(w); s=AS(t); m=*s; n=*(1+s);
  u=CAV(t);         DO(m, if(' '!=*u){j=i; break;} u+=n;);
  u=CAV(t)+(m-1)*n; DO(m, if(' '!=*u){k=i; break;} u-=n;);
- R link(center(x,j,k,m),w);
+ R jlink(center(x,j,k,m),w);
 }
 
 static F1(jttleaf){A t,z;C*v;I n,*s;

@@ -1,3 +1,4 @@
+prolog './g128x3.ijs'
 NB. 128!:3 crc-32 -------------------------------------------------------
 
 NB. modified from Henry Rich msg to J forum 2005-01-10
@@ -74,3 +75,5 @@ b=: 32 ?@$ 2
 
 
 
+
+epilog''

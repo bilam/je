@@ -1,3 +1,4 @@
+prolog './g7x5.ijs'
 NB. 7!:5 ----------------------------------------------------------------
 
 bp=: (IF64{1 1 4 8 16 4 4 2,:1 1 8 8 16 8 8 2) {~ 1 2 4 8 16 32 65536 131072 i. 3!:0
@@ -119,9 +120,9 @@ x=: 2 : 0
 NB. 7!:5 on mapped arrays -----------------------------------------------
 
 load'jmf'
-18!:4 <'base'
+cocurrent <'base'
 1 [ unmap_jmf_ 'q'
-f=: <jpath '~temp\q.jmf'
+f=: <jpath '~temp/q.jmf'
 1 [ createjmf_jmf_ f,<3e5      NB. 3e5 bytes for data
 map_jmf_ (<'q'),f,'';0   NB. map q to jmf file
 '' -: q
@@ -139,3 +140,5 @@ map_jmf_ (<'q'),f,'';0   NB. map q to jmf file
 4!:55 ;:'bp f g q sp x'
 
 
+
+epilog''

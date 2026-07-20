@@ -1,3 +1,4 @@
+prolog './g520p.ijs'
 NB. { permutations and permutation groups -------------------------------
 
 NB. Generating any permutation as a sequence of 0&C. (rotating by 1)
@@ -54,3 +55,5 @@ perm =: i.@! A. i.
 4!:55 ;:'gen generator gn perm pvp stdarg subgroup test'
 
 
+
+epilog''

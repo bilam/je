@@ -1,3 +1,4 @@
+prolog './gdll.ijs'
 NB. DLL call ------------------------------------------------------------
 
 load'dll'
@@ -104,3 +105,5 @@ xbasic_add=: ":>{.'xbasic_add x' dcd ''
 4!:55 ;:'a add address b dcd f lib obj_add pc s0 s1 td td1a td3 td4 tf tf3'
 4!:55 ;:'v0 v1 v2 v3 v4 v5 x xbasic_add xx yy z'
 
+
+epilog''

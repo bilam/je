@@ -1,3 +1,4 @@
+prolog './g412.ijs'
 NB. !: treatement of placeholder argument -------------------------------
 
 F=: 2 : 0
@@ -49,3 +50,5 @@ pc=: (9!:12 '') e. 0 1 2 6 7
 4!:55 ;:'F pc'
 
 
+
+epilog''

@@ -1,13 +1,26 @@
 NB. test script utilities -----------------------------------------------
 
+cocurrent 'base'
+
+9!:19[2^_44   NB. default but some tests require a larger ct
+NB. set NORESETSTABLE to 1 to prevent restoring symbol table between files
+
+NB. settings to change when compiling the JE in a debug mode
+NB. If FORCEVIRTUALINPUTS is set, space consumption changes.  Set IGNOREIFFVI to 1: in that case
+IGNOREIFFVI_z_ =: ]
+
 3 : 0 ''
 testpath=: '/',~(t i:'/'){.t=. jpath;(4!:4<'ddall'){4!:3''
 if. IFWIN do.
  n=. 'tsdll.dll'
 else.
- n=: 'libtsdll.',;(UNAME-:'Darwin'){'so';'dylib'
+ n=. 'libtsdll.',;(UNAME-:'Darwin'){'so';'dylib'
 end. 
-LIBTSDLL=: jpath'~bin/',n,' '
+if. UNAME-:'Android' do.
+ LIBTSDLL=: (({.~ i:&'/') LIBFILE),'/',n,' '
+else.
+ LIBTSDLL=: jpath'~bin/',n,' '
+end.
 1
 )
 
@@ -15,14 +28,123 @@ testfiles=: 3 : 0   NB. y. is prefix - e.g., 'g' or 'gm' or 'gs'
  testpath&,&.> /:~ {."1 [1!:0 testpath,y,'*.ijs'
 )
 
-ddall    =: (testfiles 'g') -. (<testpath),each 'gfft.ijs';'glapack.ijs' NB. all except gfft and glapack
-ddgmbx   =: testfiles 'gmbx'        NB. map boxed arrays
-ddgsp    =: testfiles 'gsp'         NB. sparse arrays
-ddg      =: ddall -. ddgmbx,ddgsp   NB. "ordinary"
+NB. redirect test messages to logcat if available
+3 : 0''
+if. IFIOS +. IFQT +. UNAME-:'Wasm' do.
+ if. 3=nc<'logcat_z_' do.
+  techo_z_=: echo_z_ empty logcat_z_
+ else.
+  techo_z_=: echo_z_ empty 1!:2&5
+ end.
+else.
+ techo_z_=: echo_z_
+end.
+EMPTY
+)
+
+NB. black list
+NB. gmbx.ijs is not an independent test
+NB. gfft and glapack - run separately with additional addons
+blacklist=: ((<testpath),each 'gmbx.ijs';'gfft.ijs';'glapack.ijs';'glapackcb.ijs'),testfiles 'gmbx'  NB. mapped boxed arrays no longer supported
+blacklist=: blacklist, (IFIOS)#(<testpath),each <'gregex.ijs' NB. require libjpcre2 binary
+blacklist=: blacklist, (0=(9!:56'c_avx2')+.9!:56'emu_avx2')#(<testpath),each 'g6x14.ijs';'g128x14.ijs';'g128x19.ijs' NB. avx2 or emu_avx2
+blacklist=: blacklist, (0=9!:56'PYXES')#(<testpath),each 'gtdot.ijs';'gtdot1.ijs';'gtdot2.ijs';'gtdot3.ijs';'gtdot4.ijs';'gtdot5.ijs';'g128x14.ijs';'g128x19.ijs' NB. require multithreading
+NB. blacklist=: blacklist, (0=15!:23'')#(<testpath),each 'g15x.ijs';'g7x5.ijs';'gdll.ijs';'gdll_df.ijs';'gmmf.ijs';'gmmf1s.ijs';'gmmf1u.ijs';'gmmf1w.ijs';'gfft.ijs';'glapack.ijs';'glapackcb.ijs';'gregex.ijs'  NB. 15!:0 unavailable
+blacklist=: blacklist, ('Wasm'-:UNAME)#(<testpath),each <'gstack.ijs'  NB. crash
+blacklist=: blacklist, (IFQT*.'Wasm'-:UNAME)#(<testpath),each 'g331ps.ijs';'gsp422.ijs';'gsp432.ijs'  NB. crash
+blacklist=: blacklist, IFIOS#(<testpath),each <'gipht.ijs'  NB. crash if included in the whole suite, but ok if running alone
+blacklist=: blacklist, (IFRASPI+.'OpenBSD'-:UNAME)#(<testpath),each <'g128x14.ijs'  NB. raspberry crash; OpenBSD fail
+blacklist=: blacklist, (2 *@(17 b.) 9!:56'MEMAUDIT')#(<testpath),each 'gtdot.ijs';'gtdot1.ijs';'gtdot2.ijs';'gtdot3.ijs';'gtdot4.ijs';'gtdot5.ijs' NB. multithreading block in multiple tstacks
+NB. blacklist=: blacklist, (UNAME-:'Wasm')#(<testpath),each <'g331ps.ijs'    NB. crash on special code for [: ; <@f;.n 
+
+NB. too slow
+blacklist=: blacklist, '' [ (2 *@(17 b.) 9!:56'MEMAUDIT')#(<testpath),each  <@(,&'.ijs');._2 [ 0 : 0
+gtdot2
+)
+
+NB. crash
+blacklist=: blacklist, '' [ (('x86'-:9!:56'cpu') *. IFUNIX *. 4 *@(17 b.) 9!:56'MEMAUDIT')#(<testpath),each  <@(,&'.ijs');._2 [ 0 : 0
+gctrl
+)
+
+NB. crash
+blacklist=: blacklist, '' [ (2 *@(17 b.) 9!:56'MEMAUDIT')#(<testpath),each  <@(,&'.ijs');._2 [ 0 : 0
+g131
+g300
+g131cb
+g300cb
+gdic
+)
+
+blacklist=: ~.blacklist
+
+ddall    =: testfiles 'g'
+3 : 0'' [ 'g131'          NB. skip until
+if. #y do.
+  y=. '/',y,'.ijs'
+  if. _1~: i=. {.!._1 I. (1 e. y&E.)&> ddall do. ddall=: i}.ddall end.
+end.
+)
+ddall    =: blacklist -.~ ddall
+ddgmbx   =: blacklist -.~ testfiles 'gmbx'    NB. map boxed arrays
+ddgsp    =: blacklist -.~ testfiles 'gsp'     NB. sparse arrays
+ddgsc    =: blacklist -.~ testfiles 'gsc'     NB. symbol arrays
+ddg      =: ddall -. ddgmbx,ddgsp             NB. "ordinary"
+ddgxsp   =: ddall -. ddgsp                    NB. except sparse arrays
+ddtime   =: (<testpath),each <;._2[ 0 : 0     NB. timing tests
+g220t.ijs
+g300t.ijs
+g320ipt.ijs
+g321t.ijs
+g330t.ijs
+g420t.ijs
+g530t.ijs
+gft.ijs
+gibst.ijs
+gif.ijs
+gipht.ijs
+git.ijs
+gss.ijs
+)
+
+NB. When a name executes cocurrent, all subsequent calls from that name use a slower linkage.  Thus we don't want RUN to call
+NB. 0!:x directly, because then all the calls in RUN (after a file that does cocurrent) use slow linkage.  Interpose a name
+ex01=:0!:1
+ex02=:0!:2
+ex03=:0!:3
+ex04=:0!:4
 
 etx      =: 1 : 'x :: (<:@(13!:11)@i.@0: >@{ 9!:8@i.@0:)'
 ex       =: ". etx
 fex      =: }. @ (i.&(10{a.) {. ]) @ (13!:12) @ i. @ 0: @ (0!:110)
+
+currlocals_z_ =: (4!:1) bind 0 1 2 3  NB. create list of local names plus any in the current locale
+NB. make at least y threads
+maketh=: 3 : 0
+if. 9!:56'pyxes' do.
+  {{0 T.0}}^:] 0 >. (1&T.'') -~  y <. <: <./ 8&T.''
+end.
+EMPTY
+)
+delth=: empty
+NB. prolog is run after the optional typing of testcase name.  y is './testcasename.ijs'
+prolog=: 3 : 0
+1: (dbr bind Debug)@:(9!:19)2^_44[4!:55'x';'y'[techo^:ECHOFILENAME RUNFILE=:y[RUNTIME=:6!:1''
+)
+
+NB. epilog'' is run as the last line of each testcase
+epilog=: 3 :  0
+delth''
+10 s: GLOBALSYMBOL
+if. 'Linux'-:UNAME do.
+ 'libc.so.6 malloc_trim > i x'&cd <.64*1024
+end.
+assert. (<'base')-:18!:5''
+4!:55 ;:'x y'
+4!:55 ;:'x y'
+4!:55 (nl'') -. oldnl
+1: techo^:ECHOFILENAME RUNFILE,'  time(sec): ',(":RUNTIME-~6!:1'')
+)
 
 THRESHOLD=: 0 NB. allow timing tests to trigger failure 
 THRESHOLD=: 1 NB. force timing tests to pass
@@ -35,6 +157,10 @@ timer    =: 6!:2
 type     =: 3!:0
 imax     =: IF64{:: 2147483647; 9223372036854775807
 imin     =: (-imax)-1
+U4MAX    =: 16b110000
+C4MAX    =: IF64{:: 2147483647;4294967296
+RAND32   =: (] [`(<:@-@[)@.]"0 ?@:($&2)@:$)^:(-.IF64) NB. negate and decrement randomly
+UNSGN32  =: <.@:((2^32)&|)^:(-.IF64)                  NB. unsigned 32-bit to double
 
 scheck=: 3 : 0  NB. check sparse array
  s=. $ y
@@ -77,22 +203,166 @@ comb=: 4 : 0
  for_j. (d-1+y)+/&i.d do. z=. (c#j) ,. z{~;(-c){.&.><i.{.c=. +/\.c end.
 )
 
+randuni=: 3 : 0
+ l2max=. QKTEST{1024 128    NB. #literal2 sample   multiple of 256
+ l4max=. QKTEST{1024 128    NB. #literal4 sample   multiple of 256
+NB. unique random literal2
+ adot1=: u: /:~ l2max?65536
+NB. unique random literal4
+ if. IF64 do.
+  adot2=: 10&u: /:~ l4max?C4MAX
+ else.
+  adot2=: /:~ 10&u: RAND32 l4max?C4MAX
+ end.
+NB. validation
+ assert. l2max=#adot1
+ assert. l4max=#adot2
+ assert. (QKTEST{256 128)<:#adot1
+ assert. (QKTEST{256 128)<:#adot2
+ assert. 0=(QKTEST{256 128)|#adot1
+ assert. 0=(QKTEST{256 128)|#adot2
+ assert. l2max=#~.adot1
+ assert. l4max=#~.adot2
+ ''
+)
+randfini =: 3 : 0
+4!:55 <'initsymbolstate'
+)
+
+NB. ensure ~temp is unique when running multiple instances
+pidtemp=: 3 : 0
+t=. (<'temp') i.~ {."1 SystemFolders_j_
+u=. (<'user') i.~ {."1 SystemFolders_j_
+1!:5 ::1: tmp=. < (>(<u,1){SystemFolders_j_),'/temp-',":2!:6''
+SystemFolders_j_=: tmp (<t,1)}SystemFolders_j_
+''
+)
+
+NB. comparisons
+neareq =: = +. *.&(0 = *!.5e_11)  NB. tolerant comparison, even against 0
+nearmt =: *./@,@:neareq
+Neareq =: (1e_8 >|@:(- % ])) +. *.&(0 = *!.5e_11)  NB. big tolerant comparison, even against 0
+Nearmt =: *./@,@:Neareq
+
 NB. ebi extensions
 
 RSET=: 4 : '(x)=: y'
 RBAD=: 3 : '>_4}.each(#testpath)}.each(-.RB)#RF'
 RUN=: RBAD@('RB'&RSET)@(0!:3)@('RF'&RSET)
+RUN4=: RBAD@('RB'&RSET)@(0!:4)@('RF'&RSET)
+RUND=: RBAD@('RB'&RSET)@(0!:2)@('RF'&RSET)  NB. Run w/display
 
-RUN1=: 13 : '0!:2<testpath,y,''.ijs'''
+RUN1=: 13 : '0!:2 <testpath,y,''.ijs'''
 
-RESUB1=: 3 : 'y[echo >y'
+RESUB1=: 3 : 'y[techo >y'
 RESUB2=: (13 : '-.0!:3 RESUB1 y')"0
+RESUB4=: (13 : '-.0!:4 RESUB1 y')"0
 RECHO=: 13 : '+/ RESUB2 y'
+RECHO4=: 13 : '+/ RESUB4 y'
 
-echo 9!:14''
+NB. bill extensions
+oldnl=: (;:'x y') -.~ ('IgnoredLocal';'RB';'RF';'oldnl';'RLAST';'save_ran'),~ (nl__ i.4)
+IgnoredLocal=: ;:'x y x123 y123 y234 y234_index'
 
-echo 0 : 0
+GITHUBCI=: 'true'-:2!:5'GITHUB_ACTIONS'       NB. running on github action
+3 : 0''
+if. 0~:4!:0<'ECHOFILENAME' do.
+  ECHOFILENAME=: IFIOS+.IFRASPI+.((<UNAME)e.'Android';'Wasm')  NB. echo file name
+end.
+if. 0~:4!:0<'QKTEST' do.
+  QKTEST=: (*9!:56'MEMAUDIT')+.(-.IF64)+.IFIOS+.IFRASPI+.((<UNAME)e.'Android';'OpenBSD';'FreeBSD';'Wasm')  NB. run quick test
+end.
+''
+)
+PRINTMSG=: 0       NB. print diagnosis message
+RUNTIME=: 0        NB. time for running each test script
+Debug=: 0
+RUNFILE=: ''       NB. dummy
+PRINTMSG0=: PRINTMSG [ QKTEST0=: QKTEST [ ECHOFILENAME0=: ECHOFILENAME
+WINMEM2=: ('x86_64'-:9!:56'cpu') *. IFWIN *. 2 *@(17 b.) 9!:56'memaudit'   NB. skip some check
 
+RUND1=: 4 : 0
+x123=. x>.1
+y123=. y
+assert. (<'base')-:18!:5''
+4!:55 ;:'x y'
+for_y234. y123 do.
+ techo RLAST=: >y234
+ for. i.x123 do.
+  assert. _1 = 4!:0 <"1 ,/ ' 0123456789' ,"0/~ a.{~,|:(i.26)+/ a.i.'Aa'
+  0!:2 y234
+  assert. _1 = 4!:0 <"1 ,/ ' 0123456789' ,"0/~ a.{~,|:(i.26)+/ a.i.'Aa'
+  assert. (<'base')-:18!:5''
+  assert. 0= (;:'x y') e. nl__ i.4
+ end.
+end.
+dbr 0
+techo 'Finish'
+''
+)
+
+RUND2=: 4 : 0
+x123=. (0=x){x,1
+y123=. y
+assert. (<'base')-:18!:5''
+4!:55 ;:'x y'
+while. x123~:0 do.
+ for_y234. y123{~?~#y123 do.
+  techo RLAST=: >y234
+  save_ran=:9!:44''
+  assert. _1 = 4!:0 <"1 ,/ ' 0123456789' ,"0/~ a.{~,|:(i.26)+/ a.i.'Aa'
+  0!:2 y234
+  assert. _1 = 4!:0 <"1 ,/ ' 0123456789' ,"0/~ a.{~,|:(i.26)+/ a.i.'Aa'
+  assert. (<'base')-:18!:5''
+  assert. 0= (;:'x y') e. nl__ i.4
+ end.
+ x123=. <:x123
+end.
+4!:55 ;:'save_ran'
+dbr 0
+techo 'Finish'
+''
+)
+
+RUN2=: 4 : 0
+x123=. (0=x){x,1
+y123=. y
+assert. (<'base')-:18!:5''
+4!:55 ;:'x y'
+while. x123~:0 do.
+  assert. _1 = 4!:0 <"1 ,/ ' 0123456789' ,"0/~ a.{~,|:(i.26)+/ a.i.'Aa'
+  0!:2<testpath,y123,'.ijs'
+  assert. _1 = 4!:0 <"1 ,/ ' 0123456789' ,"0/~ a.{~,|:(i.26)+/ a.i.'Aa'
+  assert. (<'base')-:18!:5''
+  assert. 0= (;:'x y') e. nl__ i.4
+  x123=. <:x123
+end.
+dbr 0
+techo 'Finish'
+''
+)
+
+RUND3=: 4 : 0
+x123=. x>.1
+y123=. y
+assert. (<'base')-:18!:5''
+4!:55 ;:'x y'
+for_y234. y123{~?~#y123 do.
+ techo RLAST=: >y234
+ for. i.x123 do.
+  assert. _1 = 4!:0 <"1 ,/ ' 0123456789' ,"0/~ a.{~,|:(i.26)+/ a.i.'Aa'
+  0!:2 y234
+  assert. _1 = 4!:0 <"1 ,/ ' 0123456789' ,"0/~ a.{~,|:(i.26)+/ a.i.'Aa'
+  assert. (<'base')-:18!:5''
+  assert. 0= (;:'x y') e. nl__ i.4
+ end.
+end.
+dbr 0
+techo 'Finish'
+''
+)
+
+tsu_notes=: 0 : 0
 many scripts have timing tests
 typically comparing timing/result of j vs j model
 these tests can be essential for new/changed code
@@ -107,14 +377,118 @@ THRESHOLD should be applied as false failures are discovered
 gfft/glapack not in ddall - run separately with: RUN1'gfft'
 g18x fails on subsequent runs - no idea why
 g401 occasionally fails (random data?) but then runs clean
+)
 
-   RUN ddall   NB. report scripts that fail
+tsu_usage=: 0 : 0
+   RUN  ddall  NB. report scripts that fail
    
    RUN1 'g000' NB. run script with display
+ n RUN2 'g000' NB. run script with display for n times
+               NB. run infinite times until failure if n<0
    
+ n RUND1 ddall NB. run script with display for n times and stop on failure
+               NB. n>0, RLAST is the last script
+ n RUND2 ddall NB. same as RUND1 but run all scripts in random order for n times
+               NB. run infinite times until failure if n<0
+ n RUND3 ddall NB. same as RUND1 but run each script for n times in random order
+               NB. n>0
+
    RBAD ''     NB. report scripts that failed
    RB          NB. 0!:3 result (0 for failure)
    RF          NB. scripts that were run
    
    RECHO ddall NB. echo script names as run and final count of failures
+
+   Debug=: 1   NB. run test suite in debug mode
 )
+
+tsu_jd=: 0 : 0
+   runjd'' NB. run Jd jdtests
+)
+
+tsu_pacman=: 0 : 0
+   runpacman'' NB. update addons
+)
+
+runpacman=: 3 : 0
+if. IFWIN do.
+ if. -.fexist'~tools/ftp/busybox.exe' do.
+  techo'copy production J ~tools/ftp folder to jbld/j64/tools'
+  'need ~tools/ftp/busybox.exe'assert 0
+ end.
+end.
+load'pacman'
+'update'jpkg''
+'install'jpkg'all'
+load'jmf' NB. use possibly new jmf
+)
+
+runjd=: 3 : 0
+load'jd'
+jdtests_jd_''
+)
+
+allorcmdline=: 3 :0
+  NB. testfiles gives an empty result for strings like jconsole and tsu.ijs
+  args=. ARGV}.~'g'i.~{.@>ARGV
+  if. #args do. 
+    files=. ;testfiles L:0 args
+    if. #files do.
+      techo }.@(}.~i:&'/')each files
+      files
+    else.
+      techo 'no testfiles found for:'
+      techo args
+      NB. fail
+    end.
+  else.
+    ddall-.((testpath,'g') , ,&'.ijs')&.>;:'131 cip 520 sp 7x tdot1 3x tdot2 tdot3 tdot4 tdot5 tdot t' NB. temporarily ignore threading
+  end.
+)
+
+NB. y is log
+NB. like
+NB. ./g0.ijs  time(sec): 0.018  memory used: 3724736 60556928 27545600 70737920
+NB. ./g000.ijs  time(sec): 0.041  memory used: 3782176 60556928 27729920 70737920
+NB. result is log sorted by execution time
+timelog=: 3 : 0
+t=. <;._2 (,&LF)^:(LF~:{:) toJ y
+a=. cut@deb&> t #~ (1&e.)@(' time(sec): '&E.)&> t
+if. 0=#a do. i.0 0 return. end.
+if. 28= #t=. >{.{.a do.
+  if. ('20'-:2{.t) *. 'Z'={:t do.    NB. timestamp in github action log
+    a=. (<<<0 2 4 5)&{"1 a
+  else.
+    a=. (<<<1 3 4)&{"1 a
+  end.
+else.
+  a=. (<<<1 3 4)&{"1 a
+end.
+b=. <@(>"1)@|: ((_4&}.)@(2&}.)&.>{."1 a),. ,:@".&.> }."1 a
+c=. (</:1{:: b) {&.> b  NB. sort by execution time
+)
+
+oldnl=: (;:'x y') -.~ ('IgnoredLocal';'RB';'RF';'oldnl';'RLAST';'save_ran'),~ (nl__ i.4)
+IgnoredLocal=: ;:'x y x123 y123 y234 y234_index'
+
+techo 0 : 0
+see: tsu_notes, tsu_usage, tsu_pacman, and tsu_jd
+
+   RUN  ddall  NB. report scripts that fail
+   RECHO ddall NB. echo script names as run and final count of failures
+)
+
+
+delth''
+techo 9!:14''
+techo 'cpu ',(9!:56'cpu'),' cores ',": (9!:56'cores')
+techo 'cblas: ',(":9!:56'cblas'),'   cblasfile: ',9!:56'cblasfile'
+NB. techo 'cachelinesize(hardware): ',":9!:56'cachelinesizehw'
+NB. techo 'cachelinesize(compile): ',":9!:56'cachelinesize'
+NB. techo 'cpusetsize: ',":9!:56'cpusetsize'
+techo 'c_avx2: ',":9!:56'c_avx2'
+techo 'c_crc32c: ',":9!:56'c_crc32c'
+techo 'c_viavx: ',":9!:56'c_viavx'
+techo 'emu_avx2: ',":9!:56'emu_avx2'
+techo 'memaudit: ',":9!:56'memaudit'
+techo 'pyxes: ',":9!:56'pyxes'

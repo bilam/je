@@ -88,7 +88,7 @@ static A jtioe(J jt,I mode,A w){A b,j,p,y;I c,jn,*jv,k,n;P*wp;
  n=*AS(w); y=SPA(wp,i);
  if(!AN(y))R sc(1==mode?(n?n-1:0):0);
  RZ(b=eq(SPA(wp,e),SPA(wp,x)));
- if(2<AR(b)){*(1+AS(b))=aii(b); AR(b)=2;}
+ if(2<AR(b)){*(1+AS(b))=aii(b); ARINIT(b,2);}
  if(1<AR(b))RZ(b=aslash1(CSTARDOT,b));  /* b=. *./@,"_1 (3$.w)=5$.w */
  RZ(y=irs2(zero,y,0L,0L,1L,jtfrom));
  RZ(p=df2(y,b,sldot(slash(ds(CSTARDOT)))));

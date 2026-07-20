@@ -1,3 +1,4 @@
+prolog './gif.ijs'
 NB. if/else -------------------------------------------------------------
 
 fa =. 3 : 'if. y do. 1 else. 0 end.'
@@ -131,3 +132,5 @@ fm =. 3 : 'if. (4j5-4j5)+23=y do. ''is 23'' else. ''not 23'' end.'
 4!:55 ;:'fa fb fc fd fe ff fg fi fj fk fl fm t '
 
 
+
+epilog''

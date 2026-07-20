@@ -35,12 +35,12 @@ static F1(jtsmmblkf);
 
 
 static I smmsize(A a){
- R 8*(AM(a)/8)-SZI*(AH+RMBX+MLEN)-SZA*AN(a)-SZI*((AH+RMBX+MLEN+AN(a))%2);
+ R 8*(AM(a)/8)-SZI*(NORMAH+RMBX+MLEN)-SZA*AN(a)-SZI*((NORMAH+RMBX+MLEN+AN(a))%2);
 }    /* size of allocateable area */
 
 static C*smmu(A a){I v;
- v=(I)(a)+SZI*(AH+RMBX)+AN(a)*SZA;  /* 1st allocateable address   */
- R (C*)(((4+v)>>3)<<3);             /* ensure double word aligned */
+ v=(I)(a)+SZI*(NORMAH+RMBX)+AN(a)*SZA;  /* 1st allocateable address   */
+ R (C*)(((4+v)>>3)<<3);                 /* ensure double word aligned */
 }    /* first allocateable address */
 
 static B jtsmminit(J jt,A a){C*u;I j,k,**mfree,n;MS*x;
@@ -126,7 +126,7 @@ static A jtsmmga(J jt,A a,I t,I n,I r,I*s){A z;I m,w;
  w=WP(t,n,r); m=SZI*w; 
  ASSERT(RMAX>=r&&m>n&&n>=0&&m>w&&w>0,EVLIMIT);   /* beware integer overflow */
  RZ(z=smma(a,m));
- AT(z)=t; ACX(z); AN(z)=n; AR(z)=r; AFLAG(z)=AFSMM; AK(z)=AKX(z); AM(z)=m-AK(z); 
+ AT(z)=t; ACX(z); AN(z)=n; ARINIT(z,(RANKT)r); AFLAG(z)=AFSMM; AK(z)=AKX(z); AM(z)=m-AK(z); 
  if(r&&s)ICPY(AS(z),s,r); else *AS(z)=n;
  if(t&LAST0)*((I*)z+w-1)=0;
  R z;
@@ -156,10 +156,10 @@ F2(jtsmmis){A*wv,x;A1*av;I wd,wn,wr;
  if(a==w)R a;
  wn=AN(w); wr=AR(w);
  if(smmin(a,w))RZ(w=cpa(1,w));
- AK(a)=SZI*(AH+64); AT(a)=AT(w); AN(a)=wn; AR(a)=wr;
- if(!smminit(a)){AT(a)=LIT; AN(a)=0; AR(a)=1; *AS(a)=0; R 0;}
+ AK(a)=SZI*(NORMAH+64); AT(a)=AT(w); AN(a)=wn; ARINIT(a,(RANKT)wr);
+ if(!smminit(a)){AT(a)=LIT; AN(a)=0; ARINIT(a,1); *AS(a)=0; R 0;}
  av=A1AV(a); wv=AAV(w); wd=(I)w*ARELATIVE(w);
- DO(wn, x=smmcar(a,WVR(i)); if(!x){AT(a)=LIT; AN(a)=0; AR(a)=1; *AS(a)=0; R 0;} av[i]=AREL(x,a););
+ DO(wn, x=smmcar(a,WVR(i)); if(!x){AT(a)=LIT; AN(a)=0; ARINIT(a,1); *AS(a)=0; R 0;} av[i]=AREL(x,a););
  ICPY(AS(a),AS(w),wr);
  R a;
 }    /* a=:w where a is mapped and w is boxed */
@@ -239,7 +239,7 @@ F1(jtsmmblks){A x,y,z;I n,t,*v,*zv;
  R z;
 }    /* 15!:12 all the blocks in an SMM variable as 3-column matrix */
 
-/*
+
 // F2(jtafr2){A x,*wv;A1*wu;
 //  RZ(a&&w);
 //  wv=AAV(w); wu=A1AV(w);

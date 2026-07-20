@@ -1,5 +1,5 @@
 coclass <'jsocket'
-coinsert 'jsocket jdefs'
+coinsert 'jdefs'
 
 jsystemdefs 'hostdefs'
 jsystemdefs 'netdefs'
@@ -14,7 +14,7 @@ end.
 select. UNAME
 case. 'Win' do.
   c=. >IFWINCE{'wsock32';'winsock'
-  ccdm=: 1 : ('(''"',c,,'" '',x)&(15!:0)')
+  ccdm=: 1 : ('(''"',c,,'" '',u)&(15!:0)')
   ncdm=: ccdm
   scdm=: ccdm
   wcdm=: ccdm
@@ -23,13 +23,13 @@ case. 'Win' do.
   ioctlsocketJ=: 'ioctlsocket i i i *i' scdm
 case. do.
   c=. unxlib 'c'
-  ccdm=: 1 : ('(''"',c,'" '',x)&(15!:0)')
+  ccdm=: 1 : ('(''"',c,'" '',u)&(15!:0)')
   ncdm=: ccdm
   scdm=: ccdm
   wcdm=: 1 : ']'
   LIB=: c
   closesocketJ=: 'close i i' scdm
-  ioctlsocketJ=: 'ioctl i i i *i' scdm
+  ioctlsocketJ=: 'ioctl i i x *i' scdm
 end.
 empty''
 )
@@ -196,7 +196,7 @@ r=. getsocknameJ y;(sockaddr_in_sz#{.a.);,sockaddr_in_sz
 (rc0 r);data2string r
 )
 sdsend=: 4 : 0"1
-if. '' -: $x do. x =. ,x end.
+if. '' -: $x do. x=. ,x end.
 r=. >{.sendJ (>0{y);x;(#x);>1{y
 if. _1=r do. 0;~sdsockerror'' else. 0;r end.
 )
@@ -211,12 +211,12 @@ end.
 if. _1=r do. 0;~sdsockerror'' else. 0;r end.
 )
 
-sdcleanup=: 3 : '0[sdclose SOCKETS_jsocket_'
+sdcleanup=: 3 : '0[(sdclose ::0:"0@[ shutdownJ@(;&2)"0)^:(*@#)SOCKETS_jsocket_'
 sdinit=: 3 : 0
 if. 0=nc<'SOCKETS_jsocket_' do. 0 return. end.
 SOCKETS_jsocket_=: ''
 if. IFUNIX do. 0 return. end.
-if. 0~:res WSAStartupJ 257;1000$' ' do. _1[mbinfo'Socket Error' else. 0 end.
+if. 0~:res WSAStartupJ 257;1000$' ' do. _1[sminfo'Socket Error' else. 0 end.
 )
 sdrecv=: 3 : 0"1
 's size'=. 2{.y
@@ -247,8 +247,8 @@ rc0 bindJ (>{.y);(sockaddr_in y);sockaddr_in_sz
 sdasync=: 3 : 0"0
 if. IFUNIX do. 'not implemented under Unix - please use sdselect' assert 0 end.
 flags=. OR/ FD_READ,FD_WRITE,FD_OOB,FD_ACCEPT,FD_CONNECT,FD_CLOSE
-hwnd=. ".wd'qhwndx'
-if. >{.WSAAsyncSelectJ ({.y);hwnd;1026;flags do. sdsockerror '' else. 0 end.
+if. 0= hwnd=. ".@:wd ::0:'qhwndx' do. 'sdasync not implemented - please use sdselect' assert 0 end.
+if. >{.WSAAsyncSelectJ ({.y);hwnd;(16b8000+629);flags do. sdsockerror '' else. 0 end.
 )
 sdlisten=: 3 : 0"1
 rc0 listenJ ;/2 {. y,<^:(L.y) SOMAXCONN

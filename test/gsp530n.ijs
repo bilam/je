@@ -1,3 +1,4 @@
+prolog './gsp530n.ijs'
 NB. } scattered amendment ------------------------------------------------
 
 d=: (?23 5$2)*?23 5 7 3 2$4
@@ -178,3 +179,5 @@ case 4
 4!:55 ;:'a b c ca case cw d e f g h i m r s t x y'
 
 
+
+epilog''

@@ -1,3 +1,4 @@
+prolog './gintdiv.ijs'
 NB. integer division and remainder --------------------------------------
 
 f1=: 4 : 0
@@ -80,3 +81,5 @@ f3=: 4 : 0
 
 
 
+
+epilog''

@@ -3,8 +3,19 @@
 /*                                                                         */
 /* Initializations                                                         */
 
+#ifdef _WIN32
+#define __iamcu__
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
+#define __cdecl
+#include <dlfcn.h>
+#endif
 #include "j.h"
 #include "w.h"
+#include "cpuinfo.h"
+extern void*libcblas;
+extern char hascblas;
 
 #if SYS & SYS_FREEBSD
 #include <floatingpoint.h>
@@ -74,6 +85,16 @@ B jtglobinit(J jt){A x,y;C*s;D*d;I j;UC c,k;
  memset(minus0,C0,8L); minus0[C_LE?7:0]='\200';
  pf=qpf();
  pinit();
+ cpuInit();  // get CPU characteristics
+#if defined(__aarch64__)
+ hwaes=(getCpuFeatures()&ARM_HWCAP_AES)?1:0;
+ hwfma=1;
+#elif (defined(__i386__) || defined(_M_X64) || defined(__x86_64__))
+ hwaes=((getCpuFeatures()&CPU_X86_FEATURE_SSE4_1)&&(getCpuFeatures()&CPU_X86_FEATURE_AES_NI))?1:0;
+#endif
+#if defined(__x86_64__)
+ hwfma=(getCpuFeatures()&CPU_X86_FEATURE_FMA)?1:0;
+#endif
  R 1;
 }    /* called once when dll is loaded to create global constants */
 

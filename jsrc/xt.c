@@ -4,13 +4,29 @@
 /* Xenos: time and space                                                   */
 
 #ifdef _WIN32
+#define __iamcu__
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winbase.h>
+#ifndef _WIN64
+#ifndef PSAPI_VERSION
+#define PSAPI_VERSION 1
+#endif
+#include <psapi.h>
+#endif
+#ifndef __MINGW32__
+#include <time.h>
+#else
+#include <sys/time.h>
+#endif
+#else
+#include <sys/time.h>
+#include <unistd.h>
 #endif
 
 #include "j.h"
 
-#if !SY_WINCE && (SY_WIN32 || (SYS & SYS_LINUX))
+#if !SY_WINCE && (SY_WIN32 || (SYS & SYS_UNIX))
 #include <time.h>
 #else
 #if SYS & SYS_UNIX
@@ -81,7 +97,7 @@ F1(jtts0){A x,z;C s[9],*u,*v,*zv;D*xv;I n,q;
 }
 
 
-#if SY_GETTOD
+#ifdef SY_GETTOD
 D tod(void){struct timeval t; gettimeofday(&t,NULL); R t.tv_sec+(D)t.tv_usec/1e6;}
 #else
 #if SY_WINCE
@@ -169,7 +185,7 @@ F1(jtpmctr){D x;I q;
  RE(q=i0(w));
  ASSERT(jt->pma,EVDOMAIN);
  x=q+(D)jt->pmctr;
- ASSERT(IMIN<=x&&x<=IMAX,EVDOMAIN);
+ ASSERT(IMIN<=x&&x<=(D)IMAX,EVDOMAIN);
  jt->pmctr=q=(I)x; 
  R sc(q);
 }    /* add w to pmctr */
@@ -298,7 +314,7 @@ F1(jttlims){D d;
  if(!(FL&AT(w)))RZ(w=cvt(FL,w));
  d=*DAV(w);
  ASSERT(0<=d,EVDOMAIN);
- ASSERT(IMAX>1000*d,EVLIMIT);
+ ASSERT((D)IMAX>1000*d,EVLIMIT);
  jt->timelimit=(UI)(1000*d);
  R mtm;
 }

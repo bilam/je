@@ -1,3 +1,4 @@
+prolog './gsp530i.ijs'
 NB. } integer indices ----------------------------------------------------
 
 d=: ?11 5 7 3 2$4
@@ -118,3 +119,5 @@ s -: d
 4!:55 ;:'a b c d f g h i m r s t x'
 
 
+
+epilog''

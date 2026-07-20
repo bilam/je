@@ -1,3 +1,4 @@
+prolog './gmemo.ijs'
 NB. M. ------------------------------------------------------------------
 
 fib=: 3 : 0 M.
@@ -37,3 +38,5 @@ combr=: 4 : 0 M.  NB. All size x combinations of i.y
 4!:55 ;:'combr fib fibr pn pnx rec t'
 
 
+
+epilog''

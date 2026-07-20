@@ -39,6 +39,7 @@ F2(jtforeign){I p,q;
   case XC(0,111): R SDERI2(CIBEAM, jtscm11,      jtscm112,     RMAX,RMAX,RMAX);
   case XC(0,2):   R SDERI2(CIBEAM, jtsct1,       jtsct2,       RMAX,RMAX,RMAX);
   case XC(0,3):   R SDERI2(CIBEAM, jtscz1,       jtscz2,       RMAX,RMAX,RMAX);
+  case XC(0,4):   R SDERI2(CIBEAM, jtscy1,       jtscy2,       RMAX,RMAX,RMAX);
 
   case XC(1,0):   R SDERIV(CIBEAM, jtjdir,       0,            RMAX,0,   0   );
   case XC(1,1):   R SDERIV(CIBEAM, jtjfread,     0,            0,   0,   0   );
@@ -164,6 +165,7 @@ F2(jtforeign){I p,q;
   case XC(9,47):  R CDERIV(CIBEAM, jtbreakfns,   0,            RMAX,0,   0   );
   case XC(9,48):  R CDERIV(CIBEAM, jtdotnamesq,  0,            RMAX,0,   0   );
   case XC(9,49):  R CDERIV(CIBEAM, jtdotnamess,  0,            RMAX,0,   0   );
+  case XC(9,56):  R CDERIV(CIBEAM, jtcpufeature,jtcpufeature2, RMAX,RMAX,RMAX);
 
 /* case XC(11,*):      handled at beginning */
 /* case XC(12,*):      reserved for D.H. Steinbrook tree stuff         */
@@ -210,6 +212,10 @@ F2(jtforeign){I p,q;
   case XC(15,16): R SDERIV(CIBEAM, jtnfes,       0,            RMAX,0,   0   );
   case XC(15,17): R SDERIV(CIBEAM, jtcallbackx,  0,            RMAX,0,   0   );
   case XC(15,18): R SDERIV(CIBEAM, jtnfeoutstr,  0,            RMAX,0,   0   );
+  case XC(15,20): R SDERIV(CIBEAM, jtcddlopen,   0,            RMAX,0,   0   );
+  case XC(15,21): R SDERIV(CIBEAM, 0,            jtcddlsym,    0,   RMAX,RMAX);
+  case XC(15,22): R SDERIV(CIBEAM, jtcddlclose,  0,            RMAX,0,   0   );
+  case XC(15,23): R SDERIV(CIBEAM, jtcdq,        0,            RMAX,0,   0   );
 
   case XC(18,0):  R CDERIV(CIBEAM, jtlocnc,      0,            0,   0,   0   );
   case XC(18,1):  R CDERIV(CIBEAM, jtlocnl1,     jtlocnl2,     RMAX,RMAX,RMAX);

@@ -4,8 +4,15 @@
 /* Xenos: file directory, attributes, & permission                         */
 
 #ifdef _WIN32
+#define __iamcu__
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winbase.h>
+#else
+#define _LARGEFILE64_SOURCE
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #endif
 
 #include "j.h"
@@ -117,7 +124,7 @@ F1(jtfullname){C*s; C dirpath[1000];
 
 F1(jtjfperm1){A y,fn,z;C *s;F f;int x; US *p,*q;
  F1RANK(0,jtjfperm1,0);
- RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAV0(w);
+ RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAVR0(w);
  RZ(fn=toutf16x(y));
  p=USAV(fn); q=p+AN(fn)-3;
  GA(z,LIT,3,1,0); s=CAV(z);
@@ -130,7 +137,7 @@ F1(jtjfperm1){A y,fn,z;C *s;F f;int x; US *p,*q;
 
 F2(jtjfperm2){A y,fn;C*s;F f;int x=0;US *p;
  F2RANK(1,0,jtjfperm2,0);
- RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAV0(w);
+ RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAVR0(w);
  RZ(a=vs(a)); ASSERT(3==AN(a),EVLENGTH); 
  RZ(fn=toutf16x(y));
  s=CAV(y);
@@ -146,7 +153,7 @@ F2(jtjfperm2){A y,fn;C*s;F f;int x=0;US *p;
 
 F1(jtjfperm1){A y,z;C*p,*q,*s;F f; DWORD attr;
  F1RANK(0,jtjfperm1,0);
- RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAV0(w);
+ RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAVR0(w);
  p=CAV(y); q=p+AN(y)-3;
  GA(z,LIT,3,1,0); s=CAV(z);
  if((attr=GetFileAttributes(tounibuf(p)))==0xFFFFFFFF)R jerrno();
@@ -225,17 +232,17 @@ F1(jtjdir){PROLOG;A z,fn,*zv;I j=0,n=32;HANDLE fh; WIN32_FIND_DATAW f; C fnbuffe
 
 F1(jtjfatt1){A y,fn;F f;U x;
  F1RANK(0,jtjfatt1,0);
- RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAV0(w);
+ RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAVR0(w);
  RZ(fn=toutf16x(y));
  x=GetFileAttributesW(USAV(fn));
- if(-1!=x) R attv(x);
+ if(INVALID_FILE_ATTRIBUTES!=x) R attv(x);
  jsignal(EVFNAME); R 0; 
 }
 
 F2(jtjfatt2){A y,fn;F f;U x;
  F2RANK(1,0,jtjfatt2,0);
  RE(x=attu(a));
- RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAV0(w);
+ RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAVR0(w);
  RZ(fn=toutf16x(y));
  if(SetFileAttributesW(USAV(fn), x)) R one;
  jsignal(EVFNAME); R 0;
@@ -244,11 +251,6 @@ F2(jtjfatt2){A y,fn;F f;U x;
 #endif
 
 #if (SYS & SYS_UNIX)
-
-/* FIXME:   rename J link() function so we can include unistd.h */
-#define R_OK    4               /* Test for read permission.    */
-#define W_OK    2               /* Test for write permission.   */
-#define X_OK    1               /* Test for execute permission. */
 
 #include <sys/stat.h>
 #include <dirent.h>
@@ -320,7 +322,7 @@ F1(jtjdir){PROLOG;A*v,z,*zv;C*dir,*pat,*s,*x;I j=0,n=32;DIR*DP;struct dirent *f;
  RZ(w);
  RZ(w=str0(vs(!AR(w)&&BOX&AT(w)?ope(w):w)));
  s=CAV(w);
- if(x=strrchr(s,'/')){dir=s==x?"/":s; pat=x+1; *x=0;}else{dir="."; pat=s;}
+ if(x=strrchr(s,'/')){dir=s==x?(C*)"/":s; pat=x+1; *x=0;}else{dir="."; pat=s;}
  if(NULL==(DP=opendir(dir)))R reshape(v2(0L,6L),ace);
  /*
   * SYSV and BSD have different return types for sprintf(),
@@ -348,7 +350,7 @@ F2(jtjfatt2){ASSERT(0,EVNONCE);}
 
 F1(jtjfperm1){A y;F f;
  F1RANK(0,jtjfperm1,0);
- RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=str0(AAV0(w));
+ RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=str0(AAVR0(w));
  if(0!=stat(CAV(y),&jt->dirstatbuf))R jerrno();
  R vec(LIT,9L,1+modebuf(jt->dirstatbuf.st_mode));
 }
@@ -368,7 +370,7 @@ static struct tperms {C*c;I p[4];} permtab[]=
 
 F2(jtjfperm2){A y;C*s;F f;int x=0,i;C*m;
  F2RANK(1,0,jtjfperm2,0);
- RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=str0(AAV0(w));
+ RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=str0(AAVR0(w));
  RZ(a=vs(a)); ASSERT(9==AN(a),EVLENGTH); s=CAV(a);
  for(i=0;i<9;i++)
     {ASSERT(NULL!=(m=strchr(permtab[i].c,s[i])),EVDOMAIN);

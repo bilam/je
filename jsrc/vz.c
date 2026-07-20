@@ -45,12 +45,20 @@ ZF2(jtztymes){D a,b,c,d;Z z;
 ZF2(jtzdiv){ZF2DECL;D t;
  if(ZNZ(v)){
   if(ABS(c)<ABS(d)){t=a; a=-b; b=t;  t=c; c=-d; d=t;}
-  a/=c; b/=c; d/=c; t=1+d*d; zr=(a+(b&&d?b*d:0.0))/t; zi=(b-(a&&d?a*d:0))/t;
- }else if(ZNZ(u))switch(2*(0>a)+(0>b)){
-   case 0: if(a> b)zr= inf; else zi= inf; break;
-   case 1: if(a>-b)zr= inf; else zi=-inf; break;
-   case 2: if(a<-b)zr=-inf; else zi= inf; break;
-   case 3: if(a< b)zr=-inf; else zi=-inf;
+  a/=c; b/=c; if(likely(ABS(d)!=inf))
+#if defined(__aarch64__)||defined(__arm__)
+  {__asm__("" ::: "cc");d/=c;}   // or change if(likely to if(unlikely
+#else
+  d/=c;
+#endif
+  else d=0.0;  t=1+d*d; zr=(a+TYMES(b,d))/t; zi=(b-TYMES(a,d))/t;
+ }else if(ZNZ(u)){  // division by 0
+#if !EMU_AVX2 && defined(__aarch64__)
+  if(a!=0){__asm__("" ::: "cc");zr=a/0.0;}
+  if(b!=0){__asm__("" ::: "cc");zi=b/0.0;}  // set any nonzero to infinity
+#else
+  if(a!=0)zr=a/0.0; if(b!=0)zi=b/0.0;  // set any nonzero to infinity
+#endif
  }
  ZEPILOG;
 }
@@ -132,7 +140,7 @@ ZF1(jtzlog){ZF1DECL;
 
 ZF2(jtzpow){ZF2DECL;D m;I n;
  if(!a&&!b){z.re=d?0:0>c?inf:!c; z.im=0; R z;}
- if(!d&&IMIN<c&&c<=IMAX&&(n=(I)jfloor(c),c==n)){
+ if(!d&&IMIN<c&&c<=(D)IMAX&&(n=(I)jfloor(c),c==n)){
   if(0>n){u=zdiv(z1,u); n=-n;}
   z=z1;
   while(n){if(1&n)z=ztymes(z,u); u=ztymes(u,u); n>>=1;}

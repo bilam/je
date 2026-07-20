@@ -1,7 +1,6 @@
 coclass 'jpm'
 
-SIZE=: 1e7
-SCREENGLOBALS=: 0
+SIZE=: IF64{1e8 1e9
 unpack=: 6!:11
 counter=: 6!:12
 stats=: 6!:13
@@ -31,7 +30,7 @@ bracket=: ('['"_ , ": , '] '"_) each
 dab=: -. & ' '
 firstones=: > (0: , }:)
 groupndx=: 4 : '<: (#x) }. (+/\r<#x) /: r=. /: x,y'
-info=: mbinfo @ ('Performance Monitor'&;)
+info=: sminfo @ ('Performance Monitor'&;)
 lastones=: > (}. , 0:)
 maskdef=: [: * [: +/\ _1&= - 0: , }:@:(_2&=)
 nolocale=: (i.&'_') {. ]
@@ -198,6 +197,8 @@ if. bnx do.
   mend=. bnx }. mend
 end.
 
+if. 0 e. (#mbgn),#mend do. i.0 4 return. end.
+
 msk=. 0 < mbgn usage mend
 
 if. 0 e. msk do.
@@ -207,6 +208,8 @@ if. 0 e. msk do.
   mbgn=. msk # mbgn
   mend=. msk # mend
 end.
+
+if. 0 e. (#mbgn),#mend do. i.0 4 return. end.
 
 lvl=. mbgn usage mend
 if. 1 +. 2 e. lvl do.
@@ -251,7 +254,7 @@ bgn=. lns = _1
 end=. lns = _2
 hit=. ind = ndx
 msk=. 1 < bgn usage end
-her=. 2 >: bgn usage end
+her =. 1 = +/\ bgn - end
 bgn=. msk *. bgn
 end=. msk *. end
 
@@ -403,20 +406,29 @@ name;loc;given
 )
 read=: 3 : 0
 if. PMREAD do. 1 return. end.
+
 if. 0 = +/ 6!:13'' do.
   smoutput 'There are no PM records'
   0 return.
 end.
-
 PMTIME=: 6!:11 ''
 PMSTATS=: 6!:13 ''
 6!:10 ''
-PM=: PMTIME
-locndx=. (1;0) {:: PMTIME
-PMNAMES=: 6 pick PMTIME
-PMLOCALES=: locndx }. PMNAMES
-PMNAMES=: locndx {. PMNAMES
+a=. 'recorded ',(0{PMSTATS) pick 'entry and exit only';'all lines'
+a=. a,LF,'used and max record count:',;' ' ,each 'c' (8!:0) 3 2 { PMSTATS
+if. 4 { PMSTATS do.
+  a=. a,LF,'the PM data area has overflowed and records have been lost'
+end.
+smoutput a,LF
+'namx locx all'=. 0 1 6 { PMTIME
+PMNAMES=: (~.namx){all
+namx=. PMNAMES i. namx{all
+locndx=. #namx
+PMLOCALES=: (~.locx){all
+locx=. locndx + PMLOCALES i. locx{all
+PMTIME=: (namx;locx;<PMNAMES,PMLOCALES) 0 1 6} PMTIME
 PMNDX=: > 3 {. PMTIME
+PM=: PMTIME
 ndx=. I. (1: e. '__'&E.) &> PMNAMES
 
 if. #ndx do.
@@ -438,8 +450,6 @@ if. #ndx do.
 
   ndx merge nms
 end.
-ind=. (0 { PMNDX) { PMNAMES i. PMNAMES
-PMNDX=: ind 0 } PMNDX
 PMLINES=: 3 pick PMTIME
 PMSPACE=: 0, +/\ }: 4 pick PMTIME
 PMTIME=: 5 pick PMTIME
@@ -691,6 +701,7 @@ end=. lns = _2
 f=. 1: = [: +/\ (- (0: , 1: - }:))
 msk=. f each ndx < /. bgn
 
+dat =. dat - <./ dat
 ada=. ndx < /. dat * _1 ^ bgn
 
 all=. msk +/@# &> ada
@@ -737,11 +748,6 @@ if. +./mrec=. (_2=PMLINES)*.PMNDX=1|.PMNDX do.
 end.
 sum=. str , edr , spc , spcr
 her=. (nub i. {."1 sum) +/ /. {:"1 sum
-
-if. x=0 do.
-  assert *./ all >: her
-end.
-
 |: req # all ,. her ,. rep
 )
 getused=: 3 : 0

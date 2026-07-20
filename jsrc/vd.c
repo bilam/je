@@ -27,7 +27,7 @@ static F1(jtqrr){PROLOG;A a1,q,q0,q1,r,r0,r1,t,*tv,t0,t1,y,z;I m,n,p,*s;
   t=norm(ravel(w));
   ASSERT(!AN(w)||!equ(t,zero),EVDOMAIN);
   RZ(q=divide(w,t));
-  R link(2>AR(q)?table(q):q,reshape(v2(n,n),p?t:one));
+  R jlink(2>AR(q)?table(q):q,reshape(v2(n,n),p?t:one));
  }
  RZ(t0=qrr(take(v2(p,m),w)));
  tv=AAV(t0); q0=*tv++; r0=*tv;
@@ -37,7 +37,7 @@ static F1(jtqrr){PROLOG;A a1,q,q0,q1,r,r0,r1,t,*tv,t0,t1,y,z;I m,n,p,*s;
  tv=AAV(t1); q1=*tv++; r1=*tv;
  RZ(q=stitch(q0,q1));
  RZ(r=over(stitch(r0,y),take(v2(n-m,-n),r1)));
- z=link(q,r); EPILOG(z);
+ z=jlink(q,r); EPILOG(z);
 }
 
 F1(jtqr){A r,z;D c=inf,d=0,x;I n1,n,*s,wr;

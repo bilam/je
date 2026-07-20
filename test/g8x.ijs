@@ -1,3 +1,4 @@
+prolog './g8x.ijs'
 NB. 8!:n ----------------------------------------------------------------
 
 NB. require 'numeric'           NB. for round
@@ -773,3 +774,5 @@ NB. left justify.  same deal for fmt2.
 4!:55 ;:'afzrnd f fmt fmt1 fmt2 s t x y'
 
 
+
+epilog''

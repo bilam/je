@@ -1,3 +1,4 @@
+prolog './gddot.ijs'
 NB. d. scalar functions -------------------------------------------------
 
 equ=: 2 : '''x'' -:&(5!:5)&< ''y'''
@@ -104,3 +105,5 @@ o.            d. 1 eqt (1p1"0)
 4!:55 ;:'eqt equ eqv'
 
 
+
+epilog''

@@ -1,3 +1,4 @@
+prolog './g530t.ijs'
 NB. a=: c}x,y,... ,:z timing tests --------------------------------------
 
 f=: 3 : 0
@@ -29,7 +30,7 @@ g6=: 3 : 0  NB. good timing, boolean selection
  t0=: timer 'q=: (xx*b)+yy*-.b'
  t1=: timer 'yy=: b}yy,:xx'
  assert. q -: yy
- assert. THRESHOLD+. 5 > (t1-t0)%t0 NB. big timing difference allowed
+ assert. THRESHOLD +. 5 > (t1-t0)%t0 NB. big timing difference allowed
  1
 )
 
@@ -51,3 +52,5 @@ g7 "0 'BIDZ'
 
 
 
+
+epilog''

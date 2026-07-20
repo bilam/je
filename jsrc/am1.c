@@ -22,7 +22,7 @@ static A jtistd1(J jt,A z,A ind){A*iv,j,*jv,x;I d,i,id,n,r,*s;
   x=IVR(i); d=s[i];
   if(BOX&AT(x)){
    ASSERT(!AR(x),EVINDEX); 
-   x=AAV0(x); r=AR(x);
+   x=AAVR0(x); r=AR(x);
    RZ(jv[i]=!AN(x)&&1==r?ace:less(IX(d),pind(d,x)));
   }else RZ(jv[i]=pind(d,x));
  }

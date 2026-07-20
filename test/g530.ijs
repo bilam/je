@@ -1,3 +1,4 @@
+prolog './g530.ijs'
 NB. m}y and u}y ---------------------------------------------------------
 
 g =. e.&' '@{.} @ (,:&'_')
@@ -360,3 +361,5 @@ y -: (<10;20;30){ab
 4!:55 ;:'g g0 g1 g2 g2c g3 g3c g4 g5 g8 g9 g10 g11 goo '
 4!:55 ;:'h i ia j k p q save sp t t0 t1 t2 test x xx y yy z z1 zz '
 
+
+epilog''

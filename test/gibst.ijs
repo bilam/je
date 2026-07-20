@@ -1,16 +1,17 @@
+prolog './gibst.ijs'
 NB. i.!.0 and associates timing tests -----------------------------------
 
 L=: 1 : 0
 :
  f=: x&u
- assert. (threshold*{.t) <: -/}.t=: 10 timer 'f y','x u y',:'/:x'
+ assert. THRESHOLD +. (threshold*{.t) <: |@:(-/)}.t=: 10 timer 'f y','x u y',:'/:x'
  1
 )
 
 R=: 1 : 0
 :
  f=: u&y
- assert. (threshold*{.t) <: -/}.t=: 10 timer 'f x','x u y',:'/:y'
+ assert. THRESHOLD +. (threshold*{.t) <: |@:(-/)}.t=: 10 timer 'f x','x u y',:'/:y'
  1
 )
 
@@ -39,3 +40,5 @@ x (   I. @(e.!.0)) R y
 4!:55 ;:'f L R t x y'
 
 
+
+epilog''

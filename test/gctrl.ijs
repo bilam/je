@@ -1,3 +1,4 @@
+prolog './gctrl.ijs'
 NB. control word parsing ------------------------------------------------
 
 f0 =. 3 : 'if. if. 1 do. 2 end. do. 3 else. 4 end.'
@@ -67,3 +68,5 @@ test 'whilst. 1 do. 2 else. 3 end.'
 4!:55 ;:'f0 f1 f2 f3 g0 g1 g2 g3 g4 g5 test '
 
 
+
+epilog''

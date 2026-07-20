@@ -1,3 +1,4 @@
+prolog './giconv.ijs'
 NB. almost integers as integer arguments --------------------------------
 
 f=: 3 : 0 " 0
@@ -51,3 +52,5 @@ f (1-e)*x
 4!:55 ;:'e f x yy'
 
 
+
+epilog''

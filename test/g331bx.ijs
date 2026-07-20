@@ -1,3 +1,4 @@
+prolog './g331bx.ijs'
 NB. x f;.n y for boxed x, n e. _2 _1 1 2 --------------------------------
 
 stdx  =: #@$@] {. }.@(1&;)@[
@@ -84,3 +85,5 @@ x ] g y
 4!:55 ;:'c cut f g index size stdx x y'
 
 
+
+epilog''
