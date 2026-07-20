@@ -356,6 +356,7 @@ static inline omp_int_t omp_get_num_threads() { return 1;}
 #endif
 
 #if defined(__aarch32__)||defined(__arm__)||defined(_M_ARM)
+// 32-bit arm only
 #define ALIGNREQ 8 // defined if float/long long values must be aligned to 8-byte boundary
 #else
 #define ALIGNREQ 0

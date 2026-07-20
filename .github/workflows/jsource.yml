@@ -13,9 +13,9 @@ on:
 # if: ${{ false }}
 
 env:
- DEBUGLEVEL: 3
- OPTL: -O0
- OPTLD: -O0
+ DEBUGLEVEL: 0
+ OPTL: -O2
+ OPTLD: -O2
  NO_UNDEFINED: 1
 
 jobs:
@@ -932,7 +932,7 @@ jobs:
       USE_OPENMP: 0
       USE_PYXES: 0
       USE_EMU_AVX: 0
-      _DEBUG: ${{ env.DEBUGLEVEL }}
+      _DEBUG: 0   # lldb unavailable
       OPTL: ${{ env.OPTL }}
       OPTLD: ${{ env.OPTLD }}
       NO_UNDEFINED: ${{ env.NO_UNDEFINED }}
