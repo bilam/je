@@ -214,7 +214,7 @@ if [ -z "${compiler##*gcc*}" ] || [ -z "${CC##*gcc*}" ]; then
 
 else
  # clang
- common="$OPENMP -fPIC $OPTLEVEL -fvisibility=hidden -fno-strict-aliasing -fwrapv -fno-finite-math-only \
+ common="$OPENMP -fPIC $OPTLEVEL -fvisibility=hidden -fno-strict-aliasing -fno-finite-math-only \
  -Werror -Wextra -Wno-unknown-warning-option \
  -Wconstant-conversion \
  -Wsign-compare \
@@ -586,7 +586,7 @@ case "$jplatform/$j64x" in
 
  raspberry/j64*) # linux arm64
   TARGET=libj.so
-  CFLAGS="$common -march=armv8-a+crc -DRASPI " # mno-outline-atomics unavailable on clang-7
+  CFLAGS="$common -march=armv8-a+crc -DRASPI -fwrapv " # mno-outline-atomics unavailable on clang-7
   LDFLAGS=" -shared -Wl,-soname,libj.so -lm -ldl $LDTHREAD $LDOPENMP -Wl,-z,noexecstack "
   OBJS_AESARM=" aes-arm.o "
   SRC_ASM="${SRC_ASM_RASPI}"
@@ -642,7 +642,7 @@ case "$jplatform/$j64x" in
 
  freebsd/j64arm) # freebsd arm64
   TARGET=libj.so
-  CFLAGS="$common -march=armv8-a+crc " # mno-outline-atomics unavailable on clang-7
+  CFLAGS="$common -march=armv8-a+crc -fwrapv " # mno-outline-atomics unavailable on clang-7
   LDFLAGS=" -shared -Wl,-soname,libj.so -lm $LDTHREAD $LDOPENMP -Wl,-z,noexecstack "
   OBJS_AESARM=" aes-arm.o "
   SRC_ASM="${SRC_ASM_RASPI}"
