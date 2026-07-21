@@ -88,7 +88,7 @@ echo '| 7 c. _2147483648'
 echo | etx1 7 c. _2147483648
 
 echo '10000 + 6 c.30000'
-echo  10000 + etx1 6 c.30000'
+echo  10000 + etx1 6 c.30000
 
 NB. previous windows arm64 issue
 echo '(imin+1)| imin+2 3'
