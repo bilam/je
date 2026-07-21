@@ -214,7 +214,7 @@ if [ -z "${compiler##*gcc*}" ] || [ -z "${CC##*gcc*}" ]; then
 
 else
  # clang
- common="$OPENMP -fPIC $OPTLEVEL -fvisibility=hidden -fno-strict-aliasing -fno-finite-math-only \
+ common="$OPENMP -fPIC $OPTLEVEL -fvisibility=hidden -fno-strict-aliasing -fwrapv -fno-finite-math-only \
  -Werror -Wextra -Wno-unknown-warning-option \
  -Wconstant-conversion \
  -Wsign-compare \
