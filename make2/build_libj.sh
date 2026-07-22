@@ -316,18 +316,8 @@ if [ $USE_PYXES -eq 1 ]; then
    LDTHREAD=" -pthread "
    ;;
  esac
- case "$j64x" in
-  j32*) NORMAHX="${NORMAHX:=1}" ;;
- esac
 else
  common="$common -DPYXES=0"
-fi
-
-NORMAHX="${NORMAHX:=0}"
-if [ $NORMAHX -ne 0 ]; then
- common="$common -DNORMAHX=${NORMAHX}"
-else
- common="$common -DNORMAHX=0"
 fi
 
 case "$jplatform/$j64x" in
