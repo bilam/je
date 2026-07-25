@@ -1,0 +1,355 @@
+#!/bin/sh
+#
+# build linux/macOS on github actions
+#
+# argument is linux|windows|darwin|raspberry|android|openbsd|freebsd|wasm [arm64|armv6l|i386|x86_64|wasm32]
+# wasm is experimental
+#
+# if !x86_64 skip build avx2 and avx512
+
+echo "_DEBUG: $_DEBUG"
+echo "USE_EMU_AVX: $USE_EMU_AVX"
+echo "USE_PYXES: $USE_PYXES"
+
+set -evx
+CC=${CC-clang}
+_SSE4_2=${_SSE4_2:=1}
+USE_SLEEF=${USE_SLEEF:=1}
+USE_SLEEFQUAD=${USE_SLEEFQUAD:=$USE_SLEEF}
+USE_PYXES=${USE_PYXES:=1}
+export CC _SSE4_2 USE_SLEEF USE_SLEEFQUAD USE_PYXES
+
+export jplatform="$1"
+if [ "$1" = "linux" ]; then
+ libj="libj"
+ ext="so"
+elif [ "$1" = "raspberry" ]; then
+ libj="libj"
+ ext="so"
+elif [ "$1" = "darwin" ]; then
+ libj="libj"
+ ext="dylib"
+elif [ "$1" = "android" ]; then
+ libj="libj"
+ ext="so"
+elif [ "$1" = "openbsd" ]; then
+ libj="libj"
+ ext="so"
+elif [ "$1" = "freebsd" ]; then
+ libj="libj"
+ ext="so"
+elif [ "$1" = "windows" ]; then
+ libj="j"
+ ext="dll"
+elif [ "$1" = "wasm" ]; then
+ libj="libj"
+ ext=""
+else
+ echo "argument is linux|windows|darwin|raspberry|android|openbsd|freebsd|wasm"
+ exit 1
+fi
+uname -a
+unameop=$(uname -o || uname -s)
+echo $unameop
+uname -m
+if [ "$2" = "arm64" ] || [ "$2" = "x86_64" ]; then
+ m64=1
+elif [ "$2" = "i386" ] || [ "$2" = "wasm32" ]; then
+ export j64x=j32
+ m64=0
+elif [ "$2" = "armv6l" ]; then
+ export j64x=j32arm
+ m64=0
+else
+ echo "argument is [arm64|armv6l|i386|x86_64|wasm32]"
+ exit 1
+fi
+
+dest=$1
+
+A=jlibrary
+B=jlibrary/bin
+C=jlibrary/bin32
+
+if [ $m64 -eq 1 ]; then
+ mkdir -p j64
+else
+ mkdir -p j32
+ mkdir -p $C
+ cp $B/profile.ijs $C
+fi
+
+if [ "$1" = "linux" ]; then
+ if [ $m64 -eq 1 ]; then
+#   cp mpir/linux/x86_64/libgmp.so $B
+  cp pcre2/linux/x86_64/libjpcre2.so $A/tools/regex/.
+ else
+#   cp mpir/linux/i386/libgmpd.so $C/libgmp32.so
+  cp pcre2/linux/i386/libjpcre2.so $A/tools/regex/libjpcre2_32.so
+ fi
+elif [ "$1" = "raspberry" ]; then
+ if [ $m64 -eq 1 ]; then
+#   cp mpir/linux/aarch64/libgmp.so $B
+  cp pcre2/linux/aarch64/libjpcre2.so $A/tools/regex/.
+ else
+#   cp mpir/linux/arm/libgmp.so $C/libgmp32.so
+  cp pcre2/linux/arm/libjpcre2.so $A/tools/regex/libjpcre2_32.so
+ fi
+elif [ "$1" = "darwin" ]; then
+ brew install libomp
+#  cp mpir/apple/macos/libgmp.dylib $B
+ cp pcre2/apple/macos/libjpcre2.dylib $A/tools/regex/.
+elif [ "$1" = "openbsd" ]; then
+# cp /usr/local/lib/libgmp.so.11.0 $B/libgmp.so
+ if [ "$2" = "x86_64" ]; then
+#   cp mpir/openbsd/x86_64/libgmp.so $B
+  cp pcre2/openbsd/x86_64/libjpcre2.so $A/tools/regex/.
+ else
+#   cp mpir/openbsd/aarch64/libgmp.so $B
+  cp pcre2/openbsd/aarch64/libjpcre2.so $A/tools/regex/.
+ fi
+elif [ "$1" = "freebsd" ]; then
+#  cp /usr/local/lib/libgmp.so.10 $B/libgmp.so
+ if [ "$2" = "x86_64" ]; then
+#   cp mpir/freebsd/x86_64/libgmp.so $B
+  cp pcre2/freebsd/x86_64/libjpcre2.so $A/tools/regex/.
+ else
+#   cp mpir/freebsd/aarch64/libgmp.so $B
+  cp pcre2/freebsd/aarch64/libjpcre2.so $A/tools/regex/.
+ fi
+elif [ "$1" = "windows" ]; then
+ export NASM=$GITHUB_WORKSPACE/openssl-asm/nasm
+ if [ "$2" = "x86_64" ]; then
+  # cp mpir/windows/x64/mpir.dll $B
+  cp "/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/libomp.dll" $B
+  cp "/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/lib/libomp.lib" $B
+  cp pcre2/windows/x64/jpcre2.dll $A/tools/regex/.
+  # cp pthreads4w/x64/pthreadVC3.dll $B
+  curl --output-dir "$B" -O "https://www.jsoftware.com/download/lapackbin/libopenblas.dll"
+ elif [ "$2" = "i386" ]; then
+  # cp mpir/windows/x86/mpir.dll $C/mpir32.dll
+  cp "/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/bin/libomp.dll" $C
+  cp "/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/lib/libomp.lib" $C
+  cp pcre2/windows/x86/jpcre2.dll $A/tools/regex/jpcre2_32.dll
+  # cp pthreads4w/x86/pthreadVC3.dll $C
+  curl --output-dir "$C" -O "https://www.jsoftware.com/download/lapackbin/libopenblas_32.dll"
+ else
+  # cp mpir/windows/arm64/mpir.dll $B
+  cp "/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/ARM64/bin/libomp.dll" $B
+  cp "/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/ARM64/lib/libomp.lib" $B
+  cp pcre2/windows/arm64/jpcre2.dll $A/tools/regex/jpcre2_arm64.dll
+  # cp pthreads4w/arm64/pthreadVC3.dll $B
+  curl --output-dir "$B" -O "https://www.jsoftware.com/download/lapackbin/libopenblas_arm64.dll"
+ fi
+fi
+
+cp version.txt jsrc/jversion.h
+echo "#define jplatform \"$dest\"" >> jsrc/jversion.h
+echo '#define jlicense  "commercial"' >> jsrc/jversion.h
+echo '#define jbuilder  "www.jsoftware.com"' >> jsrc/jversion.h
+
+if [ "x$MAKEFLAGS" = x'' ]; then
+ if ([ "$unameop" = "Linux" ] || [ "$unameop" = "GNU/Linux" ]); then
+  par=$(nproc)
+ elif [ "$unameop" = "Darwin" ] || [ "$unameop" = "OpenBSD" ] || [ "$unameop" = "FreeBSD" ]; then
+  par=$(sysctl -n hw.ncpu)
+ elif [ "$unameop" = "MINGW64" ] || [ "$unameop" = "MINGW32" ] || [ "$unameop" = "CYGWIN" ] || [ "$unameop" = "MSYS" ] || [ "$unameop" = "Msys" ]; then
+  par=4
+ else
+  par=2
+ fi
+ export MAKEFLAGS=-j$par
+fi
+echo "MAKEFLAGS=$MAKEFLAGS"
+
+if [ "$1" = "android" ]; then
+ export _DEBUG=0
+ cd android/jni
+ ln -sf ../../hostdefs .
+ ln -sf ../../jsrc .
+ ln -sf ../../netdefs .
+ cd ../..
+ rm -f androidlibs.zip
+ # build binary for armeabi-v7a arm64-v8a
+ cd android
+ ndk-build
+ # static library not copied by ndk-build
+ cp obj/local/armeabi-v7a/libj.a libs/armeabi-v7a/.
+ cp obj/local/arm64-v8a/libj.a libs/arm64-v8a/.
+ # cp obj/local/x86/libj.a libs/x86/.
+ # cp obj/local/x86_64/libj.a libs/x86_64/.
+ zip -r ../androidlibs.zip libs
+ cd ..
+ # build binary for armeabi
+ #  cd ~/
+ #  wget https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip
+ #  unzip android-ndk-r16b-darwin-x86_64.zip
+ #  cd -
+ #  cd android
+ #  sed -i "" -e "s/^APP_MODULES := jconsonle /##   APP_MODULES := jconsonle /g" jni/Application.mk
+ #  sed -i "" -e "s/^# APP_MODULES := jconsonle-nopie /APP_MODULES := jconsonle-nopie /g" jni/Application.mk
+ #  sed -i "" -e "s/^APP_ABI/##   APP_ABI/g" jni/Application.mk
+ #  sed -i "" -e "s/^# APP_ABI := armeabi/APP_ABI := armeabi/g" jni/Application.mk
+ #  sed -i "" -e "s/^APP_PLATFORM/##   APP_PLATFORM/g" jni/Application.mk
+ #  sed -i "" -e "s/^# APP_PLATFORM/APP_PLATFORM/g" jni/Application.mk
+ #  NDK_TOOLCHAIN_VERSION=4.9 ~/android-ndk-r16b/ndk-build
+ #  cp obj/local/armeabi/libj.a libs/armeabi/.
+ #  zip -r ../androidlibs.zip libs
+ #  cd ..
+ exit 0
+fi
+
+if [ "$1" = "wasm" ]; then
+ export _DEBUG=0
+ cd make2
+ ./clean.sh
+ USE_WASM=1 jplatform=wasm j64x=j32 ./build_libj.sh
+ ./clean.sh
+ USE_WASM=1 jplatform=wasm j64x=j32 ./build_jamalgam.sh
+ cd ..
+ cp bin/$dest/j32/* $C
+ find $C -type d -exec chmod 755 {} \;
+ find $C -type f -exec chmod 644 {} \;
+ find $C \( -name 'jconsole' -o -name 'jamalgam' \) -type f -exec chmod 755 {} \;
+ rm -f $C/profile.ijs
+ cp $C/* j32
+ ls -l j32
+ exit 0
+fi
+
+# hostdefs netdefs
+cd hostdefs
+if [ "$1" = "raspberry" ] && [ $m64 -eq 0 ] && [ "$(uname -m)" = "aarch64" ]; then
+ $CC --target=arm-arm-none-eabi hostdefs.c -o hostdefs && ./hostdefs
+ cd ../netdefs
+ $CC --target=arm-arm-none-eabi netdefs.c -o netdefs && ./netdefs
+else
+ if [ $m64 -eq 1 ]; then
+  $CC hostdefs.c -o hostdefs && ./hostdefs
+  cd ../netdefs
+  $CC netdefs.c -o netdefs && ./netdefs
+ else
+  $CC -m32 hostdefs.c -o hostdefs32 && ./hostdefs32
+  cd ../netdefs
+  $CC -m32 netdefs.c -o netdefs32 && ./netdefs32
+ fi
+fi
+cd ..
+
+cd make2
+
+if [ $m64 -eq 1 ]; then
+ if [ "$1" = "darwin" ]; then
+  ./clean.sh
+  if [ "$2" = "x86_64" ]; then
+   j64x=j64arm ./build_jconsole.sh
+   j64x=j64arm ./build_tsdll.sh
+   j64x=j64arm ./build_libj.sh
+   j64x=j64arm ./build_jamalgam.sh
+  else
+   j64x=j64 ./build_jconsole.sh
+   j64x=j64 ./build_tsdll.sh
+   j64x=j64 ./build_libj.sh
+   j64x=j64 ./build_jamalgam.sh
+  fi
+  ./clean.sh
+  j64x=j64iphoneos _DEBUG=0 ./build_jconsole.sh
+  j64x=j64iphoneos _DEBUG=0 ./build_tsdll.sh
+  j64x=j64iphoneos _DEBUG=0 ./build_libj.sh
+  ./clean.sh
+  j64x=j64iphonesimulator _DEBUG=0 ./build_jconsole.sh
+  j64x=j64iphonesimulator _DEBUG=0 ./build_tsdll.sh
+  j64x=j64iphonesimulator _DEBUG=0 ./build_libj.sh
+ fi
+ ./clean.sh
+ if [ "$2" = "arm64" ]; then
+  j64x=j64arm ./build_jconsole.sh
+  j64x=j64arm ./build_tsdll.sh
+  j64x=j64arm ./build_libj.sh
+  j64x=j64arm ./build_jamalgam.sh
+ else
+  j64x=j64 ./build_jconsole.sh
+  j64x=j64 ./build_tsdll.sh
+  j64x=j64 ./build_libj.sh
+  if [ "$1" != "openbsd" ] && [ "$1" != "freebsd" ]; then
+   j64x=j64 ./build_jamalgam.sh
+  fi
+ fi
+
+ if [ "$USE_PYXES" = "1" ] && [ "$USE_EMU_AVX" = "1" ] && ([ "$2" = "x86_64" ] || [ "$1" = "darwin" ]); then
+  ./clean.sh
+  j64x=j64avx2 ./build_libj.sh
+  ./clean.sh
+  j64x=j64avx512 ./build_libj.sh
+ fi
+
+else
+
+ if [ "$2" = "armv6l" ]; then
+  j64x=j32arm ./build_jconsole.sh
+  j64x=j32arm ./build_tsdll.sh
+  j64x=j32arm ./build_libj.sh
+ else
+  j64x=j32 ./build_jconsole.sh
+  j64x=j32 ./build_tsdll.sh
+  j64x=j32 ./build_libj.sh
+ # j64x=j32 ./build_jamalgam.sh
+ fi
+fi
+
+cd -
+
+if [ $m64 -eq 1 ]; then
+ if [ "$2" = "arm64" ]; then
+  cp bin/$dest/j64arm/* $B
+ else
+  cp bin/$dest/j64/* $B
+ fi
+else
+ if [ "$2" = "armv6l" ]; then
+  cp bin/$dest/j32arm/* $C
+ else
+  cp bin/$dest/j32/* $C
+ fi
+fi
+
+if [ "$1" = "darwin" ] && [ -f "bin/$dest/j64arm/${libj}.${ext}" ]; then
+ lipo bin/$dest/j64/jconsole bin/$dest/j64arm/jconsole -create -output $B/jconsole
+ lipo bin/$dest/j64/libtsdll.${ext} bin/$dest/j64arm/libtsdll.${ext} -create -output $B/libtsdll.${ext}
+ lipo bin/$dest/j64/${libj}.${ext} bin/$dest/j64arm/${libj}.${ext} -create -output $B/${libj}.${ext}
+ lipo bin/$dest/j64/jamalgam bin/$dest/j64arm/jamalgam -create -output $B/jamalgam || true
+fi
+
+if [ -d "bin/$dest/j64iphoneos" ]; then
+ mkdir -p $B/ios
+ cp -r bin/$dest/j64iphoneos $B/ios/.
+fi
+
+if [ -d "bin/$dest/j64iphonesimulator" ]; then
+ mkdir -p $B/ios
+ cp -r bin/$dest/j64iphonesimulator $B/ios/.
+fi
+
+if [ -f bin/$dest/j64avx2/${libj}.${ext} ]; then
+ cp bin/$dest/j64avx2/${libj}.${ext} $B/${libj}avx2.${ext}
+fi
+
+if [ -f bin/$dest/j64avx512/${libj}.${ext} ]; then
+ cp bin/$dest/j64avx512/${libj}.${ext} $B/${libj}avx512.${ext}
+fi
+
+if [ -d $B ]; then
+ find $B -type d -exec chmod 755 {} \;
+ find $B -type f -exec chmod 644 {} \;
+ find $B \( -name 'jconsole' -o -name 'jamalgam' \) -type f -exec chmod 755 {} \;
+ ls -l $B
+fi
+
+if [ -d $C ]; then
+ find $C -type d -exec chmod 755 {} \;
+ find $C -type f -exec chmod 644 {} \;
+ find $C \( -name 'jconsole' -o -name 'jamalgam' \) -type f -exec chmod 755 {} \;
+ ls -l $C
+fi
+
+exit 0
