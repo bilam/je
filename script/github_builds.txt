@@ -1,0 +1,39 @@
+github builds
+
+Whenever the jsource repo is updated, the JE binaries are built and standard tests are run.
+
+The process is defined in the repo workflow:
+
+  .github/workflows/jsource.yml
+
+This workflow calls files in the repo script:
+
+  buildga.cmd   - windows builds
+  testga.cmd    - windows tests
+
+  buildga.sh    - non-windows builds
+  testga.sh     - non-windows tests
+
+  testgares.sh  - combines test results from each build
+
+The tests start J and load testga.ijs to run the test suite.
+
+Builds take place on runners which are machines created dynamically for each OS. Elapsed time is around 1-2 hours for a successful run.
+
+If there is any failure, the entire workflow is halted.
+
+To see the status of a run, login to github and visit:
+
+  https://github.com/jsoftware/jsource/actions
+
+Recent runs are shown with a status mark. Drill down into a run name for the compile logs.
+
+If a run completes successfully, the JE binaries and test results are written to github area:
+
+  https://github.com/jsoftware/jsource/releases/tag/build
+
+If the version is updated in the repo version.txt file, then after the first successful build the JE binaries are copied to the corresponding download area on the J webserver, e.g.
+
+  https://www.jsoftware.com/download/jengine/j9.8
+
+Github actions are documented at https://docs.github.com/en/actions
