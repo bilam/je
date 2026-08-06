@@ -27,8 +27,8 @@ jobs:
 # for selected jobs, disable all and disable the selected needs
 
  all:
-  #if: false
-  if: true
+  if: false
+  #if: true
   runs-on: ubuntu-latest
   steps:
     - run: echo "Runall jobs"
@@ -630,7 +630,7 @@ jobs:
 # openbsd --------------------------------------------------------------
  jeopenbsd:
   name: JE (OpenBSD cross-platform-actions)
-  needs: all
+#  needs: all
   runs-on: ubuntu-latest
   steps:
    - name: Checkout Git repository
@@ -663,9 +663,9 @@ jobs:
        export USE_OPENMP=0
        export USE_PYXES=${{ env.USE_PYXES }}
        export USE_EMU_AVX=${{ env.USE_PYXES }}
-       export _DEBUG=${{ env.DEBUGLEVEL }}
+       export _DEBUG=3
        export OPTL=${{ env.OPTL }}
-       export OPTLD=${{ env.OPTLD }}
+       export OPTLD=-O0
        export NO_UNDEFINED=${{ env.NO_UNDEFINED }}
        script/buildga.sh openbsd x86_64 || exit 1
        script/testga.sh openbsd x86_64 || exit 1
@@ -758,7 +758,7 @@ jobs:
 # freebsd --------------------------------------------------------------
  jefreebsd:
   name: JE (FreeBSD cross-platform-actions)
-  needs: all
+#  needs: all
   runs-on: ubuntu-latest
   steps:
    - name: Checkout Git repository
