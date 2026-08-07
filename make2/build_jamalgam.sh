@@ -949,7 +949,7 @@ case "$jplatform/$j64x" in
   # these flags do not work on iOS
   # -msse2 -msimd128
   # EMSCRIPTEN_KEEPALIVE instead of -s LINKABLE=1 -s EXPORT_ALL=1
-  LDFLAGS=" -L../mpir/linux/wasm32 -lgmp \
+  LDFLAGS="  \
  -s WASM=1 -s ASSERTIONS=1 -s INITIAL_MEMORY=220MB -s TOTAL_MEMORY=600MB -s ALLOW_MEMORY_GROWTH=1 -s STACK_SIZE=984KB \
  -s BINARYEN_EXTRA_PASSES="--pass-arg=max-func-params@80" -s EMULATE_FUNCTION_POINTER_CASTS=1 -s EXIT_RUNTIME=1 \
  -s EXPORTED_FUNCTIONS='[\"_main\"]' \
