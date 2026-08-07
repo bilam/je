@@ -768,7 +768,9 @@ static CCT*jtcdload(J jt,CCT*cc,C*lib,C*proc){B ha=0;FARPROC f;HMODULE h;
 #endif
   CDASSERT((UI)h>HINSTANCE_ERROR,DEBADLIB);
 #endif
-#if SYS & SYS_UNIX
+#if defined(__wasm__)
+  CDASSERT(0,DEBADLIB);
+#elif SYS & SYS_UNIX
   CDASSERT(h=dlopen((*lib)?lib:0,RTLD_LAZY),DEBADLIB);
 #endif
   cc->h=h; ha=1;
@@ -779,7 +781,9 @@ static CCT*jtcdload(J jt,CCT*cc,C*lib,C*proc){B ha=0;FARPROC f;HMODULE h;
 #if SY_WINCE
  f=GetProcAddress(h,tounibuf(proc));
 #endif
-#if (SYS & SYS_UNIX)
+#if defined(__wasm__)
+  CDASSERT(0,DEBADLIB);
+#elif (SYS & SYS_UNIX)
  f=(FARPROC)dlsym(h,proc);
 #endif
  CDASSERT(f,DEBADFN);
@@ -1168,7 +1172,9 @@ F2(jtcd){A z;C*tv,*wv,*zv;CCT*cc;I k,m,n,p,q,t,wd,wr,*ws,wt;
 #if SY_WIN32
 #define FREELIB FreeLibrary
 #endif
-#if (SYS & SYS_UNIX)
+#if defined(__wasm__)
+#define FREELIB(x) 0
+#elif (SYS & SYS_UNIX)
 #define FREELIB dlclose
 #endif
 
@@ -1213,7 +1219,9 @@ F1(jtcderx){I t;C buf[1024];
  }
 #endif
 
-#if SYS&SYS_UNIX
+#if defined(__wasm__)
+ {strcpy (buf, "");}
+#elif SYS&SYS_UNIX
  {const char *e = dlerror(); strcpy (buf, e?e:"");}
 #endif
  R jlink(sc(t),cstr(buf));
