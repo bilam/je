@@ -51,10 +51,18 @@ IFBE=: 'a'~:{.2 ic a.i.'a'
 SZI=: IF64{4 8
 'MAPNAME MAPFN MAPSN MAPFH MAPMH MAPADDRESS MAPHEADER MAPFSIZE MAPJMF MAPMT MAPMSIZE MAPREFS'=: i.12
 'MTRW MTRO MTCW'=: i.3
+3 : 0''
+if. 7=9!:56'NORMAH' do.
 'HADK HADFLAG HADM HADT HADC HADN HADR HADS'=: SZI*i.8
+else.
+h1=. ;:'HADK HADFLAG HADM HADT HADC HADN HADR HADS'
+i=. 9!:56'NORMAHX' 
+((i{.h1),(<'HP0'),i}.h1)=: SZI*i.9
+end.
+)
 HADRUS=: HADR+IFBE*IF64{2 6
 HADCN=: <.HADC%SZI
-HSN=: 7+64
+HSN=: (9!:56'NORMAH')+64
 HS=: SZI*HSN
 AFRO=: 1
 AFNJA=: 2
@@ -70,9 +78,17 @@ newheader=: 0~:memr (memhad'SZI_jmf_'),HADR,1,JINT
 
 setheader=: 4 : 0
 if. newheader do.
+if. 7=9!:56'NORMAH' do.
  (6{.x) memw y,0,6,JINT
  (6{x)  setHADR y
  (7}.x) memw y,HADS,(#7}.x),JINT
+else.
+ r=. memr y,HADR,1,JINT
+ (8{.x) memw y,0,8,JINT
+ r memw y,HADR,1,JINT
+ ((<.HADR%SZI){x) setHADR y
+ (8}.x) memw y,HADS,(#8}.x),JINT
+end.
 else.
  x memw y,0,(#x),JINT
 end.
@@ -213,8 +229,14 @@ i.0 0
 validate=: 3 : 0
 'ts had'=. y
 if. ts>:HS do.
+if. 7=9!:56'NORMAH' do.
   d=. memr had,0 4,JINT
   *./((HS,ts-HS)=0 2{d),1 2 4 8 16 32 131072 262144 65536 e.~ nountype 3{d
+else.
+  d=.  memr had,0 5,JINT
+  'dk dm dt'=. (<.SZI%~HADK,HADM,HADT){d
+  *./((HS,ts-HS)=dk,dm),1 2 4 8 16 32 131072 262144 65536 e.~ nountype dt
+end.
 else. 0 end.
 )
 j=. <;._2 (0 : 0)
@@ -260,7 +282,11 @@ additem=: 3 : 0
 sad=. (15!:6) <fullname y
 'bad name' assert sad
 had=. 1{s=. memr sad,0 4,JINT
+if. 7=9!:56'NORMAH' do.
 'flag msize type rank'=. 1 2 3 6{memr had,0 28,JINT
+else.
+'flag msize type rank'=. (<.SZI%~HADFLAG,HADM,HADT,HADR){memr had,0 8,JINT
+end.
 type =. nountype type 
 'not mapped and writeable' assert 2=flag
 'scalar' assert 0~:rank
@@ -270,7 +296,12 @@ shape=. shape+1,0#~rank-1
 size=. (JTYPES i.type){JSIZES
 ts=. size**/shape
 'msize too small' assert ts<:msize
+if. 7=9!:56'NORMAH' do.
 ((*/shape),rank,shape) memw had,HADN,(2+rank),JINT
+else.
+(*/shape) memw had,HADN,1,JINT
+shape memw had,HADS,rank,JINT
+end.
 i.0 0
 )
 createjmf=: 3 : 0
@@ -288,6 +319,10 @@ if. IFUNIX do.
   c_write fh; (,0{a.); 0+1
   c_lseek fh;0 ;SEEK_SET
   d=. HS,AFNJA,msize,JINT,0,0,1,0
+if. 7~:9!:56'NORMAH' do.
+  i=. 9!:56'NORMAHX'
+  d=. (i{.d),0,(i}.d)
+end.
   c_write fh;d;(SZI*#d)
   c_close fh
 else.
@@ -296,6 +331,10 @@ else.
   SetEndOfFile fh
   SetFilePointerR fh;0;NULLPTR;FILE_BEGIN
   d=. HS,AFNJA,msize,JINT,0,0,1,0
+if. 7~:9!:56'NORMAH' do.
+  i=. 9!:56'NORMAHX'
+  d=. (i{.d),0,(i}.d)
+end.
   WriteFile fh;d;(SZI*#d);(,0);<NULLPTR
   CloseHandleR fh
 end.
@@ -383,7 +422,12 @@ m=. mapsub name;fn;sn;ro
 if. ro*.0=type do.
   had=. allochdr 63
   d=. memr fad,0,HSN,JINT
+  if. 7=9!:56'NORMAH' do.
   d=. (sfu HS+-/ufs fad,had),aa,2}.d
+  else.
+  d=. (sfu HS+-/ufs fad,had) (<.HADK%SZI)} d
+  d=. aa (<.HADFLAG%SZI)} d
+  end.
   d=. 1 HADCN} d
   d setheader had
 elseif. 0=type do.
@@ -404,6 +448,10 @@ elseif. 1 do.
   lshape=. bx}.<.(ts-hs)%(*/tshape)*asize
   d=. sfu hs+-/ufs fad,had
   h=. d,aa,ts,type,1,(*/lshape,tshape),((-.bx)+#tshape),lshape,tshape
+  if. 7~:9!:56'NORMAH' do.
+    i=. 9!:56'NORMAHX'
+    h=. (i{.h),0,(i}.h)
+  end.
   h setheader had
 end.
 
