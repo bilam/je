@@ -312,7 +312,7 @@ A jtbcvt(J jt,C mode,A w){A y,z=w;D ofuzz;I*oq;
  RNE(z);
 }    /* convert to lowest type. 0=mode: don't convert XNUM/RAT to other types */
 
-F1(jticvt){A z;D*v,x;I i,k=0,n,*u;
+F1(jticvt){PLOG1;A z;D*v,x;I i,k=0,n,*u;
  RZ(w);
  n=AN(w); v=DAV(w);
  GA(z,INT,n,AR(w),AS(w)); u=AV(z);
@@ -333,7 +333,7 @@ A jtpcvt(J jt,I t,A w){A y;B b;I*oq=jt->rank;
 }    /* convert w to type t, if possible, otherwise just return w */
 
 
-F1(jtcvt0){I n,t,*u,*v,z0,z1;
+F1(jtcvt0){PLOG1;I n,t,*u,*v,z0,z1;
  RZ(w);
  t=AT(w); n=AN(w); 
  if(n&&t&FL+CMPX){
@@ -350,9 +350,9 @@ F1(jtcvt0){I n,t,*u,*v,z0,z1;
 
 A jtxcvt(J jt,I m,A w){A z;I old=jt->xmode; jt->xmode=m; z=cvt(XNUM,w); jt->xmode=old; R z;}
 
-F1(jtxco1){RZ(w); ASSERT(AT(w)&DENSE,EVNONCE); R cvt(AT(w)&B01+INT+XNUM?XNUM:RAT,w);}
+F1(jtxco1){PLOG1;RZ(w); ASSERT(AT(w)&DENSE,EVNONCE); R cvt(AT(w)&B01+INT+XNUM?XNUM:RAT,w);}
 
-F2(jtxco2){A z;B b;I j,n,r,*s,t,*wv,*zu,*zv;
+F2(jtxco2){PLOG2;A z;B b;I j,n,r,*s,t,*wv,*zu,*zv;
  RZ(a&&w);
  n=AN(w); r=AR(w); t=AT(w);
  ASSERT(t&DENSE,EVNONCE);

@@ -6,7 +6,7 @@
 #include "j.h"
 
 
-static DF1(jtpowseqlim){PROLOG;A x,y,z,*zv;I i,n;
+static DF1(jtpowseqlim){PLOG1;PROLOG;A x,y,z,*zv;I i,n;
  RZ(w);
  RZ(z=exta(BOX,1L,1L,20L)); zv=AAV(z); *zv++=x=w;
  i=1; n=AN(z);
@@ -19,7 +19,7 @@ static DF1(jtpowseqlim){PROLOG;A x,y,z,*zv;I i,n;
  EPILOG(ope(z));
 }    /* f^:(<_) w */
 
-static F2(jttclosure){A z;B b;I an,*av,c,d,i,wn,wr,wt,*wv,*zu,*zv,*zz;
+static F2(jttclosure){PLOG2;A z;B b;I an,*av,c,d,i,wn,wr,wt,*wv,*zu,*zv,*zz;
  RZ(a&&w);
  wt=AT(w); wn=AN(w); wr=AR(w);
  if(B01&wt)RZ(w=cvt(INT,w)); wv=AV(w);
@@ -42,18 +42,18 @@ static F2(jttclosure){A z;B b;I an,*av,c,d,i,wn,wr,wt,*wv,*zu,*zv,*zz;
  R z;
 }    /* {&a^:(<_) w */
 
-static DF1(jtindexseqlim1){A fs;
+static DF1(jtindexseqlim1){PLOG1;A fs;
  RZ(w); 
  fs=VAV(self)->f;
  R AT(w)&B01+INT?tclosure(VAV(fs)->g,w):powseqlim(w,fs);
 }    /* {&x^:(<_) w */
 
-static DF2(jtindexseqlim2){
+static DF2(jtindexseqlim2){PLOG2;
  RZ(a&&w);
  R 1==AR(a)&&AT(a)&INT&&AT(w)&B01+INT?tclosure(a,w):powseqlim(w,amp(ds(CFROM),a));
 }    /* a {~^:(<_) w */
 
-static DF1(jtpowseq){A fs,gs,x;I n=IMAX;V*sv;
+static DF1(jtpowseq){PLOG1;A fs,gs,x;I n=IMAX;V*sv;
  RZ(w);
  sv=VAV(self); fs=sv->f; gs=sv->g;
  ASSERT(!AR(gs),EVRANK);
@@ -64,7 +64,7 @@ static DF1(jtpowseq){A fs,gs,x;I n=IMAX;V*sv;
  R df1(w,powop(fs,IX(n)));
 }    /* f^:(<n) w */
 
-static DF1(jtfpown){A fs,z;AF f1;I n,old;V*sv;
+static DF1(jtfpown){PLOG1;A fs,z;AF f1;I n,old;V*sv;
  RZ(w);
  sv=VAV(self); 
  switch(n=*AV(sv->h)){
@@ -78,7 +78,7 @@ static DF1(jtfpown){A fs,z;AF f1;I n,old;V*sv;
    R z;
 }}   /* single positive finite exponent */
 
-static DF1(jtply1){PROLOG;DECLFG;A b,hs,j,x,*xv,y,z;B*bv,q;I i,k,m,n,*nv,old,p=0;
+static DF1(jtply1){PLOG1;PROLOG;DECLFG;A b,hs,j,x,*xv,y,z;B*bv,q;I i,k,m,n,*nv,old,p=0;
  hs=sv->h; m=AN(hs); 
  RZ(x=ravel(hs)); RZ(y=from(j=grade1(x),x)); nv=AV(y);
  GA(x,BOX,m,1,0); xv=AAV(x);
@@ -113,7 +113,7 @@ static DF1(jtply1){PROLOG;DECLFG;A b,hs,j,x,*xv,y,z;B*bv,q;I i,k,m,n,*nv,old,p=0
 #define DIST(i,x)  if(i==e){v=CAV(x); \
                      while(k<m&&i==(e=nv[jv[k]])){MC(zv+c*jv[k],v,c); ++k;}}
 
-static DF1(jtply1s){DECLFG;A hs,j,y,y1,z;C*v,*zv;I c,e,i,*jv,k,m,n,*nv,r,*s,t,zn;
+static DF1(jtply1s){PLOG1;DECLFG;A hs,j,y,y1,z;C*v,*zv;I c,e,i,*jv,k,m,n,*nv,r,*s,t,zn;
  RZ(w);
  hs=sv->h; m=AN(hs); nv=AV(hs); 
  RZ(j=grade1(ravel(hs))); jv=AV(j); e=nv[*jv];
@@ -137,19 +137,19 @@ static DF1(jtply1s){DECLFG;A hs,j,y,y1,z;C*v,*zv;I c,e,i,*jv,k,m,n,*nv,r,*s,t,zn
  R z;
 }    /* f^:n w, non-negative finite n, well-behaved f */
 
-static DF1(jtinv1){DECLFG;A z; RZ(w);    FDEPINC(1); z=df1(w,inv(fs));        FDEPDEC(1); R z;}
-static DF2(jtinv2){DECLFG;A z; RZ(a&&w); FDEPINC(1); z=df1(w,inv(amp(a,fs))); FDEPDEC(1); R z;}
+static DF1(jtinv1){PLOG1;DECLFG;A z; RZ(w);    FDEPINC(1); z=df1(w,inv(fs));        FDEPDEC(1); R z;}
+static DF2(jtinv2){PLOG2;DECLFG;A z; RZ(a&&w); FDEPINC(1); z=df1(w,inv(amp(a,fs))); FDEPDEC(1); R z;}
 
 static CS2(jtply2,  df1(w,powop(amp(a,fs),gs)))
 
-static DF1(jtpowg1){A h=VAV(self)->h; R df1(  w,*AAV(h));}
-static DF2(jtpowg2){A h=VAV(self)->h; R df2(a,w,*AAV(h));}
+static DF1(jtpowg1){PLOG1;A h=VAV(self)->h; R df1(  w,*AAV(h));}
+static DF2(jtpowg2){PLOG2;A h=VAV(self)->h; R df2(a,w,*AAV(h));}
 
 static CS1(jtpowv1,  df1(  w,powop(fs,        CALL1(g1,  w,gs))))
 static CS2(jtpowv2,  df2(a,w,powop(fs,        CALL2(g2,a,w,gs))))
 static CS2(jtpowv2a, df1(  w,powop(VAV(fs)->f,CALL2(g2,a,w,gs))))
 
-F2(jtpowop){A hs;B b,r;I m,n;V*v;
+F2(jtpowop){PLOG2;A hs;B b,r;I m,n;V*v;
  RZ(a&&w);
  switch(CONJCASE(a,w)){
   default: ASSERTSYS(0,"powop");

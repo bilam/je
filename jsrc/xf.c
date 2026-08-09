@@ -138,7 +138,7 @@ static B jtwa(J jt,F f,I j,A w){C*x;I n,p=0;size_t q=1;
 }    /* write/append string w to file f at j */
 
 
-F1(jtjfread){A z;F f;
+F1(jtjfread){PLOG1;A z;F f;
  F1RANK(0,jtjfread,0);
  RE(f=stdf(w));
  if(f)R 1==(I)f?jgets("\001"):3==(I)f?rdns(stdin):rd(vfn(f),0L,-1L);
@@ -146,7 +146,7 @@ F1(jtjfread){A z;F f;
  R z;
 }
 
-F2(jtjfwrite){B b;F f;
+F2(jtjfwrite){PLOG2;B b;F f;
  F2RANK(RMAX,0,jtjfwrite,0);
  if(BOX&AT(w)){ASSERT(1>=AR(a),EVRANK); ASSERT(!AN(a)||AT(a)&LIT+C2T,EVDOMAIN);}
  RE(f=stdf(w));
@@ -159,7 +159,7 @@ F2(jtjfwrite){B b;F f;
  RNE(mtm);
 }
 
-F2(jtjfappend){B b;F f;
+F2(jtjfappend){PLOG2;B b;F f;
  F2RANK(RMAX,0,jtjfappend,0);
  RE(f=stdf(w));
  if(2==(I)f){B b=jt->tostdout; jt->tostdout=1; jpr(a); jt->tostdout=b; R a;}
@@ -171,7 +171,7 @@ F2(jtjfappend){B b;F f;
  RNE(mtm);
 }
 
-F1(jtjfsize){B b;F f;I m;
+F1(jtjfsize){PLOG1;B b;F f;I m;
  F1RANK(0,jtjfsize,0);
  RE(f=stdf(w));
  if(b=!f)RZ(f=jope(w,FREAD_O)) else RE(vfn(f)); 
@@ -203,7 +203,7 @@ static B jtixin(J jt,A w,I s,I*i,I*n){A in,*wv;I j,k,m,*u,wd;
 }    /* process index file arg for index and length */
 
 // 1!:11
-F1(jtjiread){A z=0;B b;F f;I i,n;
+F1(jtjiread){PLOG1;A z=0;B b;F f;I i,n;
  F1RANK(1,jtjiread,0);
  RE(f=ixf(w)); if(b=!f)RZ(f=jope(w,FREAD_O));  // b=filename, not number; if name, open the named file
  if(ixin(w,fsize(f),&i,&n))z=rd(f,i,n);
@@ -212,7 +212,7 @@ F1(jtjiread){A z=0;B b;F f;I i,n;
 }
 
 // 1!:12
-F2(jtjiwrite){B b;F f;I i;
+F2(jtjiwrite){PLOG2;B b;F f;I i;
  F2RANK(RMAX,1,jtjiwrite,0);
  ASSERT(!AN(a)||AT(a)&LIT+C2T,EVDOMAIN);
  ASSERT(1>=AR(a),EVRANK);
@@ -250,7 +250,7 @@ static B rmdir(C*v){R!rmdir1(v);}
 #endif
 
 
-F1(jtjmkdir){A y,z;
+F1(jtjmkdir){PLOG1;A y,z;
  F1RANK(0,jtjmkdir,0);
  ASSERT(AT(w)&BOX,EVDOMAIN);
  RZ(y=str0(vs(AAVR0(w))));
@@ -262,7 +262,7 @@ F1(jtjmkdir){A y,z;
 #endif
 }
 
-F1(jtjferase){A y,fn;US*s;I h;
+F1(jtjferase){PLOG1;A y,fn;US*s;I h;
  F1RANK(0,jtjferase,0);
  RE(h=fnum(w));
  if(h) y=str0(fname(sc(h))); else y=AAVR0(w);
@@ -277,7 +277,7 @@ F1(jtjferase){A y,fn;US*s;I h;
 #endif
 }    /* erase file or directory */
 
-F1(jtpathcwd){C path[1+NPATH];US wpath[1+NPATH];
+F1(jtpathcwd){PLOG1;C path[1+NPATH];US wpath[1+NPATH];
  ASSERTMTV(w);
 #if SY_WINCE
  &path;&wpath; /* avoid compiler warnings */
@@ -293,7 +293,7 @@ F1(jtpathcwd){C path[1+NPATH];US wpath[1+NPATH];
 #endif
 }
 
-F1(jtpathchdir){A z;
+F1(jtpathchdir){PLOG1;A z;
  RZ(w);
  ASSERT(1>=AR(w),EVRANK);
  ASSERT(AN(w),EVLENGTH);
@@ -316,7 +316,7 @@ F1(jtpathchdir){A z;
 #define _wgetenv(s)		(0)
 #endif
 
-F1(jtjgetenv){
+F1(jtjgetenv){PLOG1;
  F1RANK(1,jtjgetenv,0);
  ASSERT(LIT&AT(w),EVDOMAIN);
 #if (SYS & SYS_UNIX)
@@ -338,7 +338,7 @@ F1(jtjgetenv){
  R zero;
 }
 
-F1(jtjgetpid){
+F1(jtjgetpid){PLOG1;
  ASSERTMTV(w);
 #if SY_WIN32
  R(sc(GetCurrentProcessId()));
@@ -348,11 +348,11 @@ F1(jtjgetpid){
 }
 
 #if (SYS & SYS_UNIX)
-F1(jtpathdll){
+F1(jtpathdll){PLOG1;
  ASSERTMTV(w); R cstr("");
 } 
 #else
-F1(jtpathdll){char p[MAX_PATH]; extern C dllpath[];
+F1(jtpathdll){PLOG1;char p[MAX_PATH]; extern C dllpath[];
  ASSERTMTV(w);
  strcpy(p,dllpath);
  if('\\'==p[strlen(p)-1]) p[strlen(p)-1]=0;
