@@ -14,6 +14,17 @@
 #endif
 #endif
 
+#ifndef NORMAHX
+#define NORMAHX -1
+#endif
+#ifndef NORMAHN
+#if NORMAHX==-1
+#define NORMAHN 0
+#else
+#define NORMAHN 1
+#endif
+#endif
+
 /* maintainer note: define JFRONTEND for non jsource front-ends */
 // #define JFRONTEND
 #ifdef JFRONTEND
@@ -37,7 +48,13 @@ typedef long I;
 typedef char C;
 typedef void* J;
 typedef struct A_RECORD {
+#if NORMAHX==0
+  I p0[NORMAHN],k,flag,m,t,c,n,r,s[1];
+#elif NORMAHX==1
+  I k,p1[NORMAHN],flag,m,t,c,n,r,s[1];
+#else
   I k,flag,m,t,c,n,r,s[1];
+#endif
 }* A;
 typedef struct AREP_RECORD {
   I n,t,c,r,s[1];
@@ -148,3 +165,4 @@ C* _stdcall Jinput(J jt, C*);
 #define SMOPTMTH    8  /* multithreaded */
 
 #endif
+

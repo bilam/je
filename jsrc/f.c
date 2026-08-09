@@ -76,7 +76,7 @@ I jtthv(J jt,A w,I n,C*s){A t;B ov=0;C buf[WZ],*x,*y=s;I k,n4=n-4,p,wd,wn,wt;VF 
  *y=0; R y-s;
 }
 
-static F1(jtthbit){A z;UC*x;C*y;I c,i,m,n,p,q,r,r1,*s;
+static F1(jtthbit){PLOG1;A z;UC*x;C*y;I c,i,m,n,p,q,r,r1,*s;
  n=AN(w); r=AR(w); s=AS(w);
  c=r?s[r-1]:1; m=n/c; p=2*c-1;
  GA(z,LIT,m*p,r+!r,s); *(AS(z)+AR(z)-1)=p; 
@@ -91,7 +91,7 @@ static F1(jtthbit){A z;UC*x;C*y;I c,i,m,n,p,q,r,r1,*s;
  R z;
 }
 
-static F1(jtthb){A z;B*x;C*y;I c,m,n,p,r,*s;
+static F1(jtthb){PLOG1;A z;B*x;C*y;I c,m,n,p,r,*s;
  n=AN(w); r=AR(w); s=AS(w);
  c=r?s[r-1]:1; m=n/c; p=2*c-1;
  GA(z,LIT,m*p,r+!r,s); *(AS(z)+AR(z)-1)=p; 
@@ -100,7 +100,7 @@ static F1(jtthb){A z;B*x;C*y;I c,m,n,p,r,*s;
  R z;
 }
 
-static F1(jtthn){A d,t,z;C*tv,*x,*y,*zv;I c,*dv,k,m,n,p,r,*s,wd;VF fmt;
+static F1(jtthn){PLOG1;A d,t,z;C*tv,*x,*y,*zv;I c,*dv,k,m,n,p,r,*s,wd;VF fmt;
  n=AN(w); r=AR(w); s=AS(w);
  thcase(AT(w),&wd,&fmt);
  GA(t,LIT,wd*(1+n),1,0); tv=CAV(t);
@@ -117,7 +117,7 @@ static F1(jtthn){A d,t,z;C*tv,*x,*y,*zv;I c,*dv,k,m,n,p,r,*s,wd;VF fmt;
  R z;
 }
 
-static F1(jtthsb){A d,z;C*zv;I c,*dv,m,n,p,q,r,*s;SB*x,*y;SBU*u;
+static F1(jtthsb){PLOG1;A d,z;C*zv;I c,*dv,m,n,p,q,r,*s;SB*x,*y;SBU*u;
  n=AN(w); r=AR(w); s=AS(w); x=y=SBAV(w); q=jt->sbun;
  if(1>=r){
   c=n; 
@@ -134,7 +134,7 @@ static F1(jtthsb){A d,z;C*zv;I c,*dv,m,n,p,q,r,*s;SB*x,*y;SBU*u;
  R z;
 }
 
-static F1(jtthx1){A z;B b;C*s,s1[2+XBASEN];I n,p,p1,*v;
+static F1(jtthx1){PLOG1;A z;B b;C*s,s1[2+XBASEN];I n,p,p1,*v;
  n=AN(w); v=AV(w)+n-1; b=0>*v; 
  p=*v; if(p==XPINF)R cstr("_"); else if(p==XNINF)R cstr("__");
  sprintf(s1,FMTI,*v); p1=strlen(s1);
@@ -167,7 +167,7 @@ static A jtthdx1(J jt,DX y){A x,z;B b;C*s,s1[2+XBASEN],s2[20];I e,n,p,p1,p2,*v;
  R z;
 }
 
-static F1(jtthxqe){A d,t,*tv,*v,y,z;C*zv;I c,*dv,m,n,p,r,*s,*wv;
+static F1(jtthxqe){PLOG1;A d,t,*tv,*v,y,z;C*zv;I c,*dv,m,n,p,r,*s,*wv;
  n=AN(w); r=AR(w); s=AS(w); wv=AV(w);
  c=r?s[r-1]:1; m=n/c;
  GA(t,BOX,n,1,0); tv=AAV(t);
@@ -234,7 +234,7 @@ static void jtfmfill(J jt,I p,I q,I wd,A w,A x,A y,C*zv){A e,*wv;C*u,*v;
   u=zv+d-wd; v=CAV(e)-c; DO(r, MC(u+=wd,v+=c,c););
 }}   /* fill each cell */
 
-static F1(jtenframe){A x,y,z;C*zv;I ht,m,n,p,q,wd,wr,xn,*xv,yn,*yv,zn;
+static F1(jtenframe){PLOG1;A x,y,z;C*zv;I ht,m,n,p,q,wd,wr,xn,*xv,yn,*yv,zn;
  RE(rc(w,&x,&y));
  n=AN(w); wr=MAX(2,AR(w));
  xn=AN(x)-1; xv=AV(x); ht=1; DO(xn, ht+=xv[i]; ASSERT(0<ht,EVLIMIT););
@@ -248,7 +248,7 @@ static F1(jtenframe){A x,y,z;C*zv;I ht,m,n,p,q,wd,wr,xn,*xv,yn,*yv,zn;
  R z;
 }
 
-F1(jtmat){A z;B b=0;C*v,*x;I c,k,m=1,p,q,qc,r,*s,zn;
+F1(jtmat){PLOG1;A z;B b=0;C*v,*x;I c,k,m=1,p,q,qc,r,*s,zn;
  RZ(w);
  r=AR(w); s=AS(w); v=CAV(w);
  q=1<r?s[r-2]:1; c=r?s[r-1]:1;
@@ -261,16 +261,16 @@ F1(jtmat){A z;B b=0;C*v,*x;I c,k,m=1,p,q,qc,r,*s,zn;
  R z;
 }
 
-static F1(jtmatth1){R mat(thorn1(w));}
+static F1(jtmatth1){PLOG1;R mat(thorn1(w));}
 
-static F1(jtthbox){A z;UC*s;static C ctrl[]=" \001\002\003\004\005\006\007   \013\014 ";
+static F1(jtthbox){PLOG1;A z;UC*s;static C ctrl[]=" \001\002\003\004\005\006\007   \013\014 ";
  RZ(z=enframe(every(w,0L,jtmatth1)));
  s=UAV(z); 
  DO(AN(z), if(14>s[i])s[i]=ctrl[s[i]];);
  R z;
 }
 
-static F1(jtths){A e,i,x,z;C c,*u,*v;I d,m,n,*s;P*p;
+static F1(jtths){PLOG1;A e,i,x,z;C c,*u,*v;I d,m,n,*s;P*p;
  RZ(scheck(w));
  p=PAV(w); e=SPA(p,e); i=SPA(p,i); x=SPA(p,x); 
  RZ(i=thorn1(i)); s=AS(i); m=s[0]; n=s[1];
@@ -284,7 +284,7 @@ static F1(jtths){A e,i,x,z;C c,*u,*v;I d,m,n,*s;P*p;
  R z;
 }
 
-F1(jtthorn1){PROLOG;A z;
+F1(jtthorn1){PLOG1;PROLOG;A z;
  RZ(w);
  if(!AN(w))GA(z,LIT,0,AR(w),AS(w))
  else switch(AT(w)){
@@ -405,7 +405,7 @@ static A jtjprx(J jt,I ieol,I maxlen,I lb,I la,A w){A y,z;B ch;C e,eo,*eov,*v,x,
  R z;
 }    /* output string from array w */
 
-F2(jtoutstr){I*v;
+F2(jtoutstr){PLOG2;I*v;
  RZ(a&&w);
  RZ(a=vib(a));
  ASSERT(1==AR(a), EVRANK);
@@ -419,13 +419,13 @@ F2(jtoutstr){I*v;
  R jprx(v[0],v[1],v[2],v[3],w);
 }
 
-static F1(jtjpr1){PROLOG;A z;
+static F1(jtjpr1){PLOG1;PROLOG;A z;
  RZ(z=jprx(jt->outeol,jt->outmaxlen,jt->outmaxbefore,jt->outmaxafter,w));
  if(AN(z))jsto(jt,jt->mtyo==0?MTYOFM:jt->mtyo,CAV(z));
  EPILOG(mtm);
 }
 
-F1(jtjpr){A y;I i,n,t,*v;
+F1(jtjpr){PLOG1;A y;I i,n,t,*v;
  RZ(w);
  t=AT(w);
  if(t&NOUN&&jt->tostdout)RZ(jpr1(w))

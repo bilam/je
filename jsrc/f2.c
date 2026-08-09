@@ -6,7 +6,7 @@
 #include "j.h"
 
 
-static F2(jtth2box){A z;I n,p,q,*v,x,y;
+static F2(jtth2box){PLOG2;A z;I n,p,q,*v,x,y;
  p=jt->pos[0]; q=jt->pos[1];
  RZ(a=vi(a)); n=AN(a); v=AV(a);
  ASSERT(1>=AR(a),EVRANK);
@@ -162,7 +162,7 @@ static B jtth2ctrl(J jt,A a,A*ep,A*mp,A*dp,A*sp,I*zkp){A da,ea,ma,s;B b=1,*ev,r;
  *zkp=b?zk:0; R 1;
 }    /* parse format control (left argument of ":) */
 
-F2(jtthorn2){PROLOG;A da,ea,h,ma,s,y,*yv,z;B e,*ev;C*sv,*wv,*zv;I an,c,d,*dv,k,m,*mv,n,r,sk,t,wk,*ws,zk;
+F2(jtthorn2){PLOG2;PROLOG;A da,ea,h,ma,s,y,*yv,z;B e,*ev;C*sv,*wv,*zv;I an,c,d,*dv,k,m,*mv,n,r,sk,t,wk,*ws,zk;
  F2RANK(1,RMAX,jtthorn2,0);
  an=AN(a); t=AT(w);
  if(t&BOX)R th2box(a,w);

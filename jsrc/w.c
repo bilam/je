@@ -36,7 +36,7 @@ static ST state[10][9]={
 };
 /*         CX      CS      CA      CN      CB      C9      CD      CC      CQ   */
 
-F1(jtwordil){A z;C e,nv,s,t=0;I b,i,m,n,*x,xb,xe;ST p;UC*v;
+F1(jtwordil){PLOG1;A z;C e,nv,s,t=0;I b,i,m,n,*x,xb,xe;ST p;UC*v;
  RZ(w);
  nv=0; s=SS;
  n=AN(w); v=UAV(w); GA(z,INT,1+n+n,1,0); x=1+AV(z);
@@ -74,7 +74,7 @@ F1(jtwordil){A z;C e,nv,s,t=0;I b,i,m,n,*x,xb,xe;ST p;UC*v;
 /* xe: end index of current numeric vector                      */
 /* z:  result; maximum of n words                               */
 
-F1(jtwords){A t,*x,z;C*s;I k,n,*y;
+F1(jtwords){PLOG1;A t,*x,z;C*s;I k,n,*y;
  F1RANK(1,jtwords,0);
  RZ(w=vs(w));
  RZ(t=wordil(w));
@@ -100,7 +100,7 @@ static A jtconstr(J jt,I n,C*s){A z;C b,c,p,*t,*x;I m=0;
 #define TAIA(i,j)   (TASGN(1) && TNAME(i) && TNAME(j) && AN(v[i])==AN(v[j]) && \
                         !memcmp(NAV(v[i])->s,NAV(v[j])->s,AN(v[i])))
 
-F2(jtenqueue){A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
+F2(jtenqueue){PLOG2;A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
  RZ(a&&w);
  s=CAV(w); u=AV(a); n=*u++; n=0>n?-(1+n):n;
  GA(z,BOX,n,1,0); x=v=AAV(z);
@@ -165,7 +165,7 @@ F2(jtenqueue){A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
 /* z:  result array of boxed list of words                      */
 
 
-F1(jttokens){R enqueue(wordil(w),w);}
+F1(jttokens){PLOG1;R enqueue(wordil(w),w);}
 
 
 #define CHKJ(j)             ASSERT(0<=(j),EVINDEX);
@@ -241,7 +241,7 @@ static A jtfsmdo(J jt,I f,A s,A m,I*ijrd,A w,A w0){A x,z;C*cc,*wv0;
  R z;
 }
 
-F1(jtfsmvfya){PROLOG;A a,*av,m,s,x,z,*zv;I ad,an,c,e,f,ijrd[4],k,p,q,*sv,*v;
+F1(jtfsmvfya){PLOG1;PROLOG;A a,*av,m,s,x,z,*zv;I ad,an,c,e,f,ijrd[4],k,p,q,*sv,*v;
  RZ(a=w);
  ASSERT(1==AR(a),EVRANK);
  ASSERT(BOX&AT(a),EVDOMAIN);
@@ -301,8 +301,8 @@ static A jtfsm0(J jt,A a,A w,C chka){PROLOG;A*av,m,s,x,w0=w;B b;I ad,c,f,*ijrd,k
  EPILOG(fsmdo(f,s,m,ijrd,w,w0));
 }
 
-F2(jtfsm){R fsm0(a,w,1);}
+F2(jtfsm){PLOG2;R fsm0(a,w,1);}
      /* x;:y */
 
-DF1(jtfsmfx){RZ(w&&self); R fsm0(VAV(self)->f,w,0);}
+DF1(jtfsmfx){PLOG1;RZ(w&&self); R fsm0(VAV(self)->f,w,0);}
      /* x&;: y */
