@@ -22,24 +22,24 @@ I jtfdep(J jt,A w){A f,g;I d=0,k;V*v;
  R v->fdep=1+d;
 }    /* function depth:  1 + max depth of components */
 
-F1(jtfdepadv){RZ(w); ASSERT(VERB&AT(w),EVDOMAIN); R sc(fdep(w));}
+F1(jtfdepadv){PLOG1;RZ(w); ASSERT(VERB&AT(w),EVDOMAIN); R sc(fdep(w));}
 
 
-DF1(jtdf1){RZ(self); R CALL1(VAV(self)->f1,  w,self);}
-DF2(jtdf2){RZ(self); R CALL2(VAV(self)->f2,a,w,self);}
+DF1(jtdf1){PLOG1;RZ(self); R CALL1(VAV(self)->f1,  w,self);}
+DF2(jtdf2){PLOG2;RZ(self); R CALL2(VAV(self)->f2,a,w,self);}
 
-DF1(jtdfs1){A s=jt->sf,z; RZ(self); z=CALL1(VAV(self)->f1,  w,jt->sf=self); jt->sf=s; R z;}
-DF2(jtdfs2){A s=jt->sf,z; RZ(self); z=CALL2(VAV(self)->f2,a,w,jt->sf=self); jt->sf=s; R z;}    
+DF1(jtdfs1){PLOG1;A s=jt->sf,z; RZ(self); z=CALL1(VAV(self)->f1,  w,jt->sf=self); jt->sf=s; R z;}
+DF2(jtdfs2){PLOG2;A s=jt->sf,z; RZ(self); z=CALL2(VAV(self)->f2,a,w,jt->sf=self); jt->sf=s; R z;}    
      /* for monads and dyads that can possibly involve $: */
 
-F1(jtself1){A z;I d=fdep(jt->sf); FDEPINC(d); z=df1(  w,jt->sf); FDEPDEC(d); R z;}
-F2(jtself2){A z;I d=fdep(jt->sf); FDEPINC(d); z=df2(a,w,jt->sf); FDEPDEC(d); R z;}
+F1(jtself1){PLOG1;A z;I d=fdep(jt->sf); FDEPINC(d); z=df1(  w,jt->sf); FDEPDEC(d); R z;}
+F2(jtself2){PLOG2;A z;I d=fdep(jt->sf); FDEPINC(d); z=df2(a,w,jt->sf); FDEPDEC(d); R z;}
 
 A jtac1(J jt,AF f){R fdef(0,VERB, f,0L, 0L,0L,0L, 0L, RMAX,RMAX,RMAX);}
 A jtac2(J jt,AF f){R fdef(0,VERB, 0L,f, 0L,0L,0L, 0L, RMAX,RMAX,RMAX);}
 
-F1(jtdomainerr1){ASSERT(0,EVDOMAIN);}
-F2(jtdomainerr2){ASSERT(0,EVDOMAIN);}
+F1(jtdomainerr1){PLOG1;ASSERT(0,EVDOMAIN);}
+F2(jtdomainerr2){PLOG2;ASSERT(0,EVDOMAIN);}
 
 A jtfdef(J jt,C id,I t,AF f1,AF f2,A fs,A gs,A hs,I flag,I m,I l,I r){A z;V*v;
  RE(0);

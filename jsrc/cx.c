@@ -75,7 +75,7 @@ static void jttryinit(J jt,TD*v,I i,CW*cw){I j=i,t=0;
    case CEND:    v->e=j; break;
 }}}  /* processing on hitting try. */
 
-static DF2(jtxdefn){PROLOG;A cd,cl,cn,h,*hv,*line,loc=jt->local,t,td,u,v,z;B b,lk,named,ox=jt->xdefn;CDATA*cv;
+static DF2(jtxdefn){PLOG2;PROLOG;A cd,cl,cn,h,*hv,*line,loc=jt->local,t,td,u,v,z;B b,lk,named,ox=jt->xdefn;CDATA*cv;
   CW*ci,*cw;DC d=0;I hi,i=0,j,m,n,od=jt->db,old,r=0,st,tdi=0;TD*tdv;V*sv;X y;
  RE(0);
  z=mtm; cd=t=u=v=0; sv=VAV(self); st=AT(self);
@@ -198,22 +198,22 @@ static DF2(jtxdefn){PROLOG;A cd,cl,cn,h,*hv,*line,loc=jt->local,t,td,u,v,z;B b,l
 }
 
 
-static DF1(xv1){R df1(  w,VAV(self)->f);}
-static DF2(xv2){R df2(a,w,VAV(self)->g);}
+static DF1(xv1){PLOG1;R df1(  w,VAV(self)->f);}
+static DF2(xv2){PLOG2;R df2(a,w,VAV(self)->g);}
 
-static DF1(xn1 ){R xdefn(0L,w, self);}
-static DF1(xadv){R xdefn(w, 0L,self);}
+static DF1(xn1 ){PLOG1;R xdefn(0L,w, self);}
+static DF1(xadv){PLOG1;R xdefn(w, 0L,self);}
 
 
-static F1(jtxopcall){R jt->db&&DCCALL==jt->sitop->dctype?jt->sitop->dca:mark;}
+static F1(jtxopcall){PLOG1;R jt->db&&DCCALL==jt->sitop->dctype?jt->sitop->dca:mark;}
 
-static DF1(xop1){A ff,x;
+static DF1(xop1){PLOG1;A ff,x;
  RZ(ff=fdef(CCOLON,VERB, xn1,jtxdefn, w,self,0L, VXOP|VAV(self)->flag, RMAX,RMAX,RMAX));
  RZ(x=xopcall(one));
  R x==mark?ff:namerefop(x,ff);
 }
 
-static DF2(xop2){A ff,x;
+static DF2(xop2){PLOG2;A ff,x;
  RZ(ff=fdef(CCOLON,VERB, xn1,jtxdefn, a,self,w,  VXOP|VAV(self)->flag, RMAX,RMAX,RMAX));
  RZ(x=xopcall(one));
  R x==mark?ff:namerefop(x,ff);
@@ -231,7 +231,7 @@ static B jtxop(J jt,A h){A p,x,y;B b,*pv;I*xv;
  R b;
 }    /* whether h denotes an explicit derived function */
 
-static F1(jtcolon0){A l,z;C*p,*q,*s;I m,n;
+static F1(jtcolon0){PLOG1;A l,z;C*p,*q,*s;I m,n;
  n=0; RZ(z=exta(LIT,1L,1L,300L)); s=CAV(z);
  while(1){
   RE(l=jgets("\001"));
@@ -244,7 +244,7 @@ static F1(jtcolon0){A l,z;C*p,*q,*s;I m,n;
  R str(n,s);
 }    /* enter nl terminated lines; ) on a line by itself to exit */
 
-static F1(jtlineit){
+static F1(jtlineit){PLOG1;
  R 1<AR(w)?ravel(stitch(w,scc(CLF))):AN(w)&&CLF==cl(w)?w:over(w,scc(CLF));
 }
 
@@ -276,7 +276,7 @@ static B jtsent12b(J jt,A w,A*m,A*d){A t,*wv,y,*yv;I j,*v,wd;
  R 1;
 }    /* boxed sentences into monad/dyad */
 
-F2(jtcolon){A d,h,*hv,m;B b;C*s;I flag=0,n,p;
+F2(jtcolon){PLOG2;A d,h,*hv,m;B b;C*s;I flag=0,n,p;
  RZ(a&&w);
  if(VERB&AT(a)&&VERB&AT(w)){V*v;
   v=VAV(a); if(CCOLON==v->id&&VERB&AT(v->f)&&VERB&AT(v->g))a=v->f;

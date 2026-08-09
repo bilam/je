@@ -92,7 +92,7 @@ BITWISE(jtbitwiserotate,UI,BWROT   )
 BITWISE(jtbitwiseshift, UI,BWSHIFT )
 BITWISE(jtbitwiseshifta,I, BWSHIFTA)
 
-DF1(jtbitwise1){R CALL2(VAV(self)->f2,zero,w,self);}
+DF1(jtbitwise1){PLOG1;R CALL2(VAV(self)->f2,zero,w,self);}
 
 
 static VF bwC[16]={(VF)bw0000CC,(VF)bw0001CC,(VF)bw0010CC,(VF)bw0011CC, (VF)bw0100CC,(VF)bw0101CC,(VF)bw0110CC,(VF)bw0111CC,
@@ -105,7 +105,7 @@ static VF bwI[16]={(VF)bw0000II,(VF)bw0001II,(VF)bw0010II,(VF)bw0011II, (VF)bw01
 /* a m b.&.(a.i.]) w */
 /* m e. 16+i.16      */
 
-DF2(jtbitwisechar){DECLFG;A*p,x,y,z;B b;I an,ar,*as,at,d,j,m,n,wn,wr,*ws,wt,zn;VF f;
+DF2(jtbitwisechar){PLOG2;DECLFG;A*p,x,y,z;B b;I an,ar,*as,at,d,j,m,n,wn,wr,*ws,wt,zn;VF f;
  RZ(a&&w);
  d=SZI;
  x=a; an=AN(a); ar=AR(a); as=AS(a); at=AT(a);
@@ -152,7 +152,7 @@ static VF bwinsI[16]={(VF)bw0000insI,(VF)bw0001insI,(VF)bw0010insI,(VF)bw0011ins
 /* m b./&.(a.i.]) w */
 /* m e. 16+i.16     */
 
-DF1(jtbitwiseinsertchar){A fs,z;I c,d=SZI,j,m,n,r,wn,wr;UC*u,*v,*wv,x,*zv;VF f;
+DF1(jtbitwiseinsertchar){PLOG1;A fs,z;I c,d=SZI,j,m,n,r,wn,wr;UC*u,*v,*wv,x,*zv;VF f;
  RZ(w&&self);
  wr=AR(w); c=wn=AN(w); n=wr?*AS(w):1; z=VAV(self)->f; fs=VAV(z)->f;
  if(!(wn&&d<n&&LIT&AT(w)))R from(df1(indexof(alp,w),fs),alp);

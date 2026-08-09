@@ -159,7 +159,7 @@ static SF(jtsortd){A x,y,z;B b;D*g,*h,*xu,*wv,*zu;I d,e,i,k,p,q,*yv;int up;
  R z;
 }    /* w grade"1 w on real w */
 
-F2(jtgr2){PROLOG;A z=0;I acr,d,f,m,n,*s,t,wcr; 
+F2(jtgr2){PLOG2;PROLOG;A z=0;I acr,d,f,m,n,*s,t,wcr; 
  RZ(a&&w);
  acr=jt->rank?jt->rank[0]:AR(a); 
  wcr=jt->rank?jt->rank[1]:AR(w); t=AT(w);

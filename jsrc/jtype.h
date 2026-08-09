@@ -99,7 +99,35 @@ typedef I4                 LX;  // index of an L block in SYMORIGIN
 // typedef struct {I k,flag,m,t,c,n,r,s[1];}* A;
 typedef struct AD AD;
 typedef AD *A;
-struct AD {I k,flag,m,t,c,n;
+struct AD {
+#if NORMAHX==0
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin0;  // 
+ S lock0;   // can be used as a lock
+#else  // bigendian, not used
+ S lock0;   // can be used as a lock
+ US origin0;
+#endif
+ I p0[NORMAHN-1];
+#endif
+I k;
+#if NORMAHX==1
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin1;  // 
+ S lock1;   // can be used as a lock
+#else  // bigendian, not used
+ S lock1;   // can be used as a lock
+ US origin1;
+#endif
+ I p1[NORMAHN-1];
+#endif
+I flag;
+I m;
+I t;
+I c;
+I n;
  RANKT r;
  UC filler;
  US h;   // reserved for allocator.  Not used for AFNJA memory
@@ -109,6 +137,27 @@ struct AD {I k,flag,m,t,c,n;
  S lock;   // can be used as a lock
 #endif
 I s[1];};
+// header fits in 7 words
+#if NORMAHE
+#if NORMAHX==0
+_Static_assert(offsetof(AD,kchain.k)==NORMAHN*SZI,"NORMAHX");
+#endif
+#if NORMAHX==1
+_Static_assert(offsetof(AD,flag)==(1+NORMAHN)*SZI,"NORMAHX");
+#endif
+#endif
+
+/* Fields of type A                                                        */
+
+#if NORMAHE
+// NORMAHX only supports 0 .. 1
+#define AMOFFSET (NORMAHN+2)  // I* offset of AM field
+#define AROFFSET (NORMAHN+6)  // I* offset of AR field
+#else
+#define AMOFFSET (2)  // I* offset of AM field
+#define AROFFSET (6)  // I* offset of AR field
+#endif
+
 typedef struct {A a,t;}TA;
 typedef A                (*AF)();
 typedef UI               (*UF)();
@@ -262,6 +311,84 @@ typedef I SI;
 #define SBAV(x)         ((SB*)((C*)(x)+AK(x)))  /* symbol                  */
 
 #endif
+
+#if PYXES
+#if NORMAHE
+#if NORMAHX==0
+#define AORIGIN(x)      ((x)->origin0)  /* thread origin id                */
+#define ALOCK(x)        ((x)->lock0)    /* thread lock                     */
+#elif NORMAHX==1
+#define AORIGIN(x)      ((x)->origin1)  /* thread origin id                */
+#define ALOCK(x)        ((x)->lock1)    /* thread lock                     */
+#else
+#define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
+#define ALOCK(x)        ((x)->lock)     /* thread lock                     */
+#endif
+#else
+#define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
+#define ALOCK(x)        ((x)->lock)     /* thread lock                     */
+#endif
+#endif
+
+#if NORMAHE && NORMAHN>1 && MEMAUDIT&0x80
+#if NORMAHX==0
+#define APX(x)          ((x)->p0[0]) // extra word in AD
+#if NORMAHN==2
+#define APINIT(x,v)     ((x)->p0[0])=(v);
+#elif NORMAHN==3
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=(v);
+#elif NORMAHN==4
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=(v);
+#elif NORMAHN==5
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=((x)->p0[3])=(v);
+#elif NORMAHN==6
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=((x)->p0[3])=((x)->p0[4])=(v);
+#elif NORMAHN==7
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=((x)->p0[3])=((x)->p0[4])=((x)->p0[5])=(v);
+#elif NORMAHN==8
+#define APINIT(x,v)     ((x)->p0[0])=((x)->p0[1])=((x)->p0[2])=((x)->p0[3])=((x)->p0[4])=((x)->p0[5])=((x)->p0[6])=(v);
+#endif
+#elif NORMAHX==1
+#define APX(x)          ((x)->p1[0]) // extra word in AD
+#if NORMAHN==2
+#define APINIT(x,v)     ((x)->p1[0])=(v);
+#elif NORMAHN==3
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=(v);
+#elif NORMAHN==4
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=(v);
+#elif NORMAHN==5
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=((x)->p1[3])=(v);
+#elif NORMAHN==6
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=((x)->p1[3])=((x)->p1[4])=(v);
+#elif NORMAHN==7
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=((x)->p1[3])=((x)->p1[4])=((x)->p1[5])=(v);
+#elif NORMAHN==8
+#define APINIT(x,v)     ((x)->p1[0])=((x)->p1[1])=((x)->p1[2])=((x)->p1[3])=((x)->p1[4])=((x)->p1[5])=((x)->p1[6])=(v);
+#endif
+#endif
+#define CHKAPX(x)       chkapx(jt,x,1)
+#define CHKAPX1(x)      chkapx(jt,x,1)
+#define CHKPOOL         DO(PLIML-PMINL+1, MS *x=(MS*)(jt->mfree[i+PMINL]); while(x){if(x&&(((uintptr_t)x)<0x10000))SEGFAULT;CHKAFCHAIN((A)(x+1));x=(MS*)(x->a);})
+#define CHKPOOL1        DO(PLIML-PMINL+1, chkapx(jt,jt->mfree[i+PMINL],0,0);)
+#define CHKAFCHAIN(x)   {MS *x1=(MS*)x-1; while(x1){if(x1&&(((uintptr_t)x1)<0x10000))SEGFAULT;chkapx(jt,(A)(x1+1),0,0);x1=(MS*)(x1->a);}}
+#else
+#if MEMAUDIT&0x80
+#define APINIT(x,v)
+#define CHKAPX(x)       chkapx(jt,x,1)
+#define CHKAPX1(x)      chkapx(jt,x,1)
+#define CHKPOOL         DO(PLIML-PMINL+1, MS *x=(MS*)(jt->mfree[i+PMINL]); while(x){if(x&&(((uintptr_t)x)<0x10000))SEGFAULT;CHKAFCHAIN((A)(x+1));x=(MS*)(x->a);})
+#define CHKPOOL1        DO(PLIML-PMINL+1, chkapx(jt,jt->mfree[i+PMINL],0,0);)
+#define CHKAFCHAIN(x)   {MS *x1=(MS*)x-1; while(x1){if(x1&&(((uintptr_t)x1)<0x10000))SEGFAULT;chkapx(jt,(A)(x1+1),0,0);x1=(MS*)(x1->a);}}
+#else
+#define APINIT(x,v)
+#define CHKAPX(x)
+#define CHKAPX1(x)
+#define CHKPOOL
+#define CHKPOOL1
+#define CHKAFCHAIN(x)
+#endif
+#endif
+
 
 /* Types for AT(x) field of type A                                         */
 /* Note: BOOL name conflict with ???; SCHAR name conflict with sqltypes.h  */

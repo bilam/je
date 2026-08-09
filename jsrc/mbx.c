@@ -126,6 +126,7 @@ static A jtsmmga(J jt,A a,I t,I n,I r,I*s){A z;I m,w;
  w=WP(t,n,r); m=SZI*w; 
  ASSERT(RMAX>=r&&m>n&&n>=0&&m>w&&w>0,EVLIMIT);   /* beware integer overflow */
  RZ(z=smma(a,m));
+ APINIT(z,XHEADERFILL);
  AT(z)=t; ACX(z); AN(z)=n; ARINIT(z,(RANKT)r); AFLAG(z)=AFSMM; AK(z)=AKX(z); AM(z)=m-AK(z); 
  if(r&&s)ICPY(AS(z),s,r); else *AS(z)=n;
  if(t&LAST0)*((I*)z+w-1)=0;
@@ -140,7 +141,7 @@ static B jtsmmin(J jt,A a,A w){A*wv;I wd;MS*x;
  R 0;
 }   /* 1 iff any leaf of w is part of SMM array a */
 
-F2(jtsmmcar){A*wv,x,z;A1*zv;I n,t,wd;
+F2(jtsmmcar){PLOG2;A*wv,x,z;A1*zv;I n,t,wd;
  RZ(w);
  n=AN(w); t=AT(w); 
  ASSERT(t&B01+LIT+INT+FL+CMPX+BOX,EVDOMAIN);
@@ -151,7 +152,7 @@ F2(jtsmmcar){A*wv,x,z;A1*zv;I n,t,wd;
  R z;
 }    /* make copy of w in SMM area of a */
 
-F2(jtsmmis){A*wv,x;A1*av;I wd,wn,wr;
+F2(jtsmmis){PLOG2;A*wv,x;A1*av;I wd,wn,wr;
  RZ(a&&w);   
  if(a==w)R a;
  wn=AN(w); wr=AR(w);
@@ -183,7 +184,7 @@ static B leafrel(A w){A*v;
  R 0;
 }    /* 1 iff a leaf of w contains a relative address */
 
-F1(jtrca){
+F1(jtrca){PLOG1;
  RZ(w);
  if(!(BOX&AT(w)))R AFSMM&AFLAG(w)?ca(w):w;
  R leafrel(w)?cpa(0,w):w;
@@ -191,7 +192,7 @@ F1(jtrca){
 
 
 
-static F1(jtsmmblkf){A z;I**mfree,p,q,*v,*zv;MS*x;
+static F1(jtsmmblkf){PLOG1;A z;I**mfree,p,q,*v,*zv;MS*x;
  RZ(w);
  mfree=SMMFREE(w);
  p=MLEN; q=0; 
@@ -223,7 +224,7 @@ static A jtsmmblku(J jt,A w){A z;I n;
  R z;
 }    /* blocks in use */
 
-F1(jtsmmblks){A x,y,z;I n,t,*v,*zv;
+F1(jtsmmblks){PLOG1;A x,y,z;I n,t,*v,*zv;
  RZ(w);
  t=AT(w); 
  ASSERT(AFNJA&AFLAG(w)&&t&BOX,EVDOMAIN);

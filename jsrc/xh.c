@@ -37,8 +37,8 @@ extern int os_swi1(I,I);
 
 #if (SYS & SYS_MACINTOSH)
 
-F1(jthost  ){ASSERT(0,EVDOMAIN);}  // 2!:0
-F1(jthostne){ASSERT(0,EVDOMAIN);}  // 2!:1
+F1(jthost  ){PLOG1;ASSERT(0,EVDOMAIN);}  // 2!:0
+F1(jthostne){PLOG1;ASSERT(0,EVDOMAIN);}  // 2!:1
 
 #else
 
@@ -47,7 +47,7 @@ F1(jthostne){ASSERT(0,EVDOMAIN);}  // 2!:1
 // "avx2"        would run j.dll or javx2.dll
 // "avx2 avx512" would run j.dll or javx2.dll or javx512.dll
 // 2!:7
-F1(jtjgetx){
+F1(jtjgetx){PLOG1;
 ASSERT(!(jt->seclev),EVSECURE)
 #if !defined(ANDROID) && (defined(__i386__) || defined(_M_X64) || defined(__x86_64__))
 if(getCpuFeatures()&CPU_X86_FEATURE_AVX512F) R cstr("avx2 avx512");
@@ -90,7 +90,7 @@ try {
 #endif
 
 // 2!:0
-F1(jthost){A z;
+F1(jthost){PLOG1;A z;
  ASSERT(!(jt->seclev),EVSECURE)
  F1RANK(1,jthost,0);
  RZ(w=vs(w));
@@ -165,7 +165,7 @@ F1(jthost){A z;
 }
 
 // 2!:1
-F1(jthostne){
+F1(jthostne){PLOG1;
  ASSERT(!(jt->seclev),EVSECURE)
  F1RANK(1,jthostne,0);
  RZ(w=vs(w));
@@ -208,14 +208,14 @@ F1(jthostne){
 
 #if !(SYS & SYS_UNIX)
 
-F1(jthostio){ASSERT(0,EVDOMAIN);}  // 2!:2
-F1(jtjwait ){ASSERT(0,EVDOMAIN);}  // 2!:3
+F1(jthostio){PLOG1;ASSERT(0,EVDOMAIN);}  // 2!:2
+F1(jtjwait ){PLOG1;ASSERT(0,EVDOMAIN);}  // 2!:3
 
 #else
 
 #define CL(f) {close(f[0]);close(f[1]);}
 
-F1(jthostio){C*s;A z;F*pz;int fi[2],fo[2],r;int fii[2],foi[2];
+F1(jthostio){PLOG1;C*s;A z;F*pz;int fi[2],fo[2],r;int fii[2],foi[2];
  ASSERT(!(jt->seclev),EVSECURE)
  if(pipe(fi)==-1) ASSERT(0,EVFACE);
  if(pipe(fo)==-1){CL(fi); ASSERT(0,EVFACE);}
@@ -242,13 +242,13 @@ F1(jthostio){C*s;A z;F*pz;int fi[2],fo[2],r;int fii[2],foi[2];
  R z;
 }
 
-F1(jtjwait){I k;int s; ASSERT(!(jt->seclev),EVSECURE) k=i0(w); if(-1==waitpid(k,&s,0))jerrno(); R sc(s);}  // 2!:3
+F1(jtjwait){PLOG1;I k;int s; ASSERT(!(jt->seclev),EVSECURE) k=i0(w); if(-1==waitpid(k,&s,0))jerrno(); R sc(s);}  // 2!:3
 
 #endif
 
 /* return errno info from c library */
 // 2!:8
-F1(jtcerrno){C buf[1024],ermsg[1024];
+F1(jtcerrno){PLOG1;C buf[1024],ermsg[1024];
  ASSERT(!(jt->seclev),EVSECURE) ASSERTMTV(w);
 #ifdef _WIN32
  if(errno&&!strerror_s(ermsg,1024,errno)) strcpy (buf, ermsg); else strcpy (buf, "");

@@ -50,7 +50,7 @@ A jtnfs(J jt,I n,C*s){A z;C c,f,*t;I m,p;NM*zv;
 A jtsfn(J jt,B b,A w){NM*v; RZ(w); v=NAV(w); R str(b?v->m:AN(w),v->s);}
      /* string from name: 0=b full name; 1=b non-locale part of name */
 
-F1(jtnfb){A y;C*s;I n;
+F1(jtnfb){PLOG1;A y;C*s;I n;
  RZ(w);
  ASSERT(BOX&AT(w),EVDOMAIN);
  ASSERT(!AR(w),EVRANK);
@@ -60,7 +60,7 @@ F1(jtnfb){A y;C*s;I n;
  R nfs(n,s);
 }    /* name from scalar boxed string */
 
-static F1(jtstdnm){C*s;I j,n,p,q;
+static F1(jtstdnm){PLOG1;C*s;I j,n,p,q;
  RZ(w=vs(w));
  n=AN(w); s=CAV(w);
  RZ(n);
@@ -70,10 +70,10 @@ static F1(jtstdnm){C*s;I j,n,p,q;
  R nfs(n-(p+q),p+s);
 }    /* 0 result means error or invalid name */
 
-F1(jtonm){A x,y; RZ(x=ope(w)); y=stdnm(x); ASSERTN(y,EVILNAME,nfs(AN(x),CAV(x))); R y;}
+F1(jtonm){PLOG1;A x,y; RZ(x=ope(w)); y=stdnm(x); ASSERTN(y,EVILNAME,nfs(AN(x),CAV(x))); R y;}
 
 
-F1(jtnc){A*wv,x,y,z;I i,n,t,wd,*zv;L*v; 
+F1(jtnc){PLOG1;A*wv,x,y,z;I i,n,t,wd,*zv;L*v; 
  RZ(w);
  n=AN(w); wv=AAV(w); wd=(I)w*ARELATIVE(w);
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
@@ -96,7 +96,7 @@ static SYMWALK(jtnlxxx, A,BOX,20,1, jt->nla[*((UC*)NAV(d->name)->s)]&&jt->nlt&AT
 
 static I nlmask[] = {NOUN,ADV,CONJ,VERB, MARK,MARK,SYMB,MARK};
 
-static F1(jtnlx){A z=mtv;B b;I m=0,*v,x;
+static F1(jtnlx){PLOG1;A z=mtv;B b;I m=0,*v,x;
  RZ(w=vi(w)); v=AV(w); 
  DO(AN(w), x=*v++; m|=nlmask[x<0||6<x?7:x];); 
  jt->nlt=m&RHS; b=1&&jt->nlt&RHS;
@@ -107,10 +107,10 @@ static F1(jtnlx){A z=mtv;B b;I m=0,*v,x;
  R nub(grade2(z,ope(z)));
 }
 
-F1(jtnl1){memset(jt->nla,C1,256L); R nlx(w);}
+F1(jtnl1){PLOG1;memset(jt->nla,C1,256L); R nlx(w);}
      /* 4!:1  name list */
 
-F2(jtnl2){UC*u;
+F2(jtnl2){PLOG2;UC*u;
  RZ(a&&w);
  ASSERT(LIT&AT(a),EVDOMAIN);
  memset(jt->nla,C0,256L); 
@@ -119,7 +119,7 @@ F2(jtnl2){UC*u;
 }    /* 4!:1  name list */
 
 
-F1(jtscind){A*wv,x,y,z;I n,wd,*zv;L*v;
+F1(jtscind){PLOG1;A*wv,x,y,z;I n,wd,*zv;L*v;
  RZ(w);
  n=AN(w); 
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
@@ -154,7 +154,7 @@ static A jtnch1(J jt,B b,A w,I*pm,A ch){A*v,x,y;C*s,*yv;I*e,i,k,m,p,wn;L*d;
  R ch;
 }
 
-F1(jtnch){A ch,*pv;B b;I*e,i,m,n;L*d;
+F1(jtnch){PLOG1;A ch,*pv;B b;I*e,i,m,n;L*d;
  RZ(w=cvt(B01,w)); ASSERT(!AR(w),EVRANK); b=*BAV(w);
  GA(ch,BOX,20,1,0); m=0;
  if(jt->stch){
@@ -175,7 +175,7 @@ F1(jtnch){A ch,*pv;B b;I*e,i,m,n;L*d;
 }    /* 4!:5  names changed */
 
 
-F1(jtex){A*wv,y,z;B*zv;I i,n,wd;L*v;
+F1(jtex){PLOG1;A*wv,y,z;B*zv;I i,n,wd;L*v;
  RZ(w);
  n=AN(w); wv=AAV(w); wd=(I)w*ARELATIVE(w);
  ASSERT(!n||BOX&AT(w),EVDOMAIN);

@@ -150,7 +150,7 @@ A jtifb(J jt,I n,B*b){A z;I m,*zv;
  R z;
 }    /* integer vector from boolean mask */
 
-F1(jtii){RZ(w); R IX(IC(w));}
+F1(jtii){PLOG1;RZ(w); R IX(IC(w));}
 
 I jtmaxtype(J jt,I s,I t){I u;
  u=s|t;
@@ -195,7 +195,7 @@ A jtodom(J jt,I r,I n,I*s){A q,z;I j,k,m,*u,*zv;
  R z;
 }
 
-F1(jtrankle){R!w||AR(w)?w:ravel(w);}
+F1(jtrankle){PLOG1;R!w||AR(w)?w:ravel(w);}
 
 A jtsc(J jt,I k)     {A z; GA(z,INT, 1,0,0); *IAV(z)=k;     R z;}
 A jtsc4(J jt,I t,I v){A z; GA(z,t,   1,0,0); *IAV(z)=v;     R z;}
@@ -206,7 +206,7 @@ A jtscx(J jt,X x)    {A z; GA(z,XNUM,1,0,0); *XAV(z)=ca(x); R z;}
 
 A jtstr(J jt,I n,C*s){A z; GA(z,LIT,n,1,0); MC(AV(z),s,n); R z;}
 
-F1(jtstr0){A z;C*x;I n; RZ(w); n=AN(w); GA(z,LIT,1+n,1,0); x=CAV(z); MC(x,AV(w),n); x[n]=0; R z;}
+F1(jtstr0){PLOG1;A z;C*x;I n; RZ(w); n=AN(w); GA(z,LIT,1+n,1,0); x=CAV(z); MC(x,AV(w),n); x[n]=0; R z;}
 
 A jtv2(J jt,I a,I b){A z;I*x; GA(z,INT,2,1,0); x=AV(z); *x++=a; *x=b; R z;}
 
@@ -214,9 +214,9 @@ A jtvci(J jt,I k){A z; GA(z,INT,1,1,0); *IAV(z)=k; R z;}
 
 A jtvec(J jt,I t,I n,void*v){A z; GA(z,t,n,1,0); MC(AV(z),v,n*bp(t)); R z;}
 
-F1(jtvi){RZ(w); R INT&AT(w)?w:cvt(INT,w);}
+F1(jtvi){PLOG1;RZ(w); R INT&AT(w)?w:cvt(INT,w);}
 
-F1(jtvib){A z;D d,e,*wv;I i,n,*old,p=-IMAX,q=IMAX,*zv;
+F1(jtvib){PLOG1;A z;D d,e,*wv;I i,n,*old,p=-IMAX,q=IMAX,*zv;
  RZ(w);
  old=jt->rank; jt->rank=0;
  if(AT(w)&SPARSE)RZ(w=denseit(w));
@@ -240,7 +240,49 @@ F1(jtvib){A z;D d,e,*wv;I i,n,*old,p=-IMAX,q=IMAX,*zv;
  jt->rank=old; R z;
 }
 
-F1(jtvip){I*v; RZ(w); if(!(INT&AT(w)))RZ(w=cvt(INT,w)); v=AV(w); DO(AN(w), ASSERT(0<=*v++,EVDOMAIN);); R w;}
+F1(jtvip){PLOG1;I*v; RZ(w); if(!(INT&AT(w)))RZ(w=cvt(INT,w)); v=AV(w); DO(AN(w), ASSERT(0<=*v++,EVDOMAIN);); R w;}
 
-F1(jtvs){RZ(w); ASSERT(1>=AR(w),EVRANK); R LIT&AT(w)?w:cvt(LIT,w);}    
+F1(jtvs){PLOG1;RZ(w); ASSERT(1>=AR(w),EVRANK); R LIT&AT(w)?w:cvt(LIT,w);}    
      /* verify string */
+
+#if MEMAUDIT&0x80
+void chkinchain(J jt,A x){
+ if(!x)R;
+ I i,j;
+ for(i=0;i<(PLIML-PMINL+1);i++){
+ MS *p=(MS*)jt->mfree[i+PMINL];
+ j=0;
+  while(p){
+   if(j>1000000)SEGFAULT;
+   if((void*)x==(void*)(p+1)){ fprintf(stderr,"mfree "FMTI" index "FMTI" addr %p\n",i,j,x); SEGFAULT; }
+   p=(MS*)p->a;
+   j++;
+  }
+ }
+}
+
+void chkchain(A w){
+ if(!w)R;
+ I j=0;
+ MS *p=(MS*)((MS*)w-1)->a;
+ while(p){
+  if(j>1000000)SEGFAULT;
+  if(0x100>(uintptr_t)p){dump_ADheader((A)(p+1));SEGFAULT;}
+  else {p=(MS*)p->a; j++;}
+ }
+}
+#endif
+
+#if MEMAUDIT&0x80
+void chkapx(J jt, A w, int recur){
+ if(!w)R;
+#if NORMAHE && NORMAHN>1
+#if NORMAHX==0
+ DO(NORMAHN-1,if(w->p0[i]!=XHEADERFILL){dump_ADheader(w);SEGFAULT;})
+#else
+ DO(NORMAHN-1,if(w->p1[i]!=XHEADERFILL){dump_ADheader(w);SEGFAULT;})
+#endif
+#endif
+ if(recur&&AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w),chkapx(jt,wv[i],recur);)}
+}
+#endif

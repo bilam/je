@@ -59,7 +59,7 @@ static A jtmerge1(J jt,A w,A ind){A z;B*b;C*wc,*zc;D*wd,*zd;I c,it,j,k,m,r,*s,t,
 #define CASENZ(T)  {T*zv=(T*)AV(z); DO(n, j=iv[i]; if(0>j){j+=m; ASSERT(0<=j,EVINDEX);}else ASSERT(j<m,EVINDEX);  \
                        zv[i]=*(i+(T*)aa[j]);); R z;}
 
-F1(jtcasev){A b,*u,*v,w1,x,y,z;B*bv,p,q;I*aa,c,*iv,j,m,n,r,*s,t;
+F1(jtcasev){PLOG1;A b,*u,*v,w1,x,y,z;B*bv,p,q;I*aa,c,*iv,j,m,n,r,*s,t;
  RZ(w);
  RZ(w1=ca(w)); u=AAV(w1);
  p=1; m=AN(w)-3; v=AAV(w); c=i0(v[m+1]);
@@ -173,23 +173,23 @@ static A jtamendn2(J jt,A a,A w,A ind,B ip){PROLOG;A e,z;B b,sa,sw;I at,ir,it,t,
  EPILOG(z);
 }
 
-static DF2(amccn2){R amendn2(a,w,VAV(self)->f,0);}
-static DF2(amipn2){R amendn2(a,w,VAV(self)->f,(B)(!(AT(w)&RAT+XNUM)&&(1==AC(w)||AFNJA&AFLAG(w))));}
+static DF2(amccn2){PLOG2;R amendn2(a,w,VAV(self)->f,0);}
+static DF2(amipn2){PLOG2;R amendn2(a,w,VAV(self)->f,(B)(!(AT(w)&RAT+XNUM)&&(1==AC(w)||AFNJA&AFLAG(w))));}
 
-static DF2(amccv2){DECLF; 
+static DF2(amccv2){PLOG2;DECLF; 
  RZ(a&&w); 
  ASSERT(DENSE&AT(w),EVNONCE);
  R merge2(a,w,pind(AN(w),CALL2(f2,a,w,fs)),0);
 }
 
-static DF2(amipv2){DECLF; 
+static DF2(amipv2){PLOG2;DECLF; 
  RZ(a&&w); 
  ASSERT(DENSE&AT(w),EVNONCE);
  R merge2(a,w,pind(AN(w),CALL2(f2,a,w,fs)),(B)(!(AT(w)&RAT+XNUM)&&(1==AC(w)||AFNJA&AFLAG(w))));
 }
 
-static DF1(mergn1){       R merge1(w,VAV(self)->f);}
-static DF1(mergv1){DECLF; R merge1(w,CALL1(f1,w,fs));}
+static DF1(mergn1){PLOG1;       R merge1(w,VAV(self)->f);}
+static DF1(mergv1){PLOG1;DECLF; R merge1(w,CALL1(f1,w,fs));}
 
 static B ger(A w){A*wv,x;I wd;
  if(!(BOX&AT(w)))R 0;
@@ -205,13 +205,13 @@ static A jtamend(J jt,A w,B ip){
  else           R ADERIV(CRBRACE,mergn1,ip?amipn2:amccn2,RMAX,RMAX,RMAX);
 }
 
-F1(jtrbrace){R amend(w,0);}
-F1(jtamip  ){R amend(w,1);}
+F1(jtrbrace){PLOG1;R amend(w,0);}
+F1(jtamip  ){PLOG1;R amend(w,1);}
 
 
-static DF2(jtamen2){ASSERT(0,EVNONCE);}
+static DF2(jtamen2){PLOG2;ASSERT(0,EVNONCE);}
 
-F1(jtemend){
+F1(jtemend){PLOG1;
  ASSERT(NOUN&AT(w),EVDOMAIN);
  R ADERIV(CEMEND,0L,jtamen2,RMAX,RMAX,RMAX);
 }

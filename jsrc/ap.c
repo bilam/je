@@ -225,14 +225,14 @@ PREFIXPFX(bw1001pfxI, UI,UI, BW1001)
 PREFIXPFX(bw1111pfxI, UI,UI, BW1111)
 
 
-static DF1(jtprefix){DECLF;I r;
+static DF1(jtprefix){PLOG1;DECLF;I r;
  RZ(w);
  if(jt->rank&&jt->rank[1]<AR(w)){r=jt->rank[1]; jt->rank=0; R rank1ex(w,self,r,jtprefix);}
  jt->rank=0;
  R eachl(apv(IC(w),1L,1L),w,atop(fs,ds(CTAKE)));
 }    /* f\"r w for general f */
 
-static DF1(jtgprefix){A h,*hv,z,*zv;I m,n,r;
+static DF1(jtgprefix){PLOG1;A h,*hv,z,*zv;I m,n,r;
  RZ(w);
  ASSERT(DENSE&AT(w),EVNONCE);
  if(jt->rank&&jt->rank[1]<AR(w)){r=jt->rank[1]; jt->rank=0; R rank1ex(w,self,r,jtgprefix);}
@@ -244,7 +244,7 @@ static DF1(jtgprefix){A h,*hv,z,*zv;I m,n,r;
  R ope(z);
 }    /* g\"r w for gerund g */
 
-static DF1(jtpscan){A y,z;C id;I c,cv,f,m,n,r,rr[2],t,wn,wr,*ws,wt,zt;VF ado;
+static DF1(jtpscan){PLOG1;A y,z;C id;I c,cv,f,m,n,r,rr[2],t,wn,wr,*ws,wt,zt;VF ado;
  RZ(w);
  wt=AT(w); 
  if(SPARSE&wt)R scansp(w,self,jtpscan);
@@ -262,7 +262,7 @@ static DF1(jtpscan){A y,z;C id;I c,cv,f,m,n,r,rr[2],t,wn,wr,*ws,wt,zt;VF ado;
 }    /* f/\"r w atomic f main control */
 
 
-static F2(jtseg){A z;I c,k,m,n,*u,zn;
+static F2(jtseg){PLOG2;A z;I c,k,m,n,*u,zn;
  RZ(a&&w);
  if(INT&AT(a)){u=AV(a); m=*u; n=*(1+u);} else m=n=0;
  c=aii(w); k=c*bp(AT(w)); RE(zn=mult(n,c));
@@ -280,7 +280,7 @@ static A jtifxi(J jt,I m,A w){A z;I d,j,k,n,p,*x;
  R z;
 }
 
-static DF2(jtinfix){PROLOG;DECLF;A x,z;I m; 
+static DF2(jtinfix){PLOG2;PROLOG;DECLF;A x,z;I m; 
  PREF2(jtinfix);
  if(a==ainf)R repeat(zero,w);
  RE(m=i0(vib(a))); 
@@ -294,7 +294,7 @@ static DF2(jtinfix){PROLOG;DECLF;A x,z;I m;
  EPILOG(z);
 }
 
-static DF2(jtinfix2){PROLOG;A f,x,y;B af,d;I c,m,n,n1,r,*s,t; 
+static DF2(jtinfix2){PLOG2;PROLOG;A f,x,y;B af,d;I c,m,n,n1,r,*s,t; 
  PREF2(jtinfix); 
  RE(m=i0(vib(a))); t=AT(w); n=IC(w); 
  if(!(2==m&&2<=n&&t&DENSE))R infix(a,w,self);
@@ -308,7 +308,7 @@ static DF2(jtinfix2){PROLOG;A f,x,y;B af,d;I c,m,n,n1,r,*s,t;
  EPILOG(df2(x,y,af?f:qq(f,num[-1])));
 }    /* 2 f/\w */
 
-static DF2(jtginfix){A h,*hv,x,z,*zv;I d,m,n;
+static DF2(jtginfix){PLOG2;A h,*hv,x,z,*zv;I d,m,n;
  RE(m=i0(vib(a))); 
  RZ(x=ifxi(m,w));
  h=VAV(self)->h; hv=AAV(h); d=AN(h);
@@ -324,7 +324,7 @@ static DF2(jtginfix){A h,*hv,x,z,*zv;I d,m,n;
 
 #define MCREL(uu,vv,n)  {A*u=(A*)(uu),*v=(A*)(vv); DO((n), *u++=(A)AABS(wd,*v++););}
 
-static DF2(jtinfixd){A fs,z;C*x,*y;I c=0,d,k,m,n,p,q,r,*s,wd,wr,*ws,wt,zc; 
+static DF2(jtinfixd){PLOG2;A fs,z;C*x,*y;I c=0,d,k,m,n,p,q,r,*s,wd,wr,*ws,wt,zc; 
  F2RANK(0,RMAX,jtinfixd,self);
  wr=AR(w); ws=AS(w); wt=AT(w); n=IC(w);
  RE(m=i0(a)); p=m==IMIN?IMAX:ABS(m);
@@ -382,7 +382,7 @@ static A jtmovsumavg(J jt,I m,A w,A fs,B avg){A z;
  R infix(sc(m),w,fs);
 }
 
-static DF2(jtmovavg){I m;
+static DF2(jtmovavg){PLOG2;I m;
  PREF2(jtmovavg);
  RE(m=i0(vib(a)));
  if(0<m&&m<=IC(w)&&AT(w)&B01+FL+INT)R movsumavg(m,w,self,1); 
@@ -487,7 +487,7 @@ static A jtmovbwneeq(J jt,I m,A w,A fs,B eq){A y,z;I c,p,*s,*u,*v,x,*yv,*zv;
  R z;
 }    /* m 22 b./\w (0=eq) or m 25 b./\ (1=eq); integer w; 0<m */
 
-static DF2(jtmovfslash){A x,z;B b;C id,*wv,*zv;I c,cm,cv,d,m,m0,p,t,wk,wt,zk,zt;VF ado;
+static DF2(jtmovfslash){PLOG2;A x,z;B b;C id,*wv,*zv;I c,cm,cv,d,m,m0,p,t,wk,wt,zk,zt;VF ado;
  PREF2(jtmovfslash);
  p=IC(w); wt=AT(w);
  RE(m0=i0(vib(a))); m=0<=m0?m0:m0==IMIN?p:MIN(p,-m0); 
@@ -519,9 +519,9 @@ static DF2(jtmovfslash){A x,z;B b;C id,*wv,*zv;I c,cm,cv,d,m,m0,p,t,wk,wt,zk,zt;
  if(jt->jerr==EWOV){RESETERR; R movfslash(a,cvt(FL,w),self);}else R z;
 }    /* a f/\w */
 
-static DF1(jtiota1){R apv(IC(w),1L,1L);}
+static DF1(jtiota1){PLOG1;R apv(IC(w),1L,1L);}
 
-F1(jtbslash){A f;AF f1=jtprefix,f2=jtinfix;V*v;
+F1(jtbslash){PLOG1;A f;AF f1=jtprefix,f2=jtinfix;V*v;
  RZ(w);
  if(NOUN&AT(w))R fdef(CBSLASH,VERB, jtgprefix,jtginfix, w,0L,fxeachv(1L,w), VGERL, RMAX,0L,RMAX);
  v=VAV(w); f=VAV(w)->f;

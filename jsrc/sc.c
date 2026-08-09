@@ -6,7 +6,7 @@
 #include "j.h"
 
 
-static DF2(jtunquote){A aa,fs,g,ll,oldn,oln,z;B lk;I d,i;L*e;V*v;
+static DF2(jtunquote){PLOG2;A aa,fs,g,ll,oldn,oln,z;B lk;I d,i;L*e;V*v;
  RE(0);
  JATTN;
  v=VAV(self);
@@ -37,9 +37,9 @@ static DF2(jtunquote){A aa,fs,g,ll,oldn,oln,z;B lk;I d,i;L*e;V*v;
  R z;
 }
 
-static DF1(jtunquote1){R unquote(0L,w,self);}
+static DF1(jtunquote1){PLOG1;R unquote(0L,w,self);}
 
-F1(jtnameref){A y;L*e;V*v;
+F1(jtnameref){PLOG1;A y;L*e;V*v;
  RZ(w);
  e=syrd(w,0L);
  y=e?e->val:ds(CCAP);
@@ -48,7 +48,7 @@ F1(jtnameref){A y;L*e;V*v;
  R fdef(CTILDE,AT(y), jtunquote1,jtunquote, w,0L,0L, 0L, v->mr,v->lr,v->rr);
 }    /* argument assumed to be a NAME */
 
-F2(jtnamerefop){V*v;
+F2(jtnamerefop){PLOG2;V*v;
  RZ(a&&w);
  v=VAV(w);
  R fdef(CCOLON,VERB,  jtunquote1,jtunquote, a,0L,w, VXOPCALL|v->flag, v->mr,v->lr,v->rr);

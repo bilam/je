@@ -9,14 +9,12 @@
 #undef PYXES
 #undef SLEEF
 #undef SLEEFQUAD
-#undef MEMAUDIT
 #define C_AVX2 0
 #define C_AVX512 0
 #define EMU_AVX2 0
 #define PYXES 0
 #define SLEEF 0
 #define SLEEFQUAD 0
-#define MEMAUDIT 0
 
 #if defined(__clang_major__) && !defined(__clang__)
 #error need workaround by define __clang__ in preprocessor macro
@@ -73,6 +71,13 @@
 #define dump_m256i32(a,x) {__m256i _b=x;fprintf(stderr,"%s %x %x %x %x %x %x %x %x \n", a, ((unsigned int*)(&_b))[0], ((unsigned int*)(&_b))[1], ((unsigned int*)(&_b))[2], ((unsigned int*)(&_b))[3], ((unsigned int*)(&_b))[4], ((unsigned int*)(&_b))[5], ((unsigned int*)(&_b))[6], ((unsigned int*)(&_b))[7]);}
 #define dump_m256d(a,x) {__m256d _b=x;fprintf(stderr,"%s %f %f %f %f \n", a, ((double*)(&_b))[0], ((double*)(&_b))[1], ((double*)(&_b))[2], ((double*)(&_b))[3]);}
 #define dump_m128d(a,x) {__m128d _b=x;fprintf(stderr,"%s %f %f \n", a, ((double*)(&_b))[0], ((double*)(&_b))[1]);}
+#define dump_ADheader(x) {DO(NORMAH+1,fprintf(stderr,""FMTX" ", ((UI*)(x))[i]);) fprintf(stderr,"\n");}
+#define dump_Astrx(x) {if(AT(x)&LIT){fprintf(stderr,"LIT AN("FMTI") AR(%hu)",AN(x),AR(x));DO(AR(x),fprintf(stderr," ["FMTI"]",AS(x)[i]);) DO(AN(x),fprintf(stderr," %x",CAV(x)[i]);) fprintf(stderr,"\n");} else fprintf(stderr,"not LIT\n");}
+#define dump_Astr(x)  {if(AT(x)&LIT){fprintf(stderr,"LIT AN("FMTI") AR(%hu)",AN(x),AR(x));DO(AR(x),fprintf(stderr," ["FMTI"]",AS(x)[i]);) if(32<=UCAV(x)[0])fprintf(stderr," %.*s\n", (int)AN(x), CAV(x));else{DO(AN(x),fprintf(stderr," %x",CAV(x)[i]);) fprintf(stderr,"\n");}} else fprintf(stderr,"not LIT\n");}
+#define dump_Aint(x)  {if(AT(x)&INT){fprintf(stderr,"INT AN("FMTI") AR(%hu)",AN(x),AR(x));DO(AR(x),fprintf(stderr," ["FMTI"]",AS(x)[i]);) DO(AN(x),fprintf(stderr," "FMTI"",IAV(x)[i]);) fprintf(stderr,"\n");} else fprintf(stderr,"not INT\n");}
+#define dump_Afl(x)   {if(AT(x)&FL) {fprintf(stderr,"FL  AN("FMTI") AR(%hu)",AN(x),AR(x));DO(AR(x),fprintf(stderr," ["FMTI"]",AS(x)[i]);) DO(AN(x),fprintf(stderr," %f",DAV(x)[i]);) fprintf(stderr,"\n");} else fprintf(stderr,"not FL\n");}
+#define dump_Abox(x)  {if(AT(x)&BOX){fprintf(stderr,"BOX AN("FMTI") AR(%hu)",AN(x),AR(x));DO(AR(x),fprintf(stderr," ["FMTI"]",AS(x)[i]);) fprintf(stderr,"\n"); DO(AN(x),fprintf(stderr,""FMTI" %p: ",i,AAV(x)[i]);dump_ADheader(AAV(x)[i]);) } else fprintf(stderr,"not BOX\n");}
+#define dump_Agen(x)  {if(AT(x)&BOX)dump_Abox(x)else if(AT(x)&FL)dump_Afl(x)else if(AT(x)&INT)dump_Aint(x)else if(AT(x)&LIT)dump_Astr(x)else fprintf(stderr,"not BOX FL INT LIT\n");}
 
 
 #ifdef MMSC_VER
@@ -734,6 +739,33 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 #endif
 #endif
 
+// Debugging options
+
+// #undef MEMAUDIT
+// #define MEMAUDIT 0x3e   // test = decimal 46
+// Use MEMAUDIT to sniff out errant memory alloc/free
+#ifndef MEMAUDIT
+#define MEMAUDIT 0x0   // Bitmask for memory audits: 
+//        1:  make sure  headers match pool#
+//        2:  full audit of tpush/tpop (ignored in J32)
+//            detect double-frees before they happen,
+//            at the time of the erroneous tpush
+//            9!:57 enable/disable tstack auditing
+//        4:  write garbage to memory before we free it (except reserved area)
+//            4+1 is special, used for chasing down multithreading problems
+//        8:  fill block with other garbage after we allocate it
+//     0x10:  (or 16) audit freelist at every alloc/free
+//            (starting after you have run 9!:_5 (1) to turn it on)
+//     0x20:  audit freelist at end of every sentence regardless of 9!:_5
+//     0x40:  enable guard blocks (libgmp mallocs only)
+//     0x80:  enable guard blocks (NORMAHE only)
+//
+// Thus 1+4+8 (or 13 or 0xD) will verify that there are no blocks
+// being used after they are freed, or freed prematurely. If you
+// get a wild free, turn on bit 0x2. 2 will detect double-frees
+// before they happen, at the time of the erroneous tpush
+#endif
+
 // if we are not multithreading, report the master thread only
 #if !PYXES
 #undef MAXTHREADS
@@ -1007,8 +1039,128 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 #define C_VIAVX 0
 #endif
 
-#define NORMAH1 0
-#define NORMAH (7+NORMAH1)
+// extra AD header length
+#ifndef NORMAHX
+#define NORMAHX -1
+#endif
+#ifndef NORMAHN
+#define NORMAHN 1
+#endif
+#if NORMAHX!=-1 && (NORMAHX<0 || NORMAHX>1)
+#error NORMAHX only supports 0 .. 1
+#endif
+#if NORMAHN<1 || NORMAHN>8
+#error NORMAHN only supports 1 .. 8
+#endif
+#if NORMAHX!=-1
+#define NORMAHE NORMAHN
+#else
+#define NORMAHE 0
+#endif
+#define NORMAH (7+NORMAHE)
+
+#if SY_64
+#define XHEADERFILL 0x5a5a5a5a5a5a5a5aLL
+#else
+#define XHEADERFILL 0x5a5a5a5aL
+#endif
+
+// static global initializer
+#if NORMAHX==0
+#if NORMAHN==1
+#define Xhr0 0,
+#elif NORMAHN==2
+#define Xhr0 0,XHEADERFILL,
+#elif NORMAHN==3
+#define Xhr0 0,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==4
+#define Xhr0 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==5
+#define Xhr0 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==6
+#define Xhr0 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==7
+#define Xhr0 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==8
+#define Xhr0 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#endif
+#else
+#define Xhr0
+#endif
+
+#if NORMAHX==1
+#if NORMAHN==1
+#define Xhr1 0,
+#elif NORMAHN==2
+#define Xhr1 0,XHEADERFILL,
+#elif NORMAHN==3
+#define Xhr1 0,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==4
+#define Xhr1 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==5
+#define Xhr1 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==6
+#define Xhr1 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==7
+#define Xhr1 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAHN==8
+#define Xhr1 0,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#endif
+#else
+#define Xhr1
+#endif
+
+#if NORMAHX==0
+#if NORMAHN==1
+#define Xhrg0 0,0,{},
+#elif NORMAHN==2
+#define Xhrg0 0,0,{XHEADERFILL},
+#elif NORMAHN==3
+#define Xhrg0 0,0,{XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==4
+#define Xhrg0 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==5
+#define Xhrg0 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==6
+#define Xhrg0 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==7
+#define Xhrg0 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==8
+#define Xhrg0 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#endif
+#else
+#define Xhrg0
+#endif
+
+#if NORMAHX==1
+#if NORMAHN==1
+#define Xhrg1 0,0,{},
+#elif NORMAHN==2
+#define Xhrg1 0,0,{XHEADERFILL},
+#elif NORMAHN==3
+#define Xhrg1 0,0,{XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==4
+#define Xhrg1 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==5
+#define Xhrg1 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==6
+#define Xhrg1 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==7
+#define Xhrg1 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAHN==8
+#define Xhrg1 0,0,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#endif
+#else
+#define Xhrg1
+#endif
+
+#if NORMAHX!=-1
+#define PLOG1 CHKAPX(w)
+#define PLOG2 CHKAPX(a);CHKAPX(w)
+#else
+#define PLOG1
+#define PLOG2
+#endif
 
 #include "ja.h" 
 #include "jc.h" 
