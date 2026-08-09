@@ -5,7 +5,7 @@ NB. runs as noop as winapi.ijs is no longer supported - might be resurrected som
 pc=: 0 NB. (9!:12 '') e. 2 6  NB. Windows only
 
 NB. a small memory leak is expected on the next line
-2 = {:15!:1 ((15!:8) 10),0 5 4  NB. reference count
+(7~:9!:56'NORMAH') +. 2 = {:15!:1 ((15!:8) 10),0 5 4  NB. reference count
 
 NB. require'socket'
 require 'dll'         NB. DLL utils

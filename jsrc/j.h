@@ -1007,7 +1007,8 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 #define C_VIAVX 0
 #endif
 
-#define NORMAH1 0
+#define NORMAHX 0
+#define NORMAH1 (NORMAHX>=0 && NORMAHX<=7)
 #define NORMAH (7+NORMAH1)
 
 #include "ja.h" 

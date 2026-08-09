@@ -99,7 +99,34 @@ typedef I4                 LX;  // index of an L block in SYMORIGIN
 // typedef struct {I k,flag,m,t,c,n,r,s[1];}* A;
 typedef struct AD AD;
 typedef AD *A;
-struct AD {I k,flag,m,t,c,n;
+struct AD {
+#if NORMAH1 && 0==NORMAHX
+I p0;
+#endif
+I k;
+#if NORMAH1 && 1==NORMAHX
+I p0;
+#endif
+I flag;
+#if NORMAH1 && 2==NORMAHX
+I p0;
+#endif
+I m;
+#if NORMAH1 && 3==NORMAHX
+I p0;
+#endif
+I t;
+#if NORMAH1 && 4==NORMAHX
+I p0;
+#endif
+I c;
+#if NORMAH1 && 5==NORMAHX
+I p0;
+#endif
+I n;
+#if NORMAH1 && 6==NORMAHX
+I p0;
+#endif
  RANKT r;
  UC filler;
  US h;   // reserved for allocator.  Not used for AFNJA memory
@@ -107,6 +134,9 @@ struct AD {I k,flag,m,t,c,n;
   // these two values initialized with a single store - must be in order
  US origin;  // 
  S lock;   // can be used as a lock
+#endif
+#if NORMAH1 && 7==NORMAHX
+I p0;
 #endif
 I s[1];};
 typedef struct {A a,t;}TA;

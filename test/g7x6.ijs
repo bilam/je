@@ -3,7 +3,7 @@ NB. 7!:6 ----------------------------------------------------------------
 
 (7!:6 <'') -: 7!:6 <'base'
 
-spn=: 3 : '>.&.(2&^.) k*2+7+1+4+1+>.(#y)%k=.IF64{4 8'   NB. space needed for a name
+spn=: 3 : '>.&.(2&^.) k*2+(9!:56''NORMAH'')+1+4+1+>.(#y)%k=.IF64{4 8'   NB. space needed for a name
 NB. 2   MS struct
 NB. 7   header words
 NB. 1   shape

@@ -273,7 +273,7 @@ asdf__t=: i.1e4
 
 x=: 12345
 x=: spnow ''
-(200*1+IF64) > x-y
+(((7=9!:56'NORMAH'){300 200)*1+IF64) > x-y
 
 (<'asdf') -: 8 lcreate <'asdf'
 (<'asdf') -: 4 lcreate <'asdf'
