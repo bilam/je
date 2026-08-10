@@ -138,7 +138,8 @@ F2(jtintdiv){A z;B b,flr;I an,ar,*as,*av,c,d,j,k,m,n,p,p1,r,*s,wn,wr,*ws,*wv,*zv
  GA(z,INT,b?an:wn,b?ar:wr,s); zv=AV(z);
  d=wn?*wv:0; p=0<d?d:-d;
 #if defined(__clang__) && !SY_64
- if(d==IMIN){CCBLOCK;p1=p;}else{CCBLOCK;p1=p-1;}  // workaround clang optimization issue
+// if(d==IMIN){CCBLOCK;p1=p;}else{CCBLOCK;p1=p-1;}  // workaround clang optimization issue
+ if(likely(d==IMIN)){p1=p;}else{p1=p-1;}  // workaround clang optimization issue
 #else
  p1=d==IMIN?p:p-1;
 #endif
