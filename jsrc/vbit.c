@@ -29,7 +29,7 @@
 #define bitorBB(x,y)       jtbitorBB(jt,(x),(y))
 
 
-F2(jtbitmatch){B*v;I ar,*as,at,c,d,i,q,r,r1,rc,m,wr,*ws,wt;UC k,p,*u;
+F2(jtbitmatch){PLOG2;B*v;I ar,*as,at,c,d,i,q,r,r1,rc,m,wr,*ws,wt;UC k,p,*u;
  RZ(a&&w);
  ar=AR(a); as=AS(a); at=AT(a); 
  wr=AR(w); ws=AS(w); wt=AT(w);
@@ -61,9 +61,9 @@ static UI bitmask(I c){I rc;UI mask;
  R mask;
 }    /* bit mask for an array c columns wide */
 
-static F1(jtbitcvt){R cvt(BITB,w);}
+static F1(jtbitcvt){PLOG1;R cvt(BITB,w);}
 
-static F1(jtbitvfypad){I c,d,i,m,rc,wn,wr,*ws;UI mask,*u;
+static F1(jtbitvfypad){PLOG1;I c,d,i,m,rc,wn,wr,*ws;UI mask,*u;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  wn=AN(w); wr=AR(w); ws=AS(w);
@@ -89,7 +89,7 @@ static I bitsum(I n,UC*b){I z=0;
 }    /* +/ bit vector */
 
 
-static F1(jtbitslplus){A t,z;I i,m,mm,n,n1,p,q,*u,wr,*ws,*zv;UC c,*vc,*wv;UI*v,*v0;static UI ptab[256];
+static F1(jtbitslplus){PLOG1;A t,z;I i,m,mm,n,n1,p,q,*u,wr,*ws,*zv;UC c,*vc,*wv;UI*v,*v0;static UI ptab[256];
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  wr=AR(w);
@@ -119,7 +119,7 @@ static F1(jtbitslplus){A t,z;I i,m,mm,n,n1,p,q,*u,wr,*ws,*zv;UC c,*vc,*wv;UI*v,*
  R z;
 }    /* +/ bit vector */
 
-static F1(jtbitsland){I n;UI ff,*v;
+static F1(jtbitsland){PLOG1;I n;UI ff,*v;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
@@ -130,7 +130,7 @@ static F1(jtbitsland){I n;UI ff,*v;
  R one;
 }    /* *./ bit vector */
 
-static F1(jtbitslor){I n;UI*v;
+static F1(jtbitslor){PLOG1;I n;UI*v;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
@@ -140,7 +140,7 @@ static F1(jtbitslor){I n;UI*v;
  R zero;
 }    /* +./ bit vector */
 
-static F1(jtbitslne){I n;UC c,*v;
+static F1(jtbitslne){PLOG1;I n;UC c,*v;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
@@ -153,7 +153,7 @@ static F1(jtbitslne){I n;UC c,*v;
  R c&(UC)1?one:zero;
 }    /* ~:/ bit vector */
 
-static F1(jtbitsleq){I n;UC c,*v;
+static F1(jtbitsleq){PLOG1;I n;UC c,*v;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
@@ -167,7 +167,7 @@ static F1(jtbitsleq){I n;UC c,*v;
 }    /* =/ bit vector */
 
 
-static F1(jtbitscanand){A z;I c,j,m,n;UC ffc,k,p,*u;UI ff,*v,*zv;
+static F1(jtbitscanand){PLOG1;A z;I c,j,m,n;UC ffc,k,p,*u;UI ff,*v,*zv;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
@@ -190,7 +190,7 @@ static F1(jtbitscanand){A z;I c,j,m,n;UC ffc,k,p,*u;UI ff,*v,*zv;
 static UC nepfx[256];
 static UC eqpfx[256];
 
-static F1(jtbitscanne){A z;I n;UC c,d,p,*v,x,*zv;
+static F1(jtbitscanne){PLOG1;A z;I n;UC c,d,p,*v,x,*zv;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
@@ -202,7 +202,7 @@ static F1(jtbitscanne){A z;I n;UC c,d,p,*v,x,*zv;
  R z;
 }    /* ~:/\ bit vector */
 
-static F1(jtbitscaneq){A z;I n;UC c,d,p,*v,x,*zv;
+static F1(jtbitscaneq){PLOG1;A z;I n;UC c,d,p,*v,x,*zv;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  ASSERT(1>=AR(w),EVNONCE);
@@ -215,7 +215,7 @@ static F1(jtbitscaneq){A z;I n;UC c,d,p,*v,x,*zv;
 }    /* =/\ bit vector */
 
 
-static F1(jtbitnot){A z;I c,m,rc,wn,wr,*ws;UI mask,*u,*zv;
+static F1(jtbitnot){PLOG1;A z;I c,m,rc,wn,wr,*ws;UI mask,*u,*zv;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN); 
  wn=AN(w); wr=AR(w); ws=AS(w); u=(UI*)AV(w); 
@@ -227,7 +227,7 @@ static F1(jtbitnot){A z;I c,m,rc,wn,wr,*ws;UI mask,*u,*zv;
  R z;
 }    /* -. bit array */
 
-static F1(jtbitravel){A z;I c,m,rw,wn,wr,*ws;UC*wv,*zv;
+static F1(jtbitravel){PLOG1;A z;I c,m,rw,wn,wr,*ws;UC*wv,*zv;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN); 
  wn=AN(w); wr=AR(w); ws=AS(w); wv=UAV(w); 
@@ -248,7 +248,7 @@ static F1(jtbitravel){A z;I c,m,rw,wn,wr,*ws;UC*wv,*zv;
  R z;
 }    /* , bit array */
 
-static F2(jtbitcat){A z;I an,ar,*as,t,ti,wn,wr,*ws;UC*zv;
+static F2(jtbitcat){PLOG2;A z;I an,ar,*as,t,ti,wn,wr,*ws;UC*zv;
  RZ(a&&w);
  ASSERT(BITB&AT(a)&&BITB&AT(w),EVDOMAIN);
  an=AN(a); ar=AR(a); as=AS(a);
@@ -265,7 +265,7 @@ static F2(jtbitcat){A z;I an,ar,*as,t,ti,wn,wr,*ws;UC*zv;
  R z;
 }    /* bit array , bit array */
 
-static F2(jtbitfrom){A z;I an,ar,*as,c,i,j,m,n,q,r,rc,r1,wr,*ws;UC k,*v,*zv;
+static F2(jtbitfrom){PLOG2;A z;I an,ar,*as,c,i,j,m,n,q,r,rc,r1,wr,*ws;UC k,*v,*zv;
  RZ(a&&w);
  ASSERT(INT&AT(a),EVNONCE);
  ASSERT(BITB&AT(w),EVDOMAIN);
@@ -291,7 +291,7 @@ static F2(jtbitfrom){A z;I an,ar,*as,c,i,j,m,n,q,r,rc,r1,wr,*ws;UC k,*v,*zv;
 }    /* integer array { bit array */
 
 
-static F2(jtbiterror){ASSERT(0,EVNONCE);}
+static F2(jtbiterror){PLOG2;ASSERT(0,EVNONCE);}
 
 #define BITFBB(f,OP)  \
  F2(f){A z;I c,m,mask,rc,wn,wr,*ws;UI*u,*v,*zv;  \
@@ -382,7 +382,7 @@ static BITF(jtbitand, bitandBB, bitandBB )
 static BITF(jtbitnand,bitnandBB,bitnandBB)
 static BITF(jtbitne,  bitneBB,  bitneII  )
 
-static F1(jtbitgrade){A x;I r,*s;
+static F1(jtbitgrade){PLOG1;A x;I r,*s;
  RZ(w);
  ASSERT(BITB&AT(w),EVDOMAIN);
  r=AR(w);
@@ -393,7 +393,7 @@ static F1(jtbitgrade){A x;I r,*s;
  R grade1(x);
 }    /* /: bit array */
 
-static F2(jtbitindexof){I j,n;UC*u,y;UI*v,x;
+static F2(jtbitindexof){PLOG2;I j,n;UC*u,y;UI*v,x;
  RZ(a&&w);
  ASSERT(BITB&AT(a),EVDOMAIN);
  ASSERT(1>=AR(a)&&!AR(w),EVNONCE);
@@ -433,7 +433,7 @@ static F2(jtbitindexof){I j,n;UC*u,y;UI*v,x;
  DO((n+BB-1)/BB, k=*av++; REPSWITCH(k/16, exp0, exp1); REPSWITCH(k%16, exp0, exp1););}
 
 
-static F2(jtbitrepeat){A z;I c,c1,m,n,p,wr,wk,wt;UC*av,k;
+static F2(jtbitrepeat){PLOG2;A z;I c,c1,m,n,p,wr,wk,wt;UC*av,k;
  RZ(a&&w);
  ASSERT(BITB&AT(a),EVDOMAIN);
  n=AN(a); av=UAV(a); wr=AR(w); wt=AT(w);
@@ -465,7 +465,7 @@ static F2(jtbitrepeat){A z;I c,c1,m,n,p,wr,wk,wt;UC*av,k;
 #define BITDEF1(f1)    fdef(CIBEAM,VERB, f1,0L, w,0L,0L, 0L, RMAX,RMAX,RMAX)
 #define BITDEF2(f2)    fdef(CIBEAM,VERB, 0L,f2, w,0L,0L, 0L, RMAX,RMAX,RMAX)
 
-F1(jtbitadv){A x;V*v;
+F1(jtbitadv){PLOG1;A x;V*v;
  RZ(w); v=VAV(w);
  switch(NOUN&AT(w)?i0(w):v->id){
   default:         ASSERT(0,EVDOMAIN);

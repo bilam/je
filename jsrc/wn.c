@@ -244,7 +244,7 @@ static A jtexec2r(J jt,A a,A w,I n,I m,I c){A z;B b,e;C d,*u,*uu,*v,*x,*y;D a0,*
  R z;
 }
 
-F2(jtexec2){A z;B b,ii,j,p,q,x;C d,*v;I at,c,i,k,m,n,r,*s;
+F2(jtexec2){PLOG2;A z;B b,ii,j,p,q,x;C d,*v;I at,c,i,k,m,n,r,*s;
  RZ(a&&w);
  ASSERT(!AR(a),EVRANK);
  at=AT(a);

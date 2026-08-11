@@ -352,8 +352,8 @@ static XF2(jtxlog2){D c,d,x,y;I an,*av,j,k,m,n,wn,*wv;X p,q;
  R xc(!j?m:!k?n:jt->xmode==XMCEIL?n:m);
 }
 
-F2(jtxlog2a){A z; GA(z,XNUM,1L,0L,0L); *XAV(z)=xlog2(*XAV(a),*XAV(w)); RNE(z);}
-F2(jtxroota){A z; GA(z,XNUM,1L,0L,0L); *XAV(z)=xroot(*XAV(a),*XAV(w)); RNE(z);}
+F2(jtxlog2a){PLOG2;A z; GA(z,XNUM,1L,0L,0L); *XAV(z)=xlog2(*XAV(a),*XAV(w)); RNE(z);}
+F2(jtxroota){PLOG2;A z; GA(z,XNUM,1L,0L,0L); *XAV(z)=xroot(*XAV(a),*XAV(w)); RNE(z);}
 
 XF1(jtxfact){I n;
  n=*AV(w);
@@ -460,7 +460,7 @@ AMON(factX, X,X, *z= xfact(*x);)
 AMON( pixX, X,X, *z=   xpi(*x);)
 
 
-F1(jtdigits10){A z;B b=0;I c,m,n,*v,*zv,*zv0;X x;
+F1(jtdigits10){PLOG1;A z;B b=0;I c,m,n,*v,*zv,*zv0;X x;
  RZ(w);
  if(!AR(w))switch(AT(w)){
   case INT:  b=0<=*AV(w); break;

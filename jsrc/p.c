@@ -35,7 +35,7 @@ B jtparseinit(J jt){A x;
  R 1;
 }
 
-static F1(jtnvrpush){
+static F1(jtnvrpush){PLOG1;
  if(jt->nvrtop==AN(jt->nvra)){
   RZ(jt->nvra=ext(1,jt->nvra)); jt->nvrav=AAV(jt->nvra);
   while(AN(jt->nvrb)<AN(jt->nvra))RZ(jt->nvrb=ext(1,jt->nvrb)); jt->nvrbv=BAV(jt->nvrb);
@@ -71,7 +71,7 @@ static ACTION(jtmove){A z;
  R nvrpush(z);
 }
 
-static F2(jtisf){R symbis(onm(a),CALL1(jt->pre,w,0L),jt->symb);} 
+static F2(jtisf){PLOG2;R symbis(onm(a),CALL1(jt->pre,w,0L),jt->symb);} 
 
 ACTION(jtis){A f,n,v;B ger=0;C c,*s;
  n=stack[b]; v=stack[e];
@@ -108,7 +108,7 @@ PT cases[] = {
 };
 
 
-F1(jtparse){A*u,*v,y,z;I n;
+F1(jtparse){PLOG1;A*u,*v,y,z;I n;
  RZ(w);
  n=AN(w); v=AAV(w);
  GA(y,BOX,5+n,1,0); u=AAV(y);
@@ -119,7 +119,7 @@ F1(jtparse){A*u,*v,y,z;I n;
  R z;
 }
 
-F1(jtparsea){A*s,*stack,y,z;AF f;I b,*c,e,i,j,k,m,n,otop=jt->nvrtop,*sp;                  
+F1(jtparsea){PLOG1;A*s,*stack,y,z;AF f;I b,*c,e,i,j,k,m,n,otop=jt->nvrtop,*sp;                  
  RZ(w);
  n=m=AN(w)-4; stack=AAV(w); jt->asgn=0; ++jt->parsercalls;                                     
  if(1>=n)R mark;

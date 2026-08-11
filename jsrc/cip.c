@@ -35,7 +35,7 @@ static A jtipprep(J jt,A a,A w,I zt,I*pm,I*pn,I*pp){A z=mark;I*as,ar,ar1,m,mn,n,
   else    DO(m, v=wv; memset(zv,C0,zk); DO(p, x=zv; INIT; DO(n, if(*v++)INC(*x,c); ++x;);); zv+=n;  );  \
  }
 
-static F2(jtpdtby){A z;B b,*u,*v,*wv;C er=0;I at,m,n,p,t,wt,zk;
+static F2(jtpdtby){PLOG2;A z;B b,*u,*v,*wv;C er=0;I at,m,n,p,t,wt,zk;
  at=AT(a); wt=AT(w); t=at&B01?wt:at;
  RZ(z=ipprep(a,w,t,&m,&n,&p)); zk=n*bp(t); u=BAV(a); v=wv=BAV(w);
  NAN0;
@@ -62,7 +62,7 @@ C asminnerprodx(I m,I*z,I u,I*y)
  I t; DO(m, if(unlikely(__builtin_mul_overflow(*y,u,&t)))R EWOV; if(unlikely(__builtin_add_overflow(t,*z,z)))R EWOV; z++; y++;) R 0;
 }
 
-F2(jtpdt){PROLOG;A z;I ar,at,i,m,n,p,p1,t,wr,wt;
+F2(jtpdt){PLOG2;PROLOG;A z;I ar,at,i,m,n,p,p1,t,wr,wt;
  RZ(a&&w);
  ar=AR(a); at=AN(a)?AT(a):B01;
  wr=AR(w); wt=AN(w)?AT(w):B01;
@@ -194,7 +194,7 @@ static A jtipbx(J jt,A a,A w,C c,C d){A g=0,x0,x1,z;B*av,b,e,*u,*v,*v0,*v1,*zv;C
  R z;
 }    /* a f/ . g w  where a and w are nonempty and a is boolean */
 
-static DF2(jtdotprod){A fs,gs;C c,d;I r;V*sv;
+static DF2(jtdotprod){PLOG2;A fs,gs;C c,d;I r;V*sv;
  RZ(a&&w&&self);
  sv=VAV(self); fs=sv->f; gs=sv->g;
  if(B01&AT(a)&&AN(a)&&AN(w)&&CSLASH==ID(fs)&&(d=vaid(gs))&&
@@ -204,12 +204,12 @@ static DF2(jtdotprod){A fs,gs;C c,d;I r;V*sv;
 }
 
 
-F1(jtminors){A d;
+F1(jtminors){PLOG1;A d;
  RZ(d=apv(3L,-1L,1L)); *AV(d)=0;
  R drop(d,df2(one,w,bsdot(ds(CLEFT))));
 }
 
-static DF1(jtdet){DECLFG;A h=sv->h;I c,r,*s;
+static DF1(jtdet){PLOG1;DECLFG;A h=sv->h;I c,r,*s;
  RZ(w);
  r=AR(w); s=AS(w);
  if(h&&1<r&&2==s[r-1]&&s[r-2]==s[r-1])R df1(w,h);
@@ -218,10 +218,10 @@ static DF1(jtdet){DECLFG;A h=sv->h;I c,r,*s;
  R !c ? df1(mtv,slash(gs)) : 1==c ? CALL1(f1,ravel(w),fs) : h && c==*s ? gaussdet(w) : detxm(w,self); 
 }
 
-DF1(jtdetxm){R dotprod(irs1(w,0L,1L,jthead),det(minors(w),self),self);}
+DF1(jtdetxm){PLOG1;R dotprod(irs1(w,0L,1L,jthead),det(minors(w),self),self);}
      /* determinant via expansion by minors. w is matrix with >1 columns */
 
-F2(jtdot){A f,h=0;AF f2=jtdotprod;C c,d;
+F2(jtdot){PLOG2;A f,h=0;AF f2=jtdotprod;C c,d;
  ASSERTVV(a,w);
  if(CSLASH==ID(a)){
   f=VAV(a)->f; c=ID(f); d=ID(w);

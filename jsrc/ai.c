@@ -19,13 +19,13 @@ static B consf(A w){A f;C c;
  R 0;
 }    /* 1 iff w is a constant function */
 
-static F2(jtfong){A f;C c;V*v;
+static F2(jtfong){PLOG2;A f;C c;V*v;
  RZ(a&&w);
  v=VAV(a); c=v->id; f=v->f;
  R c==CRIGHT ? w : c==CFORK&&(NOUN&AT(f)||CCAP==ID(f)) ? folk(f,v->g,fong(v->h,w)) : folk(ds(CCAP),a,w);
 }    /* [: f g  with simplifications */
 
-static F1(jtinvfork){A f,fi,g,gi,h,k;B b,c;V*v;
+static F1(jtinvfork){PLOG1;A f,fi,g,gi,h,k;B b,c;V*v;
  RZ(w);
  v=VAV(w); RZ(f=unname(v->f)); g=v->g; RZ(h=unname(v->h));
  if(CCAP==ID(f))R fong(inv(h),inv(g));
@@ -42,16 +42,16 @@ static F1(jtinvfork){A f,fi,g,gi,h,k;B b,c;V*v;
  R fong(fi,gi);
 }
 
-static DF1(jtexpandf){A f; RZ(w&&self); f=VAV(self)->f; R expand(VAV(f)->f,w);}
+static DF1(jtexpandf){PLOG1;A f; RZ(w&&self); f=VAV(self)->f; R expand(VAV(f)->f,w);}
 
-static DF1(jtexpandg){A f,g,z;V*v;
+static DF1(jtexpandg){PLOG1;A f,g,z;V*v;
  RZ(w&&self);
  f=VAV(self)->f; v=VAV(f); g=v->g;
  jt->fill=VAV(g)->g; z=expand(v->f,w); jt->fill=0; 
  R z;
 }
 
-static F2(jtdiag){I d,k,m,p,r,t,*v;
+static F2(jtdiag){PLOG2;I d,k,m,p,r,t,*v;
  RZ(a&&w);
  r=AR(w); t=AT(w); k=bp(t);
  v=AS(w);   m=0;      DO(r, m=MIN(m,v[i]););
@@ -64,7 +64,7 @@ static F2(jtdiag){I d,k,m,p,r,t,*v;
   ASSERT(0,EVNONCE);
 }}
 
-static F1(jtbminv){A*wv,x,z=w;I i,j,m,r,*s,t=0,*u,**v,*y,wn,wr,*ws,wd;
+static F1(jtbminv){PLOG1;A*wv,x,z=w;I i,j,m,r,*s,t=0,*u,**v,*y,wn,wr,*ws,wd;
  RZ(w);
  ASSERT(0,EVNONCE);
  ASSERT(BOX&AT(w),EVDOMAIN);
@@ -96,7 +96,7 @@ static F1(jtbminv){A*wv,x,z=w;I i,j,m,r,*s,t=0,*u,**v,*y,wn,wr,*ws,wd;
 }    /* <;.1 or <;.2 inverse on matrix argument */
 
 
-static F1(jtinvamp){A f,ff,g,h,*q,x,y;B nf,ng;C c,d,*yv;I n;V*u,*v;
+static F1(jtinvamp){PLOG1;A f,ff,g,h,*q,x,y;B nf,ng;C c,d,*yv;I n;V*u,*v;
  RZ(w);
  v=VAV(w);
  f=v->f; nf=!!(NOUN&AT(f));
@@ -247,7 +247,7 @@ static C invf[2][29] = {
  CBASE,  CABASE, CEXEC,   CTHORN,  0 
 };
 
-F1(jtinv){A f,ff,g;B b,nf,ng,vf,vg;C id,*s;I p,q;V*v;
+F1(jtinv){PLOG1;A f,ff,g;B b,nf,ng,vf,vg;C id,*s;I p,q;V*v;
  RZ(w);
  ASSERT(VERB&AT(w),EVDOMAIN); 
  id=ID(w); v=VAV(w);
@@ -324,7 +324,7 @@ F1(jtinv){A f,ff,g;B b,nf,ng,vf,vg;C id,*s;I p,q;V*v;
  ASSERT(0,EVDOMAIN);
 }
 
-static F1(jtneutral){A x,y;B b;V*v;
+static F1(jtneutral){PLOG1;A x,y;B b;V*v;
  RZ(w);
  v=VAV(w);
  ASSERT(!v->lr&&!v->rr,EVDOMAIN);
@@ -340,7 +340,7 @@ static F1(jtneutral){A x,y;B b;V*v;
  ASSERT(0,EVDOMAIN);
 }    /* neutral of arbitrary rank-0 function */
 
-F1(jtiden){A f,g,x=0;V*u,*v;
+F1(jtiden){PLOG1;A f,g,x=0;V*u,*v;
  RZ(w=fix(w)); ASSERT(VERB&AT(w),EVDOMAIN);
  v=VAV(w); f=v->f; g=v->g;
  switch(v->id){

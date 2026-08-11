@@ -79,7 +79,7 @@ static B jtiixI(J jt,I n,I m,A a,A w,I*zv){A t;B ascend;I*av,j,p,q,*tv,*u,*v,*vv
 
 #define TT(s,t)     (7*(s)+(t))
 
-F2(jticap2){A*av,*wv,z;B b;C*uu,*vv;I ad,ar,*as,at,c,ck,cm,ge,gt,j,k,m,n,p,q,r,t,*u,*v,wd,wr,*ws,wt,*zv;int cc;
+F2(jticap2){PLOG2;A*av,*wv,z;B b;C*uu,*vv;I ad,ar,*as,at,c,ck,cm,ge,gt,j,k,m,n,p,q,r,t,*u,*v,wd,wr,*ws,wt,*zv;int cc;
  RZ(a&&w);
  ar=AR(a); at=AT(a); as=AS(a); n=ar?*as:1; r=ar?ar-1:0;
  wr=AR(w); wt=AT(w); ws=AS(w); b=!AN(a)||!AN(w);

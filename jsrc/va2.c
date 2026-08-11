@@ -370,55 +370,55 @@ C jtvaid(J jt,A w){A x;C c;I k;V*v;
 
 static A jtva2(J,A,A,C);
 
-F2(jtbitwise0000){R va2(a,w,(C)16);}
-F2(jtbitwise0001){R va2(a,w,(C)17);}
-F2(jtbitwise0010){R va2(a,w,(C)18);}
-F2(jtbitwise0011){R va2(a,w,(C)19);}
+F2(jtbitwise0000){PLOG2;R va2(a,w,(C)16);}
+F2(jtbitwise0001){PLOG2;R va2(a,w,(C)17);}
+F2(jtbitwise0010){PLOG2;R va2(a,w,(C)18);}
+F2(jtbitwise0011){PLOG2;R va2(a,w,(C)19);}
 
-F2(jtbitwise0100){R va2(a,w,(C)20);}
-F2(jtbitwise0101){R va2(a,w,(C)21);}
-F2(jtbitwise0110){R va2(a,w,(C)22);}
-F2(jtbitwise0111){R va2(a,w,(C)23);}
+F2(jtbitwise0100){PLOG2;R va2(a,w,(C)20);}
+F2(jtbitwise0101){PLOG2;R va2(a,w,(C)21);}
+F2(jtbitwise0110){PLOG2;R va2(a,w,(C)22);}
+F2(jtbitwise0111){PLOG2;R va2(a,w,(C)23);}
 
-F2(jtbitwise1000){R va2(a,w,(C)24);}
-F2(jtbitwise1001){R va2(a,w,(C)25);}
-F2(jtbitwise1010){R va2(a,w,(C)26);}
-F2(jtbitwise1011){R va2(a,w,(C)27);}
+F2(jtbitwise1000){PLOG2;R va2(a,w,(C)24);}
+F2(jtbitwise1001){PLOG2;R va2(a,w,(C)25);}
+F2(jtbitwise1010){PLOG2;R va2(a,w,(C)26);}
+F2(jtbitwise1011){PLOG2;R va2(a,w,(C)27);}
 
-F2(jtbitwise1100){R va2(a,w,(C)28);}
-F2(jtbitwise1101){R va2(a,w,(C)29);}
-F2(jtbitwise1110){R va2(a,w,(C)30);}
-F2(jtbitwise1111){R va2(a,w,(C)31);}
+F2(jtbitwise1100){PLOG2;R va2(a,w,(C)28);}
+F2(jtbitwise1101){PLOG2;R va2(a,w,(C)29);}
+F2(jtbitwise1110){PLOG2;R va2(a,w,(C)30);}
+F2(jtbitwise1111){PLOG2;R va2(a,w,(C)31);}
 
-F2(jteq     ){R va2(a,w,CEQ     );}
-F2(jtlt     ){R va2(a,w,CLT     );}
-F2(jtminimum){R va2(a,w,CMIN    );}
-F2(jtle     ){R va2(a,w,CLE     );}
-F2(jtgt     ){R va2(a,w,CGT     );}
-F2(jtmaximum){R va2(a,w,CMAX    );}
-F2(jtge     ){R va2(a,w,CGE     );}
-F2(jtplus   ){R va2(a,w,CPLUS   );}
-F2(jtgcd    ){R va2(a,w,CPLUSDOT);}
-F2(jtnor    ){R va2(a,w,CPLUSCO );}
-F2(jttymes  ){R va2(a,w,CSTAR   );}
-F2(jtlcm    ){R va2(a,w,CSTARDOT);}
-F2(jtnand   ){R va2(a,w,CSTARCO );}
-F2(jtminus  ){R va2(a,w,CMINUS  );}
-F2(jtdivide ){R va2(a,w,CDIV    );}
-F2(jtexpn2  ){R va2(a,w,CEXP    );}
-F2(jtne     ){R va2(a,w,CNE     );}
-F2(jtoutof  ){R va2(a,w,CBANG   );}
-F2(jtcircle ){R va2(a,w,CCIRCLE );}
-F2(jtresidue){RZ(a&&w); R INT&AT(w)&&equ(a,num[2])?intmod2(w):va2(a,w,CSTILE);}
+F2(jteq     ){PLOG2;R va2(a,w,CEQ     );}
+F2(jtlt     ){PLOG2;R va2(a,w,CLT     );}
+F2(jtminimum){PLOG2;R va2(a,w,CMIN    );}
+F2(jtle     ){PLOG2;R va2(a,w,CLE     );}
+F2(jtgt     ){PLOG2;R va2(a,w,CGT     );}
+F2(jtmaximum){PLOG2;R va2(a,w,CMAX    );}
+F2(jtge     ){PLOG2;R va2(a,w,CGE     );}
+F2(jtplus   ){PLOG2;R va2(a,w,CPLUS   );}
+F2(jtgcd    ){PLOG2;R va2(a,w,CPLUSDOT);}
+F2(jtnor    ){PLOG2;R va2(a,w,CPLUSCO );}
+F2(jttymes  ){PLOG2;R va2(a,w,CSTAR   );}
+F2(jtlcm    ){PLOG2;R va2(a,w,CSTARDOT);}
+F2(jtnand   ){PLOG2;R va2(a,w,CSTARCO );}
+F2(jtminus  ){PLOG2;R va2(a,w,CMINUS  );}
+F2(jtdivide ){PLOG2;R va2(a,w,CDIV    );}
+F2(jtexpn2  ){PLOG2;R va2(a,w,CEXP    );}
+F2(jtne     ){PLOG2;R va2(a,w,CNE     );}
+F2(jtoutof  ){PLOG2;R va2(a,w,CBANG   );}
+F2(jtcircle ){PLOG2;R va2(a,w,CCIRCLE );}
+F2(jtresidue){PLOG2;RZ(a&&w); R INT&AT(w)&&equ(a,num[2])?intmod2(w):va2(a,w,CSTILE);}
 
-F1(jtnot   ){R w&&AT(w)&B01+SB01?va2(zero,w,CEQ):va2(one,w,CMINUS);}
-F1(jtnegate){R va2(zero,  w,     CMINUS);}
-F1(jtdecrem){R va2(w,     one,   CMINUS);}
-F1(jtincrem){R va2(one,   w,     CPLUS );}
-F1(jtduble ){R va2(num[2],w,     CSTAR );}
-F1(jtsquare){R va2(w,     w,     CSTAR );}
-F1(jtrecip ){R va2(one,   w,     CDIV  );}
-F1(jthalve ){R va2(w,     num[2],CDIV  );}
+F1(jtnot   ){PLOG1;R w&&AT(w)&B01+SB01?va2(zero,w,CEQ):va2(one,w,CMINUS);}
+F1(jtnegate){PLOG1;R va2(zero,  w,     CMINUS);}
+F1(jtdecrem){PLOG1;R va2(w,     one,   CMINUS);}
+F1(jtincrem){PLOG1;R va2(one,   w,     CPLUS );}
+F1(jtduble ){PLOG1;R va2(num[2],w,     CSTAR );}
+F1(jtsquare){PLOG1;R va2(w,     w,     CSTAR );}
+F1(jtrecip ){PLOG1;R va2(one,   w,     CDIV  );}
+F1(jthalve ){PLOG1;R va2(w,     num[2],CDIV  );}
 
 static void zeroF(J jt,B b,I m,I n,B*z,void*x,void*y){memset(z,C0,m*n);}
 static void  oneF(J jt,B b,I m,I n,B*z,void*x,void*y){memset(z,C1,m*n);}
@@ -564,7 +564,7 @@ static A jtva2(J jt,A a,A w,C id){A z;B b,c,sp=0;C*av,*wv,*zv;I acr,af,ak,an,ar,
 
 
 
-static DF2(jtsumattymes){A z;B b;I an,ar,*as,at,m,n,nn,r,*s,t,wn,wr,*ws,wt,zn;
+static DF2(jtsumattymes){PLOG2;A z;B b;I an,ar,*as,at,m,n,nn,r,*s,t,wn,wr,*ws,wt,zn;
  RZ(a&&w&&self);
  an=AN(a); ar=AR(a); as=AS(a); at=an?AT(a):B01;
  wn=AN(w); wr=AR(w); ws=AS(w); wt=wn?AT(w):B01; 
@@ -667,7 +667,7 @@ static A jtsumatgbool(J jt,A a,A w,C id){A t,z;B*av,*wv;I dw,n,p,q,r,*s,zn,*zv;U
  R z;
 }    /* a +/@:g w  for boolean a,w where a-:&(* /@$)w; see also plusinsB */
 
-DF2(jtfslashatg){A fs,gs,y,z;B b,bb,sb=0;C*av,c,d,*wv;I ak,an,ar,*as,at,cv,cvf,m,
+DF2(jtfslashatg){PLOG2;A fs,gs,y,z;B b,bb,sb=0;C*av,c,d,*wv;I ak,an,ar,*as,at,cv,cvf,m,
      n,nn,r,*s,t,wk,wn,wr,*ws,wt,yt,zn,zt;V*sv;VF ado,adof;
  RZ(a&&w&&self);
  an=AN(a); ar=AR(a); as=AS(a); at=an?AT(a):B01; sv=VAV(self); 

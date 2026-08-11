@@ -100,31 +100,40 @@ typedef I4                 LX;  // index of an L block in SYMORIGIN
 typedef struct AD AD;
 typedef AD *A;
 struct AD {
-#if NORMAH1 && 0==NORMAHX
-I p0;
+#if NORMAHX==0
+#if SY_64 || !PYXES
+ I p0[NORMAH8];
+#else
+#if C_LE
+ US origin;S lock;
+#else
+ S lock;US origin;
+#endif
+ I p0[NORMAH8-1];
+#endif
 #endif
 I k;
-#if NORMAH1 && 1==NORMAHX
+#if 1==NORMAHX
 I p1;
 #endif
 I flag;
-#if NORMAH1 && 2==NORMAHX
+#if 2==NORMAHX
 I p2;
 #endif
 I m;
-#if NORMAH1 && 3==NORMAHX
+#if 3==NORMAHX
 I p3;
 #endif
 I t;
-#if NORMAH1 && 4==NORMAHX
+#if 4==NORMAHX
 I p4;
 #endif
 I c;
-#if NORMAH1 && 5==NORMAHX
+#if 5==NORMAHX
 I p5;
 #endif
 I n;
-#if NORMAH1 && 6==NORMAHX
+#if 6==NORMAHX
 I p6;
 #endif
  RANKT r;
@@ -135,7 +144,7 @@ I p6;
  US origin;  // 
  S lock;   // can be used as a lock
 #endif
-#if NORMAH1 && 7==NORMAHX
+#if 7==NORMAHX
 I p7;
 #endif
 I s[1];};
@@ -291,6 +300,25 @@ typedef I SI;
 #define VAV(x)          ( (V*)((C*)(x)+AK(x)))  /* verb, adverb, conj      */
 #define SBAV(x)         ((SB*)((C*)(x)+AK(x)))  /* symbol                  */
 
+#endif
+
+#define APA(x)          ((x)->s + (x)->r) // padding I following shape
+#if NORMAHE
+#if NORMAHX==0
+#define APX(x)          ((x)->p0[0]) // extra word in AD
+#elif NORMAHX==1
+#define APX(x)          ((x)->p1)          // extra word in AD
+#elif NORMAHX==5
+#define APX(x)          ((x)->p5)          // extra word in AD
+#elif NORMAHX==7
+#define APX(x)          ((x)->p7)          // extra word in AD
+#endif
+#define APINIT(x,v)     APX(x)=(v);        // setting extra word to some garbage
+// #define CHKAPX(x)       if(x&&APX(x)!=XHEADERFILL)SEGFAULT;
+#define CHKAPX(x)       if(x&&APX(x)!=XHEADERFILL){dump_ADheader(x);SEGFAULT;}
+#else
+#define APINIT(x,v)
+#define CHKAPX(x)
 #endif
 
 /* Types for AT(x) field of type A                                         */

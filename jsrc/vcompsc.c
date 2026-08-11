@@ -538,14 +538,14 @@ static AF atcompSB[]={  /* table for SBT vs. SBT */
 };
 
 
-static F2( jti0eps){R indexofsub( II0EPS,w,a);}
-static F2( jti1eps){R indexofsub( II1EPS,w,a);}
-static F2( jtj0eps){R indexofsub( IJ0EPS,w,a);}
-static F2( jtj1eps){R indexofsub( IJ1EPS,w,a);}
-static F2(jtsumeps){R indexofsub(ISUMEPS,w,a);}
-static F2(jtanyeps){R indexofsub(IANYEPS,w,a);}
-static F2(jtalleps){R indexofsub(IALLEPS,w,a);}
-static F2(jtifbeps){R indexofsub(IIFBEPS,w,a);}
+static F2( jti0eps){PLOG2;R indexofsub( II0EPS,w,a);}
+static F2( jti1eps){PLOG2;R indexofsub( II1EPS,w,a);}
+static F2( jtj0eps){PLOG2;R indexofsub( IJ0EPS,w,a);}
+static F2( jtj1eps){PLOG2;R indexofsub( IJ1EPS,w,a);}
+static F2(jtsumeps){PLOG2;R indexofsub(ISUMEPS,w,a);}
+static F2(jtanyeps){PLOG2;R indexofsub(IANYEPS,w,a);}
+static F2(jtalleps){PLOG2;R indexofsub(IALLEPS,w,a);}
+static F2(jtifbeps){PLOG2;R indexofsub(IIFBEPS,w,a);}
 
 static AF atcompX[]={   /* table for any vs. any */
   0L,0L,0L,0L,0L,0L,        0L,  jti0eps,

@@ -32,7 +32,7 @@ B jtmeminit(J jt){I k,m=MLEN;
 }
 
 
-F1(jtspcount){A z;I c=0,j,m=1+PLIML,*v;MS*x;
+F1(jtspcount){PLOG1;A z;I c=0,j,m=1+PLIML,*v;MS*x;
  ASSERTMTV(w);
  GA(z,INT,2*m,2,0); v=AV(z);
  DO(m, j=0; x=(MS*)(jt->mfree[i]); while(x){x=(MS*)(x->a); ++j;} if(j){++c; *v++=msize[i]; *v++=j;});
@@ -72,7 +72,7 @@ B jtspfree(J jt){A t;I c,d,i,j,m,n,*u,*v;MS*x;
  R 1;
 }    /* free unused blocks */
 
-static F1(jtspfor1){
+static F1(jtspfor1){PLOG1;
  RZ(w);
  if(BOX&AT(w)){A*wv=AAV(w);I wd=(I)w*ARELATIVE(w); DO(AN(w), spfor1(WVR(i)););}
  else traverse(w,jtspfor1); 
@@ -88,7 +88,7 @@ static F1(jtspfor1){
  R mtm;
 }
 
-F1(jtspfor){A*wv,x,y,z;C*s;D*v,*zv;I i,m,n,wd;
+F1(jtspfor){PLOG1;A*wv,x,y,z;C*s;D*v,*zv;I i,m,n,wd;
  RZ(w);
  n=AN(w); wv=AAV(w); wd=(I)w*ARELATIVE(w); v=&jt->spfor;
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
@@ -104,7 +104,7 @@ F1(jtspfor){A*wv,x,y,z;C*s;D*v,*zv;I i,m,n,wd;
  R z;
 }    /* 7!:5 space for named object; w is <'name' */
 
-F1(jtspforloc){A*wv,x,y,z;C*s;D*v,*zv;I c,i,j,m,n,wd,*yv;L*u;
+F1(jtspforloc){PLOG1;A*wv,x,y,z;C*s;D*v,*zv;I c,i,j,m,n,wd,*yv;L*u;
  RZ(w);
  n=AN(w); wv=AAV(w); wd=(I)w*ARELATIVE(w); v=&jt->spfor;
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
@@ -130,10 +130,10 @@ F1(jtspforloc){A*wv,x,y,z;C*s;D*v,*zv;I c,i,j,m,n,wd,*yv;L*u;
 }    /* 7!:6 space for a locale */
 
 
-F1(jtmmaxq){ASSERTMTV(w); R sc(jt->mmax);}
+F1(jtmmaxq){PLOG1;ASSERTMTV(w); R sc(jt->mmax);}
      /* 9!:20 space limit query */
 
-F1(jtmmaxs){I j,m=MLEN,n;
+F1(jtmmaxs){PLOG1;I j,m=MLEN,n;
  RE(n=i0(vib(w)));
  ASSERT(1E5<=n,EVLIMIT);
  j=m-1; DO(m, if(n<=msize[i]){j=i; break;});
@@ -213,6 +213,7 @@ static A jttraverse(J jt,A w,AF f){
 
 static A jttg(J jt){A t=jt->tstacka,z;
  RZ(z=ma(SZI*WP(BOX,NTSTACK,1L)));
+ APINIT(z,XHEADERFILL);
  AT(z)=BOX; AC(z)=1; ARINIT(z,1); AN(z)=*AS(z)=NTSTACK; AM(z)=NTSTACK*SZA; AK(z)=AKX(z);
  jt->tstacka=z; jt->tstack=AAV(jt->tstacka); jt->tbase+=NTSTACK; jt->ttop=1;
  *jt->tstack=t;
@@ -224,7 +225,7 @@ static void jttf(J jt){A t=jt->tstacka;
  fr(t);
 }
 
-F1(jttpush){
+F1(jttpush){PLOG1;
  RZ(w);
  traverse(w,jttpush);
  if(jt->ttop>=NTSTACK)RZ(tg());
@@ -247,13 +248,13 @@ void jtgc3(J jt,A x,A y,A z,I old){
 }
 
 
-F1(jtfa ){RZ(w); traverse(w,jtfa ); fr(w);   R mark;}
-F1(jtra ){RZ(w); traverse(w,jtra ); ++AC(w); R w;   }
+F1(jtfa ){PLOG1;RZ(w); traverse(w,jtfa ); fr(w);   R mark;}
+F1(jtra ){PLOG1;RZ(w); traverse(w,jtra ); ++AC(w); R w;   }
 
-static F1(jtra1){RZ(w); traverse(w,jtra1); AC(w)+=jt->arg; R w;}
+static F1(jtra1){PLOG1;RZ(w); traverse(w,jtra1); AC(w)+=jt->arg; R w;}
 A jtraa(J jt,I k,A w){A z;I m=jt->arg; jt->arg=k; z=ra1(w); jt->arg=m; R z;}
 
-F1(jtrat){R ra(tpush(w));}
+F1(jtrat){PLOG1;R ra(tpush(w));}
 
 A jtga(J jt,I t,I n,I r,I*s){A z;I m,w;
  ASSERT(RMAX>=r,EVLIMIT); 
@@ -269,6 +270,7 @@ A jtga(J jt,I t,I n,I r,I*s){A z;I m,w;
  RZ(z=ma(m));
  if(!(t&DIRECT))memset(z,C0,m);
  if(t&LAST0){I*v=(I*)z+w-2; *v++=0; *v=0;}
+ APINIT(z,XHEADERFILL);
  AC(z)=1; AN(z)=n; ARINIT(z,(RANKT)r); AFLAG(z)=0; AK(z)=AKX(z); AM(z)=msize[((MS*)z-1)->j]-(AK(z)+sizeof(MS)); 
  AT(z)=0; tpush(z); AT(z)=t;
  if(1==r&&!(t&SPARSE))*AS(z)=n; else if(r&&s)ICPY(AS(z),s,r);  /* 1==n always if t&SPARSE */
@@ -278,15 +280,17 @@ A jtga(J jt,I t,I n,I r,I*s){A z;I m,w;
 A jtgah(J jt,I r,A w){A z;
  ASSERT(RMAX>=r,EVLIMIT); 
  RZ(z=ma(SZI*(NORMAH+r)));
+ APINIT(z,XHEADERFILL);
  AT(z)=0; ++AC(z); tpush(z);
  if(w){
+  APINIT(z,APX(w));
   AFLAG(z)=0; AM(z)=AM(w); AT(z)=AT(w); AN(z)=AN(w); ARINIT(z,(RANKT)r); AK(z)=CAV(w)-(C*)z;
   if(1==r)*AS(z)=AN(w);
  }
  R z;
 }    /* allocate header */ 
 
-F1(jtca){A z;I t;P*wp,*zp;
+F1(jtca){PLOG1;A z;I t;P*wp,*zp;
  RZ(w);
  t=AT(w);
  GA(z,t,AN(w),AR(w),AS(w)); if(AFLAG(w)&AFNJA+AFSMM+AFREL)AFLAG(z)=AFREL;
@@ -300,7 +304,7 @@ F1(jtca){A z;I t;P*wp,*zp;
  R z;
 }
 
-F1(jtcar){A*u,*wv,z;I n,wd;P*p;V*v;
+F1(jtcar){PLOG1;A*u,*wv,z;I n,wd;P*p;V*v;
  RZ(z=ca(w));
  n=AN(w);
  switch(AT(w)){

@@ -57,22 +57,22 @@ static UC* tohex(UC* dest, UC* src, I len)
   R dest;
 }
 
-F1(jtassertq){ASSERTMTV(w); R scb(jt->assert);}
+F1(jtassertq){PLOG1;ASSERTMTV(w); R scb(jt->assert);}
 
-F1(jtasserts){B b; RE(b=b0(w)); jt->assert=b; R mtm;}
+F1(jtasserts){PLOG1;B b; RE(b=b0(w)); jt->assert=b; R mtm;}
 
-F1(jtboxq){ASSERTMTV(w); R ca(jt->bxa);}
+F1(jtboxq){PLOG1;ASSERTMTV(w); R ca(jt->bxa);}
 
-F1(jtboxs){A x;
+F1(jtboxs){PLOG1;A x;
  RZ(w=vs(w));
  ASSERT(11==*AS(w),EVLENGTH);
  x=jt->bxa; RZ(jt->bxa=ra(w)); jt->bx=CAV(jt->bxa); fa(x);
  R mtv;
 }
 
-F1(jtctq){ASSERTMTV(w); R scf(jt->ct);}
+F1(jtctq){PLOG1;ASSERTMTV(w); R scf(jt->ct);}
 
-F1(jtcts){D d;
+F1(jtcts){PLOG1;D d;
  ASSERT(!AR(w),EVRANK);
  RZ(w=cvt(FL,w)); d=*DAV(w);
  ASSERT(0<=d,EVDOMAIN); 
@@ -81,9 +81,9 @@ F1(jtcts){D d;
  R mtv;
 }
 
-F1(jtdispq){A z; ASSERTMTV(w); GA(z,INT,*jt->disp,1,0); ICPY(AV(z),1+jt->disp,*jt->disp); R z;}
+F1(jtdispq){PLOG1;A z; ASSERTMTV(w); GA(z,INT,*jt->disp,1,0); ICPY(AV(z),1+jt->disp,*jt->disp); R z;}
 
-F1(jtdisps){I n;
+F1(jtdisps){PLOG1;I n;
  RZ(w=vi(w));
  n=AN(w);
  ASSERT(1>=AR(w),EVRANK);
@@ -93,9 +93,9 @@ F1(jtdisps){I n;
  R mtv;
 }
 
-F1(jtdotnamesq){ASSERTMTV(w); R jt->dotnames?one:zero;}
+F1(jtdotnamesq){PLOG1;ASSERTMTV(w); R jt->dotnames?one:zero;}
 
-F1(jtdotnamess){B b,c;
+F1(jtdotnamess){PLOG1;B b,c;
  RZ(w);
  ASSERT(!AR(w),EVRANK);
  if(!(B01&AT(w)))RZ(w=cvt(B01,w));
@@ -112,9 +112,9 @@ F1(jtdotnamess){B b,c;
  R mtv;
 }
 
-F1(jtevmq){ASSERTMTV(w); R behead(jt->evm);}
+F1(jtevmq){PLOG1;ASSERTMTV(w); R behead(jt->evm);}
 
-F1(jtevms){A t,*tv,*wv;
+F1(jtevms){PLOG1;A t,*tv,*wv;
  RZ(w);
  ASSERT(1==AR(w),EVRANK);
  ASSERT(NEVM==AN(w),EVLENGTH);
@@ -128,25 +128,25 @@ F1(jtevms){A t,*tv,*wv;
  R mtv;
 }
 
-F1(jtfxx){
+F1(jtfxx){PLOG1;
  RZ(w);
  ASSERT(AT(w)&LIT+BOX,EVDOMAIN);
  ASSERT(1>=AR(w),EVRANK);
  R fx(ope(w)); 
 }
 
-F1(jtiepdoq){ASSERTMTV(w); R scb(jt->iepdo);}
+F1(jtiepdoq){PLOG1;ASSERTMTV(w); R scb(jt->iepdo);}
 
-F1(jtiepdos){B b; RE(b=b0(w)); jt->iepdo=b; R mtm;}
+F1(jtiepdos){PLOG1;B b; RE(b=b0(w)); jt->iepdo=b; R mtm;}
 
-F1(jtiepq){
+F1(jtiepq){PLOG1;
  ASSERTMTV(w); 
  ASSERT(1==AR(w),EVRANK);
  ASSERT(!AN(w),EVDOMAIN); 
  R jt->iep?jt->iep:mtv;
 }
 
-F1(jtieps){
+F1(jtieps){PLOG1;
  RZ(w);
  ASSERT(1>=AR(w),EVRANK);
  ASSERT(!AN(w)||AT(w)&LIT,EVDOMAIN);
@@ -157,7 +157,7 @@ F1(jtieps){
 
 I prokey=1; /* enabled for 5.01 beta */
 
-F1(jtoutparmq){A z;D*u,x;I*v;
+F1(jtoutparmq){PLOG1;A z;D*u,x;I*v;
  ASSERTMTV(w);
  if(IMAX==jt->outmaxlen||IMAX==jt->outmaxbefore||IMAX==jt->outmaxafter){
   GA(z,FL, 4,1,0); u=DAV(z);
@@ -175,7 +175,7 @@ F1(jtoutparmq){A z;D*u,x;I*v;
  R z;
 }
 
-F1(jtoutparms){I*v;
+F1(jtoutparms){PLOG1;I*v;
  RZ(w=vib(w));
  ASSERT(1==AR(w),EVRANK);
  ASSERT(4==AN(w),EVLENGTH);
@@ -191,9 +191,9 @@ F1(jtoutparms){I*v;
  R mtv;
 }
 
-F1(jtposq){ASSERTMTV(w); R v2(jt->pos[0],jt->pos[1]);}
+F1(jtposq){PLOG1;ASSERTMTV(w); R v2(jt->pos[0],jt->pos[1]);}
 
-F1(jtposs){I n,p,q,*v;
+F1(jtposs){PLOG1;I n,p,q,*v;
  RZ(w=vi(w));
  n=AN(w); v=AV(w);
  ASSERT(1>=AR(w),EVRANK);
@@ -204,32 +204,32 @@ F1(jtposs){I n,p,q,*v;
  R mtv;
 }
 
-F1(jtppq){C*end;I k;
+F1(jtppq){PLOG1;C*end;I k;
  ASSERTMTV(w);
  k = strtoI(3+jt->pp, (char**)&end, 10);
  R sc(k);
 }
 
-F1(jtpps){I k;
+F1(jtpps){PLOG1;I k;
  RE(sc(k=i0(w))); ASSERT(0<k,EVDOMAIN); ASSERT(k<=NPP,EVLIMIT);
  sprintf(3+jt->pp,FMTI"g", k);
  R mtv;
 }
 
-F1(jtretcommq){ASSERTMTV(w); R scb(jt->retcomm);}
+F1(jtretcommq){PLOG1;ASSERTMTV(w); R scb(jt->retcomm);}
 
-F1(jtretcomms){B b; RE(b=b0(w)); jt->retcomm=b; R mtm;}
+F1(jtretcomms){PLOG1;B b; RE(b=b0(w)); jt->retcomm=b; R mtm;}
 
-F1(jtseclevq){ASSERTMTV(w); R sc(jt->seclev);}
+F1(jtseclevq){PLOG1;ASSERTMTV(w); R sc(jt->seclev);}
 
-F1(jtseclevs){I k; 
+F1(jtseclevs){PLOG1;I k; 
  RE(k=i0(w)); 
  ASSERT(0==k||1==k,EVDOMAIN); 
  if(!jt->seclev&&1==k)jt->seclev=k;
  R mtm;
 }
 
-F1(jtsysparmq){I k;
+F1(jtsysparmq){PLOG1;I k;
  RE(k=i0(w));
  switch(k){
   default: ASSERT(0,EVINDEX);
@@ -239,7 +239,7 @@ F1(jtsysparmq){I k;
   case 3:  R sc(jt->fcalli);
 }}
 
-F1(jtsysparms){A*wv;I k,m,wd;
+F1(jtsysparms){PLOG1;A*wv;I k,m,wd;
  RZ(w);
  ASSERT(BOX&AT(w),EVDOMAIN);
  ASSERT(1==AR(w),EVRANK);
@@ -256,7 +256,7 @@ F1(jtsysparms){A*wv;I k,m,wd;
  R mtm;
 }
 
-F1(jtsysq){I j;
+F1(jtsysq){PLOG1;I j;
  ASSERTMTV(w);
  switch(SYS){
   case SYS_PC:        j=0;                break;
@@ -271,7 +271,7 @@ F1(jtsysq){I j;
 
 // 9!:56
 // query/override cpu feature
-F1(jtcpufeature){
+F1(jtcpufeature){PLOG1;
  ASSERT(AT(w)&LIT,EVDOMAIN);
  ASSERT(AN(w),EVLENGTH);
  ASSERT(1>=AR(w),EVRANK);
@@ -427,6 +427,12 @@ F1(jtcpufeature){
 #else
   R sc(-1);
 #endif
+ } else if(!strcasecmp(CAV(w),"XHEADERFILL")) {
+#ifdef XHEADERFILL
+  R sc(XHEADERFILL);
+#else
+  R sc(0);
+#endif
  }
 #if defined(__aarch64__)
  if     (!strcasecmp(CAV(w),"FP"      )) R sc(!!(getCpuFeatures()&ARM_HWCAP_FP ));
@@ -530,7 +536,7 @@ F1(jtcpufeature){
 }
 
 // thread unsafe
-F2(jtcpufeature2){I k;
+F2(jtcpufeature2){PLOG2;I k;
  ASSERT(AT(w)&LIT,EVDOMAIN);
  ASSERT(AN(w),EVLENGTH);
  ASSERT(1>=AR(w),EVRANK);

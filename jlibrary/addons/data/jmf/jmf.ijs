@@ -14,7 +14,7 @@ map name;filename [;sharename [;mt] ]
  tshape - trailing shape - }.shape    (default '')
 
 mt (map type):
- 0 - MTRW - default read/write mapping 
+ 0 - MTRW - default read/write mapping
  1 - MTRO - read-only mapping - map jmf file copies header to private area
  2 - MTCW - copy-on-write - private mapping - changes not reflected in file
 
@@ -26,14 +26,14 @@ showmap''                 - map info with col headers and extras
 mappings                  - map info
 share name;sharename[;mt] - share 'sharename' as name
 
-MAPNAME,MAPFN,... showmap col indexes 
+MAPNAME,MAPFN,... showmap col indexes
 )
 3 : 0''
 try.
- 15!:12 <'a' [ a=. i.5
- memhad_z_=: (15!:12)@<
+  15!:12 <'a' [ a=. i.5
+  memhad_z_=: (15!:12)@<
 catch.
- memhad_z_=: [: {: [: memr 0 2 4 ,~ (15!:6)@<
+  memhad_z_=: [: {: [: memr 0 2 4 ,~ (15!:6)@<
 end.
 EMPTY
 )
@@ -53,11 +53,11 @@ SZI=: IF64{4 8
 'MTRW MTRO MTCW'=: i.3
 3 : 0''
 if. 7=9!:56'NORMAH' do.
-'HADK HADFLAG HADM HADT HADC HADN HADR HADS'=: SZI*i.8
+  'HADK HADFLAG HADM HADT HADC HADN HADR HADS'=: SZI*i.8
 else.
-h1=. ;:'HADK HADFLAG HADM HADT HADC HADN HADR HADS'
-i=. 9!:56'NORMAHX' 
-((i{.h1),(<'HP0'),i}.h1)=: SZI*i.9
+  h1=. ;:'HADK HADFLAG HADM HADT HADC HADN HADR HADS'
+  i=. 9!:56'NORMAHX'
+  ((i{.h1),(<'HP0'),i}.h1)=: SZI*i.9
 end.
 )
 HADRUS=: HADR+IFBE*IF64{2 6
@@ -78,35 +78,36 @@ newheader=: 0~:memr (memhad'SZI_jmf_'),HADR,1,JINT
 
 setheader=: 4 : 0
 if. newheader do.
-if. 7=9!:56'NORMAH' do.
- (6{.x) memw y,0,6,JINT
- (6{x)  setHADR y
- (7}.x) memw y,HADS,(#7}.x),JINT
+  if. 7=9!:56'NORMAH' do.
+    (6{.x) memw y,0,6,JINT
+    (6{x) setHADR y
+    (7}.x) memw y,HADS,(#7}.x),JINT
+  else.
+    r=. memr y,HADR,1,JINT
+    (8{.x) memw y,0,8,JINT
+    (9!:56'XHEADERFILL') memw y,0,(9!:56'NORMAHX'),JINT
+    r memw y,HADR,1,JINT
+    ((<.HADR%SZI){x) setHADR y
+    (8}.x) memw y,HADS,(#8}.x),JINT
+  end.
 else.
- r=. memr y,HADR,1,JINT
- (8{.x) memw y,0,8,JINT
- r memw y,HADR,1,JINT
- ((<.HADR%SZI){x) setHADR y
- (8}.x) memw y,HADS,(#8}.x),JINT
-end.
-else.
- x memw y,0,(#x),JINT
+  x memw y,0,(#x),JINT
 end.
 )
 
 getHADR=: 3 : 0
 if. newheader do.
- _1 (3!:4) memr y,HADRUS,2,JCHAR
+  _1 (3!:4) memr y,HADRUS,2,JCHAR
 else.
- memr y,HADR,1,JINT
+  memr y,HADR,1,JINT
 end.
 )
 
 setHADR=: 4 : 0
 if. newheader do.
- (1 (3!:4) x) memw y,HADRUS,2,JCHAR
+  (1 (3!:4) x) memw y,HADRUS,2,JCHAR
 else.
- x memw y,HADR,1,JINT
+  x memw y,HADR,1,JINT
 end.
 )
 
@@ -128,9 +129,9 @@ if. IFUNIX do.
   c_mmap=: 'mmap * * x i i i x' api
   c_munmap=: 'munmap i * x' api
 
-  t=.           O_RDWR,   (PROT_WRITE+PROT_READ),  MAP_SHARED
-  t=. t,:       O_RDONLY, PROT_READ,               MAP_SHARED
-  mtflags=:  t, O_RDWR,   (PROT_WRITE+PROT_READ),  MAP_PRIVATE
+  t=. O_RDWR, (PROT_WRITE+PROT_READ), MAP_SHARED
+  t=. t,: O_RDONLY, PROT_READ, MAP_SHARED
+  mtflags=: t, O_RDWR, (PROT_WRITE+PROT_READ), MAP_PRIVATE
 else.
   CREATE_ALWAYS=: 2
   CREATE_NEW=: 1
@@ -150,9 +151,9 @@ else.
   PAGE_READWRITE=: 4
   TRUNCATE_EXISTING=: 5
 
-  t=.           (GENERIC_READ+GENERIC_WRITE), PAGE_READWRITE,  FILE_MAP_WRITE
-  t=.       t,: GENERIC_READ,                 PAGE_READONLY,   FILE_MAP_READ
-  mtflags=: t,  (GENERIC_READ+GENERIC_WRITE), PAGE_READWRITE,  FILE_MAP_COPY
+  t=. (GENERIC_READ+GENERIC_WRITE), PAGE_READWRITE, FILE_MAP_WRITE
+  t=. t,: GENERIC_READ, PAGE_READONLY, FILE_MAP_READ
+  mtflags=: t, (GENERIC_READ+GENERIC_WRITE), PAGE_READWRITE, FILE_MAP_COPY
 
   CloseHandleR=: 'kernel32 CloseHandle > i x'&(15!:0)
   CreateFileMappingR=: 'kernel32 CreateFileMappingW > x x * i i i *w'&(15!:0)
@@ -179,7 +180,7 @@ end.
 empty''
 )
 
-nountype =: 17 b.&16b1fffff
+nountype=: 17 b.&16b1fffff
 MAXINTU=: 2 ^ IF64{32 64x
 MAXINTS=: <: 2 ^ IF64{31 63x
 ufs=: + MAXINTU * 0 > ]
@@ -212,7 +213,7 @@ z=. z, *./ 0 = 8|a
 )
 settypeshape=: 3 : 0
 'name type shape'=: y
-type =: nountype type
+type=: nountype type
 rank=. #shape
 had=. memhad name
 'flag msize'=. memr had,HADFLAG,2,JINT
@@ -229,14 +230,14 @@ i.0 0
 validate=: 3 : 0
 'ts had'=. y
 if. ts>:HS do.
-if. 7=9!:56'NORMAH' do.
-  d=. memr had,0 4,JINT
-  *./((HS,ts-HS)=0 2{d),1 2 4 8 16 32 131072 262144 65536 e.~ nountype 3{d
-else.
-  d=.  memr had,0 5,JINT
-  'dk dm dt'=. (<.SZI%~HADK,HADM,HADT){d
-  *./((HS,ts-HS)=dk,dm),1 2 4 8 16 32 131072 262144 65536 e.~ nountype dt
-end.
+  if. 7=9!:56'NORMAH' do.
+    d=. memr had,0 4,JINT
+    *./((HS,ts-HS)=0 2{d),1 2 4 8 16 32 131072 262144 65536 e.~ nountype 3{d
+  else.
+    d=. memr had,0 5,JINT
+    'dk dm dt'=. (<.SZI%~HADK,HADM,HADT){d
+    *./((HS,ts-HS)=dk,dm),1 2 4 8 16 32 131072 262144 65536 e.~ nountype dt
+  end.
 else. 0 end.
 )
 j=. <;._2 (0 : 0)
@@ -283,11 +284,11 @@ sad=. (15!:6) <fullname y
 'bad name' assert sad
 had=. 1{s=. memr sad,0 4,JINT
 if. 7=9!:56'NORMAH' do.
-'flag msize type rank'=. 1 2 3 6{memr had,0 28,JINT
+  'flag msize type rank'=. 1 2 3 6{memr had,0 28,JINT
 else.
-'flag msize type rank'=. (<.SZI%~HADFLAG,HADM,HADT,HADR){memr had,0 8,JINT
+  'flag msize type rank'=. (<.SZI%~HADFLAG,HADM,HADT,HADR){memr had,0 8,JINT
 end.
-type =. nountype type 
+type=. nountype type
 'not mapped and writeable' assert 2=flag
 'scalar' assert 0~:rank
 'not supported for boxed data' assert 32~:type
@@ -297,10 +298,10 @@ size=. (JTYPES i.type){JSIZES
 ts=. size**/shape
 'msize too small' assert ts<:msize
 if. 7=9!:56'NORMAH' do.
-((*/shape),rank,shape) memw had,HADN,(2+rank),JINT
+  ((*/shape),rank,shape) memw had,HADN,(2+rank),JINT
 else.
-(*/shape) memw had,HADN,1,JINT
-shape memw had,HADS,rank,JINT
+  (*/shape) memw had,HADN,1,JINT
+  shape memw had,HADS,rank,JINT
 end.
 i.0 0
 )
@@ -311,18 +312,18 @@ msize=. <. msize
 ts=. HS+msize
 if. IFUNIX do.
   if. ('Darwin'-:UNAME) *. 1 e. 'j64arm' E. 9!:14'' do.
-  fh=. 0 pick c_open_va fn; (OR O_RDWR, O_CREAT, O_TRUNC); (6#<00) ,< 8b666
+    fh=. 0 pick c_open_va fn; (OR O_RDWR, O_CREAT, O_TRUNC); (6#<00) ,< 8b666
   else.
-  fh=. 0 pick c_open fn; (OR O_RDWR, O_CREAT, O_TRUNC); 8b666
+    fh=. 0 pick c_open fn; (OR O_RDWR, O_CREAT, O_TRUNC); 8b666
   end.
   c_lseek fh;(<:ts);SEEK_SET
   c_write fh; (,0{a.); 0+1
   c_lseek fh;0 ;SEEK_SET
   d=. HS,AFNJA,msize,JINT,0,0,1,0
-if. 7~:9!:56'NORMAH' do.
-  i=. 9!:56'NORMAHX'
-  d=. (i{.d),0,(i}.d)
-end.
+  if. 7~:9!:56'NORMAH' do.
+    i=. 9!:56'NORMAHX'
+    d=. (i{.d),(9!:56'XHEADERFILL'),(i}.d)
+  end.
   c_write fh;d;(SZI*#d)
   c_close fh
 else.
@@ -331,10 +332,10 @@ else.
   SetEndOfFile fh
   SetFilePointerR fh;0;NULLPTR;FILE_BEGIN
   d=. HS,AFNJA,msize,JINT,0,0,1,0
-if. 7~:9!:56'NORMAH' do.
-  i=. 9!:56'NORMAHX'
-  d=. (i{.d),0,(i}.d)
-end.
+  if. 7~:9!:56'NORMAH' do.
+    i=. 9!:56'NORMAHX'
+    d=. (i{.d),(9!:56'XHEADERFILL'),(i}.d)
+  end.
   WriteFile fh;d;(SZI*#d);(,0);<NULLPTR
   CloseHandleR fh
 end.
@@ -362,9 +363,9 @@ if. IFUNIX do.
   'Unix sharename must be same as filename' assert (sn-:'')+.sn-:fn
   'FO FMP FMM'=. ro{mtflags
   if. ('Darwin'-:UNAME) *. 1 e. 'j64arm' E. 9!:14'' do.
-  fh=. >0 { c_open_va fn;FO;(6#<00),<0
+    fh=. >0 { c_open_va fn;FO;(6#<00),<0
   else.
-  fh=. >0 { c_open fn;FO;0
+    fh=. >0 { c_open fn;FO;0
   end.
   'bad file name/access' assert fh~:_1
   mh=. ts
@@ -378,10 +379,10 @@ else.
 
   fh=. CreateFileR (uucp fn,{.a.);fa;(OR FILE_SHARE_WRITE, FILE_SHARE_READ);NULLPTR;OPEN_EXISTING;0;0
   if. fh=_1 do.
-   6!:3[2
-   fh=. CreateFileR (uucp fn,{.a.);fa;(OR FILE_SHARE_WRITE, FILE_SHARE_READ);NULLPTR;OPEN_EXISTING;0;0
-   'bad file name/access'assert fh~:_1
-  end. 
+    6!:3[2
+    fh=. CreateFileR (uucp fn,{.a.);fa;(OR FILE_SHARE_WRITE, FILE_SHARE_READ);NULLPTR;OPEN_EXISTING;0;0
+    'bad file name/access'assert fh~:_1
+  end.
   mh=: CreateFileMappingR fh;NULLPTR;ma;0;0;(0=#sn){(uucp sn,{.a.);<NULLPTR
   if. mh=0 do. 'bad mapping'assert 0[free fh,0,0 end.
   fad=. MapViewOfFileR mh;va;0;0;0
@@ -398,7 +399,7 @@ map=: 3 : 0
 :
 if. 0=L.x do. t=. <&> x else. t=. x end.
 'type tshape hsize'=. 3 {. t, a:
-type =. nountype type
+type=. nountype type
 
 'trailing shape may not be zero' assert -. 0 e. tshape
 
@@ -423,10 +424,10 @@ if. ro*.0=type do.
   had=. allochdr 63
   d=. memr fad,0,HSN,JINT
   if. 7=9!:56'NORMAH' do.
-  d=. (sfu HS+-/ufs fad,had),aa,2}.d
+    d=. (sfu HS+-/ufs fad,had),aa,2}.d
   else.
-  d=. (sfu HS+-/ufs fad,had) (<.HADK%SZI)} d
-  d=. aa (<.HADFLAG%SZI)} d
+    d=. (sfu HS+-/ufs fad,had) (<.HADK%SZI)} d
+    d=. aa (<.HADFLAG%SZI)} d
   end.
   d=. 1 HADCN} d
   d setheader had
@@ -450,7 +451,7 @@ elseif. 1 do.
   h=. d,aa,ts,type,1,(*/lshape,tshape),((-.bx)+#tshape),lshape,tshape
   if. 7~:9!:56'NORMAH' do.
     i=. 9!:56'NORMAHX'
-    h=. (i{.h),0,(i}.h)
+    h=. (i{.h),(9!:56'XHEADERFILL'),(i}.h)
   end.
   h setheader had
 end.
@@ -466,7 +467,7 @@ row=. ({."1 mappings)i.<name
 'remap: not mapped' assert row<#mappings
 m=. row{mappings
 fn=. ;1{m
-ro=.  >MAPMT{m
+ro=. >MAPMT{m
 jmf=. >MAPJMF{m
 hs=. HS*jmf
 'sn fh mh fad had'=. 5{.2}.m

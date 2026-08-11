@@ -85,7 +85,7 @@ static void jtseeparse(J jt,DC d){A*v,y;I m;
  DO(AN(y), if(i==m)eputs("    "); disp(v[i]););
 }    /* display error line */
 
-F1(jtunparse){A*v,z;
+F1(jtunparse){PLOG1;A*v,z;
  RZ(w);
  jt->etxn=jt->nflag=0;
  v=AAV(w); DO(AN(w), disp(v[i]);); z=str(jt->etxn,jt->etx);
@@ -127,13 +127,13 @@ static B jtdebsi1(J jt,DC d){I t;
  R 1;
 }
 
-F1(jtdbstack){DC d=jt->sitop; 
+F1(jtdbstack){PLOG1;DC d=jt->sitop; 
  ASSERTMTV(w);
  if(d){if(DCCALL!=d->dctype)d=d->dclnk; while(d){debdisp(d); d=d->dclnk;}}
  R mtm;
 }    /* 13!:1  display SI stack */
 
-F1(jtdbstackz){A y; 
+F1(jtdbstackz){PLOG1;A y; 
  RE(dbstack(w)); 
  RZ(y=str(jt->etxn,jt->etx)); 
  jt->etxn=0; 
@@ -184,7 +184,7 @@ void jtjsignal3(J jt,I e,A w,I j){
  jt->etxn1=jt->etxn;
 }    /* signal error e on line w with caret at j */
 
-static F2(jtdbsig){I e;
+static F2(jtdbsig){PLOG2;I e;
  RE(0);
  if(!AN(w))R mtm;
  RZ(w=vi(w)); e=*AV(w); 
@@ -194,12 +194,12 @@ static F2(jtdbsig){I e;
  R 0;
 }    
 
-F1(jtdbsig1){R dbsig(0L,w);}   /* 13!:8  signal error */
-F2(jtdbsig2){R dbsig(a, w);}
+F1(jtdbsig1){PLOG1;R dbsig(0L,w);}   /* 13!:8  signal error */
+F2(jtdbsig2){PLOG2;R dbsig(a, w);}
 
 
-F1(jtdberr){ASSERTMTV(w); R sc(jt->jerr1);}           /* 13!:11 last error number   */
-F1(jtdbetx){ASSERTMTV(w); R str(jt->etxn1,jt->etx);}  /* 13!:12 last error text     */
+F1(jtdberr){PLOG1;ASSERTMTV(w); R sc(jt->jerr1);}           /* 13!:11 last error number   */
+F1(jtdbetx){PLOG1;ASSERTMTV(w); R str(jt->etxn1,jt->etx);}  /* 13!:12 last error text     */
 
 
 A jtjerrno(J jt){

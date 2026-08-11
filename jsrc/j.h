@@ -73,6 +73,7 @@
 #define dump_m256i32(a,x) {__m256i _b=x;fprintf(stderr,"%s %x %x %x %x %x %x %x %x \n", a, ((unsigned int*)(&_b))[0], ((unsigned int*)(&_b))[1], ((unsigned int*)(&_b))[2], ((unsigned int*)(&_b))[3], ((unsigned int*)(&_b))[4], ((unsigned int*)(&_b))[5], ((unsigned int*)(&_b))[6], ((unsigned int*)(&_b))[7]);}
 #define dump_m256d(a,x) {__m256d _b=x;fprintf(stderr,"%s %f %f %f %f \n", a, ((double*)(&_b))[0], ((double*)(&_b))[1], ((double*)(&_b))[2], ((double*)(&_b))[3]);}
 #define dump_m128d(a,x) {__m128d _b=x;fprintf(stderr,"%s %f %f \n", a, ((double*)(&_b))[0], ((double*)(&_b))[1]);}
+#define dump_ADheader(x) fprintf(stderr,""FMTX" "FMTX" "FMTX" "FMTX" "FMTX" "FMTX" "FMTX" "FMTX" \n", ((UI*)(x))[0], ((UI*)(x))[1], ((UI*)(x))[2], ((UI*)(x))[3], ((UI*)(x))[4], ((UI*)(x))[5], ((UI*)(x))[6], ((UI*)(x))[7]);
 
 
 #ifdef MMSC_VER
@@ -1008,8 +1009,125 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 #endif
 
 #define NORMAHX 0
-#define NORMAH1 (NORMAHX>=0 && NORMAHX<=7)
-#define NORMAH (7+NORMAH1)
+#define NORMAH8 1
+// extra AD header length
+#ifndef NORMAHX
+#define NORMAHX -1
+#endif
+#ifndef NORMAH8
+#define NORMAH8 1
+#endif
+#if NORMAH8<1 || NORMAH8>8
+#error NORMAH8 only supports 1 .. 8
+#endif
+#if NORMAHX==0
+#define NORMAHE NORMAH8
+#elif (NORMAHX>0 && NORMAHX<=7)
+#define NORMAHE 1
+#else
+#define NORMAHE 0
+#endif
+#define NORMAH (7+NORMAHE)
+
+#if SY_64
+#define XHEADERFILL 0x5a5a5a5a5a5a5a5aLL
+#else
+#define XHEADERFILL 0x5a5a5a5aL
+#endif
+
+// static global initializer
+#if NORMAHX==0
+#if NORMAH8==1
+#define Xhr0 XHEADERFILL,
+#elif NORMAH8==2
+#define Xhr0 XHEADERFILL,XHEADERFILL,
+#elif NORMAH8==3
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAH8==4
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAH8==5
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAH8==6
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAH8==7
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#elif NORMAH8==8
+#define Xhr0 XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,
+#endif
+#else
+#define Xhr0
+#endif
+
+// for struct AD initializer
+#if NORMAHX==0
+#if SY_64 || !PYXES
+#if NORMAH8==1
+#define Xhrg {XHEADERFILL},
+#elif NORMAH8==2
+#define Xhrg {XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==3
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==4
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==5
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==6
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==7
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==8
+#define Xhrg {XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#endif
+#else
+#if NORMAH8==1
+#define Xhrg XHEADERFILL,XHEADERFILL,{},
+#elif NORMAH8==2
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL},
+#elif NORMAH8==3
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==4
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==5
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==6
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==7
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#elif NORMAH8==8
+#define Xhrg XHEADERFILL,XHEADERFILL,{XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL,XHEADERFILL},
+#endif
+#endif
+#else
+#define Xhrg
+#endif
+
+#if NORMAHX==1
+#define Xhr1 XHEADERFILL,
+#else
+#define Xhr1
+#endif
+
+#if NORMAHX==5
+#define Xhr5 XHEADERFILL,
+#else
+#define Xhr5
+#endif
+
+#if NORMAHX==7
+#define Xhr7 XHEADERFILL,
+#define Xhr7e ,XHEADERFILL
+#else
+#define Xhr7
+#define Xhr7e
+#endif
+
+#if NORMAHX!=-1
+#define PLOG1 CHKAPX(w)
+#define PLOG2 CHKAPX(a);CHKAPX(w)
+#else
+#define PLOG1
+#define PLOG2
+#endif
 
 #include "ja.h" 
 #include "jc.h" 

@@ -99,7 +99,7 @@ B jtsymfreeh(J jt,A w,L*v){I*wv;L*u;
 
 static SYMWALK(jtsympoola, I,INT,100,1, 1, *zv++=j;)
 
-F1(jtsympool){A aa,*pu,q,x,y,*yv,z,*zv;I i,j,n,*u,*v,*xv;L*pv;
+F1(jtsympool){PLOG1;A aa,*pu,q,x,y,*yv,z,*zv;I i,j,n,*u,*v,*xv;L*pv;
  RZ(w); 
  ASSERT(1==AR(w),EVRANK); 
  ASSERT(!AN(w),EVLENGTH);
@@ -217,13 +217,13 @@ static A jtdllsymaddr(J jt,A w,C flag){A*wv,x,y,z;I i,n,wd,*zv;L*v;
  R z;
 }    /* 15!:6 (0=flag) or 15!:14 (1=flag) */
 
-F1(jtdllsymget){R dllsymaddr(w,0);}
-F1(jtdllsymdat){R dllsymaddr(w,1);}
+F1(jtdllsymget){PLOG1;R dllsymaddr(w,0);}
+F1(jtdllsymdat){PLOG1;R dllsymaddr(w,1);}
 
 
-F1(jtsymbrd){L*v; RZ(w); ASSERTN(v=syrd(w,0L),EVVALUE,w); R v->val;}
+F1(jtsymbrd){PLOG1;L*v; RZ(w); ASSERTN(v=syrd(w,0L),EVVALUE,w); R v->val;}
 
-F1(jtsymbrdlock){A y;
+F1(jtsymbrdlock){PLOG1;A y;
  RZ(y=symbrd(w));
  R FUNC&AT(y)&&(jt->glock||VLOCK&VAV(y)->flag)?nameref(w):y;
 }
