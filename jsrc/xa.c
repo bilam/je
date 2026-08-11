@@ -412,9 +412,21 @@ F1(jtcpufeature){
   R sc(0);
 #endif
  } else if(!strcasecmp(CAV(w),"NORMAH")) {
+#ifdef NORMAH
   R sc(NORMAH);
+#else
+  R sc(7);
+#endif
  } else if(!strcasecmp(CAV(w),"NORMAHX")) {
+#ifdef NORMAHX
+#ifdef NORMAH
   R sc(7==NORMAH?-1:NORMAHX);
+#else
+  R sc(7);
+#endif
+#else
+  R sc(-1);
+#endif
  }
 #if defined(__aarch64__)
  if     (!strcasecmp(CAV(w),"FP"      )) R sc(!!(getCpuFeatures()&ARM_HWCAP_FP ));
