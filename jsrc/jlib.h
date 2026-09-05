@@ -17,8 +17,8 @@
 #ifndef NORMAHX
 #define NORMAHX -1
 #endif
-#ifndef NORMAH8
-#define NORMAH8 1
+#ifndef NORMAHN
+#define NORMAHN 1
 #endif
 
 /* maintainer note: define JFRONTEND for non jsource front-ends */
@@ -45,9 +45,9 @@ typedef char C;
 typedef void* JS;
 typedef struct A_RECORD {
 #if NORMAHX==0
-  I p0[NORMAH8],k,flag,m,t,c,n,r,s[1];
+  I p0[NORMAHN],k,flag,m,t,c,n,r,s[1];
 #elif NORMAHX==1
-  I k,p1,flag,m,t,c,n,r,s[1];
+  I k,p1[NORMAHN],flag,m,t,c,n,r,s[1];
 #else
   I k,flag,m,t,c,n,r,s[1];
 #endif

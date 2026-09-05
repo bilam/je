@@ -191,14 +191,14 @@ typedef I SI;
 struct AD {
 #if NORMAHX==0
 #if SY_64 || !PYXES
- I p0[NORMAH8];
+ I p0[NORMAHN];
 #else
 #if C_LE
  US origin;S lock;
 #else
  S lock;US origin;
 #endif
- I p0[NORMAH8-1];
+ I p0[NORMAHN-1];
 #endif
 #endif
  union {
@@ -213,7 +213,16 @@ struct AD {
   A global;      // for user JOB blocks, points to jt->global for the job
  } kchain;
 #if NORMAHX==1
- I p1;
+#if SY_64 || !PYXES
+ I p1[NORMAHN];
+#else
+#if C_LE
+ US origin;S lock;
+#else
+ S lock;US origin;
+#endif
+ I p1[NORMAHN-1];
+#endif
 #endif
  FLAGT flag; // 1
  union { // 2
@@ -285,20 +294,12 @@ struct AD {
 
 /* Fields of type A                                                        */
 
-#if NORMAHX==0
-#define AMOFFSET (NORMAH8+2)  // I* offset of AM field
-#define AROFFSET (NORMAH8+6)  // I* offset of AR field
-#else
-#if NORMAHX>0 && NORMAHX<=2
-#define AMOFFSET (1+2)  // I* offset of AM field
+#if NORMAHX==0 || NORMAHX==1
+#define AMOFFSET (NORMAHN+2)  // I* offset of AM field
+#define AROFFSET (NORMAHN+6)  // I* offset of AR field
 #else
 #define AMOFFSET (2)  // I* offset of AM field
-#endif
-#if NORMAHX>0 && NORMAHX<=6
-#define AROFFSET (1+6)  // I* offset of AR field
-#else
 #define AROFFSET (6)  // I* offset of AR field
-#endif
 #endif
 
 #define AK(x)           ((x)->kchain.k)        /* offset of ravel wrt x           */
@@ -333,7 +334,7 @@ struct AD {
 #if NORMAHX==0
 #define APX(x)          ((x)->p0[0]) // extra word in AD
 #elif NORMAHX==1
-#define APX(x)          ((x)->p1)          // extra word in AD
+#define APX(x)          ((x)->p1[0]) // extra word in AD
 #endif
 #define APINIT(x,v)     APX(x)=(v);        // setting extra word to some garbage
 #define CHKAPX(x)       chkapx(x)

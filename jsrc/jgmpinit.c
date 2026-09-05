@@ -54,19 +54,28 @@ void jmpn_com (mp_ptr rp, mp_srcptr up, mp_size_t n)
 struct BDV1 {
 #if NORMAHX==0
 #if SY_64 || !PYXES
- I p[NORMAH8];
+ I p0[NORMAHN];
 #else
 #if C_LE
  US origin;S lock;
 #else
  S lock;US origin;
 #endif
- I p[NORMAH8-1];
+ I p0[NORMAHN-1];
 #endif
 #endif
  I k;
 #if NORMAHX==1
- I p1;
+#if SY_64 || !PYXES
+ I p1[NORMAHN];
+#else
+#if C_LE
+ US origin;S lock;
+#else
+ S lock;US origin;
+#endif
+ I p1[NORMAHN-1];
+#endif
 #endif
  I f;I m;I t;I c;
  I n;

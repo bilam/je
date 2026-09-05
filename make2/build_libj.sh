@@ -286,7 +286,7 @@ if [ $USE_BOXEDSPARSE -eq 1 ]; then
 fi
 
 NORMAHX="${NORMAHX:=-1}"
-NORMAH8="${NORMAH8:=1}"
+NORMAHN="${NORMAHN:=1}"
 
 if [ $USE_PYXES -eq 1 ]; then
  case "$jplatform/$j64x" in
@@ -336,7 +336,7 @@ else
  common="$common -DPYXES=0"
 fi
 
-common="$common -DNORMAHX=${NORMAHX} -DNORMAH8=${NORMAH8}"
+common="$common -DNORMAHX=${NORMAHX} -DNORMAHN=${NORMAHN}"
 
 case "$jplatform/$j64x" in
  */j64)
