@@ -21,6 +21,12 @@ INLINE void _mm_pause(void)
 }
 #endif
 
+#if NORMAHE
+#define UNVOIDAV1(x)     ((A)((I)(x)-(SY_64+1)*ABDY))   // go from a pointer to *AV1 back to the base of the A block
+#else
+#define UNVOIDAV1(x)     UNvoidAV1(x)   // go from a pointer to *AV1 back to the base of the A block
+#endif
+
 // burn some time, approximately n nanoseconds
 NOINLINE I johnson(I n){I johnson=0x1234; if(n<0)R n; do{johnson ^= (johnson<<1) ^ johnson>>(BW-1);}while(--n); R johnson&-256;}  // return low byte 0
 #if PYXES
@@ -425,7 +431,7 @@ nexttasklocked: ;  // come here if already holding the lock, and job is set.  nd
   UI4 futexval;
   if(unlikely(job==0)){  // not really unlikely, but if there's not one we can be as slow as we like
    // No job to run.  Wait for one.  While we're waiting, do a garbage-collection if one is needed.  It could be signaled by a different thread
-   JOBUNLOCK(jobq,0);
+   JOBUNLOCK(jobq,(void*)0);
    jtrepatrecv(jt); // Reclaim any of our own memory from others; unconditionally because there's nothing better to do
    if(jt->uflags.spfreeneeded&SPFREEGC)spfree();  // Collect garbage if there is enough to check
    job=JOBLOCK(jobq);
@@ -473,7 +479,7 @@ jobfound:;  // come here or fall through when we got a job while we were waiting
   // if this thread has already processed this block, it means either (1) the thread was not enabled for the block (2) this thread finished the block before another thread started it.
   // In this case we don't want to spin on this job, so we sleep till the next one.  If there is another block queued after this one, we clear AR in this job to indicate a request
   // for a kick when this job is removed from the queue
-  if(unlikely(locbit&jobnsmask)){if(unlikely(jobnext!=0))AR(UNvoidAV1(job))=0; goto waitforkick;}  // req kick (by writing 0) only if there is another job.  Start waiting
+  if(unlikely(locbit&jobnsmask)){if(unlikely(jobnext!=0))AR(UNVOIDAV1(job))=0; goto waitforkick;}  // req kick (by writing 0) only if there is another job.  Start waiting
   locbit=(I)jobn<0?locbit:1; job->ns_mask=jobnsmask+=locbit;   // increment task counter for next owner
   JOB **writeptr=&jobq->ht[1]; writeptr=jobnext!=0?(JOB**)&jt->shapesink[0]:writeptr; writeptr=jobnsmask<jobn?(JOB**)&jt->shapesink[0]:writeptr; jobnext=jobnsmask<jobn?job:jobnext;  // calc head & tail ptrs
       // if there are more jobs (jobnext!=0) OR more tasks in the current job (jobns<jobn), divert write of tail; otherwise write the empty-queue value into tail.  If job finishing, set new headptr in jobnext
@@ -486,7 +492,7 @@ jobfound:;  // come here or fall through when we got a job while we were waiting
    // internal job.  We first have to handle the special case of jobns>n.  This indicates that the job has been entirely started (possibly not finished), but
    // we couldn't free the job block earlier because it might have been in the middle of the job list (in this case it would have been finished in the originating thread).  We can free it now, then look for the next job.
    // Note that if the job is not finished it will still be protected by the originator until all tasks have finished
-   if((unlikely(jobnsmask>jobn))){fa(UNvoidAV1(job)); goto nexttask;}
+   if((unlikely(jobnsmask>jobn))){fa(UNVOIDAV1(job)); goto nexttask;}
    if(likely(!err)){   //  If an error has been signaled, skip over it and immediately mark it finished
     if(unlikely((err=f(jt,ctx,jobnsmask-1))!=0))__atomic_compare_exchange_n(&job->internal.err,&(C){0},err,0,__ATOMIC_ACQ_REL,__ATOMIC_RELAXED);  // keep the first error for use by later blocks
    }
@@ -510,12 +516,12 @@ jobfound:;  // come here or fall through when we got a job while we were waiting
    I initthread=job->initthread;  // extract thread# of thread that created the job
    jtsettaskrunning(jt);  // go to RUNNING state, perhaps after waiting for system lock to finish
   // extract the address of the pyx and globals area from the job.  For a job with locales we have to get the value from the vectors
-   A pyx=UNvoidAV1(job)->mback.jobpyx; A startloc=UNvoidAV1(job)->kchain.global; // extract the pyx and globals pointer from the job
+   A pyx=UNVOIDAV1(job)->mback.jobpyx; A startloc=UNVOIDAV1(job)->kchain.global; // extract the pyx and globals pointer from the job
    if((I)jobn<0){  // user job with locales
     // this is a job with locales.  If we removed the job from the queue (mask=n), AND AR was 0 indicating that a thread is waiting for a kick, deliver the kick
-    if(unlikely(((jobn^jobnsmask)|AR(UNvoidAV1(job)))==0)){JOB *job=JOBLOCK(jobq); ++jobq->futex; JOBUNLOCK(jobq,job); jfutex_wakea(&jobq->futex);}  // wakeall sequence: lock the pool; advance futex value; unlock; kick.  No new work added
+    if(unlikely(((jobn^jobnsmask)|AR(UNVOIDAV1(job)))==0)){JOB *job=JOBLOCK(jobq); ++jobq->futex; JOBUNLOCK(jobq,job); jfutex_wakea(&jobq->futex);}  // wakeall sequence: lock the pool; advance futex value; unlock; kick.  No new work added
     // pyx points to a vector of pyxes, startloc to a vector of locale#s.  Extract the pyx and global for this thread
-    pyx=AAV1(pyx)[__builtin_popcountll((UI)(AN(UNvoidAV1(job))<<(BW-ndxinthreadpool)))];  // get pyx for this thread (AAV1 ok)
+    pyx=AAV1(pyx)[__builtin_popcountll((UI)(AN(UNVOIDAV1(job))<<(BW-ndxinthreadpool)))];  // get pyx for this thread (AAV1 ok)
     if((I)startloc&1){startloc=jtfindnl(jt,IAV((A)(I*)~(I)startloc)[ndxinthreadpool]); ASSERTGOTO(startloc!=0,EVLOCALE,fail)}  // get locale#; convert to globals address
    }
    ((PYXBLOK*)AAV0(pyx))->pyxorigthread=THREADID(jt);  // install the running thread# into the pyx
@@ -539,14 +545,14 @@ jobfound:;  // come here or fall through when we got a job while we were waiting
    // as the finish-counter.  We increment it for the number of threads to run and free, decrementing it after eack task finishes.  When the count goes to 0, we then free everything that was protected
    // We can't use the locales list or the pyxes for this counter, because they are in the wild as a user value.
    I taskended=0;  // 1 if this completion means the user task finished
-   if(faprobe(UNvoidAV1(job))<2){  // if time to free...
+   if(faprobe(UNVOIDAV1(job))<2){  // if time to free...
     // we are the last (or only) thread using this job block.  Unprotect everything it protects, then free the job
    // remove the ra() for the args that was issued to protect the args over the lifetime of this thread.  If the fa() results in freeing a virtual block,
     // we must also fa the backer.  This is different from the case of virtual args to explicit defns: there we know that the virtual arg is on the stack in the caller,
     // and will be freed from the stack, and thus that there is no chance that a virtual will be freed.  Here the caller has continued, and there may be nothing but this
     // virtual to hold the backer.  So, unlike in all other fa()s, we fa the backer if the virtual is freed.
-    fa(UNvoidAV1(job)->mback.jobpyx) A ga=UNvoidAV1(job)->kchain.global; ga=(A)((I)ga^-((I)ga&1)); fa(ga) faafterrav(arg1); if(arg2!=self)faafterrav(arg2); fanamedacv(self);  // unprotect args only after result has been safely installed
-    mf(UNvoidAV1(job));  // free the job, which is never a recursive block
+    fa(UNVOIDAV1(job)->mback.jobpyx) A ga=UNVOIDAV1(job)->kchain.global; ga=(A)((I)ga^-((I)ga&1)); fa(ga) faafterrav(arg1); if(arg2!=self)faafterrav(arg2); fanamedacv(self);  // unprotect args only after result has been safely installed
+    mf(UNVOIDAV1(job));  // free the job, which is never a recursive block
     taskended=1;  // if we free, we finished the task
    }
    jtrepatsend(jt); // send our freed blocks back to where they were allocated.  That will include any args just freed
@@ -590,8 +596,15 @@ pid_t p;
 // execute the user's task.  Result is an ordinary noun or a pyx.  Bivalent (a,w,self) or (w,self,self) called from unquote or parse
 static A jttaskrun(J jtfg,A arg1, A arg2, A self){F12JT0;CHKAPX(arg1);CHKAPX(arg2);
  ARGCHK2(arg1,arg2);  // the verb is not the issue.
+#if NORMAHE
+// job MUST on ABDY alignment, but AAV1 is not
+ A jobA;GAT0(jobA,INT,((8*SZI+sizeof(JOB)+SZI-1)>>LGSZI),1); ACINITUNPUSH(jobA);  // protect the job till it is finished
+ JOB *job=(JOB*)((I)jobA+(SY_64+1)*ABDY);  // The job starts on the second cacheline of the A block.  When we free the job we will have to back up to the A block
+#else
+ _Static_assert(NORMAH+1==8,"NORMAH+1 not 8"); // job already on ABDY alignment because NORMAH+1==8
  A jobA;GAT0(jobA,INT,(sizeof(JOB)+SZI-1)>>LGSZI,1); ACINITUNPUSH(jobA);  // protect the job till it is finished
  JOB *job=(JOB*)AAV1(jobA);  // The job starts on the second cacheline of the A block.  When we free the job we will have to back up to the A block
+#endif
 I taskflags=FAV(self)->localuse.lu1.forcetask, localesx=FAV(self)->localuse.lu1.forcetask>>16;  // flags: 0-7=pool, 8=workeronly, 9=mask0 set 10=locales given  16+=localesx (-1 if no locales)
  JOBQ *jobq=&(*JT(jt,jobqueues))[FAV(self)->localuse.lu1.forcetask&0xff];  // bits 0-7 = threadpool number to use, point to jobq info for selected thread
  // create the pyx/global info: if no locales, one pyx and the current jt->global; if locales, a list of pyxes and the user's list of locales.  We store these in the job.  They are what we ra and fa
