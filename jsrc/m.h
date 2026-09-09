@@ -59,8 +59,10 @@
 // obsolete #define AFOFFSET0(a) ((a)->kchain.chain)  // the offset 0 of a  PUN: depends on struct AD
 #define AFCHAIN(a) ((a)->kchain.chain)  // the chain field, when the block is not allocated, including when block is on the survival chain
 #if NORMAHX==0
-#define AFOFFSET0(a) ((a)->p0[0])  // the offset 0 of a  PUN: depends on struct AD
-_Static_assert(offsetof(AD,p0[0])==0,"");  // chain must be at offset 0 because the head pointer is a bare pointer to first element (PUN)
+// #define AFOFFSET0(a) ((a)->p0[0])  // the offset 0 of a  PUN: depends on struct AD
+// _Static_assert(offsetof(AD,p0[0])==0,"");  // chain must be at offset 0 because the head pointer is a bare pointer to first element (PUN)
+#define AFOFFSET0(a) ((a)->origin0)  // the offset 0 of a  PUN: depends on struct AD
+_Static_assert(offsetof(AD,origin0)==0,"");  // chain must be at offset 0 because the head pointer is a bare pointer to first element (PUN)
 #else
 _Static_assert(offsetof(AD,kchain.chain)==0,"");  // chain must be at offset 0 because the head pointer is a bare pointer to first element (PUN)
 #endif

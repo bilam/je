@@ -726,9 +726,9 @@ void chkchain(A w){
  }
 }
 
-#if NORMAHE
+#if NORMAHE && NORMAHN>1
 void chkapx(A w){
-#if MEMAUDIT&0x80
+#if NORMAHN>1 && MEMAUDIT&0x80
  if(!w)R;
 // if(!ISGMP(w))if(!(w=QCWORD(w))) R;
  if(APX(w)!=XHEADERFILL){dump_ADheader(w);SEGFAULT;}

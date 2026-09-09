@@ -190,16 +190,15 @@ typedef I SI;
 
 struct AD {
 #if NORMAHX==0
-#if SY_64 || !PYXES
- I p0[NORMAHN];
-#else
 #if C_LE
- US origin;S lock;
-#else
- S lock;US origin;
+  // these two values initialized with a single store - must be in order
+ US origin0;  // 
+ S lock0;   // can be used as a lock
+#else  // bigendian, not used
+ S lock0;   // can be used as a lock
+ US origin0;
 #endif
  I p0[NORMAHN-1];
-#endif
 #endif
  union {
   I k;  // 0
@@ -213,16 +212,15 @@ struct AD {
   A global;      // for user JOB blocks, points to jt->global for the job
  } kchain;
 #if NORMAHX==1
-#if SY_64 || !PYXES
- I p1[NORMAHN];
-#else
 #if C_LE
- US origin;S lock;
-#else
- S lock;US origin;
+  // these two values initialized with a single store - must be in order
+ US origin1;  // 
+ S lock1;   // can be used as a lock
+#else  // bigendian, not used
+ S lock1;   // can be used as a lock
+ US origin1;
 #endif
  I p1[NORMAHN-1];
-#endif
 #endif
  FLAGT flag; // 1
  union { // 2
@@ -331,11 +329,24 @@ _Static_assert(offsetof(AD,flag)==(1+NORMAHN)*SZI,"NORMAHX");
 #define NORMAH          (7L+NORMAHE)   // number of header words in new system
 #define AS(x)           ((x)->s)        // Because s is an array, AS(x) is a pointer to the shape, which is in s.  The shape is stored in the fixed position s.
 #if PYXES
+#if NORMAHE
+#if NORMAHX==0
+#define AORIGIN(x)      ((x)->origin0)  /* thread origin id                */
+#define ALOCK(x)        ((x)->lock0)    /* thread lock                     */
+#elif NORMAHX==1
+#define AORIGIN(x)      ((x)->origin1)  /* thread origin id                */
+#define ALOCK(x)        ((x)->lock1)    /* thread lock                     */
+#else
 #define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
 #define ALOCK(x)        ((x)->lock)     /* thread lock                     */
 #endif
+#else
+#define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
+#define ALOCK(x)        ((x)->lock)     /* thread lock                     */
+#endif
+#endif
 
-#if NORMAHE && MEMAUDIT&0x80
+#if NORMAHE && NORMAHN>1 && MEMAUDIT&0x80
 #if NORMAHX==0
 #define APX(x)          ((x)->p0[0]) // extra word in AD
 #elif NORMAHX==1

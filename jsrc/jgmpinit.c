@@ -47,35 +47,33 @@ void jmpn_com (mp_ptr rp, mp_srcptr up, mp_size_t n)
 
 #define XFIXED0(nam, typ,val) \
  struct AD __attribute__((aligned(ABDY))) B##nam= \
- {Xhrg AKXR(0),Xhr1 typ,0,typ,ACPERMANENT,1,Xrh,(I)val}; \
+ {Xhrg0 AKXR(0),Xhrg1 typ,0,typ,ACPERMANENT,1,Xrh,(I)val}; \
  X nam= (X)&B##nam
 
 /* like struct AD but a data element */
 struct BDV1 {
 #if NORMAHX==0
-#if SY_64 || !PYXES
- I p0[NORMAHN];
-#else
 #if C_LE
- US origin;S lock;
-#else
- S lock;US origin;
+  // these two values initialized with a single store - must be in order
+ US origin0;  // 
+ S lock0;   // can be used as a lock
+#else  // bigendian, not used
+ S lock0;   // can be used as a lock
+ US origin0;
 #endif
  I p0[NORMAHN-1];
 #endif
-#endif
  I k;
 #if NORMAHX==1
-#if SY_64 || !PYXES
- I p1[NORMAHN];
-#else
 #if C_LE
- US origin;S lock;
-#else
- S lock;US origin;
+  // these two values initialized with a single store - must be in order
+ US origin1;  // 
+ S lock1;   // can be used as a lock
+#else  // bigendian, not used
+ S lock1;   // can be used as a lock
+ US origin1;
 #endif
  I p1[NORMAHN-1];
-#endif
 #endif
  I f;I m;I t;I c;
  I n;
@@ -94,7 +92,7 @@ struct BDV1 {
 
 #define XFIXED1(nam, typ,sgn,val) \
  struct BDV1 __attribute__((aligned(ABDY))) B##nam= \
- {Xhrg XHSZ,Xhr1 typ,0,typ,ACPERMANENT,1,Xrh,sgn,(UI)val}; \
+ {Xhrg0 XHSZ,Xhrg1 typ,0,typ,ACPERMANENT,1,Xrh,sgn,(UI)val}; \
  X nam= (X)&B##nam
 
 XFIXED1(X_1,LIT,-1,1);  // _1x (not an array)
