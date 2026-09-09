@@ -1208,6 +1208,6 @@ extern I        strtol();       /* C library fn                            */
 
 extern void chkinchain(J,A);
 extern void chkchain(A);
-#if  NORMAHE
+#if NORMAHE && NORMAHN>1
 extern void chkapx(A);
 #endif

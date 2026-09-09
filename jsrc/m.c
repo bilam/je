@@ -1395,6 +1395,7 @@ if((I)jt&3)SEGFAULT;
  A *tp=jt->tnextpushp;  // we will have to modify pushp
 #if NORMAHE
  static I __attribute__ ((aligned (CACHELINESIZE))) inithdr[6+NORMAHE]={Xhr0 AKXR(0),Xhr1 0,0,FL,ACINPLACE+ACUC1,1};  // atomic header block, type FL.  Could put into JTT around tpushp, but takes too much space
+ memcpy(inithdr+NORMAHX, (I*)z+NORMAHX, NORMAHN*SZI); // origin0 lock0
 #else
  static I __attribute__ ((aligned (CACHELINESIZE))) inithdr[6]={AKXR(0),0,0,FL,ACINPLACE+ACUC1,1};  // atomic header block, type FL.  Could put into JTT around tpushp, but takes too much space
 #endif
