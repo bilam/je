@@ -183,6 +183,7 @@ static A jtma(J jt,I m){A z;C*u;I j,n,p,*v;MS*x;
  JBREAK0;
  jt->bytes+=n; jt->bytesmax=MAX(jt->bytes,jt->bytesmax);
  x=(MS*)z-1; x->a=0; x->j=(C)j;
+ APINIT(z,XHEADERFILL);
  R z;
 }
 
@@ -213,7 +214,6 @@ static A jttraverse(J jt,A w,AF f){
 
 static A jttg(J jt){A t=jt->tstacka,z;
  RZ(z=ma(SZI*WP(BOX,NTSTACK,1L)));
- APINIT(z,XHEADERFILL);
  AT(z)=BOX; AC(z)=1; ARINIT(z,1); AN(z)=*AS(z)=NTSTACK; AM(z)=NTSTACK*SZA; AK(z)=AKX(z);
  jt->tstacka=z; jt->tstack=AAV(jt->tstacka); jt->tbase+=NTSTACK; jt->ttop=1;
  *jt->tstack=t;
@@ -280,7 +280,6 @@ A jtga(J jt,I t,I n,I r,I*s){A z;I m,w;
 A jtgah(J jt,I r,A w){A z;
  ASSERT(RMAX>=r,EVLIMIT); 
  RZ(z=ma(SZI*(NORMAH+r)));
- APINIT(z,XHEADERFILL);
  AT(z)=0; ++AC(z); tpush(z);
  if(w){
   APINIT(z,APX(w));
