@@ -244,3 +244,16 @@ F1(jtvip){PLOG1;I*v; RZ(w); if(!(INT&AT(w)))RZ(w=cvt(INT,w)); v=AV(w); DO(AN(w),
 
 F1(jtvs){PLOG1;RZ(w); ASSERT(1>=AR(w),EVRANK); R LIT&AT(w)?w:cvt(LIT,w);}    
      /* verify string */
+
+#if NORMAHE && NORMAHN>1
+void chkapx(A w){
+#if NORMAHN>1
+ if(!w)R;
+// if(!ISGMP(w))if(!(w=QCWORD(w))) R;
+ if(APX(w)!=XHEADERFILL){dump_ADheader(w);SEGFAULT;}
+// if(ISGMP(w)) R;
+ if(AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w),chkapx(wv[i]);)}
+#endif
+}
+#endif
+

@@ -101,41 +101,33 @@ typedef struct AD AD;
 typedef AD *A;
 struct AD {
 #if NORMAHX==0
-#if SY_64 || !PYXES
- I p0[NORMAH8];
-#else
 #if C_LE
- US origin;S lock;
-#else
- S lock;US origin;
+  // these two values initialized with a single store - must be in order
+ US origin0;  // 
+ S lock0;   // can be used as a lock
+#else  // bigendian, not used
+ S lock0;   // can be used as a lock
+ US origin0;
 #endif
- I p0[NORMAH8-1];
-#endif
+ I p0[NORMAHN-1];
 #endif
 I k;
-#if 1==NORMAHX
-I p1;
+#if NORMAHX==1
+#if C_LE
+  // these two values initialized with a single store - must be in order
+ US origin1;  // 
+ S lock1;   // can be used as a lock
+#else  // bigendian, not used
+ S lock1;   // can be used as a lock
+ US origin1;
+#endif
+ I p1[NORMAHN-1];
 #endif
 I flag;
-#if 2==NORMAHX
-I p2;
-#endif
 I m;
-#if 3==NORMAHX
-I p3;
-#endif
 I t;
-#if 4==NORMAHX
-I p4;
-#endif
 I c;
-#if 5==NORMAHX
-I p5;
-#endif
 I n;
-#if 6==NORMAHX
-I p6;
-#endif
  RANKT r;
  UC filler;
  US h;   // reserved for allocator.  Not used for AFNJA memory
@@ -143,9 +135,6 @@ I p6;
   // these two values initialized with a single store - must be in order
  US origin;  // 
  S lock;   // can be used as a lock
-#endif
-#if 7==NORMAHX
-I p7;
 #endif
 I s[1];};
 typedef struct {A a,t;}TA;
@@ -302,24 +291,37 @@ typedef I SI;
 
 #endif
 
-#define APA(x)          ((x)->s + (x)->r) // padding I following shape
+#if PYXES
 #if NORMAHE
+#if NORMAHX==0
+#define AORIGIN(x)      ((x)->origin0)  /* thread origin id                */
+#define ALOCK(x)        ((x)->lock0)    /* thread lock                     */
+#elif NORMAHX==1
+#define AORIGIN(x)      ((x)->origin1)  /* thread origin id                */
+#define ALOCK(x)        ((x)->lock1)    /* thread lock                     */
+#else
+#define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
+#define ALOCK(x)        ((x)->lock)     /* thread lock                     */
+#endif
+#else
+#define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
+#define ALOCK(x)        ((x)->lock)     /* thread lock                     */
+#endif
+#endif
+
+#if NORMAHE && NORMAHN>1
 #if NORMAHX==0
 #define APX(x)          ((x)->p0[0]) // extra word in AD
 #elif NORMAHX==1
-#define APX(x)          ((x)->p1)          // extra word in AD
-#elif NORMAHX==5
-#define APX(x)          ((x)->p5)          // extra word in AD
-#elif NORMAHX==7
-#define APX(x)          ((x)->p7)          // extra word in AD
+#define APX(x)          ((x)->p1[0]) // extra word in AD
 #endif
 #define APINIT(x,v)     APX(x)=(v);        // setting extra word to some garbage
-// #define CHKAPX(x)       if(x&&APX(x)!=XHEADERFILL)SEGFAULT;
-#define CHKAPX(x)       if(x&&APX(x)!=XHEADERFILL){dump_ADheader(x);SEGFAULT;}
+#define CHKAPX(x)       chkapx(x)
 #else
 #define APINIT(x,v)
 #define CHKAPX(x)
 #endif
+#define CHKPOOL       DO(PLIML-PMINL+1, A z1=jt->mempool[i]; while(z1){if(z1&&(((uintptr_t)z1)<0x10000))SEGFAULT;z1=AFCHAIN(z1);})
 
 /* Types for AT(x) field of type A                                         */
 /* Note: BOOL name conflict with ???; SCHAR name conflict with sqltypes.h  */

@@ -417,13 +417,21 @@ F1(jtcpufeature){PLOG1;
 #else
   R sc(7);
 #endif
+ } else if(!strcasecmp(CAV(w),"NORMAHE")) {
+#ifdef NORMAHE
+  R sc(NORMAHE);
+#else
+  R sc(0);
+#endif
+ } else if(!strcasecmp(CAV(w),"NORMAHN")) {
+#ifdef NORMAHN
+  R sc(NORMAHN);
+#else
+  R sc(1);
+#endif
  } else if(!strcasecmp(CAV(w),"NORMAHX")) {
 #ifdef NORMAHX
-#ifdef NORMAH
-  R sc(7==NORMAH?-1:NORMAHX);
-#else
-  R sc(7);
-#endif
+  R sc(NORMAHX);
 #else
   R sc(-1);
 #endif
