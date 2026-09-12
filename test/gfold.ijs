@@ -119,7 +119,7 @@ r =: (+/@, F:: + a)
 a1 -: a
 r -: (+/@, F:: + memu a)
 a1 -: a
-3000 > (7!:2 '+/@, F:: + memu a')  -  7!:2 'memu a' 
+3400 > (7!:2 '+/@, F:: + memu a')  -  7!:2 'memu a' 
 t1 =: memu t =: {. a
 r =: (t1 +/@, F:: + a)
 a1 -: a
@@ -133,7 +133,7 @@ t1 -: t
 r -: ((memu t) +/@, F:: + memu a)
 a1 -: a
 t1 -: t
-3000 > (7!:2 '(memu t) +/@, F:: + memu a')  -  7!:2 '(memu t) [ memu a' 
+3400 > (7!:2 '(memu t) +/@, F:: + memu a')  -  7!:2 '(memu t) [ memu a' 
 
 t =: {{
 a=. +/ _2{.y
