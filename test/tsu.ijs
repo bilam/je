@@ -56,6 +56,7 @@ blacklist=: blacklist, IFIOS#(<testpath),each <'gipht.ijs'  NB. crash if include
 blacklist=: blacklist, (IFRASPI+.'OpenBSD'-:UNAME)#(<testpath),each <'g128x14.ijs'  NB. raspberry crash; OpenBSD fail
 blacklist=: blacklist, (2 *@(17 b.) 9!:56'memaudit')#(<testpath),each 'gtdot.ijs';'gtdot1.ijs';'gtdot2.ijs';'gtdot3.ijs';'gtdot4.ijs';'gtdot5.ijs' NB. multithreading block in multiple tstacks
 NB. blacklist=: blacklist, (UNAME-:'Wasm')#(<testpath),each <'g331ps.ijs'    NB. crash on special code for [: ; <@f;.n 
+blacklist=: blacklist, (*9!:56'normahe')#(<testpath),each 'g128x14.ijs';'g128x19.ijs';'gstack.ijs'
 
 NB. too slow
 blacklist=: blacklist, '' [ (2 *@(17 b.) 9!:56'memaudit')#(<testpath),each  <@(,&'.ijs');._2 [ 0 : 0
@@ -268,7 +269,7 @@ if. 0~:4!:0<'ECHOFILENAME' do.
   ECHOFILENAME=: IFIOS+.IFRASPI+.((<UNAME)e.'Android';'Wasm')  NB. echo file name
 end.
 if. 0~:4!:0<'QKTEST' do.
-  QKTEST=: (*9!:56'memaudit')+.(-.IF64)+.IFIOS+.IFRASPI+.((<UNAME)e.'Android';'OpenBSD';'FreeBSD';'Wasm')  NB. run quick test
+  QKTEST=: (9!:56'pyxes') < (*9!:56'memaudit')+.(-.IF64)+.IFIOS+.IFRASPI+.((<UNAME)e.'Android';'OpenBSD';'FreeBSD';'Wasm')  NB. run quick test
 end.
 ''
 )

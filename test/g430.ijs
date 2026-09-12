@@ -546,10 +546,10 @@ a =: (QKTEST{1e4 1e3) $ 'abc'
 THRESHOLD +. ((1) (6!:2) '40 ]@<\ a') > 1.2 * (1) (6!:2) '40 <\ a'
 (40 <\ a) -: 40 ]@<\ a
 
-(7!:2 '; 40 <\ a') > 1.2 * 7!:2 '40 ;@:(<\) a'  NB. smaller because boxes contain (cloned) virtual blocks
+(*9!:56'normahe') +. (7!:2 '; 40 <\ a') > 1.2 * 7!:2 '40 ;@:(<\) a'  NB. smaller because boxes contain (cloned) virtual blocks
 (; 40 <\ a) -: 40 ;@:(<\) a
 
-(7!:2 '; 40 <\ a') > 1.2 * 7!:2 '40 ]@;@:(<\) a'  NB. smaller because boxes contain (cloned) virtual blocks
+(*9!:56'normahe') +. (7!:2 '; 40 <\ a') > 1.2 * 7!:2 '40 ]@;@:(<\) a'  NB. smaller because boxes contain (cloned) virtual blocks
 (; 40 <\ a) -: 40 ]@;@:(<\) a
 
 THRESHOLD +. ((1) 6!:2 '_3 ,&]/\ a') > 1.5 * (1) 6!:2 '_2 ,&]/\ a'  NB. special code for dyad

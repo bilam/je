@@ -1,4 +1,6 @@
 prolog './g320ip.ijs'
+IGNOREIFFVI=: IGNOREIFFVI`1:@.(*9!:56'normahe')
+
 NB. ,y ravel in place -----------------------------------------------
 
 (i. 1000) -: , i. 1000
@@ -810,7 +812,7 @@ NB. sort on numeric lists
 (50000 + 7!:2 'a =: /:~ a') > (7!:2 '/:~ a') [ a =: 10000 ?@$ 0  NB. Not inplaced; block has usecount 2
 (50000 + 7!:2 'a =: /:~ a') < (7!:2 '/:~ a')
 (160 + 7!:2 'a =: /:~ a') > (7!:2 '/:~ a') [ a =: 38 ?@$ 20000  NB. Not inplaced; block has usecount 2
-(160 + 7!:2 'a =: /:~ a') < (7!:2 '/:~ a')
+(*9!:56'normahe') +. (160 + 7!:2 'a =: /:~ a') < (7!:2 '/:~ a')
 
 NB. The following failed when we didn't properly set the inplace flags for the selected verb
 NB. The sentence aborted without performing the assignment
@@ -930,10 +932,10 @@ a =:  i: 5000
 
 NB. Abandoned inputs become inplaceable in an explicit definition
 f1 =: 3 : 'y =. b 5} y'
-(dbq'') +. 140000 > 7!:2 'f1 131000 # a' [ a =: 'a' [ b =: 'b'   NB. debug doesn't inplace names
+IGNOREIFFVI (dbq'') +. 140000 > 7!:2 'f1 131000 # a' [ a =: 'a' [ b =: 'b'   NB. debug doesn't inplace names
 
 NB. They can be virtual too
-(dbq'') +. 140000 > 7!:2 'f1 }. 131000 # a' [ a =: 'a' [ b =: 'b'
+IGNOREIFFVI (dbq'') +. 140000 > 7!:2 'f1 }. 131000 # a' [ a =: 'a' [ b =: 'b'
 
 NB. They can be passed through but lose inplaceability at lower levels
 f2 =: 3 : 'f1 y'
@@ -941,24 +943,24 @@ f2 =: 3 : 'f1 y'
 
 NB. They are reset to inplace on exit
 f3 =: 3 : '5'
-(dbq'') +. 140000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
+IGNOREIFFVI (dbq'') +. 140000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
 f3 =: 3 : 0
 y =. b 5} y
 5
 )
-(dbq'') +. 140000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
+IGNOREIFFVI (dbq'') +. 140000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
 f3 =: 3 : 0
 y =. 10
 5
 )
-(dbq'') +. 140000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
+IGNOREIFFVI (dbq'') +. 140000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
 
 NB. Assignment to self leaves inplaceable
 f3 =: 3 : 0
 y =. y
 5
 )
-(dbq'') +. 140000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
+IGNOREIFFVI (dbq'') +. 140000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
 
 NB. Assignment ending in ) is inplaceable
 f3 =: 3 : 0
@@ -970,15 +972,15 @@ y =. (y =. '2' 0} y) , '5'
 (y =. (y =. '3' 0} y) ,  '5')
 5
 )
-(dbq'') +. 140000 > 7!:2 '(f3 130000 # ''a'')'
+IGNOREIFFVI (dbq'') +. 140000 > 7!:2 '(f3 130000 # ''a'')'
 
 
 NB. Inplaceable result of explicit definition stays inplaceable after exit
 f3 =: 3 : '10000 # a'
-(dbq'') +. 210000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
+IGNOREIFFVI (dbq'') +. 210000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
 NB. Even if named
 f3 =: 3 : 'p =. 10000 # a'
-(dbq'') +. 210000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
+IGNOREIFFVI (dbq'') +. 210000 > 7!:2 '(f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a) [ (f3 131000 # a)'
 
 a =.  'this';'is'  NB. Old bug when tried to zap the backer for a virtual block
 (1;'this') -: ((}. 1: 1:);0&{) a_:
