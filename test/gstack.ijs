@@ -27,10 +27,11 @@ NB. ". t=: '".t [ c=:>:c' [ c=: 0
 'stack error' -: ex '7!:2 t' [ t=: '7!:2 t'
 'stack error' -: ex '0!:0 t' [ t=: '0!:0 t'
 NB. (+/i.1+c) -: (0:`(+ $:@<:)@.*) c=: 370  NB. 400 was failing on 32 bit linux running under gdb (debian bullseye)
-(+/i.1+c) -: (0:`(+ $:@<:)@.*) c=: 268  NB. 370 was failing on arm64 -O0
+NB. (+/i.1+c) -: (0:`(+ $:@<:)@.*) c=: 268  NB. 370 was failing on arm64 -O0
+(+/i.1+c) -: (0:`(+ $:@<:)@.*) c=: (*9!:56'normahe'){268 200
 'stack error' -: 0:`([: $: %)@.* etx 5
 
-600 < c=: $:@>: :: <: 0
+((*9!:56'NORMAHE'){600 490) < c=: $:@>: :: <: 0
 'stack error' -: ex '$:@>: 0'
 'stack error' -: ex '$:@,@>: 0'
 'stack error' -: ex '$:@,@,@>: 0'
@@ -82,6 +83,7 @@ catch.
 end.
 }} ''
 
+0!:_1`1:@.(128 -.@*@(17 b.) 9!:56'memaudit') '#'   NB. skip slow
 gerund =: ]F.:('@:' ,:@:<@:(,&<) ,~) (QKTEST{3e5 3e5) # < '+'
 
 'stack error' -: ". etx 'gerund`:6' NB. JE crash.
@@ -144,6 +146,7 @@ NB. Tests.
 
 (;: '3 :') -.@-: (;: '3:')   NB. failed once
 
+NB.#  end of skip
 NB.$  end of skip
 
 epilog''

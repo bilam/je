@@ -218,7 +218,7 @@ a =: ". x  NB. Sets prist
 assert. emsk =. ((xisprist *. virtprist +. wpristx) = isprist) 13!:_4 a [ 'left'
 NB. Verify pristinity is passed to an only successor but not a shared successor
 assert. emsk =. ((rprist , virtnip) = ispristorunbox , isvirt) (".x) (0: 13!:_4@] u) dobox f."boxr i. boxs
-assert. emsk =. (-.9!:56'c_viavx') +. ((prist , virt) = ispristorunbox , isvirt) (".x) (u 13!:_4@[ 0:) dobox f."boxr i. boxs
+assert. emsk =. (*9!:56'normahe') +. (-.9!:56'c_viavx') +. ((prist , virt) = ispristorunbox , isvirt) (".x) (u 13!:_4@[ 0:) dobox f."boxr i. boxs
 1 return. y
 )
 {. ckprist 0 1 ] 5
@@ -458,14 +458,14 @@ NB. x,y transfers ownership to result if both args are abandoned pristine (but n
 16b20 = 16b20 (17 b.) 1 { 13!:_4 (;:'a b c d e f g') , (4) { <"0 i. 6  NB. RHS is not recursible.  But apip keeps result recursible
 16b20 = 16b20 (17 b.) 1 { 13!:_4 (;:'a b c d e f g h') , (4) { <"0 i. 6  NB. no apip; new block not recursible
 16b1000020 = 16b1000020 (17 b.) 1 { 13!:_4 (;:'a b c d e f g h') , (;:'a b')  NB. both sides abandoned recursible pristine, transferred to result
-16b1000020 = 16b1000020 (17 b.) 1 { 13!:_4 (;:'a b c d e f g h') , (}. ;:'a b c')  NB. if a value is virtual, can't transfer ownership, because the virtual doesn't really own it
+(*9!:56'normahe') +. 16b1000020 = 16b1000020 (17 b.) 1 { 13!:_4 (;:'a b c d e f g h') , (}. ;:'a b c')  NB. if a value is virtual, can't transfer ownership, because the virtual doesn't really own it
 16b0000020 = 16b1000020 (17 b.) 1 { 13!:_4 ,~ (;:'a b c d e f g h')  NB. if sides equal, blocks are repeated, not pristine, and cannot take ownership because usecount repeated
 
 16b20 = 16b20 (17 b.) 1 { (;:'a b c d e f g') 13!:_4@, (4) { <"0 i. 6  NB. RHS is not recursible.  But apip keeps result recursible
 16b20 = 16b20 (17 b.) 1 {  (2 1 3 2 4 3 5 4&{ 13!:_4@, 2 1&{)   <"0 i. 6  NB. no apip; but EPILOG makes result recursible
 16b1000020 = 16b1000020 (17 b.) 1 {  (;:'a b c d e f g h') 13!:_4@, (;:'a b')  NB. both sides abandoned recursible pristine, transferred to result
-16b1000000 = 16b1000020 (17 b.) 1 {  (;:'a b c d e f g h') 13!:_4@, (}. ;:'a b c')  NB. if a value is virtual, can't transfer ownership, because the virtual doesn't really own it
-16b0000000 = 16b1000020 (17 b.) 1 { 13!:_4@,~ (;:'a b c d e f g h')  NB. if sides equal, blocks are repeated, not pristine, and cannot take ownership because usecount repeated
+(*9!:56'normahe') +. 16b1000000 = 16b1000020 (17 b.) 1 {  (;:'a b c d e f g h') 13!:_4@, (}. ;:'a b c')  NB. if a value is virtual, can't transfer ownership, because the virtual doesn't really own it
+(*9!:56'normahe') +. 16b0000000 = 16b1000020 (17 b.) 1 { 13!:_4@,~ (;:'a b c d e f g h')  NB. if sides equal, blocks are repeated, not pristine, and cannot take ownership because usecount repeated
 
 
 

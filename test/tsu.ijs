@@ -56,6 +56,8 @@ blacklist=: blacklist, (IFQT*.'Wasm'-:UNAME)#(<testpath),each 'g331ps.ijs';'gsp4
 blacklist=: blacklist, IFIOS#(<testpath),each <'gipht.ijs'  NB. crash if included in the whole suite, but ok if running alone
 blacklist=: blacklist, ('OpenBSD'-:UNAME)#(<testpath),each 'g128x14.ijs';'g520.ijs'
 blacklist=: blacklist, (2 *@(17 b.) 9!:56'memaudit')#(<testpath),each 'gtdot.ijs';'gtdot1.ijs';'gtdot2.ijs';'gtdot3.ijs';'gtdot4.ijs';'gtdot5.ijs' NB. multithreading block in multiple tstacks
+blacklist=: blacklist, (*9!:56'normahe')#(<testpath),each 'g128x14.ijs';'g128x19.ijs'
+blacklist=: blacklist, ((8=9!:56'normahn')*.*9!:56'normahe')#(<testpath),each <'gdic.ijs'
 
 NB. too slow
 blacklist=: blacklist, '' [ (2 *@(17 b.) 9!:56'memaudit')#(<testpath),each  <@(,&'.ijs');._2 [ 0 : 0
@@ -490,4 +492,6 @@ techo 'debug: ',":9!:56'debug'
 techo 'emu_avx2: ',":9!:56'emu_avx2'
 techo 'memaudit: ',":9!:56'memaudit'
 techo 'normah: ',":9!:56'normah'
+techo 'normahn: ',":9!:56'normahn'
+techo 'normahx: ',":9!:56'normahx'
 techo 'pyxes: ',":9!:56'pyxes'

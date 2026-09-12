@@ -693,7 +693,7 @@ benchmarkdijkstra =: {{
   6!:2 'g dijkstra 0'
 }}"0
 
-techo 'Dijkstra (1e5 vertices, 3e5 edges): ' , (": 3 benchmarkdijkstra 1e5) , 's'
+techo 'Dijkstra (1e5 vertices, 3e5 edges): ' , (": 3 benchmarkdijkstra (*9!:56'memaudit'){1e5 1e4) , 's'
 
 NB. x is the maximum height for jumping and falling.
 NB. y is table (rank 2) where each row represents a platform (y, x_left, x_right)
