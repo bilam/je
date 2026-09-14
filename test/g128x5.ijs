@@ -35,16 +35,16 @@ b -: isnan x
 
 NB. 128!:5 and mapped boxed arrays --------------------------------------
 
-0!:0 <testpath,'gmbx.ijs'
-
-r=: x=: 1 2 3 ; _. ; 3j4 _. ; 'abc'
-(isnan x) -: isnan r
-
-r=: x=: (5!:1 <'mean') ; _. ; (<<<3j4 _.) ; 'abc'
-(isnan x) -: isnan r
-
-0 = unmap_jmf_ 'q'
-0 = unmap_jmf_ 'r'
+NB. 0!:0 <testpath,'gmbx.ijs'
+NB. 
+NB. r=: x=: 1 2 3 ; _. ; 3j4 _. ; 'abc'
+NB. (isnan x) -: isnan r
+NB. 
+NB. r=: x=: (5!:1 <'mean') ; _. ; (<<<3j4 _.) ; 'abc'
+NB. (isnan x) -: isnan r
+NB. 
+NB. 0 = unmap_jmf_ 'q'
+NB. 0 = unmap_jmf_ 'r'
 
 
 4!:55 ;:'b f f1 g i isnan mean q r x'
