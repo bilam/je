@@ -62,14 +62,14 @@ y test y
 
 NB. mapped boxed arrays 
 
-0!:0 <testpath,'gmbx.ijs'
-q=: x=: (811 2 ?@$ #u){u=: 17 3;(<"0] 30 ?@$ 100), (<5!:2 <'mean'), ;:'Cogito, ergo sum.'
-r=: y=: (547 2 ?@$ #u){u
-
-(mbxcheck_jmf_ q), q test y
-(mbxcheck_jmf_ r), x test r
-(mbxcheck_jmf_ q), q test r
-(mbxcheck_jmf_ q), q test q
+NB. 0!:0 <testpath,'gmbx.ijs'
+NB. q=: x=: (811 2 ?@$ #u){u=: 17 3;(<"0] 30 ?@$ 100), (<5!:2 <'mean'), ;:'Cogito, ergo sum.'
+NB. r=: y=: (547 2 ?@$ #u){u
+NB. 
+NB. (mbxcheck_jmf_ q), q test y
+NB. (mbxcheck_jmf_ r), x test r
+NB. (mbxcheck_jmf_ q), q test r
+NB. (mbxcheck_jmf_ q), q test q
 
 
 4!:55 ;:'a f f1 g mean test u x y'
