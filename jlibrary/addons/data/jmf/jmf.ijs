@@ -14,7 +14,7 @@ map name;filename [;sharename [;mt] ]
  tshape - trailing shape - }.shape    (default '')
 
 mt (map type):
- 0 - MTRW - default read/write mapping 
+ 0 - MTRW - default read/write mapping
  1 - MTRO - read-only mapping - map jmf file copies header to private area
  2 - MTCW - copy-on-write - private mapping - changes not reflected in file
 
@@ -26,14 +26,14 @@ showmap''                 - map info with col headers and extras
 mappings                  - map info
 share name;sharename[;mt] - share 'sharename' as name
 
-MAPNAME,MAPFN,... showmap col indexes 
+MAPNAME,MAPFN,... showmap col indexes
 )
 3 : 0''
 try.
- 15!:12 <'a' [ a=. i.5
- memhad_z_=: (15!:12)@<
+  15!:12 <'a' [ a=. i.5
+  memhad_z_=: (15!:12)@<
 catch.
- memhad_z_=: [: {: [: memr 0 2 4 ,~ (15!:6)@<
+  memhad_z_=: [: {: [: memr 0 2 4 ,~ (15!:6)@<
 end.
 EMPTY
 )
@@ -51,15 +51,32 @@ IFBE=: 'a'~:{.2 ic a.i.'a'
 SZI=: IF64{4 8
 'MAPNAME MAPFN MAPSN MAPFH MAPMH MAPADDRESS MAPHEADER MAPFSIZE MAPJMF MAPMT MAPMSIZE MAPREFS'=: i.12
 'MTRW MTRO MTCW'=: i.3
-'HADK HADFLAG HADM HADT HADC HADN HADR HADS'=: SZI*i.8
+3 : 0''
+try. NORMAHE=: 9!:56'normahe' catch. NORMAHE=: 0 end.
+if. 0= NORMAHE do.
+  NORMAH=: 7
+  NORMAHX=: _1
+  NORMAHN=: 1
+else.
+  NORMAH=: 9!:56'normah'
+  NORMAHX=: 9!:56'normahx'
+  NORMAHN=: 9!:56'normahn'
+end.
+if. 0=NORMAHE do.
+  'HADK HADFLAG HADM HADT HADC HADN HADR HADS'=: SZI*i.8
+else.
+  h=. ;:'HADK HADFLAG HADM HADT HADC HADN HADR HADS'
+  ((NORMAHX{.h),(<@('HP'&,)@":"0 i.NORMAHN),NORMAHX}.h)=: SZI*i.NORMAH+1
+end.
+)
+
 HADRUS=: HADR+IFBE*IF64{2 6
-HADCN=: <.HADC%SZI
-HSN=: 7+64
+HSN=: NORMAH+64
 HS=: SZI*HSN
 AFRO=: 1
 AFNJA=: 2
 NULLPTR=: <0
-allochdr=: 3 : 'r[2 setHADC r=.15!:8 y'
+allochdr=: 3 : '([ 2&setHADC^:initc) 15!:8 y'
 freehdr=: 15!:9
 msize=: gethadmsize=: 3 : 'memr y,HADM,1,JINT'
 fullname=: 3 : 0
@@ -70,33 +87,36 @@ newheader=: 0~:memr (memhad'SZI_jmf_'),HADR,1,JINT
 
 setheader=: 4 : 0
 if. newheader do.
- (6{.x) memw y,0,6,JINT
- (6{x)  setHADR y
- (7}.x) memw y,HADS,(#7}.x),JINT
+  R=. memr y,HADR,1,JINT
+  x memw y,0,(#x),JINT
+  R memw y,HADR,1,JINT
+  ((HADR<.@%SZI){x) setHADR y
 else.
- x memw y,0,(#x),JINT
+  x memw y,0,(#x),JINT
 end.
 )
 
 getHADR=: 3 : 0
 if. newheader do.
- _1 (3!:4) memr y,HADRUS,2,JCHAR
+  _1 (3!:4) memr y,HADRUS,2,JCHAR
 else.
- memr y,HADR,1,JINT
+  memr y,HADR,1,JINT
 end.
 )
 
 setHADR=: 4 : 0
 if. newheader do.
- (1 (3!:4) x) memw y,HADRUS,2,JCHAR
+  (1 (3!:4) x) memw y,HADRUS,2,JCHAR
 else.
- x memw y,HADR,1,JINT
+  x memw y,HADR,1,JINT
 end.
 )
 
 getHADC=: 3 : '  memr y,HADC,1,JINT'
 setHADC=: 4 : 'x memw y,HADC,1,JINT'
 refcount=: getHADC
+initc=: initc"_`(((15!:9 ] 01 memw ,&(HADT,1,JINT)) ] 2 {.@:= getHADC)@(15!:8))@.(_1 = 4!:0 <'initc') 0
+HAD=: HAD"_`(((15!:9 ] 01 memw ,&(HADT,1,JINT)) ] memr@(,&(0,NORMAH,JINT)))@(15!:8))@.(_1 = 4!:0 <'HAD') 0
 
 3 : 0''
 if. IFUNIX do.
@@ -111,10 +131,9 @@ if. IFUNIX do.
   c_ftruncate=: 'ftruncate i i x' api
   c_mmap=: 'mmap * * x i i i x' api
   c_munmap=: 'munmap i * x' api
-
-  t=.           O_RDWR,   (PROT_WRITE+PROT_READ),  MAP_SHARED
-  t=. t,:       O_RDONLY, PROT_READ,               MAP_SHARED
-  mtflags=:  t, O_RDWR,   (PROT_WRITE+PROT_READ),  MAP_PRIVATE
+  t=. O_RDWR, (PROT_WRITE+PROT_READ), MAP_SHARED
+  t=. t,: O_RDONLY, PROT_READ, MAP_SHARED
+  mtflags=: t, O_RDWR, (PROT_WRITE+PROT_READ), MAP_PRIVATE
 else.
   CREATE_ALWAYS=: 2
   CREATE_NEW=: 1
@@ -133,10 +152,9 @@ else.
   PAGE_READONLY=: 2
   PAGE_READWRITE=: 4
   TRUNCATE_EXISTING=: 5
-
-  t=.           (GENERIC_READ+GENERIC_WRITE), PAGE_READWRITE,  FILE_MAP_WRITE
-  t=.       t,: GENERIC_READ,                 PAGE_READONLY,   FILE_MAP_READ
-  mtflags=: t,  (GENERIC_READ+GENERIC_WRITE), PAGE_READWRITE,  FILE_MAP_COPY
+  t=. (GENERIC_READ+GENERIC_WRITE), PAGE_READWRITE, FILE_MAP_WRITE
+  t=. t,: GENERIC_READ, PAGE_READONLY, FILE_MAP_READ
+  mtflags=: t, (GENERIC_READ+GENERIC_WRITE), PAGE_READWRITE, FILE_MAP_COPY
 
   CloseHandleR=: 'kernel32 CloseHandle > i x'&(15!:0)
   CreateFileMappingR=: 'kernel32 CreateFileMappingW > x x * i i i *w'&(15!:0)
@@ -163,7 +181,7 @@ end.
 empty''
 )
 
-nountype =: 17 b.&16b1fffff
+nountype=: 17 b.&16b1fffff
 MAXINTU=: 2 ^ IF64{32 64x
 MAXINTS=: <: 2 ^ IF64{31 63x
 ufs=: + MAXINTU * 0 > ]
@@ -196,10 +214,11 @@ z=. z, *./ 0 = 8|a
 )
 settypeshape=: 3 : 0
 'name type shape'=: y
-type =: nountype type
+type=: nountype type
 rank=. #shape
 had=. memhad name
-'flag msize'=. memr had,HADFLAG,2,JINT
+flag=. {. memr had,HADFLAG,1,JINT
+msize=. {. memr had,HADM,1,JINT
 'not mapped and writeable' assert 2=3 (17 b.) flag
 size=. (JTYPES i.type){JSIZES
 ts=. size**/shape
@@ -213,8 +232,9 @@ i.0 0
 validate=: 3 : 0
 'ts had'=. y
 if. ts>:HS do.
-  d=. memr had,0 4,JINT
-  *./((HS,ts-HS)=0 2{d),1 2 4 8 16 32 131072 262144 65536 e.~ nountype 3{d
+  d=. memr had,0,NORMAH,JINT
+  'dk dm dt'=. (SZI<.@%~HADK,HADM,HADT){d
+  *./((HS,ts-HS)=dk,dm),1 2 4 8 16 32 131072 262144 65536 e.~ nountype dt
 else. 0 end.
 )
 j=. <;._2 (0 : 0)
@@ -257,11 +277,9 @@ j=. <;._2 (0 : 0)
 WINERRNOS=: 0 ". 2 {.&> j
 WINERRMSG=: 3 }.each j
 additem=: 3 : 0
-sad=. (15!:6) <fullname y
-'bad name' assert sad
-had=. 1{s=. memr sad,0 4,JINT
-'flag msize type rank'=. 1 2 3 6{memr had,0 28,JINT
-type =. nountype type 
+had=. memhad fullname y
+'flag msize type rank'=. (<.SZI%~HADFLAG,HADM,HADT,HADR){memr had,0,NORMAH,JINT
+type=. nountype type
 'not mapped and writeable' assert 2=flag
 'scalar' assert 0~:rank
 'not supported for boxed data' assert 32~:type
@@ -270,7 +288,9 @@ shape=. shape+1,0#~rank-1
 size=. (JTYPES i.type){JSIZES
 ts=. size**/shape
 'msize too small' assert ts<:msize
-((*/shape),rank,shape) memw had,HADN,(2+rank),JINT
+(*/shape) memw had,HADN,1,JINT
+shape memw had,HADS,rank,JINT
+rank setHADR had
 i.0 0
 )
 createjmf=: 3 : 0
@@ -279,15 +299,16 @@ fn=. jpath fn
 msize=. <. msize
 ts=. HS+msize
 if. IFUNIX do.
-  if. ('Darwin'-:UNAME) *. 1 e. 'j64arm' E. 9!:14'' do.
-  fh=. 0 pick c_open_va fn; (OR O_RDWR, O_CREAT, O_TRUNC); (6#<00) ,< 8b666
+  if. ('Darwin'-:UNAME) *. 'arm64'-:3 :'try.9!:56''cpu''catch.''''end.' '' do.
+    fh=. 0 pick c_open_va fn; (OR O_RDWR, O_CREAT, O_TRUNC); (6#<00) ,< 8b666
   else.
-  fh=. 0 pick c_open fn; (OR O_RDWR, O_CREAT, O_TRUNC); 8b666
+    fh=. 0 pick c_open fn; (OR O_RDWR, O_CREAT, O_TRUNC); 8b666
   end.
   c_lseek fh;(<:ts);SEEK_SET
   c_write fh; (,0{a.); 0+1
   c_lseek fh;0 ;SEEK_SET
   d=. HS,AFNJA,msize,JINT,0,0,1,0
+  d=. d (SZI<.@%~HADK,HADFLAG,HADM,HADT,HADC,HADN,HADR,HADS)}HAD,0
   c_write fh;d;(SZI*#d)
   c_close fh
 else.
@@ -296,6 +317,7 @@ else.
   SetEndOfFile fh
   SetFilePointerR fh;0;NULLPTR;FILE_BEGIN
   d=. HS,AFNJA,msize,JINT,0,0,1,0
+  d=. d (SZI<.@%~HADK,HADFLAG,HADM,HADT,HADC,HADN,HADR,HADS)}HAD,0
   WriteFile fh;d;(SZI*#d);(,0);<NULLPTR
   CloseHandleR fh
 end.
@@ -314,7 +336,7 @@ i. 0 0
 showmap=: 3 : 0
 h=. 'name';'fn';'sn';'fh';'mh';'address';'header';'fsize';'jmf';'mt';'msize';'refs'
 hads=. 6{"1 mappings
-h,mappings,.(gethadmsize each hads),.refcount each hads
+h,mappings,.(gethadmsize each hads),.((1-initc) + refcount) each hads
 )
 mapsub=: 3 : 0
 'name fn sn ro'=. y
@@ -322,10 +344,10 @@ ts=. 1!:4 <fn
 if. IFUNIX do.
   'Unix sharename must be same as filename' assert (sn-:'')+.sn-:fn
   'FO FMP FMM'=. ro{mtflags
-  if. ('Darwin'-:UNAME) *. 1 e. 'j64arm' E. 9!:14'' do.
-  fh=. >0 { c_open_va fn;FO;(6#<00),<0
+  if. ('Darwin'-:UNAME) *. 'arm64'-:3 :'try.9!:56''cpu''catch.''''end.' '' do.
+    fh=. >0 { c_open_va fn;FO;(6#<00),<0
   else.
-  fh=. >0 { c_open fn;FO;0
+    fh=. >0 { c_open fn;FO;0
   end.
   'bad file name/access' assert fh~:_1
   mh=. ts
@@ -334,15 +356,12 @@ if. IFUNIX do.
 else.
   'Win sharename must not have /' assert -.'/'e.sn
   'fa ma va'=. ro{mtflags
-
-
-
   fh=. CreateFileR (uucp fn,{.a.);fa;(OR FILE_SHARE_WRITE, FILE_SHARE_READ);NULLPTR;OPEN_EXISTING;0;0
   if. fh=_1 do.
-   6!:3[2
-   fh=. CreateFileR (uucp fn,{.a.);fa;(OR FILE_SHARE_WRITE, FILE_SHARE_READ);NULLPTR;OPEN_EXISTING;0;0
-   'bad file name/access'assert fh~:_1
-  end. 
+    6!:3[2
+    fh=. CreateFileR (uucp fn,{.a.);fa;(OR FILE_SHARE_WRITE, FILE_SHARE_READ);NULLPTR;OPEN_EXISTING;0;0
+    'bad file name/access'assert fh~:_1
+  end.
   mh=: CreateFileMappingR fh;NULLPTR;ma;0;0;(0=#sn){(uucp sn,{.a.);<NULLPTR
   if. mh=0 do. 'bad mapping'assert 0[free fh,0,0 end.
   fad=. MapViewOfFileR mh;va;0;0;0
@@ -359,7 +378,7 @@ map=: 3 : 0
 :
 if. 0=L.x do. t=. <&> x else. t=. x end.
 'type tshape hsize'=. 3 {. t, a:
-type =. nountype type
+type=. nountype type
 
 'trailing shape may not be zero' assert -. 0 e. tshape
 
@@ -379,12 +398,10 @@ aa=. AFNJA+AFRO*ro=1
 
 m=. mapsub name;fn;sn;ro
 'fh mh fad had ts'=. (MAPFH,MAPMH,MAPADDRESS,MAPHEADER,MAPFSIZE){m
-
 if. ro*.0=type do.
   had=. allochdr 63
   d=. memr fad,0,HSN,JINT
-  d=. (sfu HS+-/ufs fad,had),aa,2}.d
-  d=. 1 HADCN} d
+  d=. ((sfu HS+-/ufs fad,had),aa,initc) (SZI<.@%~HADK,HADFLAG,HADC) } d
   d setheader had
 elseif. 0=type do.
   had=. fad
@@ -395,21 +412,22 @@ elseif. 0=type do.
   else.
     t=. 10000+ getHADC had
   end.
-  (,t+1) setHADC had
-elseif. 1 do.
+  (,t+initc) setHADC had
+elseif. do.
   had=. allochdr 63
   'JBOXED (non-jmf) not supported' assert JBOXED~:type
   bx=. JBOXED=type
   hs=. +/hsize [ asize=. JSIZES {~ JTYPES i. type
   lshape=. bx}.<.(ts-hs)%(*/tshape)*asize
-  d=. sfu hs+-/ufs fad,had
-  h=. d,aa,ts,type,1,(*/lshape,tshape),((-.bx)+#tshape),lshape,tshape
+  d=. memr had,0,NORMAH,JINT
+  h=. ((sfu hs+-/ufs fad,had),aa,ts,type,initc,(*/lshape,tshape),((-.bx)+#tshape)) (SZI<.@%~HADK,HADFLAG,HADM,HADT,HADC,HADN,HADR)} d,lshape,tshape
   h setheader had
 end.
 
 m=. (had;0=type) (MAPHEADER,MAPJMF)}m
 mappings=: mappings,m
 (name)=: 15!:7 had
+if. -. initc do. (name)=: $: end.
 i.0 0
 )
 remap=: 3 : 0
@@ -418,7 +436,7 @@ row=. ({."1 mappings)i.<name
 'remap: not mapped' assert row<#mappings
 m=. row{mappings
 fn=. ;1{m
-ro=.  >MAPMT{m
+ro=. >MAPMT{m
 jmf=. >MAPJMF{m
 hs=. HS*jmf
 'sn fh mh fad had'=. 5{.2}.m
@@ -444,11 +462,24 @@ n=. <fullname y
 row=. ({."1 mappings)i.n
 if. row=#mappings do. 1 return. end.
 m=. row{mappings
-4!:55 ::] n
 'sn fh mh fad had jmf ts'=. (MAPSN,MAPFH,MAPMH,MAPADDRESS,MAPHEADER,MAPJMF,,MAPFSIZE){m
-
-if. *./(-.x),(0=#sn),1~:getHADC had do. 2 return. end.
-if. -.jmf do. freehdr had end.
+if. initc do.
+  4!:55 ::] n
+  if. *./(-.x),(0=#sn),1~:getHADC had do. 2 return. end.
+  if. -.jmf do. freehdr had end.
+else.
+  ac=. getHADC had
+  if. *./(-.x),(0=#sn),(initc+1)<ac do. 2 return. end.
+  (n)=: $:
+  (2 (20 b.) memr had,HADFLAG,1,JINT) memw had,HADFLAG,1,JINT
+  if. jmf do.
+    (>:ac) setHADC had
+    4!:55 ::] n
+    (<:ac) setHADC had
+  else.
+    4!:55 ::] n
+  end.
+end.
 if. _1=newsize do.
   free fh,mh,fad
 else.
