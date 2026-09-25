@@ -1252,6 +1252,9 @@ __attribute__((noinline)) A jtgafallopool(J jt){
 #if ALIGNPOOLTOCACHE   // with smaller headers, always align pool allo to cache bdy
  // align the buffer list on a cache-line boundary
  I *v; ASSERT(v=MALLOC(PSIZE+TAILPAD+ALIGNPOOLTOCACHE*CACHELINESIZE),EVWSFULL);
+#if MEMAUDIT&0x80
+ memset(v,C0,(PSIZE+TAILPAD+ALIGNPOOLTOCACHE*CACHELINESIZE));
+#endif
  A z=(A)(((I)v+(ALIGNPOOLTOCACHE*CACHELINESIZE))&-(ALIGNPOOLTOCACHE*CACHELINESIZE));   // get cache-aligned section
  ((I**)z)[-1]=v;   // save address of entire allocation in the word before the aligned section
 #else
@@ -1306,6 +1309,9 @@ __attribute__((noinline)) A jtgafalloos(J jt,I blockx,I n){A z;
  ((I**)z)[-1]=v;    // save address of original allocation
 #else
  ASSERT(z=MALLOC(n),EVWSFULL);
+#endif
+#if MEMAUDIT&0x80
+ memset(z,C0,NORMAH*SZI); // AFHRH will be filled in the following line
 #endif
  AFHRH(z)=(US)FHRHSYSJHDR(1+blockx);    // Save the size of the allocation so we know how to free it and how big it was
  if(unlikely((((jt->mfreegenallo+=n)&MFREEBCOUNTING)!=0))){
@@ -1411,10 +1417,16 @@ printf("%p+\n",z);
 
 // bytes is total #bytes needed including headers, -1
 RESTRICTF A jtgafv(J jt, I bytes){UI4 j;
-#if NORMAH*(SY_64?8:4)-(NORMAH!=7)<(1LL<<(PMINL-1))
+#if NORMAH*(SY_64?8:4)<(1LL<<(PMINL-1))
  bytes|=(I)1<<(PMINL-1);  // if the memory header itself doesn't meet the minimum buffer length, insert a minimum
 #endif
+#if NORMAHN
+ if (bytes<(1LL<<(PMINL-1))) bytes=((I)1<<(PMINL-1));
+#endif
  j=CTLZI((UI)bytes);  // 3 or 4 should return 2; 5 should return 3
+#if NORMAHN
+ if(0>-PMINL+1+(volatile int)j)SEGFAULT;
+#endif
  R jtgaf(jt,(I)j);
 }
 
@@ -1469,7 +1481,21 @@ RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
  I bytes; if(likely(type&(BIT(LASTNOUNX+1)-1)))bytes=ALLOBYTESVSZLG(atoms,rank,bplg(type),(type)&C4T,0);else bytes=ALLOBYTESVSZ(atoms,rank,bpnonnoun(type),0,0);
  ASSERT((UI)rank<=(UI)RMAX,EVLIMIT) ASSERT((UI)atoms<=2147483647,EVLIMIT)   // verify size & rank are in limits
     // We never use GA for NAME types, so we don't need to check for it
+#if NORMAHN
+#if NORMAH*(SY_64?8:4)<(1LL<<(PMINL-1))
+ bytes|=(I)1<<(PMINL-1);  // if the memory header itself doesn't meet the minimum buffer length, insert a minimum
+#endif
+#if NORMAHN
+ if (bytes<(1LL<<(PMINL-1))) bytes=((I)1<<(PMINL-1));
+#endif
+ UI4 j=CTLZI((UI)bytes);  // 3 or 4 should return 2; 5 should return 3
+#if NORMAHN
+ if(0>-PMINL+1+(volatile int)j)SEGFAULT;
+#endif
+ RZ(z=jtgaf(jt, j));   // allocate the block, filling in AC AFLAG AM
+#else
  RZ(z=jtgaf(jt, CTLZI((UI)bytes)));   // allocate the block, filling in AC AFLAG AM
+#endif
  AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank);
  // Clear data for non-DIRECT types in case of later error
  // Since we allocate powers of 2, we can make the memset a multiple of 32 bytes.
