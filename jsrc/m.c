@@ -1347,6 +1347,7 @@ RESTRICTF A jtgaf(J jt,I blockx){AD __attribute__ ((aligned (CACHELINESIZE))) *z
   // small block: allocate from pool
   z=jt->mempool[-PMINL+1+blockx];   // head of free list.  We wait till blockx is valid because an allo of 2^29 bytes could fetch out of JTT.  Rearranging could get to 2^33, not enough
   if(likely(z!=0)){         // allocate from a chain of free blocks
+frompool:
    jt->mempool[-PMINL+1+blockx]=AFCHAIN(z);  // remove & use the head of the free chain
    // If the user is keeping track of memory high-water mark with 7!:2, figure it out & keep track of it.  Otherwise save the cycles.  All allo routines must do this
    if(unlikely((jt->memballo[-PMINL+1+blockx]&MFREEBCOUNTING)!=0)){
@@ -1358,7 +1359,13 @@ RESTRICTF A jtgaf(J jt,I blockx){AD __attribute__ ((aligned (CACHELINESIZE))) *z
    if(FHRHPOOLBIN(AFHRH(z))!=(1+blockx-PMINL))SEGFAULT;  // verify block has correct size
 #endif
   }else{
+#if PYXES
 // not worth checking   if(unlikely(lda(&jt->repatq)))if(jtrepatrecv(jt),z=jt->mempool[-PMINL+1+blockx])goto frompool; // didn't have any blocks of the right size, but managed to repatriate one
+#if NORMAHE
+// IMPORTANT!!! NORMAHE needs this checking
+   if(unlikely(lda(&jt->repatq)))if(jtrepatrecv(jt),z=jt->mempool[-PMINL+1+blockx])goto frompool; // didn't have any blocks of the right size, but managed to repatriate one
+#endif
+#endif
    // chain is empty, alloc PSIZE and split it into blocks
    RZ(z=jtgafallopool((J)((I)jt+blockx)));
   }
