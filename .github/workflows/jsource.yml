@@ -533,8 +533,8 @@ jobs:
 # rpi64 ----------------------------------------------------------------
  jerpi64:
   name: JE (Raspberry)
-#  needs: [all, deprecated]
-  needs: [all]
+  needs: [all, deprecated]
+#  needs: [all]
   runs-on: ubuntu-latest
   steps:
    - name: Checkout Git repository
@@ -604,8 +604,8 @@ jobs:
 # rpi32 ----------------------------------------------------------------
  jerpi32:
   name: JE (Raspberry32)
-#  needs: [all, deprecated]
-  needs: [all]
+  needs: [all, deprecated]
+#  needs: [all]
   runs-on: ubuntu-latest
   steps:
    - name: Checkout Git repository
