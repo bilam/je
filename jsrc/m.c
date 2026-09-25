@@ -180,6 +180,9 @@ F1(jtmemhashs){F12IP;
 
 // initialize shared state for memory allocator
 B jtmeminits(JS jjt){
+#if NORMAHN
+// fprintf(stderr,"PMINL %d PLIML %d\n",PMINL,PLIML);
+#endif
  INITJT(jjt,adbreakr)=INITJT(jjt,adbreak)=(C*)&INITJT(jjt,breakbytes); /* required for ma to work */
  INITJT(jjt,lgmmax)=MLEN-2;   // max allo is 1<<(MLEN-1), i. e. 1/4 of the memory space; max lg(blksize)-1 is then MLEN-2
  R 1;}
@@ -327,7 +330,7 @@ B jtspfree(J jt){I i;A p;
     A baseblock=FHRHROOTADDR(p,offsetmask);  // get address of corresponding base block
     if(FHRHISROOTALLOFREE(AFHRH(baseblock))){ // Free fully-unused base blocks;
 #if MEMAUDIT&0x80
-     chkinchain(jt,baseblock);
+//     chkinchain(jt,baseblock);
 #endif
 #if ALIGNTOCACHE || 1   // with short headers, always align to cache bdy
      FREECHK(((I**)baseblock)[-1]);  // If aligned, the word before the block points to the original block address
@@ -1244,17 +1247,20 @@ static I lfsr=(I)0xfeeefeee00000000LL;  // holds varying memory pattern
 __attribute__((noinline)) A jttgz(J jt,A *tp, A z){RZ(tp=tg(tp)); jt->tnextpushp=tp; R z;}
 
 __attribute__((noinline)) A jtgafallopool(J jt){
+ I blockx=(I)jt&QCMASK; jt=(J)((I)jt&~QCMASK);
  A u,chn; US hrh;
 #if ALIGNPOOLTOCACHE   // with smaller headers, always align pool allo to cache bdy
  // align the buffer list on a cache-line boundary
  I *v; ASSERT(v=MALLOC(PSIZE+TAILPAD+ALIGNPOOLTOCACHE*CACHELINESIZE),EVWSFULL);
+#if MEMAUDIT&0x80
+ memset(v,C0,(PSIZE+TAILPAD+ALIGNPOOLTOCACHE*CACHELINESIZE));
+#endif
  A z=(A)(((I)v+(ALIGNPOOLTOCACHE*CACHELINESIZE))&-(ALIGNPOOLTOCACHE*CACHELINESIZE));   // get cache-aligned section
  ((I**)z)[-1]=v;   // save address of entire allocation in the word before the aligned section
 #else
  // allocate without alignment
  ASSERT(av=MALLOC(PSIZE+TAILPAD),EVWSFULL);
 #endif
- I blockx=(I)jt&QCMASK; jt=(J)((I)jt&~QCMASK);
  jt->malloctotal+=PSIZE+TAILPAD+ALIGNPOOLTOCACHE*CACHELINESIZE;  // add to total JE mem allocated
  I nt=jt->malloctotalremote+jt->malloctotal;  // get net total allocated from this thread & not freed
  jt->mfreegenallo+=PSIZE+TAILPAD+ALIGNPOOLTOCACHE*CACHELINESIZE;   // add to total from OS
@@ -1263,9 +1269,17 @@ __attribute__((noinline)) A jtgafallopool(J jt){
  // we visit them in back-to-front order so the first-allocated headers are in cache
 #if PYXES
 // the lock must always be cleared when the block is returned, so we can set it once.  The origin likewise doesn't change
-#define PYXMEMINIT(u) APINIT(u,XHEADERFILL);*(I4 *)&AORIGIN(u)=THREADID1(jt);  // init allocating thread# and clear the lock
+#if MEMAUDIT&0x80
+#define PYXMEMINIT(u) *(I4 *)&AORIGIN(u)=THREADID1(jt); APINIT(u,XHEADERFILL);if(AK(u)==XHEADERFILL||AM(u)==XHEADERFILL||AT(u)==XHEADERFILL||AC(u)==XHEADERFILL||AN(u)==XHEADERFILL)SEGFAULT;  // init allocating thread# and clear the lock
 #else
-#define PYXMEMINIT(u) APINIT(u,XHEADERFILL);
+#define PYXMEMINIT(u) *(I4 *)&AORIGIN(u)=THREADID1(jt);  // init allocating thread# and clear the lock
+#endif
+#else
+#if MEMAUDIT&0x80
+#define PYXMEMINIT(u) APINIT(u,XHEADERFILL);if(AK(u)==XHEADERFILL||AM(u)==XHEADERFILL||AT(u)==XHEADERFILL||AC(u)==XHEADERFILL||AN(u)==XHEADERFILL)SEGFAULT;
+#else
+#define PYXMEMINIT(u)
+#endif
 #endif
  u=(A)((C*)z+PSIZE); chn=0; hrh=FHRHENDVALUE(1+blockx-PMINL); I n=2L<<blockx;
 #if MEMAUDIT&17
@@ -1296,6 +1310,9 @@ __attribute__((noinline)) A jtgafalloos(J jt,I blockx,I n){A z;
 #else
  ASSERT(z=MALLOC(n),EVWSFULL);
 #endif
+#if MEMAUDIT&0x80
+ memset(z,C0,NORMAH*SZI); // AFHRH will be filled in the following line
+#endif
  AFHRH(z)=(US)FHRHSYSJHDR(1+blockx);    // Save the size of the allocation so we know how to free it and how big it was
  if(unlikely((((jt->mfreegenallo+=n)&MFREEBCOUNTING)!=0))){
   I jtbytes=jt->bytes+=n; if(jtbytes>jt->bytesmax)jt->bytesmax=jtbytes;
@@ -1324,11 +1341,11 @@ RESTRICTF A jtgaf(J jt,I blockx){AD __attribute__ ((aligned (CACHELINESIZE))) *z
 #endif
  ASSERT(2>*JT(jt,adbreakr),EVBREAK)  // this is JBREAK0.  Fails if break pressed twice
 
- CHKPOOL1;
  if(withprob(blockx<PLIML,0.8)){
   // small block: allocate from pool
   z=jt->mempool[-PMINL+1+blockx];   // head of free list.  We wait till blockx is valid because an allo of 2^29 bytes could fetch out of JTT.  Rearranging could get to 2^33, not enough
   if(likely(z!=0)){         // allocate from a chain of free blocks
+frompool:
    jt->mempool[-PMINL+1+blockx]=AFCHAIN(z);  // remove & use the head of the free chain
    // If the user is keeping track of memory high-water mark with 7!:2, figure it out & keep track of it.  Otherwise save the cycles.  All allo routines must do this
    if(unlikely((jt->memballo[-PMINL+1+blockx]&MFREEBCOUNTING)!=0)){
@@ -1340,7 +1357,13 @@ RESTRICTF A jtgaf(J jt,I blockx){AD __attribute__ ((aligned (CACHELINESIZE))) *z
    if(FHRHPOOLBIN(AFHRH(z))!=(1+blockx-PMINL))SEGFAULT;  // verify block has correct size
 #endif
   }else{
+#if PYXES
 // not worth checking   if(unlikely(lda(&jt->repatq)))if(jtrepatrecv(jt),z=jt->mempool[-PMINL+1+blockx])goto frompool; // didn't have any blocks of the right size, but managed to repatriate one
+#if NORMAHN
+// IMPORTANT!!! NORMAHN needs this checking
+   if(unlikely(lda(&jt->repatq)))if(jtrepatrecv(jt),z=jt->mempool[-PMINL+1+blockx])goto frompool; // didn't have any blocks of the right size, but managed to repatriate one
+#endif
+#endif
    // chain is empty, alloc PSIZE and split it into blocks
    RZ(z=jtgafallopool((J)((I)jt+blockx)));
   }
@@ -1400,10 +1423,16 @@ printf("%p+\n",z);
 
 // bytes is total #bytes needed including headers, -1
 RESTRICTF A jtgafv(J jt, I bytes){UI4 j;
-#if NORMAH*(SY_64?8:4)-(NORMAH!=7)<(1LL<<(PMINL-1))
+#if NORMAH*(SY_64?8:4)<(1LL<<(PMINL-1))
  bytes|=(I)1<<(PMINL-1);  // if the memory header itself doesn't meet the minimum buffer length, insert a minimum
 #endif
+#if NORMAHN
+ if (bytes<(1LL<<(PMINL-1))) bytes=((I)1<<(PMINL-1));
+#endif
  j=CTLZI((UI)bytes);  // 3 or 4 should return 2; 5 should return 3
+#if NORMAHN
+ if(0>-PMINL+1+(volatile int)j)SEGFAULT;
+#endif
  R jtgaf(jt,(I)j);
 }
 
@@ -1458,7 +1487,21 @@ RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
  I bytes; if(likely(type&(BIT(LASTNOUNX+1)-1)))bytes=ALLOBYTESVSZLG(atoms,rank,bplg(type),(type)&C4T,0);else bytes=ALLOBYTESVSZ(atoms,rank,bpnonnoun(type),0,0);
  ASSERT((UI)rank<=(UI)RMAX,EVLIMIT) ASSERT((UI)atoms<=2147483647,EVLIMIT)   // verify size & rank are in limits
     // We never use GA for NAME types, so we don't need to check for it
+#if NORMAHN
+#if NORMAH*(SY_64?8:4)<(1LL<<(PMINL-1))
+ bytes|=(I)1<<(PMINL-1);  // if the memory header itself doesn't meet the minimum buffer length, insert a minimum
+#endif
+#if NORMAHN
+ if (bytes<(1LL<<(PMINL-1))) bytes=((I)1<<(PMINL-1));
+#endif
+ UI4 j=CTLZI((UI)bytes);  // 3 or 4 should return 2; 5 should return 3
+#if NORMAHN
+ if(0>-PMINL+1+(volatile int)j)SEGFAULT;
+#endif
+ RZ(z=jtgaf(jt, j));   // allocate the block, filling in AC AFLAG AM
+#else
  RZ(z=jtgaf(jt, CTLZI((UI)bytes)));   // allocate the block, filling in AC AFLAG AM
+#endif
  AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank);
  // Clear data for non-DIRECT types in case of later error
  // Since we allocate powers of 2, we can make the memset a multiple of 32 bytes.

@@ -30,7 +30,11 @@
 
 // Memory-allocation info
 // PMINL is lg2(size of smallest pool buffer).  It must be big enough to hold at least one I. 
-#define PMINL 6   // ((AH*SZI+mhb+SZI)<=64?6:7) smaller buffers possible on 32-bit, but we don't bother
+#if NORMAHN
+#define PMINL (((NORMAH+1)*(1+SY_64)*4)<=64?6:((NORMAH+1)*(1+SY_64)*4)<=128?7:((NORMAH+1)*(1+SY_64)*4)<=256?8:((NORMAH+1)*(1+SY_64)*4)<=512?9:((NORMAH+1)*(1+SY_64)*4)<=1024?10:11)
+#else
+#define PMINL 6   // ((AH*SZI+mhb*SZI)<=64?6:7) smaller buffers possible on 32-bit, but we don't bother
+#endif
 #define PMIN (1L<<PMINL)   // size of smallest block
 // PLIML is lg2(size of largest pool buffer), 10 or 11
 #define PLIML       (4+PMINL)            // lg2(PLIM)
@@ -91,4 +95,8 @@
 #define FHRHENDVALUE(b) (FHRHROOTFREE + (((I)1)<<(b)))     // value representing last+1 block in allo.  Subtract FHRHBININCR to get to previous
 
 // the size of the total allocation of the block for w, always a power of 2
+#if NORMAHN
+#define alloroundsize(w)  (ISGMP(w) ?XHSZ+AN(w) :(FHRHBINISPOOL(AFHRH(w)))?FHRHSIZE(AFHRH(w)):FHRHSYSSIZE(AFHRH(w)))
+#else
 #define alloroundsize(w)  (ISGMP(w) ?XHSZ+AN(w) :FHRHSIZE(AFHRH(w)))
+#endif
