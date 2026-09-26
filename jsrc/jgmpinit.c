@@ -61,7 +61,9 @@ struct BDV1 {
  S lock0;   // can be used as a lock
  US origin0;
 #endif
+#if NORMAHN>1
  I p0[NORMAHN-1];
+#endif
 #endif
  I k;
 #if NORMAHX==1
@@ -73,7 +75,9 @@ struct BDV1 {
  S lock1;   // can be used as a lock
  US origin1;
 #endif
+#if NORMAHN>1
  I p1[NORMAHN-1];
+#endif
 #endif
  I f;I m;I t;I c;
  I n;

@@ -963,7 +963,7 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 
 #if NORMAHX==0
 #if NORMAHN==1
-#define Xhrg0 0,0,{},
+#define Xhrg0 0,0,
 #elif NORMAHN==2
 #define Xhrg0 0,0,{XHEADERFILL},
 #elif NORMAHN==3
@@ -991,7 +991,7 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 
 #if NORMAHX==1
 #if NORMAHN==1
-#define Xhrg1 0,0,{},
+#define Xhrg1 0,0,
 #elif NORMAHN==2
 #define Xhrg1 0,0,{XHEADERFILL},
 #elif NORMAHN==3
