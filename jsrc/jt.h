@@ -409,7 +409,9 @@ typedef struct JSTstruct {
  // 6 bytes free
  A evm;              // message text for the EVxxx codes
 #if NORMAHE
-#if NORMAHN<=16
+#if NORMAHN<=1
+ I (*emptylocale)[MAXTHREADS][16];      // locale with no symbols, used when not running explicits, or to avoid searching the local syms.  Aligned on odd word boundary, must never be freed.  One per task, because they are modified
+#elif NORMAHN<=16
  I (*emptylocale)[MAXTHREADS][32];      // locale with no symbols, used when not running explicits, or to avoid searching the local syms.  Aligned on odd word boundary, must never be freed.  One per task, because they are modified
 #elif NORMAHN<=32
  I (*emptylocale)[MAXTHREADS][64];      // locale with no symbols, used when not running explicits, or to avoid searching the local syms.  Aligned on odd word boundary, must never be freed.  One per task, because they are modified

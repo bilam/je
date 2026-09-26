@@ -273,7 +273,10 @@ B jtsymbinit(JS jjt){A q,zloc;JJ jt=MTHREAD(jjt);
  // Unfortunately the layout of the locale uses words 0 and 8, so we can't pack the block for the threads into adjacent cachelines.  Perhaps we should just have the thread
  // allocate an empty locale when it starts, but we have coded this and we will keep it.  Unallocated threrads will drop out of cache.
 #if NORMAHE
-#if NORMAHN<=16
+#if NORMAHN<=1
+ GA0(q,INT,16*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][16])((I*)q+(NORMAH+1));   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[16*i+(NORMAH+1)]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#elif NORMAHN<=16
  GA0(q,INT,32*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][32])((I*)q+(NORMAH+1)-3);   //  this mangles the header; OK since the block will never be freed
  DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[32*i+(NORMAH+1)-3]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
 #elif NORMAHN<=32
