@@ -22,7 +22,15 @@ INLINE void _mm_pause(void)
 #endif
 
 #if NORMAHE
+#if NORMAHN<=8
 #define UNVOIDAV1(x)     ((A)((I)(x)-(SY_64+1)*ABDY))   // go from a pointer to *AV1 back to the base of the A block
+#elif NORMAHN<=16
+#define UNVOIDAV1(x)     ((A)((I)(x)-(SY_64+1)*2*ABDY))   // go from a pointer to *AV1 back to the base of the A block
+#elif NORMAHN<=32
+#define UNVOIDAV1(x)     ((A)((I)(x)-(SY_64+1)*3*ABDY))   // go from a pointer to *AV1 back to the base of the A block
+#elif NORMAHN<=64
+#define UNVOIDAV1(x)     ((A)((I)(x)-(SY_64+1)*5*ABDY))   // go from a pointer to *AV1 back to the base of the A block
+#endif
 #else
 #define UNVOIDAV1(x)     UNvoidAV1(x)   // go from a pointer to *AV1 back to the base of the A block
 #endif
@@ -598,8 +606,19 @@ static A jttaskrun(J jtfg,A arg1, A arg2, A self){F12JT0;CHKAPX(arg1);CHKAPX(arg
  ARGCHK2(arg1,arg2);  // the verb is not the issue.
 #if NORMAHE
 // job MUST on ABDY alignment, but AAV1 is not
+#if NORMAHN<=8
  A jobA;GAT0(jobA,INT,8+((sizeof(JOB)+SZI-1)>>LGSZI),1); ACINITUNPUSH(jobA);  // protect the job till it is finished
  JOB *job=(JOB*)((I*)jobA+16);  // The job starts on the second cacheline of the A block.  When we free the job we will have to back up to the A block
+#elif NORMAHN<=16
+ A jobA;GAT0(jobA,INT,16+((sizeof(JOB)+SZI-1)>>LGSZI),1); ACINITUNPUSH(jobA);  // protect the job till it is finished
+ JOB *job=(JOB*)((I*)jobA+24);  // The job starts on the second cacheline of the A block.  When we free the job we will have to back up to the A block
+#elif NORMAHN<=32
+ A jobA;GAT0(jobA,INT,32+((sizeof(JOB)+SZI-1)>>LGSZI),1); ACINITUNPUSH(jobA);  // protect the job till it is finished
+ JOB *job=(JOB*)((I*)jobA+40);  // The job starts on the second cacheline of the A block.  When we free the job we will have to back up to the A block
+#elif NORMAHN<=64
+ A jobA;GAT0(jobA,INT,64+((sizeof(JOB)+SZI-1)>>LGSZI),1); ACINITUNPUSH(jobA);  // protect the job till it is finished
+ JOB *job=(JOB*)((I*)jobA+72);  // The job starts on the second cacheline of the A block.  When we free the job we will have to back up to the A block
+#endif
 #else
  _Static_assert(NORMAH+1==8,"NORMAH+1 not 8"); // job already on ABDY alignment because NORMAH+1==8
  A jobA;GAT0(jobA,INT,(sizeof(JOB)+SZI-1)>>LGSZI,1); ACINITUNPUSH(jobA);  // protect the job till it is finished

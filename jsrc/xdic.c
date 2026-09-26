@@ -92,7 +92,11 @@ DF2(jthashy){F12IP; ARGCHK2(a,w) RETF(sc(jtcrcy(jt,w)));}
 typedef struct ADic {
  I header[NORMAH+1];  // A header up through s[0].  DIC is always allocated with rank 1.
 #if NORMAHE
+#if NORMAHN<=32
  I filler[32-NORMAHE];
+#elif NORMAHN<=64
+ I filler[64-NORMAHE];
+#endif
 #endif
  struct Dic { // *** this group of values is updated atomically en bloc to make sure hashelesiz matches hash when possible.
   union {
@@ -150,10 +154,14 @@ typedef struct ADic {
   I filler3[SY_64?6:1];  // pad to cacheline (24 words on each system).
  } bloc;
 } DIC;
-#if !NORMAHE
-_Static_assert(sizeof(DIC)==32*SZI,"DIC not 32 Is");
-#else
+#if NORMAHE
+#if NORMAHN<=32
 _Static_assert(sizeof(DIC)==64*SZI,"DIC not 64 Is");
+#elif NORMAHN<=64
+_Static_assert(sizeof(DIC)==96*SZI,"DIC not 96 Is");
+#endif
+#else
+_Static_assert(sizeof(DIC)==32*SZI,"DIC not 32 Is");
 #endif
 #if 0   // temp for debugging
 
