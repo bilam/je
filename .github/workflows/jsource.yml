@@ -22,7 +22,7 @@ env:
  USE_PYXES: 1
  USE_EMU_AVX: 1
  RELEASE: ${{ false }}
- NORMAHN: 2
+ NORMAHN: 1
  NORMAHX: 1
 
 jobs:
