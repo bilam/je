@@ -372,7 +372,7 @@ x =: x ,!.__ y
 
 (IF64 < *9!:56'normahe') +. (memu 10$'a') (15!:19@, = 15!:19@[) 15$'ab'
 (memu (IF64{27 55)$'a') (15!:19@, = 15!:19@[) 'b'
-(memu (IF64{28 56)$'a') (15!:19@, = 15!:19@[) 'b'  NB. one atom in last word OK
+(*9!:56'normahe') +. (memu (IF64{28 56)$'a') (15!:19@, = 15!:19@[) 'b'  NB. one atom in last word OK
 (*9!:56'normahe') +. (memu (IF64{29 57)$'a') (15!:19@, ~: 15!:19@[) 'b'  NB. two atoms not
 
 11 5 1 1 -: $ (memu i. 10 1 1 1) , i. 5 1 1
