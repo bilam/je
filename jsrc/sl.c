@@ -273,14 +273,20 @@ B jtsymbinit(JS jjt){A q,zloc;JJ jt=MTHREAD(jjt);
  // Unfortunately the layout of the locale uses words 0 and 8, so we can't pack the block for the threads into adjacent cachelines.  Perhaps we should just have the thread
  // allocate an empty locale when it starts, but we have coded this and we will keep it.  Unallocated threrads will drop out of cache.
 #if NORMAHN
-#if 1
+// #define EXPLICITRUNNING (!((I)jt->locsyms&SZI))  // the null locale is put on an odd I boundary
+// if NORMAHN is odd, the null locale should not -3
+// the +3 is the 3 words after the A header that should be copied
+#if NORMAHN & 1
+ _Static_assert(1&((NORMAH+1)-2),"the null locale is put on an odd I boundary");
+ GA0(q,INT,EMPTYLOCALESIZE*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][EMPTYLOCALESIZE])((I*)q+(NORMAH+1)-2);   //  this mangles the header; OK since the block will never be freed
+ DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[EMPTYLOCALESIZE*i+(NORMAH+1)-2]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
+#else
+ _Static_assert(1&((NORMAH+1)-3),"the null locale is put on an odd I boundary");
  GA0(q,INT,EMPTYLOCALESIZE*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][EMPTYLOCALESIZE])((I*)q+(NORMAH+1)-3);   //  this mangles the header; OK since the block will never be freed
  DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[EMPTYLOCALESIZE*i+(NORMAH+1)-3]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
-#else
- GA0(q,INT,EMPTYLOCALESIZE*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][EMPTYLOCALESIZE])((I*)q);   //  this mangles the header; OK since the block will never be freed
- DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[EMPTYLOCALESIZE*i]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
 #endif
 #else
+ _Static_assert(1&((NORMAH+1)-3),"the null locale is put on an odd I boundary");
  GA0(q,INT,16*MAXTHREADS,1) INITJT(jjt,emptylocale)=(I(*)[MAXTHREADS][16])((I*)q+(NORMAH+1)-3);   //  this mangles the header; OK since the block will never be freed
  DONOUNROLL(MAXTHREADS, A ei=(A)&((I*)q)[16*i+(NORMAH+1)-3]; MC(ei,emptyloc,((NORMAH+1)+3)*SZI); AM(ei)=(I)ei;)
 #endif
