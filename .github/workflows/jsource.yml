@@ -1063,7 +1063,7 @@ jobs:
      with:
       tag: build
       artifacts: "wasm32.zip"
-      token: ${{ secrets.RELEASE_ACTION }}
+      token: ${{ secrets.GITHUB_TOKEN }}
       allowUpdates: true
       replacesArtifacts: true
 
