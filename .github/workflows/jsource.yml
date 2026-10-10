@@ -1023,7 +1023,6 @@ jobs:
 # wasm -----------------------------------------------------------------
  jewasm:
   name: JE (wasm)
-  if: ${{ false }}
   needs: all
   runs-on: ubuntu-latest
   steps:
@@ -1042,7 +1041,7 @@ jobs:
       USE_OPENMP: 0
       NORMAHN: ${{ env.NORMAHN }}
       NORMAHX: ${{ env.NORMAHX }}
-      USE_PYXES: ${{ env.USE_PYXES }}
+      USE_PYXES: 0
       USE_EMU_AVX: 0
       _DEBUG: 0   # lldb unavailable
       OPTL: ${{ env.OPTL }}
