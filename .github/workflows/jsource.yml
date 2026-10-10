@@ -22,7 +22,8 @@ env:
  FORCEVIRTUALINPUTS: 0
  USE_PYXES: 1
  USE_EMU_AVX: 1
- RELEASE: ${{ false }}
+ RELEASE: ${{ true }}
+ WEBHOOK: ${{ false }}
  NORMAHN: 2
  NORMAHX: 0
 
@@ -1765,6 +1766,7 @@ jobs:
 
  webhook:
   name: Run Webhook
+  if: ${{ env.WEBHOOK == 'true' }}
   runs-on: ubuntu-22.04
 # this needs is also in tests above
 # comment out any needs not used by the webhook
@@ -1788,7 +1790,6 @@ jobs:
    - jewin-msys2-arm64
   steps:
    - name: update server
-     if: ${{ env.RELEASE == 'true' }}
      uses: distributhor/workflow-webhook@v2
      env:
       webhook_url: ${{ secrets.WEBHOOK_URL }}
