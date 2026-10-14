@@ -2,7 +2,8 @@
 APP_OPTIM=release
 # APP_OPTIM=debug
 # APP_MODULES := jconsole-nopie libj libja jnative libtsdll netdefs-nopie hostdefs-nopie jamalgam-nopie
-APP_MODULES := jconsole libj libja jnative libtsdll netdefs hostdefs jamalgam
+# APP_MODULES := jconsole libj libja jnative libtsdll netdefs hostdefs jamalgam
+APP_MODULES := jconsole libj jnative libtsdll
 # APP_MODULES := libjpcre libjpcre2 blas libf2c cholrl lapack
 # use ndk r14 gcc-4.9 to build armeabi and armeabi-v7a
 # APP_ABI := armeabi
