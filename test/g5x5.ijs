@@ -3,6 +3,9 @@ NB. 5!:5 ----------------------------------------------------------------
 
 randuni''
 
+QKTEST0=: QKTEST
+QKTEST=: (*9!:56'memaudit'){QKTEST,1
+
 ar=: 5!:1
 
 test1=: 1 : 0
@@ -684,7 +687,7 @@ test2 <'a'
 
 NB. Verify that all trains produce an equivalent result after going through 5!:5
 
-0!:_1`1:@.(16b32 -.@*@(17 b.) 9!:56'memaudit') '$'   NB. skip if full memory auditing
+0!:_1`1:@.(-.@*9!:56'memaudit') '$'   NB. skip if full memory auditing
 
 NB. y is a character string representing a possibly-invalid train
 testlr=: {{
@@ -1003,6 +1006,8 @@ y
 ('3 : 0',LF,'1 + y',LF,')') -: (1) 5!:5 <'f'
 ('3 : 0',LF,'x + y',LF,'y',LF,')') -: (2) 5!:5 <'f'
 
+
+QKTEST=: QKTEST0
 
 randfini''
 

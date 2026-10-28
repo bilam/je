@@ -6,6 +6,9 @@ NB. m}y and u}y ---------------------------------------------------------
 
 randuni''
 
+QKTEST0=: QKTEST
+QKTEST=: (*9!:56'memaudit'){QKTEST,1
+
 g =. e.&' '@{.} @ (,:&'_')
 h =. e.&' ' {"0 1 ,"0&'_'
 
@@ -686,8 +689,10 @@ IGNOREIFFVI 30000 > 7!:2 'a =: (<1) 0} a'
 b =: i. 100
 IGNOREIFFVI 500000 < 7!:2 '(<b) 0} a'
 IGNOREIFFVI 30000 > 7!:2 'a =: (<b) 0} a'
-IGNOREIFFVI 500000 < 7!:2 '(<a) 0} a'   NB. Avoid loop
-IGNOREIFFVI 500000 < 7!:2 '(<<<<a) 0} a'   NB. Avoid loop
+
+a =: <"0 i. QKTEST{::(100 1000);(100 100)
+IGNOREIFFVI QKTEST +. 500000 < 7!:2 '(<a) 0} a'   NB. Avoid loop
+IGNOREIFFVI QKTEST +. 500000 < 7!:2 '(<<<<a) 0} a'   NB. Avoid loop
 
 size0 =: 7!:0''
 a =: <"0 i. 100 1000
@@ -848,6 +853,8 @@ NB. shaped boxed selectors
 (0 2 3 ,: 0 3 2) -: (,: 1 2&(] ] (|.@:{)`[`]})) memu 0  2 3  NB. } not inplace when v2 returns old block
 (1 2&(15!:19@((|.@:{)`[`]})) = 15!:19@]) memu 0  2 3  NB. } inplace
 (7!:2 '1 [`0:`(+:@])} i. 100 100') < 10000 + 7!:2 '1 [`0:`]} i. 100 100'  NB. inplace when v2 returns new block
+
+QKTEST=: QKTEST0
 
 randfini''
 

@@ -1,6 +1,9 @@
 prolog './g320ipt.ijs'
 NB. x,y Append in place timing tests ------------------------------------
 
+QKTEST0=: QKTEST
+QKTEST=: (*9!:56'memaudit'){QKTEST,1
+
 ss   =: +/ @: *:
 rsq  =: [: -. ss@(- +/ % #)@[ %~ ss@:-
 
@@ -116,8 +119,7 @@ a:&, f a
 -.&a: f a
 ;&a f a
 
-
-
+QKTEST=: QKTEST0
 
 epilog''
 
