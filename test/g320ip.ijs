@@ -343,7 +343,7 @@ assert. 999996 999997 999998 999999 _1 -: _5 {. aa , _1
 
 NB. Verify forms for indexing
 a =: i. 1e6
-10000 > 7!:2 '3 : ''a =: }:@:(,&8) a'''  NB. must be in an explicit to inplace
+12000 > 7!:2 '3 : ''a =: }:@:(,&8) a'''  NB. must be in an explicit to inplace
 NB. no virtual extension 5000 > 7!:2 '1 2 3 _1 { a , 7'
 1 2 3 7 -: 1 2 3 _1 { a , 7
 
@@ -836,7 +836,7 @@ NB. sort on numeric lists
 (50000 + 7!:2 'a =: /:~ a') > (7!:2 '/:~ a') [ a =: 10000 ?@$ 0  NB. Not inplaced; block has usecount 2
 (50000 + 7!:2 'a =: /:~ a') < (7!:2 '/:~ a')
 (160 + 7!:2 'a =: /:~ a') > (7!:2 '/:~ a') [ a =: 38 ?@$ 20000  NB. Not inplaced; block has usecount 2
-(160 + 7!:2 'a =: /:~ a') < (7!:2 '/:~ a')
+(7~:9!:56'normah') +. (160 + 7!:2 'a =: /:~ a') < (7!:2 '/:~ a')
 
 NB. The following failed when we didn't properly set the inplace flags for the selected verb
 NB. The sentence aborted without performing the assignment
@@ -920,7 +920,7 @@ f =: 4 : 0&>
 NB. Verify inplaceable #
 l0 =: 1002 > i. 2000
 l1 =: 999 > i. 2000
-(9000 * >:IF64) > 7!:2 'l0 # i. 2000'
+(9100 * >:IF64) > 7!:2 'l0 # i. 2000'
 (9000 * >:IF64) < 7!:2 'l1 # i. 2000'
 
 NB. Inplaceable monads

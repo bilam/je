@@ -63,7 +63,11 @@ scheck t
 
 'domain error' -: ($. 2 3 _1 ) #   etx $. 3 4 5
 
+0!:_1`1:@.(-. ('wasm32'-:9!:56'cpu')*.*9!:56'memaudit') '?'
+
 'limit error'  -: ($. >IF64{1e9 2e9;4e18 6e18) # etx $. 3 4
+
+NB.?
 
 'length error' -: ($. 1 2 3)   #   etx $. i.4 3
 'length error' -: ($. 1 2 3)   #"1 etx $. i.3 4
@@ -92,7 +96,11 @@ scheck t
 'domain error' -: ($. 2 3 _1j4) #   etx $. 3 4 5
 'domain error' -: ($. 2 3j_2 4) #   etx $. 3 4 5
 
+0!:_1`1:@.(-. ('wasm32'-:9!:56'cpu')*.*9!:56'memaudit') '?'
+
 'limit error'  -: ($. >IF64{1e9 0j2e9; 4e18 0j6e18) # etx $. 3 4
+
+NB.?
 
 'length error' -: ($. 1 2 3j2)  #   etx $. i.4 3
 'length error' -: ($. 1 2 3j2)  #"1 etx $. i.3 4
@@ -126,7 +134,11 @@ t=: 3 # s
 scheck t
 t -: (3#x) (,(3*i)+/i.3)} 1 $. 15e8 ; 0 ; 2-2
 
+0!:_1`1:@.(-. ('wasm32'-:9!:56'cpu')*.*9!:56'memaudit') '?'
+
 'limit error' -: 5 # etx 1 $. (IF64{1e9 3e18);0;0
+
+NB.?
 
 
 

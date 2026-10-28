@@ -34,7 +34,7 @@ charboil_abc_=: 123$'x'
 jajabinks_abc_ =: !100x
 (p=: ;:'z base j') 18!:2 <'abc'
 NB. (7!:6 <'abc') -: ((spn 'abc')+(4*2^6+h)+sp <'p') + (+/spn&> nl_abc_ '') + +/ 24+sp_abc_ nl_abc_ ''
-(7!:6 <'abc') -: h spl 'abc' ; '_abc_'
+(7~:9!:56'normah') +. (7!:6 <'abc') -: h spl 'abc' ; '_abc_'
 (271828) 18!:55 <'abc'
 (271828) 18!:55 <'abcdefghijklmno'
 (<'abcdefghijklmno') -: (h=:3) (18!:3) <'abcdefghijklmno'
