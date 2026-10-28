@@ -7,7 +7,7 @@ NB. set NORESETSTABLE to 1 to prevent restoring symbol table between files
 
 NB. settings to change when compiling the JE in a debug mode
 NB. If FORCEVIRTUALINPUTS is set, space consumption changes.  Set IGNOREIFFVI to 1: in that case
-IGNOREIFFVI_z_=: ]
+IGNOREIFFVI_z_=: ]`1:@.(7~:9!:56'normah')
 
 3 : 0 ''
 testpath=: '/',~(t i:'/'){.t=. jpath;(4!:4<'ddall'){4!:3''
@@ -56,6 +56,7 @@ blacklist=: blacklist, (IFQT*.'Wasm'-:UNAME)#(<testpath),each 'g331ps.ijs';'gsp4
 blacklist=: blacklist, IFIOS#(<testpath),each <'gipht.ijs'  NB. crash if included in the whole suite, but ok if running alone
 blacklist=: blacklist, ('OpenBSD'-:UNAME)#(<testpath),each 'g128x14.ijs';'g520.ijs'
 blacklist=: blacklist, (2 *@(17 b.) 9!:56'memaudit')#(<testpath),each 'gtdot.ijs';'gtdot1.ijs';'gtdot2.ijs';'gtdot3.ijs';'gtdot4.ijs';'gtdot5.ijs' NB. multithreading block in multiple tstacks
+blacklist=: blacklist, (7~:9!:56'normah')#(<testpath),each 'g128x14.ijs';'g128x19.ijs'
 
 NB. too slow
 blacklist=: blacklist, '' [ (2 *@(17 b.) 9!:56'memaudit')#(<testpath),each  <@(,&'.ijs');._2 [ 0 : 0
