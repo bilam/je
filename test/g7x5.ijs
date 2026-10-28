@@ -12,7 +12,7 @@ g =: 3 : 0
  w=. IF64{4 8
  z=. w*0                              NB. 0 words for memory management
  z=. z + w*9!:56'normah'              NB. 7 words for non-shape header words
- z=. z + w*r+(-.IF64)*0=2|r=. #$y     NB. shape, pad to doubleword boundary if 32 bits
+ z=. z + w*r+IF64<2|(9!:56'normah')+r=. #$y     NB. shape, pad to doubleword boundary if 32 bits
  z=. z + ((bp y)*<:*/$y) + ((bp y)>.w) + ((-.IF64) * SZI * 262144 = 3!:0 y)  NB. atoms-1 & trailing pad
  >.&.(2&^.) z
 )
@@ -150,6 +150,8 @@ f=: <jpath'~temp/q','.jmf',~(":2!:6''),'_',":{.3&T.''
 map_jmf_ (<'q'),f,'';0   NB. map q to jmf file
 '' -: q
 
+0!:_1`1:@.(-.IF64<0=2|9!:56'normah') '?'   NB. skip
+
 NB. It's not vital that the mapped allocation matches the internal one exactly.  The internal is the minimal size; mapped might be a word bigger
 (fmapped (<: *. 8 >: -~) gmapped) q [ q=:x=:     (?1e4)?@$2
 (fmapped (<: *. 8 >: -~) gmapped) q [ q=:x=: a.{~(?1e4)?@$#a.
@@ -158,6 +160,8 @@ NB. It's not vital that the mapped allocation matches the internal one exactly. 
 (fmapped (<: *. 8 >: -~) gmapped) q [ q=:x=: (?100 100)?@$1e6
 (fmapped (<: *. 8 >: -~) gmapped) q [ q=:x=: o.(?30 30 30)?@$1e6
 (fmapped (<: *. 8 >: -~) gmapped) q [ q=:x=: j./(2,?100 100)?@$1e6
+
+NB.?  end of skip
 
 'valence error' -: 3!:9 etx q
 'domain error' -: (1) 3!:9 etx q

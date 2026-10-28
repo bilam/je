@@ -1,6 +1,8 @@
 prolog './g8x.ijs'
 NB. 8!:n ----------------------------------------------------------------
 
+0!:_1`1:@.(-. GITHUBCI*.IFWIN*.(7~:9!:56'normah')*.'x86_64'-:9!:56'cpu') '?'
+
 NB. require 'numeric'           NB. for round
 round=: [ * [: <. 0.5 + %~
 
@@ -821,6 +823,7 @@ NB. up to 17 decimal places
 
 
 
+NB.?
 
 epilog''
 

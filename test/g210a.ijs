@@ -309,6 +309,8 @@ f=: 4 : 'x>.y'
 (i.m,m ,0) f"1 0 test 17
 (i.m,m2,0) f"1 0 test 17
 
+0!:_1`1:@.(-. IF64<(0=2|9!:56'normah')*.*9!:56'memaudit') '?'
+
 ": test <i. m ,m ,0
 ": test <i. m ,m2,0
 ": test <i. m ,m4,0
@@ -325,6 +327,7 @@ f=: 4 : 'x>.y'
 ": test (i. 3 0);i. 0,<.imax%5
 
 
+NB.?
 
 
 
