@@ -823,6 +823,8 @@ try.
 techo 'd'
 t=. ((<<<dels)&{) i. shp
 techo 'e'
+techo t
+techo 'e1'
 catch.
 techo 'f'
 techo 13!:12''
@@ -831,7 +833,9 @@ techo 'dels ',":dels
 techo '/:~ ~.dels ',":/:~ ~.dels
 assert. 0
 end.
+techo 'e2'
 assert. (2 ! shp) = (+/~.dels) + +/ t
+techo 'e3'
 end.
 1
 }} 0{50000 10000  NB. Verify that random deletions work
