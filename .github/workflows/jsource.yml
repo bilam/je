@@ -23,7 +23,7 @@ env:
  USE_EMU_AVX: 1
  RELEASE: ${{ true }}
  WEBHOOK: ${{ false }}
- NORMAHN: 6
+ NORMAHN: 5
 
 jobs:
 
