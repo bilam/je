@@ -820,8 +820,11 @@ techo 13!:12''
 assert. 0
 end.
 try.
+techo 'd'
 t=. ((<<<dels)&{) i. shp
+techo 'e'
 catch.
+techo 'f'
 techo 13!:12''
 techo 'shp ndels ',":shp,ndels
 techo 'dels ',":dels
