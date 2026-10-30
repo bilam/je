@@ -835,14 +835,19 @@ assert. 0
 end.
 techo 'e2'
 techo t
-techo ":i.shp
-techo ":shp,ndel
-techo ":(2 ! shp) - (+/~.dels) + +/ t
-techo ":(t,~.dels) -. i.shp
-techo ":(t,~.dels) -.~ i.shp
 techo 'e3'
-assert. (2 ! shp) = (+/~.dels) + +/ t
+techo ":i.shp
 techo 'e4'
+techo ":shp,ndels
+techo 'e5'
+techo ":(2 ! shp) - (+/~.dels) + +/ t
+techo 'e6'
+techo ":(t,~.dels) -. i.shp
+techo 'e7'
+techo ":(t,~.dels) -.~ i.shp
+techo 'e8'
+assert. (2 ! shp) = (+/~.dels) + +/ t
+techo 'e9'
 end.
 1
 }} 0{50000 10000  NB. Verify that random deletions work
