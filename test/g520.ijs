@@ -834,6 +834,10 @@ techo '/:~ ~.dels ',":/:~ ~.dels
 assert. 0
 end.
 techo 'e2'
+techo shp,ndel
+techo (2 ! shp) - (+/~.dels) + +/ t
+techo (/:~ t,~.dels) -. i.shp
+techo (/:~ t,~.dels) -.~ i.shp
 assert. (2 ! shp) = (+/~.dels) + +/ t
 techo 'e3'
 end.
