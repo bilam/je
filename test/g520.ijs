@@ -803,7 +803,8 @@ y=: y, 1 1 1 1 1 1 1 1 1 1 1 1
 y=: y, 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
 5 5 5 5 5 5 5 5 5 5 5 5 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 -: (<<<I.1=y){y  NB. incorrectly gave a virtual
 
-{{ for_i. i. y do.
+3 : 0 [ 50000
+for_i. i. y do.
 dels =. shp ?@$~ ndels =. ? shp =. 1 >. ? 73  NB. deal the array and the comp indexes
 NB. assert. (2 ! shp) = (+/~.dels) + +/ t=. (<<<dels) { i. shp
 techo i
@@ -819,7 +820,8 @@ techo s=. (2 ! shp) = (+/~.dels) + +/ t=. (<<<dels) { i. shp
 techo 'a5'
 assert. 1=s
 1
-}} 0{50000 10000  NB. Verify that random deletions work
+)
+NB. 0{50000 10000  NB. Verify that random deletions work
 
 {{for. i. y do.
 dels =. shp ?@$~ ndels =. ? shp =. 1 >. ? 4e4  NB. deal the array and the comp indexes
