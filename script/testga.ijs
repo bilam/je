@@ -135,6 +135,23 @@ empty (1x&(]F::(++:))) [58#0
 eformat_j_=: exformat_j_ f.
 
 
+3 : 0''
+ECHOFILENAME0=: ECHOFILENAME
+ECHOFILENAME=: 0
+QKTEST0=: QKTEST
+QKTEST=: 1
+echo '>>> testing g520.ijs'
+for_i. i.10 do.
+  RES=: RUN4 (<testpath),each <'g520.ijs'
+  exit^:(*@#RES) *@#RES
+end.
+RES=: ''
+QKTEST=: QKTEST0
+ECHOFILENAME=: ECHOFILENAME0
+1
+)
+
+
 0!:_1 '$'   NB. temp skip to allow running full test suite
 
 4!:55 ;:'x y'
