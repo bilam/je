@@ -39,6 +39,7 @@ blacklist=: blacklist, (((,'1')-:2!:5'__MSYS__')*.(*9!:56'auditexecresults')*.('
 blacklist=: blacklist, ((1 -.@e. '/gcc-' E. 9!:14'')+.('0'={.":2!:5'_DEBUG')+.IF64+.UNAME-.@-:'linux')#(<testpath),each 'glapack.ijs';'glapackcb.ijs'  NB. linux32 gcc lapack issue running under gdb
 blacklist=: blacklist, ('Win'-.@-:UNAME)#(<testpath),each 'g128x14.ijs';'g128x19.ijs'
 ddall=: ddall -. blacklist=: ~. blacklist
+ddall=: (<testpath),each <'g520.ijs'
 
 NB. smoke test
 
@@ -133,23 +134,6 @@ exformat_j_=: eformat_j_ f.
 echo '(1x&(]F::(++:))) [58#0'
 empty (1x&(]F::(++:))) [58#0
 eformat_j_=: exformat_j_ f.
-
-
-3 : 0''
-ECHOFILENAME0=: ECHOFILENAME
-ECHOFILENAME=: 0
-QKTEST0=: QKTEST
-QKTEST=: 1
-echo '>>> testing g520.ijs'
-for_i. i.10 do.
-  RES=: RUN4 (<testpath),each <'g520.ijs'
-  exit^:(*@#RES) *@#RES
-end.
-RES=: ''
-QKTEST=: QKTEST0
-ECHOFILENAME=: ECHOFILENAME0
-1
-)
 
 
 0!:_1 '$'   NB. temp skip to allow running full test suite
