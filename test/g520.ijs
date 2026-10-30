@@ -803,52 +803,9 @@ y=: y, 1 1 1 1 1 1 1 1 1 1 1 1
 y=: y, 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
 5 5 5 5 5 5 5 5 5 5 5 5 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 -: (<<<I.1=y){y  NB. incorrectly gave a virtual
 
-{{
-for_i. i. y do.
-try.
-techo i
-NB. dels =. shp ?@$~ ndels =. ? shp =. 1 >. ? 73  NB. deal the array and the comp indexes
-shp =. 1 >. ? 73  NB. deal the array and the comp indexes
-techo 'a'
-ndels =. ? shp
-techo 'b'
-dels =. shp ?@$~ ndels
-techo 'c'
-catch.
-techo 'error!!!'
-techo 13!:12''
-assert. 0
-end.
-try.
-techo 'd'
-t=. ((<<<dels)&{) i. shp
-techo 'e'
-techo t
-techo 'e1'
-catch.
-techo 'f'
-techo 13!:12''
-techo 'shp ndels ',":shp,ndels
-techo 'dels ',":dels
-techo '/:~ ~.dels ',":/:~ ~.dels
-assert. 0
-end.
-techo 'e2'
-techo t
-techo 'e3'
-techo ":i.shp
-techo 'e4'
-techo ":shp,ndels
-techo 'e5'
-techo ":(2 ! shp) - (+/~.dels) + +/ t
-techo 'e6'
-techo ":(t,~.dels) -. i.shp
-techo 'e7'
-techo ":(t,~.dels) -.~ i.shp
-techo 'e8'
+{{ for_i. i. y do.
+dels =. shp ?@$~ ndels =. ? shp =. 1 >. ? 73  NB. deal the array and the comp indexes
 assert. (2 ! shp) = (+/~.dels) + +/ t
-techo 'e9'
-end.
 1
 }} 0{50000 10000  NB. Verify that random deletions work
 
