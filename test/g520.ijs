@@ -807,7 +807,13 @@ y=: y, 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
 for_i. i. y do.
 try.
 techo i
-dels =. shp ?@$~ ndels =. ? shp =. 1 >. ? 73  NB. deal the array and the comp indexes
+NB. dels =. shp ?@$~ ndels =. ? shp =. 1 >. ? 73  NB. deal the array and the comp indexes
+shp =. 1 >. ? 73  NB. deal the array and the comp indexes
+techo 'a'
+ndels =. ? shp
+techo 'b'
+dels =. shp ?@$~ ndels
+techo 'c'
 catch.
 techo 'error!!!'
 techo 13!:12''
