@@ -806,10 +806,17 @@ y=: y, 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
 {{ for_i. i. y do.
 dels =. shp ?@$~ ndels =. ? shp =. 1 >. ? 73  NB. deal the array and the comp indexes
 NB. assert. (2 ! shp) = (+/~.dels) + +/ t=. (<<<dels) { i. shp
-techo s=. (2 ! shp) = (+/~.dels) + +/ t=. (<<<dels) { i. shp
+techo i
+techo t=. (<<<dels) { i. shp
+techo 'a1'
 techo t
+techo 'a2'
 techo (t,~.dels) -. i.shp
+techo 'a3'
 techo (t,~.dels) -.~ i.shp
+techo 'a4'
+techo s=. (2 ! shp) = (+/~.dels) + +/ t=. (<<<dels) { i. shp
+techo 'a5'
 assert. 1=s
 1
 }} 0{50000 10000  NB. Verify that random deletions work
