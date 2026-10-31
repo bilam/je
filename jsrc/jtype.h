@@ -1484,19 +1484,38 @@ union{
 
 // layout of primitive, in the primtbl.  It is a memory header (shape 0) followed by a V
 typedef struct __attribute__((aligned(ABDY))) {I memhdr[AKXR(0)/SZI]; union { V primvb; I primint; UI8 primfl; } prim; } PRIM;  // two cachelines exactly in 64-bit
-//                    0               4            8             12
-// validitymask[16]={-1, -1,  0, 0,  -1, -1, 0, 0, -1, -1,  0,  0,0,0,0,0};  // !SY_64
-// validitymask[16]={-1, -1, -1, -1,  0,  0, 0, 0, -1, -1, -1, -1,0,0,0,0};  // C_AVX2 || EMU_AVX2
-// validitymask[16]={-1, -1,  0,  0, -1, -1, 0, 0, -1, -1,  0,  0,0,0,0,0};  // others
+// validitymask storage is long long, even for 32-bit
+// 64-bit                                                   +12     K   F   M   T   C   N  R  S
+// 32-bit                                                           K F M T C N R S
+// 64-bit                                    +8     K   F   M   T   C   N  R  S
+// 32-bit                                           K F M T C N R S
+// index              0               4             8               12
+// validitymask[16]={-1, -1,  0,  0, -1, -1, 0, 0, -1, -1,  0,  0,  0,  0,  0,  0  };  // !SY_64
+// validitymask[16]={-1, -1, -1, -1,  0,  0, 0, 0, -1, -1, -1, -1,  0,  0,  0,  0  };  // C_AVX2 || EMU_AVX2
+// validitymask[16]={-1, -1,  0,  0, -1, -1, 0, 0, -1, -1,  0,  0,  0,  0,  0,  0  };  // others native ss2/neon register
 // Canned blocks
 // NOTE: for fetching IDs we use the validitymask as a safe place to fetch 0s from.  We know that
 // validitymask[15] will be 0 on any platform
 #define NUMERIC0 ((C*)(validitymask+12))  // 0 0 0 0 for numeric fill
+#if NORMAHN
+#if SY_64
 #define FUNCTYPE0 ((A)(validitymask+12-NORMAHN))  // 0 0 0 0, which has a 0 in the AT field
 #define FUNCID0 ((A)(validitymask+2*(!SY_64)-NORMAHN))  // 0 in index [15] ([19] for 32-bit but the storage is long long!), which has a 0 in the id field of V
-#define SYMVAL0 ((L*)(validitymask+12))  // 0 0, which has a 0 in the val field of L
 #define AFLAG0 ((A)(validitymask+12-NORMAHN))  // 0 0 0 0, which has a 0 in the flag field and type field of A
 #define ANLEN0 ((A)(validitymask+12-4-NORMAHN))  // x x x x 0 0, which has a 0 in the AN field
+#else
+#define FUNCTYPE0 ((A)((I4*)validitymask+24-NORMAHN))  // 0 0 0 0, which has a 0 in the AT field
+#define FUNCID0 ((A)((I4*)validitymask+4*(!SY_64)-NORMAHN))  // 0 in index [15] ([19] for 32-bit but the storage is long long!), which has a 0 in the id field of V
+#define AFLAG0 ((A)((I4*)validitymask+24-NORMAHN))  // 0 0 0 0, which has a 0 in the flag field and type field of A
+#define ANLEN0 ((A)((I4*)validitymask+24-8-NORMAHN))  // x x x x 0 0, which has a 0 in the AN field
+#endif
+#else
+#define FUNCTYPE0 ((A)(validitymask+12))  // 0 0 0 0, which has a 0 in the AT field
+#define FUNCID0 ((A)(validitymask+2*(!SY_64)))  // 0 in index [15] ([19] for 32-bit but the storage is long long!), which has a 0 in the id field of V
+#define AFLAG0 ((A)(validitymask+12))  // 0 0 0 0, which has a 0 in the flag field and type field of A
+#define ANLEN0 ((A)(validitymask+12-4))  // x x x x 0 0, which has a 0 in the AN field
+#endif
+#define SYMVAL0 ((L*)(validitymask+12))  // 0 0, which has a 0 in the val field of L
 #define ZAPLOC0 ((A*)(validitymask+12))  // 0 used as a pointer to a null tpop-stack value
 #define PSTK2NOTFINALASGN ((PSTK*)(validitymask+12)-2)  // 0 in position [2], signifying NOT final assignment (used for errors)
 #define BREAK0 ((C*)(validitymask+12))  // 0 to indicate no ATTN requested
