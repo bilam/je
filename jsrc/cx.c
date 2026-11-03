@@ -232,7 +232,7 @@ DF2(jtxdefn){DF12IP;
  V *sv=FAV(self); I sflg=sv->flag;   // pointer to definition, and flags therefrom
   PROLOG(0048);
 
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  A * RESTRICT cwsent;   // Base pointer, to both the cw data (going down) and the sentence words (going up)  Filled in by LINE
  I NPGpysfmtdl;  // flags: 1=locked 2=debug set(& not locked) 4=tdv->ndx!=0 8 unused 16=(parser frame allocated) 32=symtable was the original (i. e. !AR(symtab)&ARLSYMINUSE)
              // 64=call is dyadic 128=pm is running    0xff00=(flags byte: mostly debug, but bit 1 from trapping)   >>16=-(#cws in the definition including sentinel)=~#cws
@@ -746,12 +746,12 @@ bodyend: ;  // we branch to here to exit with z set to result
 }
 
 // execution of u : v, selecting the version of self & function to use based on valence.  Bivalent, called only from parse/unquote with w,self,self or a,w,self
-static DF2(xv12){DF12IP;I dyad=self!=w; self=FAV(self)->fgh[dyad]; w=dyad?w:self; RETF((FAV(self)->valencefns[dyad])(jt,a,w,self))}
+static DF2(xv12){DF12IP; MEMCHK2(a,w); I dyad=self!=w; self=FAV(self)->fgh[dyad]; w=dyad?w:self; RETF((FAV(self)->valencefns[dyad])(jt,a,w,self))}
 
 // Nilad.  The caller has just executed an entity to produce an operator.  If we are debugging/pm'ing, AND the operator comes from a named entity, we need to extract the
 // name so we can debug/time it.  We do this by looking at the debug stack: if we are executing a CALL, we get the name from there.  If we are
 // executing PARSE or other, we must be executing a truly anonymous operator, and we return 0
-static F1(jtxopcall){F12IP;R jt->uflags.trace&&jt->sitop&&DCCALL==jt->sitop->dctype?jt->sitop->dca:0;}  // debug or pm, and CALL type.  sitop may be 0 if deb/pm turned on in the middle of a sentence
+static F1(jtxopcall){F12IP; R jt->uflags.trace&&jt->sitop&&DCCALL==jt->sitop->dctype?jt->sitop->dca:0;}  // debug or pm, and CALL type.  sitop may be 0 if deb/pm turned on in the middle of a sentence
 
 // This handles explicit adverbs/conjs that refer to x/y.  Install a[/w] into the derived verb as f/h, self as g, and copy the flags
 // bivalent adv/conj
@@ -759,7 +759,7 @@ static F1(jtxopcall){F12IP;R jt->uflags.trace&&jt->sitop&&DCCALL==jt->sitop->dct
 // Flag the resulting operator with VXOP, and remove VNONAME+VNOSELF for it so that the compound can be fixed
 // self->flag always has VXOPR+VNONAME+VNOSELF
 DF2(jtxop2){DF12IP;A ff,x;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  A aw=a; self=AT(w)&(ADV|CONJ)?w:self; aw=AT(w)&(ADV|CONJ)?aw:w; w=AT(w)&(ADV|CONJ)?0:w; // we are called as u adv or u v conj
  I flags=(FAV(self)->flag|VXOP)&~(VNONAME+VNOSELF); flags|=FAV((AT(aw)&NOUN?ds(CDUMMY):aw))->flag&FAV((AT(a)&NOUN?ds(CDUMMY):a))->flag&VNONAME+VNOSELF;  // set VXOP and perhaps VNONAME+VNOSELF
    // We VNONAME+VNOSELF is a and w are VNONAME+VNOSELF, so that fixing the result will be quick.  If the explicit def is a locative, it will be wrapped with one or two
@@ -834,12 +834,12 @@ static A jtcolon0(J jt, I deftype){A l,z;C*p,*q,*s;A *sb;I m,n;
 
 // w is character array or list
 // if table, take , w ,. LF    if list take ,&LF^:(LF~:{:) w)
-static F1(jtlineit){F12IP;
+static F1(jtlineit){F12IP; MEMCHK1(w); 
  R 1<AR(w)?ravel(stitch(w,scc(CLF))):AN(w)&&CLF==CAV(w)[AN(w)-1]?w:over(w,scc(CLF));
 }
 
 // w is a rank-1 string.  We scan it for {{ }} and return the boxed result.  self is invalid
-static DF1(jtboxddline){DF12IP;RZ(w=ddtokens(w,0b1110)) R box(w);}
+static DF1(jtboxddline){DF12IP; MEMCHK1(w); RZ(w=ddtokens(w,0b1110)) R box(w);}
 
 
 // Convert ASCII w to boxed lines.  w is the argument to m : w and thus might be from 9 : w or might contain
@@ -1217,7 +1217,7 @@ A jtclonelocalsyms(J jt, A a){A z;I j;I an=AN(a); LX *av=LXAV0(a),*zv;
 }
 
 F2(jtcolon){F12IP;A h,*hv;C*s;I flag=VFLAGNONE,m,p;
- ARGCHK2(a,w);PROLOG(778);
+ ARGCHK2(a,w); MEMCHK2(a,w);PROLOG(778);
  A z; fdefallo(z)
  if(VERB&AT(a)){  // v : v case
   ASSERT(AT(w)&VERB,EVDOMAIN);   // v : noun is an error
@@ -1357,7 +1357,7 @@ colonfound:;   // : given.  takeafter the : for the first line, and taketo for t
 A jtddtokens(J jtfg,A w,I env){F12IP;
 // TODO: Use LF for DDSEP, support {{), make nouns work
  PROLOG(000);
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  // find word boundaries, remember if last word is NB
  A wil; RZ(wil=wordil(w));  // get index to words
  C *wv=CAV(w); I nw=AS(wil)[0]; I (*wilv)[2]=voidAV(wil);  // cv=pointer to chars, nw=#words including final NB   wilv->[][2] array of indexes into wv word start/end

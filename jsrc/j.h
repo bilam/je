@@ -789,6 +789,7 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 //            (starting after you have run 9!:_5 (1) to turn it on)
 //     0x20:  audit freelist at end of every sentence regardless of 9!:_5
 //     0x40:  enable guard blocks (libgmp mallocs only)
+//     0x80:  check memory header
 //
 // Thus 1+4+8 (or 13 or 0xD) will verify that there are no blocks
 // being used after they are freed, or freed prematurely. If you
@@ -1234,15 +1235,15 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 #define F1PREFJT        FPREFIP(J)  // for doc purposes, use when the JT flags are not for inplacing
 #define F2PREFJT        FPREFIP(J)
 #define DF1RANK(m,f,self)    {if(AR(w)<=m)R f(jt,w,(A)self); if(m==0)R rank1ex0(w,(A)self,f);else R rank1ex(w,(A)self,(I)m,f);}  // if there is more than one cell, run rank1ex on them.  m=monad rank, f=function to call for monad cell.  Run suff only if rank was called.  Fall through otherwise
-#define F1RANKSUFF(m,f,self,suff)    {ARGCHK1(w);A z; if(likely(m<AR(w))){if(m==0)z=rank1ex0(w,(A)self,f);else z=rank1ex(w,(A)self,(I)m,f); suff}}  // if there is more than one cell, run rank1ex on them.  m=monad rank, f=function to call for monad cell.  Run suff only if rank was called.  Fall through otherwise
+#define F1RANKSUFF(m,f,self,suff)    {ARGCHK1(w); MEMCHK1(w);A z; if(likely(m<AR(w))){if(m==0)z=rank1ex0(w,(A)self,f);else z=rank1ex(w,(A)self,(I)m,f); suff}}  // if there is more than one cell, run rank1ex on them.  m=monad rank, f=function to call for monad cell.  Run suff only if rank was called.  Fall through otherwise
 #define F1RANK(m,f,self) F1RANKSUFF(m,f,self,R z;)
 #define DF2RANK(l,r,f,self)  {if(likely((I)((l-AR(a))|(r-AR(w)))<0))R f(jt,a,w,(A)self); if((l|r)==0)R rank2ex0(a,w,(A)self,f);else{I lr=MIN((I)l,AR(a)); I rr=MIN((I)r,AR(w)); R rank2ex(a,w,(A)self,lr,rr,lr,rr,f);}}  // If there is more than one cell, run rank2ex on them.  l,r=dyad ranks, f=function to call for dyad cell
-#define F2RANKcommon(l,r,f,self,extra)  {ARGCHK2(a,w); extra if(likely((I)((l-AR(a))|(r-AR(w)))<0))if((l|r)==0)R rank2ex0(a,w,(A)self,f);else{I lr=MIN((I)l,AR(a)); I rr=MIN((I)r,AR(w)); R rank2ex(a,w,(A)self,lr,rr,lr,rr,f);}}  // If there is more than one cell, run rank2ex on them.  l,r=dyad ranks, f=function to call for dyad cell
+#define F2RANKcommon(l,r,f,self,extra)  {ARGCHK2(a,w); MEMCHK2(a,w); extra if(likely((I)((l-AR(a))|(r-AR(w)))<0))if((l|r)==0)R rank2ex0(a,w,(A)self,f);else{I lr=MIN((I)l,AR(a)); I rr=MIN((I)r,AR(w)); R rank2ex(a,w,(A)self,lr,rr,lr,rr,f);}}  // If there is more than one cell, run rank2ex on them.  l,r=dyad ranks, f=function to call for dyad cell
 #define F2RANK(l,r,f,self)  F2RANKcommon(l,r,f,self,)
 // same, but used when the function may pull an address from w.  In that case, we have to turn pristine off since there may be duplicates in the result
 #define F2RANKW(l,r,f,self) F2RANKcommon(l,r,f,self,PRISTCLR(w))
 #define F1RANKIP(m,f,self)    {RZ(   w); if(unlikely(m<AR(w)))R jtrank1ex(jtfg,  w,(A)self,(I)m,     f);}  // if there is more than one cell, run rank1ex on them.  m=monad rank, f=function to call for monad cell
-#define F2RANKIP(l,r,f,self)  {ARGCHK2(a,w); if(unlikely((I)((l-AR(a))|(r-AR(w)))<0)){I lr=MIN((I)l,AR(a)); I rr=MIN((I)r,AR(w)); R jtrank2ex(jtfg,a,w,(A)self,REX2R(lr,rr,lr,rr),f);}}  // If there is more than one cell, run rank2ex on them.  l,r=dyad ranks, f=function to call for dyad cell
+#define F2RANKIP(l,r,f,self)  {ARGCHK2(a,w); /* MEMCHK1A(a); MEMCHK1A(w); */ if(unlikely((I)((l-AR(a))|(r-AR(w)))<0)){I lr=MIN((I)l,AR(a)); I rr=MIN((I)r,AR(w)); R jtrank2ex(jtfg,a,w,(A)self,REX2R(lr,rr,lr,rr),f);}}  // If there is more than one cell, run rank2ex on them.  l,r=dyad ranks, f=function to call for dyad cell
 // fork, including simple variants and NVV
 #define PTRSNE(a,b) ((((I)(a)^(I)(b))&~(JTINPLACEW|JTINPLACEA))!=0)  // pointers don't match, ignoring low 2 bits
 #define PTR(a) ((A)((I)(a)&~(JTINPLACEW|JTINPLACEA)))  // base of a pointer that might have flag bits
@@ -1259,7 +1260,7 @@ struct jtimespec jmtfclk(void); //'fast clock'; maybe less inaccurate; intended 
 
 // FORK1 and FORK2 are NOT bivalent
 #define FORK1(name,opt) \
-DF1(name){DF12IP;PROLOG(0000); PUSHZOMB; ARGCHK1D(w) \
+DF1(name){DF12IP;PROLOG(0000); PUSHZOMB; ARGCHK1D(w); MEMCHK1(QCWORD(w)); \
 AF fghfn; A fs, gs, hs; \
 if(opt&0x100){ \
  /* h is omitted.  Fetch from g and f, and ignore @][ for hs purposes.  hfn is dyad for @: only */ \
@@ -1281,7 +1282,7 @@ if(opt&0x1){hx=w; \
  jtf=JPTROP(jt,+,(((I)w&(opt>>5)&1) + (wof & ((I)jtfg&JTWILLBEOPENED?VF2WILLOPEN1+VF2USESITEMCOUNT1:VF2WILLOPEN1+VF2WILLREALIZE1+VF2USESITEMCOUNT1))));  /* if WILLBEOPENED into g, suppress WILLREALIZE from g */ \
  RZEFCALL(hx,(fghfn)(jtf,PTR(w),hs,hs),hs,PTR(w),0); \
  hx=PTROP(hx,+,(I)(hx!=w)*JTINPLACEW);  /* result is inplaceable unless it equals noninplaceable input */ \
- ARGCHK1D(hx) \
+ ARGCHK1D(hx); MEMCHK1(QCWORD(hx)); \
 } \
 /* the call to f is inplaceable if the caller allowed inplacing, and f is inplaceable; but not for an arg equal to hx (which is in use for g).  Both flags in jtfg are used */ \
 A fx; \
@@ -1294,7 +1295,7 @@ if(!(opt&0x40)){  /* f produces a result */ \
   jtf=JPTROP(jt,+,(((I)w&(JTINPLACEW*(I)PTRSNE(hx,w))) + (wof & ((I)jtfg&JTWILLBEOPENED?VF2WILLOPEN1+VF2USESITEMCOUNT1:VF2WILLOPEN1+VF2WILLREALIZE1+VF2USESITEMCOUNT1)))); /* install inplace & willopen flags */\
   RZEFCALL(fx,(fghfn)(jtf,PTR(w),fs,fs),fs,PTR(w),0); \
   hx=PTROP(hx,+,(I)(fx!=w)*JTINPLACEA);  /* result is inplaceable unless it equals noninplaceable input */ \
-  ARGCHK2D(fx,hx) \
+  ARGCHK2D(fx,hx); MEMCHK1(QCWORD(fx)); MEMCHK1(QCWORD(hx)); \
  } \
 } \
 if(opt&0x40)fghfn=FAVV(gs)->valencefns[0];else fghfn=FAVV(gs)->valencefns[1]; /* monad if no f result, else dyad */ \
@@ -1328,7 +1329,7 @@ RETF(z); \
 // g@:h is 1c0
 // &: is 148
 #define FORK2(name,opt) \
-DF2(name){DF12IP;PROLOG(0000); PUSHZOMB; ARGCHK2D(a,w) \
+DF2(name){DF12IP;PROLOG(0000); PUSHZOMB; ARGCHK2D(a,w); MEMCHK1(QCWORD(a)); MEMCHK1(QCWORD(w)); \
 AF fghfn; A fs, gs, hs; \
 if(opt&0x100){ \
  /* h is omitted.  Fetch from g and f, and ignore @][ for hs purposes.  hfn is dyad for @: only */ \
@@ -1364,7 +1365,7 @@ if(opt&0x2){hx=w; \
   RZEFCALL(hx,(fghfn)(jtf,PTR(a),PTR(w),hs),hs,PTR(a),PTR(w)); \
   hx=PTROP(hx,+,(I)((hx!=w)&(hx!=a))*JTINPLACEW);  /* result is inplaceable unless it equals noninplaceable input */ \
  } \
- ARGCHK1D(hx) \
+ ARGCHK1D(hx); MEMCHK1(QCWORD(hx)); \
 } \
 /* the call to f is inplaceable if the caller allowed inplacing, and f is inplaceable; but not for an arg equal to hx (which is in use for g).  Both flags in jtfg are used */ \
 A fx; \
@@ -1391,7 +1392,7 @@ if((opt&0xc0)!=0xc0){ /* if we are running f */ \
    RZEFCALL(fx,(fghfn)(jtf,PTR(a),PTR(w),fs),fs,PTR(a),PTR(w)); \
    hx=PTROP(hx,+,((I)((fx!=w)&(fx!=a)))*JTINPLACEA);  /* result is inplaceable unless it equals noninplaceable input */ \
   } \
-  ARGCHK2D(fx,hx) \
+  ARGCHK2D(fx,hx); MEMCHK1(QCWORD(fx)); MEMCHK1(QCWORD(hx)); \
  } \
 } \
 if((opt&0xc0)==0xc0)fghfn=FAVV(gs)->valencefns[0];else fghfn=FAVV(gs)->valencefns[1];  /* dyad for g unless f is suppressed */  \

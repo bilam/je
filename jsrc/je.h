@@ -1213,3 +1213,8 @@ extern int      memcmp();       /* C library fn                            */
 extern D        strtod();       /* C library fn                            */
 extern I        strtol();       /* C library fn                            */
 #endif
+
+#if MEMAUDIT&0x80
+extern void chkmemchain(J,int,I,A);
+extern void chkapx(J,A,int,int);
+#endif

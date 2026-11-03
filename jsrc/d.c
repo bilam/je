@@ -98,7 +98,7 @@ static I jtdspell(J jt,C id,A w,I nflag){C c,s[5];
  R nflag;
 }
 
-static F1(jtsfn0){F12IP;R sfn(0,w);}  // return string form of full name for a NAME block
+static F1(jtsfn0){F12IP; R sfn(0,w);}  // return string form of full name for a NAME block
 EVERYFS(sfn0overself,jtsfn0,jtover,0,VFLAGNONE)
 
 // print a word; nflag bits if (space needed before name/numeric),(parens needed),(space before { needed); return new value of nflag
@@ -149,7 +149,7 @@ static void jtseeparse(J jt,DC d){A*v;
  DO(d->dcn, if(i==etok||i==ptok)eputs("    "); nflag=disp(QCWORD(v[i]),nflag););  // display tokens with spaces before error(s)
  if(jt->etxn<NETX){  // if we overran the buffer, don't reformat it.  Reformatting requires splitting to words
   // We displayed the sentence.  See if it contains (9 :'string'); if so, replace with {{ string }}
-  fauxblock(fauxw); A z=(A)&fauxw;
+  fauxblock(fauxw); A z=(A)&fauxw; FAUXFILL(z);
   AK(z)=jt->etxinfo->etx+m1-(C*)z; AFLAGFAUX(z,0) AT(z)=LIT; ACFAUX(z,ACUC1) AR(z)=1; AN(z)=AS(z)[0]=jt->etxn-m1;  // point to etx for parsed line
   jtunDD((J)((I)jt+(JTINPLACEW|JTINPLACEA)),z);  // reformat in place
   jt->etxn=m1+AN(z);  // set new end-of-sentence pointer
@@ -159,7 +159,7 @@ static void jtseeparse(J jt,DC d){A*v;
 // w is a list of words, originally from a single sentence.  Result is string form of the words.
 // nflag is display status: bit0=space needed before numeric value, bit1=parens required around non-primitive
 A jtunparse(J jt,A w,I nflag){A*v,z;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1A(w);
  jt->etxn=0;
  v=AAV(w); DO(AN(w), nflag=disp(QCWORD(v[i]),nflag);); z=str(jt->etxn,jt->etxinfo->etx);  // No C(): messages and sentences may contain LPAR/PYX
  jt->etxn=0;
@@ -207,13 +207,13 @@ static B jtdebsi1(J jt,DC d){I t;
  R 1;
 }
 
-F1(jtdbstack){F12IP;DC d=jt->sitop; 
+F1(jtdbstack){F12IP; MEMCHK1(w); DC d=jt->sitop; 
  ASSERTMTV(w);
  if(d){if(DCCALL!=d->dctype)d=d->dclnk; NOUNROLL while(d){debdisp(d); d=d->dclnk;}}
  R mtm;
 }    /* 13!:1  display SI stack */
 
-F1(jtdbstackz){F12IP;A y,z; 
+F1(jtdbstackz){F12IP; MEMCHK1(w); A y,z; 
  RE(dbstack(w)); 
  RZ(y=str(jt->etxn,jt->etxinfo->etx)); 
  jt->etxn=0; 
@@ -229,7 +229,7 @@ static A gahzap(J jt,I r,A w){RZ(w=gah(r,w)) ACINITUNPUSH(w); R w;}  // allocate
 // m is the m argument for adverbs
 // the args to eformat_j_ are error#;curname;jt->ranks/empty if m};AR of self;a/AR(a)[;w/AR(w)}[;m]
 // Result is always 0
-A jteformat(J jtfg,A self,A a,A w,A m){F12IP;
+A jteformat(J jtfg,A self,A a,A w,A m){F12IP; MEMCHK1A(a); MEMCHK1A(w); MEMCHK1A(m);
   if(!(jt->emsgstate&EMSGSTATEUSERMSG+EMSGSTATEFORMATTED+EMSGSTATENOEFORMAT)&&likely(self!=DUMMYSELF)){  // If we have already formatted or have a user msg, don't do it again.  If we expect error, return fast.  If we are called without a real self, we must be executing something internal.  Format it later when we have a real self
   C e=jt->jerr;
   if(e!=0 && e!=EVABORTEMPTY && e!=EVSTACK && e!=EVWSFULL){   // if no error, don't do it again.  Don't waste time on aborts.  If we have run out of memory or stack, don't call eformat, which will probably fail too
@@ -391,7 +391,7 @@ R jtjsignale(jt,EVDOMAIN|EMSGSPACEAFTEREVM,(A)s,strlen(s));
 }
 
 // display for 13!:8
-static F2(jtdbsig){F12IP;I e;
+static F2(jtdbsig){F12IP;I e; MEMCHK2(a,w); 
  RE(0);
  if(!AN(w))R mtm;
  RZ(w=vi(w)); e=AV(w)[0]; 
@@ -406,10 +406,10 @@ static F2(jtdbsig){F12IP;I e;
  R 0;
 }    
 
-DF2(jtdbsig12){DF12IP; R jtdbsig(jt,w==self?(A)0:a, w==self?a:w);}     /* 13!:8  signal error bivalent, called as a, w, self  or w,self,self */
+DF2(jtdbsig12){DF12IP; MEMCHK2(a,w); R jtdbsig(jt,w==self?(A)0:a, w==self?a:w);}     /* 13!:8  signal error bivalent, called as a, w, self  or w,self,self */
 
 // 9!:59 set emsgslvl, return previous
-DF1(jtemsglevel){DF12IP;
+DF1(jtemsglevel){DF12IP; MEMCHK1(w); 
  if(!AN(w))R mtm;
  RZ(w=vi(w)); I e=AV(w)[0]; 
  ASSERT(e<=7,EVDOMAIN);  // must be integer in range 0-7
@@ -421,7 +421,7 @@ DF1(jtemsglevel){DF12IP;
 F1(jtdberr){F12IP;ASSERTMTV(w); R sc(jt->jerr1);}           /* 13!:11 y  last error number   */
 // 13!:12 last error text.  If there is no error, show no text.  If there is an error with no text, we must have suppressed
 // loading the terse message; return it now
-F1(jtdbetx){F12IP;
+F1(jtdbetx){F12IP; MEMCHK1(w); 
  ASSERTMTV(w);
  if(jt->jerr1==0)R mtv;  // if no error, no text either
  if(jt->etxn1==0 && BETWEENC(jt->jerr1,1,NEVM))R AAV(JT(jt,evm))[jt->jerr1];  // no text, supply it now

@@ -10,10 +10,10 @@
 
 
 // 9!:63 return [((AC of x) ; x) ;] inplacingflags ; < (AC of y) ; y
-F1(jtshowinplacing1){F12IP;
+F1(jtshowinplacing1){F12IP; MEMCHK1(w); 
 R jlink(sc((I)jtfg&JTFLAGMSK),box(jlink(sc(AC(w)),w)));
 }
-F2(jtshowinplacing2){F12IP;
+F2(jtshowinplacing2){F12IP; MEMCHK2(a,w); 
 R jlink(jlink(sc(AC(a)),a),jlink(sc((I)jtfg&JTFLAGMSK),box(jlink(sc(AC(w)),w))));
 }
 
@@ -47,7 +47,7 @@ FORK1(jthook1cell,0x110)
 
 
 // Create the derived verb for a fork.  Insert in-placeable flags based on routine, and asgsafe based on fgh
-A jtfolk(J jtfg,A f,A g,A h){F12IP;A p,q,x,y;AF f1=0,f2=0;B b;C c,fi,gi,hi;I flag,flag2=0,j,m=-1,fline,hcol;V*fv,*gv,*hv,*v;
+A jtfolk(J jtfg,A f,A g,A h){F12IP; MEMCHK3(f,g,h); A p,q,x,y;AF f1=0,f2=0;B b;C c,fi,gi,hi;I flag,flag2=0,j,m=-1,fline,hcol;V*fv,*gv,*hv,*v;
  RZ(f&&g&&h);
  // by the parsing rules, g and h must be verbs here
  A z; fdefallo(z);  // allocate the result early to free regs during function body
@@ -224,7 +224,7 @@ static DF2(tcca){DF12IP;TDECL; A z,t, tt; RZ(df2(t,a,w,fs)); RZ(df1(tt,w,hs)); R
 
 
 static DF1(jthkiota){DF12IP;A a,e;I n;P*p;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  SETIC(w,n);
  if(unlikely((AT(w)&SPARSE+B01)==SPARSE+B01)&&1==AR(w)){   // sparse boolean list
   p=PAV(w); a=SPA(p,a); e=SPA(p,e); 
@@ -237,7 +237,7 @@ revert: ;
 }    /* special code for (# i.@#) y */
 
 static DF1(jthkodom){DF12IP;I n,*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(INT&AT(w)&&1==AR(w)){
   n=AN(w); v=AV(w); DO(n, if(v[i]<0)goto revert;)  // revert if not all-nonneg integer list
   R odom(2L,n,v);
@@ -247,7 +247,7 @@ revert: ;
 }    /* special code for (#: i.@(* /)) */
 
 static DF1(jthkindexofmaxmin){DF12IP;
- ARGCHK2(w,self);
+ ARGCHK2(w,self); MEMCHK2(w,self);
  // The code for ordinary search and min/max is very fast.  There's no value in trying to improve it.  The only
  // thing we have to add is setting intolerant comparison on the search, since we know we will be looking for something that is en exact match
  PUSHCCT(1.0) A z=jthook1cell(jt,w,self); POPCCT RETF(z);
@@ -313,7 +313,7 @@ static struct {
 
 // This handles all bident/tridents except N/V V V forks.  If h is CAVN, we have a trident; omitted h is 0
 A jthook(J jt,A a,A w,A h){AF f1=0,f2=0;C c,d,id;I flag=VFLAGNONE,linktype=0;V*u,*v;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  A z; fdefallo(z)
  if(likely(h==0)){
   // bident.

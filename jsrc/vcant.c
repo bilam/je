@@ -8,7 +8,7 @@
 static DF2(jtcanta);
 
 static A jtcants(J jt,A a,A w,A z){A a1,q,y;B*b,*c;I*u,wr,zr;P*wp,*zp;
- ARGCHK3(a,w,z);
+ ARGCHK3(a,w,z); MEMCHK3(a,w,z);
  RZ(a=grade1(a));
  wr=AR(w); wp=PAV(w); a1=SPA(wp,a);
  zr=AR(z); zp=PAV(z);

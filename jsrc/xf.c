@@ -137,7 +137,7 @@ n=AN(w)<<PEXT0(AT(w),C2TX,3); x=CAV(w);
 }    /* write/append string w to file f at j */
 
 // 1!:1 read entire file
-DF1(jtjfread){DF12IP;A z;F f,fp;
+DF1(jtjfread){DF12IP; MEMCHK1(w); A z;F f,fp;
  ASSERT(!JT(jt,seclev),EVSECURE) 
  F1RANK(0,jtjfread,self);
  PROLOG(000);
@@ -154,7 +154,7 @@ DF1(jtjfread){DF12IP;A z;F f,fp;
  EPILOG(z);}
 
 // 1!:2
-DF2(jtjfwrite){DF12IP;B b;F f;
+DF2(jtjfwrite){DF12IP; MEMCHK2(a,w); B b;F f;
  ASSERT(!JT(jt,seclev),EVSECURE)
  F2RANK(RMAX,0,jtjfwrite,self);
  PROLOG(000);
@@ -182,7 +182,7 @@ DF2(jtjfwrite){DF12IP;B b;F f;
 }
 
 // 1!:3
-DF2(jtjfappend){DF12IP;B b;F f;
+DF2(jtjfappend){DF12IP; MEMCHK2(a,w); B b;F f;
  ASSERT(!JT(jt,seclev),EVSECURE)
  F2RANK(RMAX,0,jtjfappend,self);
  PROLOG(000);
@@ -197,7 +197,7 @@ DF2(jtjfappend){DF12IP;B b;F f;
 }
 
 // 1!:4
-DF1(jtjfsize){DF12IP;B b;F f;I m;
+DF1(jtjfsize){DF12IP; MEMCHK1(w); B b;F f;I m;
  ASSERT(!JT(jt,seclev),EVSECURE)
  F1RANK(0,jtjfsize,self);
  PROLOG(000);
@@ -234,7 +234,7 @@ static B jtixin(J jt,A w,I s,I*i,I*n){A in,*wv;I j,k,m,*u;
 }    /* process index file arg for index and length */
 
 // 1!:11
-DF1(jtjiread){DF12IP;A z=0;B b;F f;I i,n;
+DF1(jtjiread){DF12IP; MEMCHK1(w); A z=0;B b;F f;I i,n;
  ASSERT(!JT(jt,seclev),EVSECURE)
  F1RANK(1,jtjiread,self);
  PROLOG(000);
@@ -245,7 +245,7 @@ DF1(jtjiread){DF12IP;A z=0;B b;F f;I i,n;
 }
 
 // 1!:12
-DF2(jtjiwrite){DF12IP;B b;F f;I i;
+DF2(jtjiwrite){DF12IP; MEMCHK2(a,w); B b;F f;I i;
  ASSERT(!JT(jt,seclev),EVSECURE)
  F2RANK(RMAX,1,jtjiwrite,self);
  PROLOG(000);
@@ -286,7 +286,7 @@ static B rmdir(C*v){R!rmdir1(v);}
 #endif
 
 
-DF1(jtjmkdir){DF12IP;A y,z;
+DF1(jtjmkdir){DF12IP; MEMCHK1(w); A y,z;
  ASSERT(!JT(jt,seclev),EVSECURE)
  F1RANK(0,jtjmkdir,self);
  ASSERT(AT(w)&BOX,EVDOMAIN);
@@ -300,7 +300,7 @@ DF1(jtjmkdir){DF12IP;A y,z;
 }
 
 // 1!:55
-DF1(jtjferase){DF12IP;A y,fn;US*s;I h;
+DF1(jtjferase){DF12IP; MEMCHK1(w); A y,fn;US*s;I h;
  ASSERT(!JT(jt,seclev),EVSECURE)
  F1RANK(0,jtjferase,self);
  RE(h=fnum(w));
@@ -316,7 +316,7 @@ DF1(jtjferase){DF12IP;A y,fn;US*s;I h;
 #endif
 }    /* erase file or directory */
 
-F1(jtpathcwd){F12IP;C path[1+NPATH];US wpath[1+NPATH];
+F1(jtpathcwd){F12IP; MEMCHK1(w); C path[1+NPATH];US wpath[1+NPATH];
  ASSERT(!JT(jt,seclev),EVSECURE) ASSERTMTV(w);
 #if (SYS & SYS_UNIX)
  ASSERT(getcwd(path,NPATH),EVFACE);
@@ -328,7 +328,7 @@ F1(jtpathcwd){F12IP;C path[1+NPATH];US wpath[1+NPATH];
 }
 
 F1(jtpathchdir){F12IP;A z;
- ARGCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE)
+ ARGCHK1(w); MEMCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE)
  ASSERT(1>=AR(w),EVRANK);
  ASSERT(AN(w),EVLENGTH);
  ASSERT((LIT+C2T+C4T)&AT(w),EVDOMAIN);
@@ -346,7 +346,7 @@ F1(jtpathchdir){F12IP;A z;
 #endif
 
 // 2!:5
-DF1(jtjgetenv){DF12IP;
+DF1(jtjgetenv){DF12IP; MEMCHK1(w); 
  ASSERT(!JT(jt,seclev),EVSECURE)
  F1RANK(1,jtjgetenv,self);
  ASSERT((LIT+C2T+C4T)&AT(w),EVDOMAIN);
@@ -373,7 +373,7 @@ EPILOG(z);
 }
 
 // 2!:6
-F1(jtjgetpid){F12IP;
+F1(jtjgetpid){F12IP; MEMCHK1(w); 
  ASSERT(!JT(jt,seclev),EVSECURE)
  ASSERTMTV(w);
 #if SY_WIN32
@@ -384,7 +384,7 @@ F1(jtjgetpid){F12IP;
 }
 
 // #if (SYS & SYS_UNIX)
-F1(jtpathdll){F12IP;
+F1(jtpathdll){F12IP; MEMCHK1(w); 
  ASSERT(!JT(jt,seclev),EVSECURE) ASSERTMTV(w);
 #if (SYS & SYS_UNIX)
 char p[PATH_MAX]; extern C sopath[];

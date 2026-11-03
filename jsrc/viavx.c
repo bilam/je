@@ -1149,15 +1149,15 @@ inplace:;
 
 // verb to vector combine@e. compounds.  The i. code is in the self
 // because these are e. compounds we swap a and w
-DF2(jtcombineeps){DF12IP;ARGCHK3(a,w,self);R indexofsub(II0EPS+PEXT0(FAV(self)->flag,3,7),w,a);}
+DF2(jtcombineeps){DF12IP;ARGCHK3(a,w,self); MEMCHK3(a,w,self);R indexofsub(II0EPS+PEXT0(FAV(self)->flag,3,7),w,a);}
 
 // verb to execute compounds like m&i. e.&n .  m/n has already been hashed and the result saved away
 // a is the arg that was indexed, used only if we have to revert to rerunning the operation
 // w is the arg to be applied to the index
 // hs is the hashtable
-A jtindexofprehashed(J jtfg,A a,A w,A hs,A self){F12IP;A h,*hv,x,z;IFN fn;I ar,*as,at,c,f1,k,m,mode,n,
+A jtindexofprehashed(J jtfg,A a,A w,A hs,A self){F12IP; MEMCHK3(a,w,self); MEMCHK1(hs); A h,*hv,x,z;IFN fn;I ar,*as,at,c,f1,k,m,mode,n,
      r,t,*xv,wr,*ws,wt;PROLOG(000);
- ARGCHK3(a,w,hs);
+ ARGCHK3(a,w,hs); MEMCHK3(a,w,hs);
  // hv is (info vector);(hashtable);(byte index validity)
  hv=AAV(hs); x=hv[0]; h=hv[1]; 
  // get the info from the info vector
@@ -1209,7 +1209,7 @@ A jtindexofprehashed(J jtfg,A a,A w,A hs,A self){F12IP;A h,*hv,x,z;IFN fn;I ar,*
 }
 
 // x i. y, with IRS, supports inplacing (in subroutine)
-DFI2(jtindexof){IARG2CR DF12IP;
+DFI2(jtindexof){IARG2CR DF12IP; MEMCHK2(a,w); 
  if(unlikely(a==ds(CALP))&&likely(AT(w)&LIT)&&likely(acr==1)&&likely(!ISSPARSE(AT(w)))){R jtadotidot(jt,w);}  // catch special case of a. i. y
  R jtindexofsub(jtfg,IIDOT,afg,wfg);  // pass inplaceability through
 }
@@ -1228,7 +1228,7 @@ FI1(jtnubsieve){
 
 // ~. y  - does not have IRS.  Supports inplacing
 F1(jtnub){F12IP; 
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(unlikely(ISSPARSE(AT(w)))||unlikely(AFLAG(w)&AFNJA))R repeat(nubsieve(w),w);    // sparse or NJA
  A z; RZ(z=jtindexofsub(jtfg,INUB,w,w));
  // We extracted from w, so mark it (or its backer if virtual) non-pristine.  If w was pristine and inplaceable, transfer its pristine status to the result.  We overwrite w because it is no longer in use
@@ -1238,7 +1238,7 @@ F1(jtnub){F12IP;
 
 // x -. y.  does not have IRS, supports inplacing on the unhashed argument
 F2(jtless){F12IP;A x=w;I ar,at,k,r,*s,wr,*ws;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  PROLOG(000);
  at=AT(a); ar=AR(a); 
  wr=AR(w); r=MAX(1,ar); I wn=AN(w); I wi,ai; SETIC(w,wi); SETIC(a,ai);
@@ -1261,7 +1261,7 @@ F2(jtless){F12IP;A x=w;I ar,at,k,r,*s,wr,*ws;
 
 // x ([ -. -.[!.f]) y.  does not have IRS, supports inplacing on a (the unhashed argument)
 DF2(jtintersect){DF12IP;A x=w;I ar,at,k,r,*s,wr,*ws;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  PROLOG(000);
  at=AT(a); ar=AR(a);
  wr=AR(w); r=MAX(1,ar); I wn=AN(w); I wi,ai; SETIC(w,wi); SETIC(a,ai);
@@ -1296,13 +1296,13 @@ FI2(jteps){
 
 // I.@~: y   does not have IRS
 DF1(jtnubind){DF12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  R unlikely(ISSPARSE(AT(w)))?on1cell(jt,w,self):indexofsub(INUBI,w,w);  // revert for sparse.  No inplacing - could do
 }    /* I.@~: w */
 
 // I.@(~:!.0) y     does not have IRS
 DF1(jtnubind0){DF12IP;A z;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(unlikely(ISSPARSE(AT(w))))R on1cell(jt,w,self);  // revert for sparse
  PUSHCCT(1.0) z=indexofsub(INUBI,w,w); POPCCT  // do operation intolerantly.  Could inplace
  R z;
@@ -1310,13 +1310,13 @@ DF1(jtnubind0){DF12IP;A z;
 
 // I.@e. y   does not have IRS
 DF2(jtepsind){DF12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  R unlikely(ISSPARSE(AT(w)|AT(w)))?jtupon2cell(jt,a,w,self):indexofsub(IIFBEPS,w,a);  // revert for sparse.  Could inplace
 } 
 
 // i.@(e.!.0) y     does not have IRS
 DF2(jtepsind0){DF12IP;A z;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(unlikely(ISSPARSE(AT(a)|AT(w))))R jtupon2cell(jt,a,w,self);  // revert for sparse
  PUSHCCT(1.0) z=indexofsub(IIFBEPS,w,a); POPCCT  // do operation intolerantly
  R z;
@@ -1332,7 +1332,7 @@ FI2(jtsfu){
 
 // = y    
 F1(jtsclass){F12IP;A e,x,xy,y,z;I c,j,m,n,*v;P*p;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  // If w is scalar, return 1 1$1
  if(!AR(w))R reshape(v2(1L,1L),num(1));
  SETIC(w,n);   // n=#items of y
@@ -1418,7 +1418,7 @@ static JOCOLFT(Z,jtjocolz,cthid(ctmask,*(D*)v),cthid(ctmask,tl*x),cthid(ctmask,t
 
 // support for a i."1 &.|:w or a i:"1 &.|:w   used only by some sparse-array stuff
 A jtiocol(J jt,I mode,A a,A w){A h,z;I ar,at,c,d,m,t,wr,*ws,wt;IOCOLFN fn;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  // require ct!=0   why??
  ASSERT(1.0!=jt->cct,EVNONCE);
  at=AT(a); ar=AR(a); m=AS(a)[0]; c=aii(a);  // a: at=type ar=rank m=#items c=#atoms in an item

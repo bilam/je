@@ -251,13 +251,13 @@ struct AD {
  RANKT r;  // 6 rank.  Used as flags in SYMB types (i. e. locales)
  UC filler;
  US h;   // reserved for allocator.  Not used for AFNJA memory
-#if PYXES && SY_64
+#if (PYXES || (SY_64 && MEMAUDIT&0x80))
   // these two values initialized with a single store - must be in order
  US origin;  // 
  S lock;   // can be used as a lock
 #endif
 #else  // bigendian, not used
-#if PYXES && SY_64
+#if (PYXES || (SY_64 && MEMAUDIT&0x80))
  S lock;   // can be used as a lock
  US origin;
 #endif
@@ -289,9 +289,51 @@ struct AD {
 #define SMMAH           (7L+0)   // number of header words in old-fashioned SMM alloc
 #define NORMAH          (7L+0)   // number of header words in new system
 #define AS(x)           ((x)->s)        // Because s is an array, AS(x) is a pointer to the shape, which is in s.  The shape is stored in the fixed position s.
-#if PYXES
+#if PYXES || (SY_64 && MEMAUDIT&0x80)
 #define AORIGIN(x)      ((x)->origin)   /* thread origin id                */
 #define ALOCK(x)        ((x)->lock)     /* thread lock                     */
+#endif
+
+#if MEMAUDIT&0x80
+#define MEMCHK1(x)      {chkapx(jt,x,1,0);}
+#define MEMCHK2(x,y)    {chkapx(jt,x,1,0);chkapx(jt,y,1,0);}
+#define MEMCHK3(x,y,z)  {chkapx(jt,x,1,0);chkapx(jt,x,1,0);chkapx(jt,z,1,0);}
+#define MEMCHK1A(x)      {chkapx(jt,x,1,2);}
+#define MEMCHK1B(x)      {chkapx(jt,x,1,3);}
+#else
+#define MEMCHK1(x)
+#define MEMCHK2(x,y)
+#define MEMCHK3(x,y,z)
+#define MEMCHK1A(x)
+#define MEMCHK1B(x)
+#endif
+
+#if MEMAUDIT&0x80
+#if PYXES
+#define CHKORIGIN(x) if((x)&&(!ACISPERM(AC(x)))&&(!AORIGIN(x)||AORIGIN(x)>MAXTHREADS)){fprintf(stderr,"origin %x lock %x  ",AORIGIN(x),ALOCK(x));dump_ADheader(x);SEGFAULT;}
+#elif (SY_64 && MEMAUDIT&0x80)
+#define CHKORIGIN(x) if((x)&&(!ACISPERM(AC(x)))&&((x)->origin!=0x6b||(x)->lock!=0x7c)){fprintf(stderr,"origin %x lock %x  ",(x)->origin,(x)->lock);dump_ADheader(x);SEGFAULT;}
+#else
+#define CHKORIGIN(x)
+#endif
+#else
+#define CHKORIGIN(x)
+#endif
+
+#if MEMAUDIT&0x80
+#if PYXES
+#define FAUXFILL(x) {AORIGIN(x)=THREADID1(jt);ALOCK(x)=0;}
+#define VIRTFILL(x,y) {AORIGIN(x)=(ACISPERM(AC(y)))?THREADID1(jt):AORIGIN(y);ALOCK(x)=0;}
+#elif (SY_64 && MEMAUDIT&0x80)
+#define FAUXFILL(x) {(x)->origin=(PYXES)?THREADID1(jt):0x6b;(x)->lock=(PYXES)?0:0x7c;}
+#define VIRTFILL(x,y) {(x)->origin=(ACISPERM(AC(y)))?((PYXES)?THREADID1(jt):0x6b):(y)->origin;(x)->lock=(PYXES)?0:0x7c;}
+#else
+#define FAUXFILL(x)
+#define VIRTFILL(x,y)
+#endif
+#else
+#define FAUXFILL(x)
+#define VIRTFILL(x,y)
 #endif
 
 // The following fields are used for private communication between /. and ;. and inside ;. for the fret buffer.

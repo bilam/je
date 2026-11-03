@@ -157,7 +157,7 @@ static A jtsortdirect(J jt,I m,I api,I n,A w){F1PREFJT;A x,z;I t;
 /* n - length of sort axis                 */
 /* w - array to be graded                  */
 
-static SF(jtsortb){F12JT;A z;B up,*u,*v;I i,s;
+static SF(jtsortb){F12JT; MEMCHK1(w); A z;B up,*u,*v;I i,s;
  I zr=AR(w); GA(z,AT(w),AN(w),AR(w),AS(w)); v=BAVn(zr,z);
  up=PEXT0((I)jtfg,JTDESCENDX,1)^1;  u=BAV(w);
  for(i=0;i<m;++i){
@@ -169,7 +169,7 @@ static SF(jtsortb){F12JT;A z;B up,*u,*v;I i,s;
  R z;
 }    /* w grade"1 w on boolean */
 
-static SF(jtsortb2){F12JT;A z;B up;I i,ii,yv[4];US*v,*wv;
+static SF(jtsortb2){F12JT; MEMCHK1(w); A z;B up;I i,ii,yv[4];US*v,*wv;
  I zr=AR(w); GA(z,AT(w),AN(w),AR(w),AS(w)); v=USAVn(zr,z);
  wv=USAV(w); up=PEXT0((I)jtfg,JTDESCENDX,1)^1;
  I startfill=0;
@@ -181,7 +181,7 @@ static SF(jtsortb2){F12JT;A z;B up;I i,ii,yv[4];US*v,*wv;
  R z;
 }    /* w grade"r w on 2-byte boolean items */
 
-static SF(jtsortb4){F12JT;A z;B up;I i,ii,yv[16];UINT*v,*wv;
+static SF(jtsortb4){F12JT; MEMCHK1(w); A z;B up;I i,ii,yv[16];UINT*v,*wv;
  I zr=AR(w); GA(z,AT(w),AN(w),AR(w),AS(w)); v=(UINT*)AVn(zr,z);
  wv=(UINT*)AV(w); up=PEXT0((I)jtfg,JTDESCENDX,1)^1;
  I startfill=0;
@@ -193,7 +193,7 @@ static SF(jtsortb4){F12JT;A z;B up;I i,ii,yv[16];UINT*v,*wv;
  R z;
 }    /* w grade"r w on 4-byte boolean items */
 
-static SF(jtsortc){F12JT;A z;B up;I i,ii,yv[256];UC*v,*wv;
+static SF(jtsortc){F12JT; MEMCHK1(w); A z;B up;I i,ii,yv[256];UC*v,*wv;
  I zr=AR(w); GA(z,AT(w),AN(w),AR(w),AS(w)); v=UAVn(zr,z);
  wv=UAV(w); up=PEXT0((I)jtfg,JTDESCENDX,1)^1; I p=LIT&AT(w)?256:2; 
  I startfill=0;
@@ -205,7 +205,7 @@ static SF(jtsortc){F12JT;A z;B up;I i,ii,yv[256];UC*v,*wv;
  R z;
 }    /* w grade"1 w on boolean or character */
 
-static SF(jtsortc2){F12JT;A z;B up;I i,yv[65536];US*v,*wv;
+static SF(jtsortc2){F12JT; MEMCHK1(w); A z;B up;I i,yv[65536];US*v,*wv;
  I zr=AR(w); GA(z,AT(w),AN(w),AR(w),AS(w)); v=USAVn(zr,z);
  wv=USAV(w); up=PEXT0((I)jtfg,JTDESCENDX,1)^1;
  I startfill=0; I sct=AT(w)&C2T?0:8;  // C2T is littleendian, 2 chars are bigendian
@@ -219,7 +219,7 @@ static SF(jtsortc2){F12JT;A z;B up;I i,yv[65536];US*v,*wv;
 
 
 // We are known to have 1 atom per item
-static SF(jtsorti1){F12JT;A x,y,z;I*wv;I i,*xv,*zv;void *yv;
+static SF(jtsorti1){F12JT; MEMCHK1(w); A x,y,z;I*wv;I i,*xv,*zv;void *yv;
  I zr=AR(w); GA(z,AT(w),AN(w),AR(w),AS(w)); zv=AVn(zr,z);
  wv=AV(w);
  // choose bucket table size & function; allocate the bucket area
@@ -280,7 +280,7 @@ static SF(jtsorti1){F12JT;A x,y,z;I*wv;I i,*xv,*zv;void *yv;
 
 
 // JTDESCEND set in jt
-static A jtsortiq(J jtfg, I m, I n, A w, I rmin, I rmax){F12JT;  // m=#sorts, n=#items in each sort, w is block
+static A jtsortiq(J jtfg, I m, I n, A w, I rmin, I rmax){F12JT; MEMCHK1(w);   // m=#sorts, n=#items in each sort, w is block
  A z;I inplace=ASGNINPLACESGN(SGNIF(jtfg,JTINPLACEWX),w); //inplace sort?
  if(inplace)z=w;else RZ(z=ca(w))   // always inplace, so copy if needed
 // obsolete  else GA(z,AT(w),AN(w),AR(w),AS(w));
@@ -294,7 +294,7 @@ static A jtsortiq(J jtfg, I m, I n, A w, I rmin, I rmax){F12JT;  // m=#sorts, n=
   zv+=n;)
  RETF(z);}
 
-static SF(jtsorti){F12JT;A y,z;I i;UI4 *yv;I j,s,*wv,*zv;
+static SF(jtsorti){F12JT; MEMCHK1(w); A y,z;I i;UI4 *yv;I j,s,*wv,*zv;
  wv=AV(w);
  // figure out whether we should do small-range processing.  Comments in vg.c
  // First, decide, based on the length of the list, what the threshold for small-range sorting will be.
@@ -351,7 +351,7 @@ static SF(jtsorti){F12JT;A y,z;I i;UI4 *yv;I j,s,*wv,*zv;
 static SF(jtsortu1);
 
 // see jtsorti above
-static SF(jtsortu){F12JT;A y,z;I i;UI4 *yv;C4 j,s,*wv,*zv;
+static SF(jtsortu){F12JT; MEMCHK1(w); A y,z;I i;UI4 *yv;C4 j,s,*wv,*zv;
  wv=C4AV(w);
  I maxrange; CR rng;
  if(0<(maxrange=16*(n-32))){rng = condrange4(wv,AN(w),-1,0,maxrange);
@@ -369,7 +369,7 @@ static SF(jtsortu){F12JT;A y,z;I i;UI4 *yv;C4 j,s,*wv,*zv;
 }    /* w grade"1 w on small-range literal4 */
 
 // We are known to have 1 atom per item
-static SF(jtsortu1){F12JT;A x,y,z;C4 *xu,*wv,*zu;I i;void *yv;
+static SF(jtsortu1){F12JT; MEMCHK1(w); A x,y,z;C4 *xu,*wv,*zu;I i;void *yv;
  I zr=AR(w); GA(z,AT(w),AN(w),zr,AS(w)); zu=C4AVn(zr,z);
  wv=C4AV(w);
  // choose bucket table size & function; allocate the bucket area
@@ -400,7 +400,7 @@ static SF(jtsortu1){F12JT;A x,y,z;C4 *xu,*wv,*zu;I i;void *yv;
 #define SORTQULOADTYPE D*
 #include "vgsortq.h"
 
-static A jtsortdq(J jtfg, I m, I n, A w, I rmin, I rmax){F12JT;  // m=#sorts, n=#items in each sort, w is block
+static A jtsortdq(J jtfg, I m, I n, A w, I rmin, I rmax){F12JT; MEMCHK1(w);   // m=#sorts, n=#items in each sort, w is block
  A z; 
  if(ASGNINPLACESGN(SGNIF(jtfg,JTINPLACEWX),w))z=w; else RZ(z=ca(w));   // output area, possibly the same as the input
  D *zv=DAV(z); DQ(m, sortdq1(zv,n,rmin,rmax); if((I)jtfg&JTDESCEND){D *zv1=zv; D *zv2=zv+n; DQ(n>>1, D t=*zv1; *zv1++=*--zv2; *zv2=t;)} zv+=n;)  // sort each list (ascending); reverse if descending
@@ -408,7 +408,7 @@ static A jtsortdq(J jtfg, I m, I n, A w, I rmin, I rmax){F12JT;  // m=#sorts, n=
 }
 
 // We are known to have 1 atom per item
-static SF(jtsortd){F12JT;A x,y,z;B b;D*g,*h,*xu,*wv,*zu;I i,nneg;void *yv;
+static SF(jtsortd){F12JT; MEMCHK1(w); A x,y,z;B b;D*g,*h,*xu,*wv,*zu;I i,nneg;void *yv;
 #if 1  // normal case
  // Use quicksort always
  R jtsortdq(jtfg,m,n,w,0,IMAX);  // TUNE
@@ -447,7 +447,7 @@ static SF(jtsortd){F12JT;A x,y,z;B b;D*g,*h,*xu,*wv,*zu;I i,nneg;void *yv;
 //   bit4=0 for /:, 1 for /:~
 //   bit5 if the proper rank ("1 or "2 1) was given
 DF2(jtordstatqsort){F12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  A flgself=FAV(self)->fgh[0]; flgself=FAV(self)->id==CQQ?flgself:self; I varno=FAV(flgself)->localuse.lu1.linkvb;  // step over verb rank if given, fetch verb flags
  if(unlikely(!ISDENSETYPE(AT(w),INT+FL))){revert: R((FAV(self)->id==CQQ?rank2:jthook2cell)(jtfg,a,w,self));}  // if y is not INT/FL, revert, to where depending on presence of "
  if(!(BETWEENC(AR(w),1,self==flgself?1:RMAX)))goto revert;  // revert if operation is not at rank 1 (i. e. no verb rank and w rank!=1

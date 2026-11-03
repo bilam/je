@@ -27,7 +27,7 @@ static A jttk0(J jt,B empty,I *u, I n,A w, I wf, I istake){A z;I m,r,*s;DPMULDDE
 }
 
 
-static F2(jttks){F12IP;PROLOG(0092);A a1,q,x,y,z;B b,c;I an,m,r,*s,*u,*v;P*wp,*zp;
+static F2(jttks){F12IP; MEMCHK2(a,w); PROLOG(0092);A a1,q,x,y,z;B b,c;I an,m,r,*s,*u,*v;P*wp,*zp;
  an=AN(a); u=AV(a); r=AR(w); s=AS(w); 
  GASPARSE(z,AT(w),1,r,s); v=AS(z); DO(an, v[i]=ABS(u[i]););
  zp=PAV(z); wp=PAV(w);
@@ -58,7 +58,7 @@ static F2(jttks){F12IP;PROLOG(0092);A a1,q,x,y,z;B b,c;I an,m,r,*s,*u,*v;P*wp,*z
 
 // general take/drop routine.  *u (length n) is the signed take values, w is array, wf is frame of operation.
 // istake is 1 for take, 0 for drop
-static INLINE A jttk(A w, I *u, I n, I wf, J jtfg, I istake, I wcr, A a, I wt){F12IP;PROLOG(0093);A y,z;C*yv,*zv;I c,dy,dz,e,i,k,m,p,q,r;
+static INLINE A jttk(A w, I *u, I n, I wf, J jtfg, I istake, I wcr, A a, I wt){F12IP; MEMCHK2(a,w); PROLOG(0093);A y,z;C*yv,*zv;I c,dy,dz,e,i,k,m,p,q,r;
  I wr=AR(w), t=AT(w), *ws=wr==wf?shape1:AS(w);  // ws points to shape of w, or all 1s if cell of w is an atom
  if(unlikely(ISSPARSE(t))){
   // sparse: reconstruct old parameters
@@ -158,6 +158,7 @@ endcopy:;
 // x {."r y, which allows infinities in x
 DFI2(jttake){A z;I n,*v;
  IARG2CR F12IP; I wt=AT(w);  // wt=type of w
+ MEMCHK2(a,w);
  if(unlikely(ISSPARSE(AT(a))))RZ(a=denseit(a));  // force a to dense
  I wf=wr-wcr; I af=ar-acr;  // ?r=rank, ?cr=cell rank, ?f=length of frame
 

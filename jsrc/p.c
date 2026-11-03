@@ -169,12 +169,12 @@ _Static_assert((PTRPAR^PTMARKBACK&0xffff0000)==0,"MARKBACK must equal RPAR for e
 
 // multiple assignment not to constant names.  self has parms.  ABACK(self) is the symbol table to assign to, valencefns[0] is preconditioning routine to open value or convert it to AR
 // We flag all multiple assignments as final because the value is protected in the source
-static DF2(jtisf){DF12IP;A am, mw; RZ(am=onm(a)); RZ(mw=CALL1(FAV(self)->valencefns[0],w,self)); RZ(symbisdel(am,mw,ABACK(self))); R num(0);} 
+static DF2(jtisf){DF12IP; MEMCHK2(a,w); A am, mw; RZ(am=onm(a)); RZ(mw=CALL1(FAV(self)->valencefns[0],w,self)); RZ(symbisdel(am,mw,ABACK(self))); R num(0);} 
 
 // assignment other than name =[.:], single or multiple
 // jt has flag set for final assignment (passed into symbis)
 // The return must be 0 for bad, otherwise good with bit 0=final assignment, bit 1 = local assignment (never set)
-static I NOINLINE jtis(J jtfg,A n,A v,A symtab){F12IP;PSTK* stack=jt->parserstackframe.parserstkend1;
+static I NOINLINE jtis(J jtfg,A n,A v,A symtab){F12IP; MEMCHK3(n,v,symtab); PSTK* stack=jt->parserstackframe.parserstkend1;
  B ger=0;C *s;
  if(unlikely(AT(n)==BOX+BOXMULTIASSIGN)){   // test both bits, since BOXMULTIASSIGN has multiple uses
   // string assignment, where the NAME blocks have already been computed.  Use them.  The fast case is where we are assigning a boxed list
@@ -314,7 +314,7 @@ static SYMWALK(jtchkval0k, I,INT,1,1, QCSENTTYPE(d->fval)==QCNOUN&&AK(QCWORD(d->
 // the result has bit 0 set if final assignment
 // JT flags indicate whether call comes from ".
 F1(jtparse){F12IP;A z;I stackallo=0;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1A(w);
  A *queue=AAV(w); I m=AN(w);   // addr and length of sentence
  // Get a new stack frame if needed.  This is a holdover from early days when a frame was allocated for every sentence.  Now that we can
  // parse a sentence in the time it takes to allocate a frame, that is unacceptable overhead.  We come through here for keyboard, script, and ". .
@@ -366,7 +366,7 @@ static A virthook(J jtip, A f, A g, A z){
 // name_: delete the symbol name but not deleting the value.  The value has been ra()d.  Undo the pending fa: If usecount goes to 1, make it abandoned inplaceable and tpush
 // Incoming y is the value attached to the symbol & has QCFAOWED semantics, result is same value with QCFAOWED semantics.
 // result is the value, possibly with FAOWED set
-static A nameundco(J jtfg, A name, A y){F12IP;
+static A nameundco(J jtfg, A name, A y){F12IP; MEMCHK1(name); MEMCHK1(QCWORD(y)); 
  A locfound;
  if(unlikely(((I)y&QCFAOWED)!=0))locfound=syrdforlocale(name);  // get locale to use.  This re-looks up global names, but they should be rare in name_:
  else{locfound=jt->locsyms;  // if not FAOWED, it must be local, no lookup needed
@@ -497,6 +497,9 @@ void protectlocals(J jt, I ofst){PSTK *stk=jt->parserstackframe.parserstkend1; A
 // Result has PARSERASGNX (bit 0) set if the last thing is an assignment
 // JT flag is used to indicate execution from ". - we can't honor name_: then, or perhaps some assignments
 A jtparsea(J jtfg, A *queue, I nwds){F12IP;PSTK *stack;
+#if MEMAUDIT&0x80
+ DO(nwds,MEMCHK1A(queue[i]);)
+#endif
  // whenever we execute a fragment, parserstkend1 must be set to the execution stack of the fragment; the stack will be analyzed
  // to get the error token.  Errors during the stacking phase will be located from this routine
  A jtlocsyms=jt->locsyms;  // we need the AR flags in the local table very quickly for singlee-word sentences, less urgency for longer

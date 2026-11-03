@@ -33,7 +33,7 @@ extern UC* tohex(UC* dest, UC* src, I len);
 
 // Calculate byte-at-a-time CRC table in *crctab, and return the starting value as the result
 static UINT jtcrcvalidate(J jt,A w, UINT* crctab){A*wv;B*v;I m;UINT p,x,z=-1;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(1>=AR(w),EVRANK);
  m=AN(w);
  if(m&&BOX&AT(w)){ASSERT(2>=m,EVLENGTH); wv=AAV(w);  w=C(wv[0]); if(2==m)z=(UINT)rei0(C(wv[1]));}
@@ -44,11 +44,11 @@ static UINT jtcrcvalidate(J jt,A w, UINT* crctab){A*wv;B*v;I m;UINT p,x,z=-1;
 }
 
 // 128!:3 monad
-F1(jtcrc1){F12IP;R crc2(sc(-306674912),w);}
+F1(jtcrc1){F12IP; R crc2(sc(-306674912),w);}
 
 // 128!:3 dyad
-F2(jtcrc2){F12IP;I n;UINT z;UC*v; UINT crctab[256];
- ARGCHK2(a,w);
+F2(jtcrc2){F12IP; MEMCHK2(a,w); I n;UINT z;UC*v; UINT crctab[256];
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(1>=AR(a)&&1>=AR(w),EVRANK);
  n=AN(w); v=UAV(w);
 // ASSERT(!n||AT(w)&LIT+C2T+C4T,EVDOMAIN);
@@ -60,7 +60,7 @@ F2(jtcrc2){F12IP;I n;UINT z;UC*v; UINT crctab[256];
 }
 
 F1(jtcrccompile){F12IP;A h,*hv;UINT z; UINT crctab[256];
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  GAT0(h,BOX,2,1); hv=AAV1(h);
  RE(z=crcvalidate(w,crctab));
  RZ(hv[0]=incorp(vec(LIT,sizeof(crctab),crctab)));  // Save the table.  We don't have any other good type to use
@@ -70,7 +70,7 @@ F1(jtcrccompile){F12IP;A h,*hv;UINT z; UINT crctab[256];
 
 // CRC where table has been precomputed and stored in h
 DF1(jtcrcfixedleft){DF12IP;A h,*hv;I n;UINT*t,z;UC*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  h=FAV(self)->fgh[2]; hv=AAV(h); t=(UINT*)AV(C(hv[0])); z=(UINT)AV(C(hv[1]))[0];
  n=AN(w); v=UAV(w);
  ASSERT(!n||AT(w)&LIT+C2T+C4T,EVDOMAIN);
@@ -84,7 +84,7 @@ DF1(jtcrcfixedleft){DF12IP;A h,*hv;I n;UINT*t,z;UC*v;
 #define CRC32L(acc,in) (0xffffffff&((acc*15015)^(in)))   // if no hardware CRC (rare), mix the bits a little
 #endif
 DF2(jtqhash12){DF12IP; I hsiz; UI crc;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(EPDYAD){hsiz=rei0(a);} else{w=a; hsiz=0;}  // fetch hashtable size; set w=data to hash
  ASSERT(hsiz>=0,EVDOMAIN);
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);  // not sparse for now
@@ -107,7 +107,7 @@ DF2(jtqhash12){DF12IP; I hsiz; UI crc;
 // base64 stuff
 #include<assert.h>
 static C base64tab[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";  // wasm 65 including null terminating character
-DF1(jttobase64){DF12IP;
+DF1(jttobase64){DF12IP; MEMCHK1(w); 
  F1RANK(1,jttobase64,self);  // here we deal only with rank<= 1
  ASSERT(AT(w)&LIT,EVDOMAIN);  // we work only on ASCII (which includes UTF-8).  Other types must be converted first
  // Calculate # triples, #extras
@@ -168,7 +168,7 @@ static C base64invtab[256] = {
 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
  };
 
-DF1(jtfrombase64){DF12IP;
+DF1(jtfrombase64){DF12IP; MEMCHK1(w); 
  F1RANK(1,jtfrombase64,self);  // here we deal only with rank<= 1
  ASSERT(AT(w)&LIT,EVDOMAIN);  // we work only on ASCII
  // Calculate the number of result bytes.  We take the number of input bytes, and discard trailing '=' on a 2- or 3-boundary
@@ -208,7 +208,7 @@ ASSERT(rc==1&&(I)zlen==AN(z),EVDOMAIN);  // make sure no invalid input bytes
   // the 3 bytes are characters AAAAABB BBBBCCCC CCDDDDDD in bits
   //                            7     0 15     8 23    16
 
-DF2(jtxxhash2){DF12IP;
+DF2(jtxxhash2){DF12IP; MEMCHK2(a,w); 
   I n,s;
   A z;
   UC *v;

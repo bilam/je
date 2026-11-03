@@ -11,7 +11,7 @@
 
 // m} y
 static A jtmerge1(J jt,A w,A ind){A z;B*b;C*wc,*zc;I c,it,j,k,m,r,*s,t,*u,*wi,*zi;
- ARGCHK2(w,ind);
+ ARGCHK2(w,ind); MEMCHK2(w,ind);
  r=MAX(0,AR(w)-1); s=1+AS(w); t=AT(w); k=bplg(t); SETIC(w,m); c=aii(w);  // m = # items of w
  ASSERT(!ISSPARSE(t),EVNONCE);
  ASSERT(r==AR(ind),EVRANK);
@@ -53,7 +53,7 @@ D*wd=(D*)wc,*zd=(D*)zc;
 
 // Handle the case statement abc =: pqr} x,...,y,:z, with in-place operation if pqr is Boolean and abc appears on the right
 F1(jtcasev){F12IP;A b,*u,*v,w1,x,y,z;B*bv,p,q;I*aa,c,*iv,j,m,n,r,*s,t;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1A(w);
  RZ(w1=ca(w)); u=AAV(w1);   // make a copy of the input, point to its value
  // the input is a boxed list.  The last 3 values are (name pqr);(index in which abc appeared in the x,y,... or -1 if it didn't);(original sentence queue including flags)
  p=1; m=AN(w)-3; v=AAV(w); c=i0(v[m+1]);   // get # items in list, and index of the matching one
@@ -130,7 +130,7 @@ F1(jtcasev){F12IP;A b,*u,*v,w1,x,y,z;B*bv,p,q;I*aa,c,*iv,j,m,n,r,*s,t;
 //   Value is (number of axes added for frame)/(framelen wrt a)/(framelen wrt w)/(#axes in ind)
 // ind is the assembled indices OR a pointer to axes[]
 static A jtmerge2(J jtfg,A a,A w,A ind,I cellframelen){F12IP;A z;I t;
- ARGCHK2(a,w); RZ(ind);
+ ARGCHK2(a,w); MEMCHK2(a,w); RZ(ind);
  I aframelen=(I1)(cellframelen>>RANK2TX), wframelen=(I1)(cellframelen>>RANKTX), nframeaxes=(cellframelen>>(3*RANKTX)); cellframelen=(I1)cellframelen;  // length of frame of a and w; convert cellframelen to signed int
  //   w w w w w
  // m m m . w w   the rank of m may be more or less than cellframelen which is the number of axes that are covered by m.  For single boxed m, AR(ind)=cellframelen
@@ -487,7 +487,7 @@ endamend:;
 // This is like pind/aindex1 followed by pdt, but done in registers and without worrying about checks for overflow, since the result
 // if valid will fit into an integer.
 static A jtcelloffset(J jt,AD * RESTRICT w,AD * RESTRICT ind,I wframelen){A z=0;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(AR(ind)<2){
   // rank of ind is 0 or 1.  Treat as list of first-axis values (as is suitable for (<ind)}) unless ind} is specified and rank=1 and length>1; then treat as list of successive axes
   if((wframelen|(AN(ind)-2))<0)RZ(z=pind(AS(w)[~wframelen],ind));  // (m} only, or length<2) treat a list as a list of independent indexes.  pind handles that case quickly and possibly in-place.
@@ -538,7 +538,7 @@ static A jtcompidx(J jt,I axislen,A ind){
 // Execution of x m}"r y for sparse: one cell
  // Otherwise, w is sparse
  // ?t = underlying type of ?, s?=nonzero if sparse
-DF2(jtamendn2sp){DF12IP;PROLOG(0007);
+DF2(jtamendn2sp){DF12IP; MEMCHK2(a,w); PROLOG(0007);
  A ind=FAV(self)->fgh[0];  // get ind from ind}
  I acr=AR(a), wcr=AR(w);
  I at=AT(a), wt=AT(w), indt=AT(ind);
@@ -583,7 +583,7 @@ exitra:
 // Execution of x m}"r y.  Split on sparse/dense, passing on the dense to merge2, including inplaceability
 A jtamendn2(J jtfg,A afg,A wfg,AD * RESTRICT ind,A self){A e,z; I atd,wtd,t,t1;P*p;
   // ind=m, the indexes to be modified
- IARG2CR ARGCHK1(ind); F12IP;PROLOG(0007);
+ IARG2CR ARGCHK1(ind); F12IP; MEMCHK1(ind); PROLOG(0007);
  I at=AT(a), wt=AT(w), indt=AT(ind);
  I cellframelen,cellx,indframe;  // for single-cell amend: frame of cell; its index; number of surplus leading axes of 1s in selector
  if(unlikely(ISSPARSE(wt|indt)))R rank2exip(a,w,self,acr,wcr,acr,wcr,jtamendn2sp);
@@ -778,7 +778,7 @@ static DFI2(jtamendn2c){DF12IP;R jtamendn2(jtfg,afg,wfg,FAV(self)->fgh[0],self);
 // Execution of x u} y.  Call (x u y) to get the indices, convert to cell indexes, then
 // call merge2 to do the merge.  Pass inplaceability into merge2.
 static DF2(amccv2){DF12IP;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1];
- ARGCHK2(a,w); 
+ ARGCHK2(a,w); MEMCHK2(a,w); 
  PROLOG(000);
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);  // u} not supported for sparse
  A x;RZ(x=pind(AN(w),CALL2(f2,a,w,fs)));
@@ -790,11 +790,11 @@ static DF2(amccv2){DF12IP;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1];
 }
 
 
-static DF1(mergn1){DF12IP;A ind,z; z=jtmerge1(jt,w,ind=FAV(self)->fgh[0]); if(unlikely(z==0))jteformat(jt,self,w,0,ind); R z;}  // no inplacing
-static DF1(mergv1){DF12IP;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0];A ind,z; z=jtmerge1(jt,w,ind=CALL1(f1,w,fs)); if(unlikely(z==0))jteformat(jt,self,w,0,ind); R z;}
+static DF1(mergn1){DF12IP; MEMCHK1(w); A ind,z; z=jtmerge1(jt,w,ind=FAV(self)->fgh[0]); if(unlikely(z==0))jteformat(jt,self,w,0,ind); R z;}  // no inplacing
+static DF1(mergv1){DF12IP; MEMCHK1(w); A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0];A ind,z; z=jtmerge1(jt,w,ind=CALL1(f1,w,fs)); if(unlikely(z==0))jteformat(jt,self,w,0,ind); R z;}
 
 // verb executed for [v0`]v1`v2} y
-static DF1(jtgav1){DF12IP;V* RESTRICT sv=FAV(self); A ff,ffm,ffx,*fv=AAV(sv->fgh[0]);
+static DF1(jtgav1){DF12IP; MEMCHK1(w); V* RESTRICT sv=FAV(self); A ff,ffm,ffx,*fv=AAV(sv->fgh[0]);
  // first, get the indexes to use.  Since this is going to call m} again, we protect against
  // stack overflow in the loop in case the generated ff generates a recursive call to }
  // If the AR is a noun, just leave it as is
@@ -805,7 +805,7 @@ static DF1(jtgav1){DF12IP;V* RESTRICT sv=FAV(self); A ff,ffm,ffx,*fv=AAV(sv->fgh
 }
 
 // verb executed for x v0`v1`v2} y
-static DF2(jtgav2){DF12IP;V* RESTRICT sv=FAV(self); A ff,ffm,ffx,ffy,*fv=AAV(sv->fgh[0]);  // hv->verbs, already converted from gerunds
+static DF2(jtgav2){DF12IP; MEMCHK2(a,w); V* RESTRICT sv=FAV(self); A ff,ffm,ffx,ffy,*fv=AAV(sv->fgh[0]);  // hv->verbs, already converted from gerunds
  I fn=AS(sv->fgh[0])[0];  // fn=# gerunds in h.  We use AS rather than AN because we may have discarded a trailing value
  // first, get the indexes to use.  Since this is going to call m} again, we protect against
  // stack overflow in the loop in case the generated ff generates a recursive call to }
@@ -831,7 +831,7 @@ static DF2(jtgav2){DF12IP;V* RESTRICT sv=FAV(self); A ff,ffm,ffx,ffy,*fv=AAV(sv-
 
 // handle v0`v1[`v2]} to create the verb to process it when [x] and y arrive.  This result verb has ATOP[LR] flags set from v0
 static A jtgadv(J jt,A w){A hs;I n;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(BOX&AT(w),EVDOMAIN);
  I wn=AN(w); RZ(hs=fxeachv(1,w));   // convert to v1`v0`v1 or v0`v1`v2; convert each gerund to verb
  // hs is a BOX array, but its elements are ARs and cannot be pyxes
@@ -854,7 +854,7 @@ static DFI2(jtamnegate){
 
 // u} handling.  Self can be 0 to indicate this is a recursive call from a subroutine of jtamend
 DF1(jtamend){DF12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(unlikely(AT(w)&VERB)) R fdef(0,CRBRACE,VERB,(AF)mergv1,(AF)amccv2,w,0L,0L,FAV(w)->flag&VNOLOCCHG+VNONAME+VNOSELF, RMAX,RMAX,RMAX);  // verb} 
  else if(AT(w)&BOX&&likely(BETWEENC(AN(w),2,3))&&unlikely(AT(AAV(w)[0])&BOX+VERB+JCHAR)){A z;  // gerund}
   ASSERT(self!=0,EVNONCE);  // execute exception if gerund returns gerund

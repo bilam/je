@@ -12,7 +12,7 @@
 // if w and a have the same type, w will not be converted
 // Result is possibly-converted w
 F2(jtsetfv){F12IP;A q=jt->fill;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I an=AN(a), wn=AN(w);   // empty flags for a/w 
  q=q?q:mtv;  // if no fill given, use empty vector
  I t=maxtypedne(AT(a)|((UI)-an<(UI)wn),AT(w)|((UI)-wn<(UI)an)); t=LOWESTBIT(t);   // If types not the same, get result type.  Treat empty arg as boolean if the other is nonempty.  If both empty, use higher type.  requires B01=1
@@ -27,7 +27,7 @@ F2(jtsetfv){F12IP;A q=jt->fill;
 }
 // simpler version when there is only w.  We make AT(w) an argument to save a fetch
 A jtsetfv1(J jt, A w, I t){A q=jt->fill;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  q=q?q:mtv;  // if no fill given, use empty vector.  No fill type specified
  if(unlikely(AN(q)!=0)){ // fill specified
   t=AN(w)?t:B01; // if w empty, give it the lowest priority
@@ -370,7 +370,7 @@ DFI2(jtreshapeblankfn){I r;
   }
 
 F2(jtexpand){F12IP;A z;B*av;C*wv,*zv;I an,i,k,p,wc,wk,wt,zn;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(!ISDENSETYPE(AT(a),B01))RZ(a=cvt(B01,a));
  ASSERT(1>=AR(a),EVRANK);  // x must be atom or list
  RZ(w=jtsetfv1(jt,w,AT(w)));   // surely fill is needed; maybe cvt w

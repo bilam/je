@@ -65,7 +65,7 @@ F1(jtstype){F12IP;ARGCHK1(w); R sc(toonehottype(AT(w)));}
 
 // (3!:0-type) c. w - convert
 F2(jtcdot2){F12IP;A z;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I t=rei0(a); ASSERT(t=fromonehottype(t,jt),EVDOMAIN)  // convert from 3!:0 form, which must  be to atomic integer, to internal type, which must be valid
  if(t!=AT(w))w=cvt(t,w);  // if the type doesn't match the desired, convert it
  RETF(w);
@@ -74,7 +74,7 @@ F2(jtcdot2){F12IP;A z;
 // a is integer atom or list, values indicating the desired result
 // atom values in x: 0=NJA, others reserved
 F2(jtnouninfo2){F12IP;A z;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  RZ(a=vi(a)); // convert to integer, error if can't
  ASSERT(AR(a)<2,EVRANK);  // must be atom or list
  GATV(z,INT,AN(a),AR(a),AS(a));  // allocate result
@@ -348,7 +348,7 @@ static C* jtbrepfill(J jt,B b,B d,A w,C *zv){
 // b: 1 if reversed bytes
 // main entry point for brep.  First calculate the size by a (recursive) call; allocate; then make a (recursive) call to fill in the block
 static A jtbrep(J jt,B b,B d,A w){
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  I t=AT(w); 
  if(unlikely(ISSPARSE(t)))R breps(b,d,w);  // sparse separately
  A y;I sz=bsizer(jt,d,1,w);GATV0(y,LIT,sz,1); // allocate entire result
@@ -365,18 +365,18 @@ static A jthrep(J jt,B b,B d,A w){A y,z;C c,*hex="0123456789abcdef",*u,*v;I n,s[
  RETF(z);
 }
 
-F1(jtbinrep1){F12IP;ARGCHK1(w); PROLOG(000); ASSERT(NOUN&AT(w),EVDOMAIN); A z=brep(BU,SY_64,w); EPILOG(z)}  /* 3!:1 w */
-F1(jthexrep1){F12IP;ARGCHK1(w); PROLOG(000); ASSERT(NOUN&AT(w),EVDOMAIN); A z=hrep(BU,SY_64,w); EPILOG(z)}  /* 3!:3 w */
+F1(jtbinrep1){F12IP;ARGCHK1(w); MEMCHK1(w); PROLOG(000); ASSERT(NOUN&AT(w),EVDOMAIN); A z=brep(BU,SY_64,w); EPILOG(z)}  /* 3!:1 w */
+F1(jthexrep1){F12IP;ARGCHK1(w); MEMCHK1(w); PROLOG(000); ASSERT(NOUN&AT(w),EVDOMAIN); A z=hrep(BU,SY_64,w); EPILOG(z)}  /* 3!:3 w */
 
 F2(jtbinrep2){F12IP;I k;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  k=rei0(a); if(10<=k)k-=8;
  ASSERT(BETWEENC(k,0,3),EVDOMAIN);
  R brep((B)(k&1),(B)(2<=k),w);
 }    /* a 3!:1 w */
 
 F2(jthexrep2){F12IP;I k;
- ARGCHK2(a,w); 
+ ARGCHK2(a,w); MEMCHK2(a,w); 
  k=rei0(a); if(10<=k)k-=8;
  ASSERT(BETWEENC(k,0,3),EVDOMAIN);
  R hrep((B)(k&1),(B)(2<=k),w);
@@ -390,7 +390,7 @@ static S jtunh(J jt,C c){
 }
 
 static F1(jtunhex){F12IP;A z;C*u;I c,n;UC p,q,*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  c=AS(w)[1];
  ASSERT(c==8||c==16,EVLENGTH);  
  n=AN(w)>>1; u=CAV(w);
@@ -504,7 +504,7 @@ static A jtunbinr(J jt,B b,B d,B pre601,I m,A w,B g){C*u=(C*)w;
 }    /* b iff reverse the bytes; d iff argument is 64-bits */
 
 F1(jtunbin){F12IP;A q;B b,d;C*v;I c,i,k,m,n,r,t;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(LIT&AT(w),EVDOMAIN);
  if(2==AR(w))RZ(w=unhex(w));
  ASSERT(1==AR(w),EVRANK);
@@ -539,7 +539,7 @@ F1(jtunbin){F12IP;A q;B b,d;C*v;I c,i,k,m,n,r,t;
 
 // 3!:4
 F2(jtic2){F12IP;A z;I j,m,n,p,zt;I4* RESTRICT y;UI4* RESTRICT y1;S*s;U short*u;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(1>=AR(w),EVRANK);
  n=AN(w);
  j=rei0(a); ASSERT(BETWEENC(j,-7,7),EVDOMAIN) I j1hot=(I)1<<(j-(-7));  // x must be [_7,7], get 1hot form
@@ -574,7 +574,7 @@ F2(jtic2){F12IP;A z;I j,m,n,p,zt;I4* RESTRICT y;UI4* RESTRICT y1;S*s;U short*u;
 
 // 3!:5
 F2(jtfc2){F12IP;A z;I j,m,n,p,zt;float*s;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(1>=AR(w),EVRANK);
  n=AN(w);
  j=rei0(a);
@@ -626,7 +626,7 @@ F2(jtfc2){F12IP;A z;I j,m,n,p,zt;float*s;
 }
 
 // _1 3!:7 y - convert boolean to packed integer
-static DF1(jtpackbytem1){DF12IP;
+static DF1(jtpackbytem1){DF12IP; MEMCHK1(w); 
  I wn=AN(w); if(unlikely(wn==0))R mtvi; if(unlikely(!(AT(w)&B01)))RZ(w=ccvt(B01,w,0)) UI8 * RESTRICT wv=I8AV(w);  // if no bits, empty result; point to first input bit
  A z; GATV0(z,INT,(wn+BW-1)>>(LGBW),1) C * RESTRICT zv=CAV1(z);  // allocate result & point to it
 #ifdef PEXT
@@ -651,7 +651,7 @@ static DF1(jtpackbytem1){DF12IP;
 #else
  #define __builtin_popcountg __builtin_popcountl
 #endif
-static DF1(jtpopcount){DF12IP;
+static DF1(jtpopcount){DF12IP; MEMCHK1(w); 
  I wn=AN(w); if(unlikely(wn==0))R zeroionei(0); UI * RESTRICT wv=IAV(w); wn<<=bplg(AT(w)); // if no bits, empty result; point to first input bit; get # bytes in input
  I count=0; DO(wn>>LGSZI, count+=__builtin_popcountg(wv[i]);)  // count 1-bits in full Is
  if(unlikely(wn&(SZI-1)))count+=__builtin_popcountg(wv[wn>>LGSZI]<<((-wn&(SZI-1))<<LGBB));  // add on any remnant
@@ -659,7 +659,7 @@ static DF1(jtpopcount){DF12IP;
 }
 
 // 1 3!:7 y - convert any type (normally packed integers) to boolean
-static DF1(jtpackbyte1){DF12IP;
+static DF1(jtpackbyte1){DF12IP; MEMCHK1(w); 
  I wn=AN(w); if(unlikely(wn==0))R mtv; C * RESTRICT wv=CAV(w); wn<<=bplg(AT(w)); // if no bits, empty result; point to first input bit; get # bytes in input
  A z; GATV0(z,B01,wn<<LGBB,1) UI8 * RESTRICT zv=UI8AV1(z);  // allocate result & point to it.  The allocation is always an integral # of I8s
 #if defined(PDEP) && SY_64
@@ -673,7 +673,7 @@ static DF1(jtpackbyte1){DF12IP;
 
 // 3!:7 Convert from/to packed bits
 DF2(jtpackbyte){DF12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I j=rei0(a); ASSERT(BETWEENC(j,-1,1),EVDOMAIN) // x is -1/0/1
  AF cellrtn=jtpackbyte1; cellrtn=j==0?jtpopcount:cellrtn; cellrtn=j<0?jtpackbytem1:cellrtn;  // routine for 1 cell
  DF1RANK(1,cellrtn,self);  // loop over all cells of implied w arg
@@ -688,7 +688,7 @@ DF2(jtpackbyte){DF12IP;
 //  2 - complement bits
 //  3 - store 1
 // others TBD
-static DF2(jtpkbyterdcell){DF12IP;
+static DF2(jtpkbyterdcell){DF12IP; MEMCHK2(a,w); 
  A z;GATV0(z,B01,AN(a),1) C *zv=BAV1(z);    // allocate result area and pointer to it
  C *wv=CAV(w); UI wn=AN(w)<<(bplg(AT(w))+LGBB);  // point to the bytes.  We don't care what type.  get total # bits in arg
  UI *av=UIAV(a);  // point to indexes
@@ -696,19 +696,19 @@ static DF2(jtpkbyterdcell){DF12IP;
  RETF(z);
 }
 static DF2(jtpkbyterd){DF12IP;
- ARGCHK2(a,w)  // verify arguments present
+ ARGCHK2(a,w); MEMCHK2(a,w); // verify arguments present
  if(unlikely(!(AT(a)&INT)))RZ(a=ccvt(INT,a,0))  // indexes must be INT
  DF2RANK(1,1,jtpkbyterdcell,self)
 }
 
 #if 0
-static DF2(jtpkbytewrcell){DF12IP;
+static DF2(jtpkbytewrcell){DF12IP; MEMCHK2(a,w); 
 R 0;
 }
 #endif
 // 3!:8 modify packed bits.  We use non-RMW cycles, 1 byte long.  A byte should not be shared for modification between two threads.
 static DF2(jtpkbytewr){DF12IP;A z;
- ARGCHK2(a,w)  // verify arguments present
+ ARGCHK2(a,w); MEMCHK2(a,w); // verify arguments present
  ASSERT(AT(w)&DIRECT,EVDOMAIN)  // mustn't modify bits in INDIRECT pointers
  if(unlikely(!(AT(a)&INT)))RZ(a=ccvt(INT,a,0))  // indexes must be INT
 // not with rank _   DF2RANK(1,1,jtpkbytewrcell,self)
@@ -735,7 +735,7 @@ static DF2(jtpkbytewr){DF12IP;A z;
 //  3 - store 1
 // others TBD
 DF1(jtpkbyte){DF12IP;
- ARGCHK1(w)   // verify arg present
+ ARGCHK1(w); MEMCHK1(w);   // verify arg present
  I j=rei0(w); ASSERT(BETWEENC(j,-1,3),EVDOMAIN) // x is -1..3
  AF f=j<0?jtpkbyterd:jtpkbytewr;  // _1 for read, others for write
  I r=j<0?1:RMAX;  // read has rsank 1, write has rank _
@@ -749,7 +749,7 @@ DF1(jtpkbyte){DF12IP;
 // a  0: tolower  1: toupper
 // w  only process LIT C2T C4T
 F2(jtlowerupper){F12IP;I k,n;A z;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(1==AN(a),EVDOMAIN);
  k=rei0(a);
  ASSERT(BETWEENC(k,0,1),EVDOMAIN);
@@ -770,7 +770,7 @@ F2(jtlowerupper){F12IP;I k,n;A z;
 // a  0: rtrim  1: ltrim  2: lrtrim
 // w  only process LIT C2T C4T
 F2(jtlrtrim){F12IP;I k;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(1==AN(a),EVDOMAIN);
  k=rei0(a);
  ASSERT(BETWEENC(k,0,2),EVDOMAIN);
@@ -786,7 +786,7 @@ F2(jtlrtrim){F12IP;I k;
 // right trim space
 // w  only process LIT C2T C4T
 F1(jtrtrim){F12IP;I stride,ln,n,ar;A z=0;C *u,*v;I as[63];
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(!(ISSPARSE(AT(w))&&(LIT+C2T+C4T)&AT(w)),EVNONCE);
  if(ISSPARSE(AT(w))||!((LIT+C2T+C4T)&AT(w))) RETF(ca(w));
  // Allocate result area
@@ -832,7 +832,7 @@ F1(jtrtrim){F12IP;I stride,ln,n,ar;A z=0;C *u,*v;I as[63];
 // left trim space
 // w  only process LIT C2T C4T
 F1(jtltrim){F12IP;I stride,ln,lh,n,ar,*pi;A z=0;C *u,*v;I as[63];
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(!(ISSPARSE(AT(w))&&(LIT+C2T+C4T)&AT(w)),EVNONCE);
  if(ISSPARSE(AT(w))||!((LIT+C2T+C4T)&AT(w))) RETF(ca(w));
  // Allocate result area
@@ -883,7 +883,7 @@ F1(jtltrim){F12IP;I stride,ln,lh,n,ar,*pi;A z=0;C *u,*v;I as[63];
 
 // w is a box, result is 1 if it contains a  NaN
 static B jtisnanq(J jt,A w){
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(AT(w)&FL+CMPX+QP){D *v=DAV(w); I stride=AT(w)&QP?2:1; DQ(AN(w)<<PEXT0(AT(w),CMPXX,1), if(_isnan(*v))R 1; v+=stride;);}  // if there might be a NaN, return if there is one
  else if(AT(w)&BOX){A *v=AAV(w); STACKCHKOFL DQ(AN(w), if(isnanq(C(v[i])))R 1;);}  // if boxed, check each one recursively; ensure no stack overflow
  // other types never have NaN
@@ -892,7 +892,7 @@ static B jtisnanq(J jt,A w){
 
 // 128!:5  Result is boolean with same shape as w
 F1(jtisnan){F12IP;A*wv,z;B*u;D*v;I n,t;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w); t=AT(w);
  ASSERT(!ISSPARSE(t),EVNONCE);
  I zr=AR(w); GATV(z,B01,n,AR(w),AS(w)); u=BAVn(zr,z);
@@ -1159,7 +1159,7 @@ R 0;
 
 // 6!:14 Convert a block of integer yyyymmddHHMMSS to nanoseconds from year 2000
 F1(jtinttoe){F12IP;A z;I n;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w);
  ASSERT(SY_64,EVNONCE);
  RZ(w=vi(w));  // verify valid integer
@@ -1170,7 +1170,7 @@ F1(jtinttoe){F12IP;A z;I n;
 
 // 6!:15 Convert a block of nanosecond times to Y M D h m s nanosec
 F1(jtetoint){F12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(SY_64,EVNONCE);
  RETF(sfe(jt,w,7*SZI-20,0,0));  // special precision meaning 'store INTs'.  Turns into linelen=56
 }
@@ -1180,7 +1180,7 @@ F1(jtetoint){F12IP;
 // one for result precision ('d'=date only, '0'-'9' give # fractional digits)
 // Default is '. 0'
 DF2(jtetoiso8601){DF12IP;UC decimalpt,zuluflag;I prec;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(SY_64,EVNONCE);
  // If monad, supply defaults; if dyad, audit
  if(EPDYAD){  // dyad
@@ -1201,7 +1201,7 @@ DF2(jtetoiso8601){DF12IP;UC decimalpt,zuluflag;I prec;
 // optional second box of x is #seconds to local timezone, i. e 180 for GMT+03; if given all UTC times will be
 // converted to local time
 DF2(jtiso8601toe){DF12IP;A z;I prec;I local;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(SY_64,EVNONCE);
  // If monad, supply defaults; if dyad, audit
  if(EPDYAD){  // dyad
@@ -1331,7 +1331,7 @@ static A efstring(J jt,A w,I prec){
 // 6!:18 convert a block of strings to nanosecond times.  Result has one INT for each string
 // Bivalent.  left arg is 'd', '0', '3', or '9', like 3d digit of 6!:16, default '9'
 DF2(jtstringtoe){DF12IP;A z;I prec;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(SY_64,EVNONCE);
  // If monad, supply defaults; if dyad, audit
  if(EPDYAD){  // dyad

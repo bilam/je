@@ -11,7 +11,7 @@ extern UC fboxedsparse;
 #endif
 
 I level(J jt,A w){A*wv;I d,j;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if((-AN(w)&-(AT(w)&BOX))>=0)R 0;
  STACKCHKOFL   // ptotect against deeply nested boxes
  d=0; wv=AAV(w);
@@ -22,7 +22,7 @@ I level(J jt,A w){A*wv;I d,j;
 // return 0 if the level of w is greater than l, 1 if <=
 // terminates early if possible
 I levelle(J jt,A w,I l){
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if((-AN(w)&-(AT(w)&BOX))>=0)R SGNTO0(~l);  // if arg is unboxed, its level is 0, so return 1 if l>=0
  if(l<=0)R 0;  // (arg is boxed) if l is <=0, arglevel is  > l
  --l; A *wv=AAV(w);
@@ -31,7 +31,7 @@ I levelle(J jt,A w,I l){
  R 1;  // if it never gets big enough, say so, keep looking
 }
 
-F1(jtlevel1){F12IP;ARGCHK1(w); I z=level(jt,w); RE(0) R sc(z);}
+F1(jtlevel1){F12IP;ARGCHK1(w); MEMCHK1(w); I z=level(jt,w); RE(0) R sc(z);}
 
 // < y with IRS
 DFI1(jtbox){A y,z,*zv;C*wv;I f,k,m,n,*ws; 
@@ -103,14 +103,14 @@ DFI1(jtbox){A y,z,*zv;C*wv;I f,k,m,n,*ws;
  RETF(z);
 }    /* <"r w */
 
-F1(jtboxopen){F12IP; ARGCHK1(w); if((-AN(w)&-(AT(w)&BOX))>=0){w = jtbox(jtfg,w,0);} R w;}
+F1(jtboxopen){F12IP; ARGCHK1(w); MEMCHK1(w); if((-AN(w)&-(AT(w)&BOX))>=0){w = jtbox(jtfg,w,0);} R w;}
 
 // x ; y, with options for x (,<) y   x (;<) y   x ,&< y
 // This verb propagates WILLOPEN, so it must not raise usecounts or EPILOG or call a verb that does EPILOG if WILLBEOPENED is set on input.
 // As a result of this we support both recursive and nonrecursive y inputs.  If y is unboxed, we create a recursive block if WILLOPEN is
 // not set, or a nonrecursive block if WILLOPEN is set
 DF2(jtjlink){DF12IP;
-ARGCHK2(a,w);
+ARGCHK2(a,w); MEMCHK2(a,w);
 #if FORCEVIRTUALINPUTS
  // to allow mapped-boxed tests to run, we detect when the virtual block being realized is at offset 0 from its
  // base block, and has the same atomsct/rank/shape.  Then we just return the base block, since the virtual block
@@ -399,7 +399,7 @@ A jtassembleresults(J jt, I ZZFLAGWORD, A zz, A zzbox, A* zzboxp, I zzcellp, I z
 // a is shape of filled cell, w is cell (with correct type), *x is target address
 // We assume the result area already has fill copied to it
 static B povtake(J jt,A a,A w,C*x){B b;C*v;I d,i,j,k,m,n,p,q,r,*s,*ss,*u,*uu,y;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  r=AR(w); n=AN(w); k=bpnoun(AT(w)); v=CAV(w);
  if(1>=r){MC(x,v,k*n); R 1;}  // if list, fill is contiguous, just copy the data
  m=AN(a); u=AV(a); s=AS(w);
@@ -487,7 +487,7 @@ static A jtopes(J jt,I zt,A cs,A w){A a,d,e,sh,t,*wv,x,x1,y,y1,z;B*b;C*xv;I an,*
 // if y contained inplaceable components (possible if y came from < yy or <"r yy).  In that case, mark the result as non-inplaceable.
 // We don't support inplacing here yet so just do that always
 F1(jtope){F12IP;A cs,*v,y,z;C*x;I i,n,*p,q,r,*s,*u,zn;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  v=AAV(w);
  if(likely((RANKT)PEXT0(AT(w),BOXX,1)>AR(w))){   // boxed and rank=0
   // scalar box: Turn off pristine in w since we are pulling an address from it.  Contents must not be inplaceable
@@ -632,7 +632,7 @@ static A jtrazeg(J jt,A w,I t,I n,I r,A*v){A y,z;C*zu;I c=0,i,j,k,m,*s,*v1,yr,*y
 // ; y
 // Do not EPILOG
 F1(jtraze){F12IP;A*v,y,z;C* RESTRICT zu;I *wws,d,i,klg,m=0,n,r=1,t=0,te=0;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w); v=AAV(w);  // n=#,w  v->w data
  if(unlikely(!(BOX&AT(w))))R n?ravel(w):mtv;   // if not boxed, just return ,w (but $0 if empty)
  if(unlikely(n<=1)){if(!n)R mtv; z=C(*v); PRISTCLRF(w) R AR(z)?z:ravel(z);}  // if just 1 box, return its contents - except ravel if atomic.  Since these contents are excaping via a pointer, w must lose pristinity
@@ -685,7 +685,7 @@ F1(jtraze){F12IP;A*v,y,z;C* RESTRICT zu;I *wws,d,i,klg,m=0,n,r=1,t=0,te=0;
 }
 
 F1(jtrazeh){F12IP;A*wv,y,z;C*xv,*yv,*zv;I c=0,ck,dk,i,k,n,p,r,*s,t;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(BOX&AT(w),EVDOMAIN);
  if(!AR(w))R ope(w);
  n=AN(w); wv=AAV(w);  y=C(wv[0]); SETIC(y,p); t=AT(y); k=bpnoun(t);  // k is size of an atom

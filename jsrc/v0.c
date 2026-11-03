@@ -14,7 +14,7 @@
 #define QNEGATE(x)     ({Q neg= x; neg.n= XnegX(neg.n); neg;})
 
 #define CFR(f,T,TYPE,fplus,ftymes,fnegate)  \
- F2(f){F12IP;PROLOG(0060);A z;I j,n;T d,*t,*u,*v;            \
+ F2(f){F12IP; MEMCHK2(a,w); PROLOG(0060);A z;I j,n;T d,*t,*u,*v;            \
   n=AN(w); u=(T*)AV(w);                          \
   GATVS(z,TYPE,1+n,1,0,TYPE##SIZE,GACOPYSHAPE0,R 0); v=(T*)AV1(z); *v=*(T*)AV(a);  \
   for(j=0;j<n;++j){                              \
@@ -30,7 +30,7 @@ static CFR(jtcfrx,X,XNUM,xplus,xtymes, XnegX) // FIXME: optimize negate
 static CFR(jtcfrq,Q,RAT, qplus,qtymes,QNEGATE)
 
 static F1(jtrsort){F12IP;A t,z;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  PUSHCCT(1.0-FUZZ)
  RZ(t=over(mag(w),cant1(rect(w))));
  A tt; RZ(tt=IRS2(jtindexof,jt,t,1L,t,1L,0L));
@@ -39,7 +39,7 @@ static F1(jtrsort){F12IP;A t,z;
  RETF(z);
 }
 
-static F2(jtcfrz){F12IP;A z;B b=0,p;I j,n;Z c,d,*t,*u,*v;
+static F2(jtcfrz){F12IP; MEMCHK2(a,w); A z;B b=0,p;I j,n;Z c,d,*t,*u,*v;
  RZ(w=rsort(w)); 
  n=AN(w); u=ZAV(w); 
  GATV0(z,CMPX,1+n,1); v=ZAV1(z); v[0]=c=ZAV(a)[0]; p=!c.im;
@@ -52,7 +52,7 @@ static F2(jtcfrz){F12IP;A z;B b=0,p;I j,n;Z c,d,*t,*u,*v;
  R p>b?ccvt(FL,z,0):z;
 }
 
-static F1(jtcfr){F12IP;A c,r,*wv;I t;
+static F1(jtcfr){F12IP; MEMCHK1(w); A c,r,*wv;I t;
  ASSERT((-AR(w)&-(AN(w)^2))>=0,EVLENGTH);
  wv=AAV(w); 
  if(AR(w)){c=C(wv[0]); r=C(wv[1]);}else{c=num(1); r=C(wv[0]);}
@@ -223,7 +223,7 @@ static A jtrfcz(J jt,I m,A w){A x,y,z;B bb=0,real;D c,d;I i;Z r,*xv,*yv,*zv;
 }    /* roots from coefficients, degree m is 2 or more */
 
 // roots from coefficients.  w is (possibly empty) list of coefficients
-static F1(jtrfc){F12IP;A r,w1;I m=0,n,t;
+static F1(jtrfc){F12IP; MEMCHK1(w); A r,w1;I m=0,n,t;
  n=AN(w); t=AT(w);  // n=#coeffs, t=type
  if(n){
   ASSERT(ISDENSETYPE(t,NUMERIC),EVDOMAIN);  // coeffs must be dense numeric
@@ -243,7 +243,7 @@ static F1(jtrfc){F12IP;A r,w1;I m=0,n,t;
 }
 
 // entry point for p. y
-DF1(jtpoly1){DF12IP;A c,e,x;
+DF1(jtpoly1){DF12IP; MEMCHK1(w); A c,e,x;
  F1RANK(1L,jtpoly1,self);
  // If y is not boxed, it's a list of coefficients.  Get the roots
  if((-AN(w)&SGNIF(AT(w),BOXX))>=0)R rfc(w);
@@ -261,7 +261,7 @@ DF1(jtpoly1){DF12IP;A c,e,x;
 
 
 static A jtmnomx(J jt,I m,A w){A s,*wv,x,z=w,*zv;I i,n,r;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(BOX&AT(w)){
   n=AN(w); wv=AAV(w);  RZ(s=sc(m));
   I zr=AR(w); GATV(z,BOX,n,AR(w),AS(w)); zv=AAVn(zr,z);
@@ -278,7 +278,7 @@ static A jtmnomx(J jt,I m,A w){A s,*wv,x,z=w,*zv;I i,n,r;
 }    /* standardize multinomial right arg */
 
 static F2(jtpoly2a){F12IP;A c,e,x;I m;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  m=AS(a)[1]-1;
  ASSERT(AT(a)&NUMERIC,EVDOMAIN);
  ASSERT(2==AR(a),EVRANK);
@@ -441,13 +441,13 @@ DFI2(jtpoly2){A c,za;I b;D*ad,d,p,*x,u,*z;I an,at,j,t,n,wt;Z*az,e,q,*wz,y,*zz;
 }    /* a p."r w */
 
 
-DF1(jtpderiv1){DF12IP;
+DF1(jtpderiv1){DF12IP; MEMCHK1(w); 
  F1RANK(1,jtpderiv1,self);
  if(AN(w)&&!(NUMERIC&AT(w)))RZ(w=poly1(w));
  R 1>=AN(w) ? apv(1L,0L,0L) : tymes(behead(w),apv(AN(w)-1,1L,1L));
 }    /* p.. w */
 
-DF2(jtpderiv2){DF12IP;
+DF2(jtpderiv2){DF12IP; MEMCHK2(a,w); 
  F2RANK(0,1,jtpderiv2,self);
  if(!(NUMERIC&AT(w)))RZ(w=poly1(w));
  ASSERT(NUMERIC&AT(a),EVDOMAIN);

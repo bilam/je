@@ -418,7 +418,7 @@ static DFI1(jtgprefix){A f,*fv,z,*zv;I m,n,r;
 // block a contains (start,length) of infix.  w is the A for the data.
 // Result is new block containing the extracted infix
 static F2(jtseg){F12IP;A z;I c,k,m,n,*u,zn;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  // The (start,length) had better be integers.  Extract them into m,n
  if(INT&AT(a)){u=AV(a); m=*u; n=u[1];} else m=n=0;
  c=aii(w); k=c<<bplg(AT(w)); DPMULDE(n,c,zn);  // c=#atoms per item, k=#bytes/item, zn=atoms/infix
@@ -431,7 +431,7 @@ static F2(jtseg){F12IP;A z;I c,k,m,n,*u,zn;
 // m is the infix length (x), w is the array (y)
 // Result is A for an nx2 table of (starting item#,length) for each infix
 static A jtifxi(J jt,I m,A w){A z;I d,j,k,n,p,*x;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  // p=|m, n=#items of w, d=#applications of u (depending on overlapping/nonoverlapping)
  p=ABSOFLO(m,IMAX); SETIC(w,n);
  if(m>=0){d=MAX(0,1+n-m);}else{d=1+(n-1)/p; d=(n==0)?n:d;}
@@ -444,7 +444,7 @@ static A jtifxi(J jt,I m,A w){A z;I d,j,k,n,p,*x;
 }
 
 // Entry point for infix.  a is x, w is y, fs points to u
-static DF2(jtinfix){DF12IP;PROLOG(0018);A fs=FAV(self)->fgh[0]; A x,z;I m; 
+static DF2(jtinfix){DF12IP; MEMCHK2(a,w); PROLOG(0018);A fs=FAV(self)->fgh[0]; A x,z;I m; 
  F2RANK(0,RMAX,jtinfix,self); // Handle looping over rank.  This returns here for each cell (including this test)
  // The rest of this verb handles a single cell
  m=rei0(a); // get infix length as an integer, -imax to imax
@@ -466,13 +466,13 @@ static DF2(jtinfix){DF12IP;PROLOG(0018);A fs=FAV(self)->fgh[0]; A x,z;I m;
  EPILOG(z);
 }
 
-static DF1(jtinfix2){DF12IP;PROLOG(0019);
+static DF1(jtinfix2){DF12IP; MEMCHK1(w); PROLOG(0019);
  A f=FAV(FAV(self)->fgh[0])->fgh[0];  // f=u in u/\ y
   I rk=AR(w)-1; A l,r,z; RZ(l=curtail(w)) RZ(r=behead(w)) rk=FAV(f)->flag&VISATOMIC2?RMAX:rk; z=IRSorATOMIC2(FAV(f)->flag&VFUSEDOK2,FAV(f)->valencefns[1],jt,l,rk,r,rk,f); // (}: u"_1 }.) y (}: u }. if atomic u).  Might be ATOMIC2 but not FUSED
  EPILOG(z);
 }    /* 2 f/\w, where f supports IRS */
 
-static DF2(jtginfix){DF12IP;A h,*hv,x,z,*zv;I d,m,n;
+static DF2(jtginfix){DF12IP; MEMCHK2(a,w); A h,*hv,x,z,*zv;I d,m,n;
  m=rei0(vib(a)); 
  RZ(x=ifxi(m,w));
  h=FAV(self)->fgh[0]; hv=AAV(h); d=AN(h);
@@ -495,7 +495,7 @@ static DF2(jtginfix){DF12IP;A h,*hv,x,z,*zv;I d,m,n;
 // prefix and infix: prefix if a is mark
 static DF2(jtinfixprefix2){DF12IP;PROLOG(00202);A fs;I cger[128/SZI];
    I wt;
-  ARGCHK1(w);
+  ARGCHK1(w); MEMCHK1(w);
  F2RANKIP(0,RMAX,jtinfixprefix2,self);  // handle rank loop if needed
  wt=AT(w);
  if(unlikely(ISSPARSE(wt))){
@@ -699,7 +699,7 @@ static DFI1(jtpscan){A z;I f,n,t,wn,*ws,wt;
  if(unlikely((255&~EVNOCONV)&rc)){jsignal(rc); R (rc>=EWOV)?IRS1(jtpscan,jt,w,wcr,self):0;} else R unlikely(((adocv.cv+VRD)&VRI))&&likely(rc!=EVNOCONV)?cvz(adocv.cv,z):z;   // retry if needed; convert if needed & not suppressed
 }    /* f/\"r w atomic f main control */
 
-static DF2(jtinfixd){DF12IP;A z;C*x,*y;I c=0,d,k,m,n,p,q,r,*s,wr,*ws,wt,zc; 
+static DF2(jtinfixd){DF12IP; MEMCHK2(a,w); A z;C*x,*y;I c=0,d,k,m,n,p,q,r,*s,wr,*ws,wt,zc; 
  F2RANKW(0,RMAX,jtinfixd,self);
  wr=AR(w); ws=AS(w); wt=AT(w); SETIC(w,n);   // n=#items of w
  m=rei0(a); if(m==IMAX){m=n+1;} p=ABSOFLO(m,IMAX);  // m=x arg, p=abs(m)
@@ -772,7 +772,7 @@ static A jtmovsumavg(J jt,I m,A w,A fs,B avg){A z;
  RESETERR R jtinfixprefix2(jt,sc(m),w,fs);  // fail over to generic code
 }
 
-static DF2(jtmovavg){DF12IP;I m,j;
+static DF2(jtmovavg){DF12IP; MEMCHK2(a,w); I m,j;
  F2RANK(0,RMAX,jtmovavg,self);
  m=rei0(a);SETIC(w,j);
  if(0<m&&m<=j&&AT(w)&B01+FL+INT)R movsumavg(m,w,self,1);   // j may be 0
@@ -898,7 +898,7 @@ static A jtmovbwneeq(J jt,I m,A w,A fs,B eq){A y,z;I c,p,*s,*u,*v,x,*yv,*zv;
  RETF(z);
 }    /* m 22 b./\w (0=eq) or m 25 b./\ (1=eq); integer w; 0<m */
 
-static DF2(jtmovfslash){DF12IP;A x,z;B b;C id,*wv,*zv;I d,m,m0,p,t,wk,wt,zi,zk,zt;
+static DF2(jtmovfslash){DF12IP; MEMCHK2(a,w); A x,z;B b;C id,*wv,*zv;I d,m,m0,p,t,wk,wt,zi,zk,zt;
  F2RANK(0,RMAX,jtmovfslash,self);
  SETIC(w,p); wt=AT(w);   // p=#items of w
  m0=rei0(a); m=REPSGN(m0); m=(m^m0)-m; m^=REPSGN(m);  // m0=infx x,  m=abs(m0), handling IMIN
@@ -935,11 +935,11 @@ static DF2(jtmovfslash){DF12IP;A x,z;B b;C id,*wv,*zv;I d,m,m0,p,t,wk,wt,zi,zk,z
  if(255&rc){jsignal(rc); if(rc>=EWOV){RESETERR; R movfslash(a,ccvt(FL,w,0),self);}R0;}else R z;
 }    /* a f/\w */
 
-static DF1(jtiota1){DF12IP;I j; R apv(SETIC(w,j),1L,1L);}
+static DF1(jtiota1){DF12IP; MEMCHK1(w); I j; R apv(SETIC(w,j),1L,1L);}
 
-F1(jtbslash){F12IP;A f;AF f1=jtinfixprefix1,f2=jtinfixprefix2;V*v;I flag=FAV(ds(CBSLASH))->flag&~(VNOLOCCHG+VNONAME+VNOSELF);
+F1(jtbslash){F12IP; MEMCHK1(w); A f;AF f1=jtinfixprefix1,f2=jtinfixprefix2;V*v;I flag=FAV(ds(CBSLASH))->flag&~(VNOLOCCHG+VNONAME+VNOSELF);
 ;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  A z; fdefallo(z)
  if(NOUN&AT(w)){
   A fixw; RZ(fixw=fxeachv(1L,w));  // convert gerunds to verbs
@@ -967,4 +967,4 @@ F1(jtbslash){F12IP;A f;AF f1=jtinfixprefix1,f2=jtinfixprefix2;V*v;I flag=FAV(ds(
  RETF(z);
 }
 
-A jtascan(J jt,C c,A w){ARGCHK1(w); A z; R dfv1(z,w,bslash(slash(ds(c))));}
+A jtascan(J jt,C c,A w){ARGCHK1(w); MEMCHK1(w); A z; R dfv1(z,w,bslash(slash(ds(c))));}

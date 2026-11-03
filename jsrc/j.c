@@ -184,7 +184,7 @@ C va2ctoc[VA2CXLATEMAX+1];  // will be filled in at init; gives the C* code (whi
 
 const char jeversion[]= "je9!:14 j"jversion"/j"bits""hw"/"jplatform"/"jlicense"/"jbuilder"/"__DATE__"T"__TIME__;
 
-F1(jtversq){F12IP;
+F1(jtversq){F12IP; MEMCHK1(w); 
  char m[1000];char d[21]; char months[] = "Jan01Feb02Mar03Apr04May05Jun06Jul07Aug08Sep09Oct10Nov11Dec12"; C* p;
  ASSERTMTV(w);
  strcpy(m,jeversion+8);

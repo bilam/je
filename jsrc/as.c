@@ -329,7 +329,7 @@ static DFI1(jtsscan){A y,z;I d,m,n,t,wn,*ws,wt;
 
 
 static F2(jtomask){F12IP;A c,r,x,y;I m,n,p;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  m=rei0(a); p=ABSOFLO(m,IMAX); SETIC(w,n);
  r=sc(0>m?(n+p-1)/p:MAX(0,1+n-m)); c=tally(w);
  x=reshape(sc(p),  num(0));
@@ -337,7 +337,7 @@ static F2(jtomask){F12IP;A c,r,x,y;I m,n,p;
  R reshapeW(over(r,c),over(x,y));
 }
 
-static DF2(jtgoutfix){DF12IP;A f,*fv,x,z,*zv;I m,n;
+static DF2(jtgoutfix){DF12IP; MEMCHK2(a,w); A f,*fv,x,z,*zv;I m,n;
  RZ(x=omask(a,w));
  SETIC(x,n);
  f=FAV(self)->fgh[0]; fv=AAV(f); m=AN(f);
@@ -346,9 +346,9 @@ static DF2(jtgoutfix){DF12IP;A f,*fv,x,z,*zv;I m,n;
  R jtopenforassembly(jt,z);
 }
 
-static DF2(jtoutfix){DF12IP;PROLOG(117);A fs=FAV(self)->fgh[0]; A z; F2RANK(0,RMAX,jtoutfix,self) z=eachl(omask(a,w),w,atop(fs,ds(CPOUND))); EPILOG(z);}
+static DF2(jtoutfix){DF12IP; MEMCHK2(a,w); PROLOG(117);A fs=FAV(self)->fgh[0]; A z; F2RANK(0,RMAX,jtoutfix,self) z=eachl(omask(a,w),w,atop(fs,ds(CPOUND))); EPILOG(z);}
 
-static DF2(jtofxinv){DF12IP;A f,fs,z;C c;I t;V*v;
+static DF2(jtofxinv){DF12IP; MEMCHK2(a,w); A f,fs,z;C c;I t;V*v;
  F2RANKW(0,RMAX,jtofxinv,self);
  fs=FAV(self)->fgh[0]; f=FAV(fs)->fgh[0]; v=FAV(f); c=v->id; t=AT(w);  // self = f/\. fs = f/  f = f  v = verb info for f
  if(!(c==CPLUS||c==CBDOT&&t&INT||((c&-2)==CEQ)&&t&B01))R outfix(a,w,self);  // if not +/\. or m b./\. or =/\. or ~:/\.
@@ -357,7 +357,7 @@ static DF2(jtofxinv){DF12IP;A f,fs,z;C c;I t;V*v;
  if(jt->jerr==EVNAN){RESETERR; R outfix(a,w,self);}else R z;  // failover if NaN
 }    /* a f/\. w where f has an "undo" */
 
-static DF2(jtofxassoc){DF12IP;A f,i,j,p,s,x,z;C id,*zv;I c,d,k,kc,m,r,t;V*v;VA2 adocv;
+static DF2(jtofxassoc){DF12IP; MEMCHK2(a,w); A f,i,j,p,s,x,z;C id,*zv;I c,d,k,kc,m,r,t;V*v;VA2 adocv;
  F2RANKW(0,RMAX,jtofxassoc,self);
  SETIC(w,m); k=rei0(a); c=ABSOFLO(k,IMAX);  // m = # items in w; k is value of a; c is # items per suffix
  f=FAV(self)->fgh[0]; x=FAV(f)->fgh[0]; v=FAV(x); id=CBDOT==v->id?(C)AV(v->fgh[1])[0]:v->id;  // self = f/\. f = f/  x = f  v = verb info for f
@@ -390,10 +390,10 @@ static DF2(jtofxassoc){DF12IP;A f,i,j,p,s,x,z;C id,*zv;I c,d,k,kc,m,r,t;V*v;VA2 
  R z;
 }    /* a f/\. w where f is an atomic associative fn */
 
-static DF1(jtiota1rev){DF12IP;I j; SETIC(w,j); R apv(j,j,-1L);}
+static DF1(jtiota1rev){DF12IP; MEMCHK1(w); I j; SETIC(w,j); R apv(j,j,-1L);}
 
 F1(jtbsdot){F12IP;A f;AF f1=jtsuffix,f2=jtoutfix;I flag=FAV(ds(CBSDOT))->flag&~(VNOLOCCHG+VNONAME+VNOSELF);C id;V*v;  // init flag is IRS1
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  A z; fdefallo(z)
  if(NOUN&AT(w)){  // noun (gerund) case
   A fixw; RZ(fixw=fxeachv(1L,w));

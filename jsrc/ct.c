@@ -601,7 +601,7 @@ pid_t p;
 
 // execute the user's task.  Result is an ordinary noun or a pyx.  Bivalent (a,w,self) or (w,self,self) called from unquote or parse
 static A jttaskrun(J jtfg,A arg1, A arg2, A self){F12JT;
- ARGCHK2(arg1,arg2);  // the verb is not the issue.
+ ARGCHK2(arg1,arg2); MEMCHK2(arg1,arg2);  // the verb is not the issue.
  A jobA;GAT0(jobA,INT,(sizeof(JOB)+SZI-1)>>LGSZI,1); ACINITUNPUSH(jobA);  // protect the job till it is finished
  JOB *job=(JOB*)AAV1(jobA);  // The job starts on the second cacheline of the A block.  When we free the job we will have to back up to the A block
 I taskflags=FAV(self)->localuse.lu1.forcetask, localesx=FAV(self)->localuse.lu1.forcetask>>16;  // flags: 0-7=pool, 8=workeronly, 9=mask0 set 10=locales given  16+=localesx (-1 if no locales)
@@ -760,7 +760,7 @@ C jtjobrun(J jt,unsigned char(*f)(J,void*,UI4),void *ctx,UI4 n,I poolno){JOBQ *j
 
 // 13!:_7 run a null job with tasks.  w is #spins per task, # tasks
 static C nulljohnson(J jt,void *ctx,UI4 i){R johnson(*(I*)ctx);}  // delay a bit
-F1(jtnulljob){F12IP;
+F1(jtnulljob){F12IP; MEMCHK1(w); 
   ASSERT(AR(w)==1,EVRANK); ASSERT(AN(w)==2,EVLENGTH); if(!(AT(w)&INT))RZ(w=cvt(INT,w));
   I nspins=IAV(w)[0], ntasks=IAV(w)[1];  // extract parms
   I ctx=nspins;
@@ -770,7 +770,7 @@ F1(jtnulljob){F12IP;
 
 #else
 static A jttaskrun(J jt,A arg1, A arg2, A arg3){A pyx;
- ARGCHK2(arg1,arg2);  // the verb is not the issue
+ ARGCHK2(arg1,arg2); MEMCHK2(arg1,arg2);  // the verb is not the issue
  I dyad=!(AT(arg2)&VERB); A self=dyad?arg3:arg2;  // the call is either noun self x or noun noun self.  See which set dyad flag and select self.
  A uarg3=FAV(self)->fgh[0], uarg2=dyad?arg2:uarg3;   // get self, positioned after the last noun arg
  // u always starts a recursion point, whether in a new task or not
@@ -789,7 +789,7 @@ C jtjobrun(J jt,unsigned char(*f)(J,void*,UI4),void *ctx,UI4 n,I poolno){
 // importantoptions are pool#
 // k is 'worker', value=0/1(default)
 //      'locales', value=mask;locale#s  no default
-F2(jttdot){F12IP;
+F2(jttdot){F12IP; MEMCHK2(a,w); 
  ASSERTVN(a,w);
  ASSERT(AR(w)<=1,EVRANK) // arg must be atom or list
  I nolocal=-1;  // establish unset values for options
@@ -867,7 +867,7 @@ finnotask: ;  // come here with z=a to return <@u with no task, is there are no 
 
 // x T. y - various thread and task operations
 F2(jttcapdot2){F12IP;A z;
- ARGCHK2(a,w)
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I m=rei0(a);   // get the x argument, which must be an atom
  switch(m){
  case 4: { // rattle the boxes of y and return status of each

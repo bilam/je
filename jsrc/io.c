@@ -441,7 +441,7 @@ void breakclose(JS jt)
 
 // 2!:55 retcode
 F1(jtjoff){F12IP;I x;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  x=i0(w);  // use 0 for any nonnumeric arg
  // Execute user's exit sentence if given
  A exp=0; while(!__atomic_compare_exchange_n(&IJT(jt,exitsentence), &exp, 0, 0, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))exp=exp==(A)~0?0:exp;  // wait till we have read the sentence & written 0 to it.  Ignore ~0, which means busy
@@ -562,7 +562,7 @@ C* getlocale(JS jt){JJ jm=MDTHREAD(jt); A y=jtlocname(jm,mtv); y=AAV(y)[0]; R CA
 // This may be confusing because the actual callback functions do not appear anywhere inside JE source.
 DF1(jtwd){DF12IP;A z=0;C*p=0;D*pd;I e,*pi,t;V*sv;
   F1RANK(1,jtwd,self);
-  ARGCHK1(w);
+  ARGCHK1(w); MEMCHK1(w);
   ASSERT(2>AR(w),EVRANK);
   sv=FAV(self);
   t=sv->localuse.lu1.foreignmn[1];  // the n arg from the original 11!:n
@@ -988,13 +988,13 @@ CDPROC int _stdcall JFree(JS jt){
   R 0;
 }
 
-F1(jtbreakfnq){F12IP;
+F1(jtbreakfnq){F12IP; MEMCHK1(w); 
  ASSERTMTV(w);
  R cstr(IJT(jt,breakfn));
 }
 
 // w is a filename; use it as the breakfile
-F1(jtbreakfns){F12IP;A z;I *fh,*mh=0; void* ad;
+F1(jtbreakfns){F12IP; MEMCHK1(w); A z;I *fh,*mh=0; void* ad;
  ASSERT(1>=AR(w),EVRANK);
  ASSERT(!AN(w)||AT(w)&LIT,EVDOMAIN);
  ASSERT(AN(w)<NPATH,EVDOMAIN);
@@ -1114,7 +1114,7 @@ CDPROC int _stdcall JErrorTextM(JS jt, I ec, I* p)
 #if 0  // for debugging
 int enabledebug=0;
 F1(jttest1){F12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if((AT(w)&B01+INT)&&AN(w)){
   enabledebug=rei0(w);
  }

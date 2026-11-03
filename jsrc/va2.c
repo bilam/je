@@ -54,7 +54,7 @@ static NOINLINE I intforD(J jt, D d){D q;I z;  // noinline because it uses so ma
 
 // we know that AN=1 in a and w, which are FL/INT/B01 types.  af is larger arg rank (=rank of result), copied to each of the low 2 byte lanes
 // bidcase is the routine index to use * 4, possibly with garbage in the 2 LSBs
-INLINE static A jtssingleton(J jtfg,A a,A w,I awr,I af,UI bidcase,I opcode){F12JT;
+INLINE static A jtssingleton(J jtfg,A a,A w,I awr,I af,UI bidcase,I opcode){F12JT; MEMCHK2(a,w); 
  void *av=voidAV(a), *wv=voidAV(w), *zv;  // point to the argument values and result.  2 fetches to op addrs, 3 to op values
  // We are waiting for opcode and data pointers to settle.  We use the idle time to start the reads to calculate inplaceability.  We also start the calculation, to save registers
  I caseno=opcode-VA2CBW1111; caseno=caseno<0?0:caseno; caseno&=31; caseno=SSINGCASE4(caseno,bidcase);  // case # for eventual switch.  Lump all Booleans at 0. &31 to remove comparison flag and to help the compiler
@@ -1590,7 +1590,7 @@ I jtsumattymesprods(J jt,I it,void *avp, void *wvp,I dplen,I nfro,I nfri,I ndpo,
 
 #if C_AVX2 || EMU_AVX2
 // +/@:*"1 for QP.  Caller has handled any rank loop
-static DF2(jtsumattymes1E){DF12IP;
+static DF2(jtsumattymes1E){DF12IP; MEMCHK2(a,w); 
  I i; I n=AS(a)[AR(a)-1]; ASSERT(AS(w)[AR(w)-1]==n,EVLENGTH);  // length of vector; verify agreement
  E *x=EAV(a)+n, *y=EAV(w)+n;  // input pointers, advanced past end
  __m256d sgnbit=_mm256_broadcast_sd((D*)&Iimin); __m256d mantmask=_mm256_broadcast_sd((D*)&(I){0x000fffffffffffff});  /* needed masks: sign, mantissa */
@@ -1790,7 +1790,7 @@ DFI2(jtsumattymes1){
 // f/@:g when f and g are atomic.  If the args are big and not inplace it pays to execute one cell of g at a time to save cache footprint
 DF2(jtfslashatg){DF12IP;A fs,gs,y,z;B b;C*av,*wv;I ak,an,ar,*as,at,m,
      n,nn,r,rs,*s,wk,wn,wr,*ws,wt,yt,zn,zt;VA2 adocv,adocvf;
- ARGCHK3(a,w,self);
+ ARGCHK3(a,w,self); MEMCHK3(a,w,self);
  an=AN(a); ar=AR(a); as=AS(a); at=AT(a); at=an?at:B01;
  wn=AN(w); wr=AR(w); ws=AS(w); wt=AT(w); wt=wn?wt:B01;
  b=ar<=wr; r=b?wr:ar; rs=b?ar:wr; s=b?ws:as; nn=s[0]; nn=r?nn:1;  // b='w has higher rank'; r=higher rank rs=lower rank s->longer shape  nn=#items in longer-shape arg
@@ -1840,10 +1840,10 @@ DF2(jtfslashatg){DF12IP;A fs,gs,y,z;B b;C*av,*wv;I ak,an,ar,*as,at,m,
 #if SY_64
 #define REFG at=AT(a); wt=AT(w); awr=AR(a); wr=AR(w); opcode=FAV(self)->lu2.lc; acr=(UI)jtfgfg>>56; wcr=((UI)jtfgfg>>48)&RMAX; JTFGFROMJTFGFG; JTFROMJTFG(J);
 A jtatomic2(J jtfgfg,A a,A w,A self){  // linkage for 64-bit machines, through jt
- UI opcode=FAV(self)->lu2.lc; ARGCHK1(a) I at=AT(a); I awr=AR(a);  // a/w/self are settled.  read from a before w
- ARGCHK1(w) I wt=AT(w); I wr=AR(w);
+ UI opcode=FAV(self)->lu2.lc; ARGCHK1(a); I at=AT(a); I awr=AR(a);  // a/w/self are settled.  read from a before w
+ ARGCHK1(w); I wt=AT(w); I wr=AR(w);
  I acr=(UI)jtfgfg>>56; I wcr=((UI)jtfgfg>>48)&RMAX;  // extract complemented ranks from jtfgfg which is settling into ?cr
- J JTFGFROMJTFGFG; F12IP;
+ J JTFGFROMJTFGFG; F12IP; MEMCHK1(a); MEMCHK1(w); 
 #else
 #define REFG opcode=FAV(self)->lu2.lc; a=(A)((I)afg&~(ABDY-1)); w=(A)((I)wfg&~(ABDY-1)); at=AT(a); wt=AT(w); awr=AR(a); wr=AR(w); acr=(I)afg&RMAX; wcr=(I)wfg&RMAX; JTFROMJTFG(J);
 A jtatomic2(J jtfg,A afg,A wfg,A self){  // linkage for 32-bit machines, through a/w just like with IRS
@@ -1917,9 +1917,9 @@ forcess:;  // branch point for rank-0 singletons from above, always with atomic 
  }
 }
 
-DFIA2(jtexpn2  ){IARG2 J JTFGFROMJTFGFG; DF12IP; if(unlikely(((((I)AR(w)-1)&SGNIF(AT(w),FLX))<0)))if(unlikely(0.5==DAV(w)[0]))R sqroot(a);  R jtatomic2(jtfgfg,afg,wfg,self);}  // use sqrt hardware for sqrt.  Only for atomic w. 
-DFIA2(jtresidue){IARG2 J JTFGFROMJTFGFG; DF12IP; I intmod; if(!((AT(a)|AT(w))&((NOUN|SPARSE)&~INT)|AR(a))&&(intmod=IAV(a)[0], (intmod&-intmod)+(intmod<=0)==0))R intmod2(w,intmod); R jtatomic2(jtfgfg,afg,wfg,self);}  // special case for x an atom power of 2 
-// obsolete DFI2(jtresidue){IARG2 DF12IP; I intmod; if(!((AT(a)|AT(w))&((NOUN|SPARSE)&~INT)|AR(a))&&(intmod=IAV(a)[0], (intmod&-intmod)+(intmod<=0)==0))R intmod2(w,intmod); R jtatomic2(jtfg,afg,wfg,self);}  // special case for x an atom power of 2 
+DFIA2(jtexpn2  ){IARG2 J JTFGFROMJTFGFG; DF12IP; MEMCHK2(a,w); if(unlikely(((((I)AR(w)-1)&SGNIF(AT(w),FLX))<0)))if(unlikely(0.5==DAV(w)[0]))R sqroot(a);  R jtatomic2(jtfgfg,afg,wfg,self);}  // use sqrt hardware for sqrt.  Only for atomic w. 
+DFIA2(jtresidue){IARG2 J JTFGFROMJTFGFG; DF12IP; MEMCHK2(a,w); I intmod; if(!((AT(a)|AT(w))&((NOUN|SPARSE)&~INT)|AR(a))&&(intmod=IAV(a)[0], (intmod&-intmod)+(intmod<=0)==0))R intmod2(w,intmod); R jtatomic2(jtfgfg,afg,wfg,self);}  // special case for x an atom power of 2 
+// obsolete DFI2(jtresidue){IARG2 DF12IP; MEMCHK2(a,w); I intmod; if(!((AT(a)|AT(w))&((NOUN|SPARSE)&~INT)|AR(a))&&(intmod=IAV(a)[0], (intmod&-intmod)+(intmod<=0)==0))R intmod2(w,intmod); R jtatomic2(jtfg,afg,wfg,self);}  // special case for x an atom power of 2 
 
 
 // These are the unary ops that are implemented using a canned argument
@@ -1932,14 +1932,14 @@ DFIA2(jtresidue){IARG2 J JTFGFROMJTFGFG; DF12IP; I intmod; if(!((AT(a)|AT(w))&((
 #define SETCONPTR(n) A conptr=num(n); \
   if(unlikely(!(AT(w)&B01+INT+FL))){A conptr2=numi2(n); conptr=AT(w)&INT2?conptr2:conptr; conptr2=numi4(n); conptr=AT(w)&INT4?conptr2:conptr;  \
   }else{A conptr2; if(n<2){conptr2=zeroionei(n); conptr=AT(w)&INT?conptr2:conptr;} conptr2=numvr(n); conptr=AT(w)&FL?conptr2:conptr;}
-F1(jtnot){F12IP;ARGCHK1(w); SETCONPTR(1) R AT(w)&B01?eq(num(0),w):jtatomic2(jtfg,conptr,w,(A)&dsCMINUS_NOT);}
+F1(jtnot){F12IP;ARGCHK1(w); MEMCHK1(w); SETCONPTR(1) R AT(w)&B01?eq(num(0),w):jtatomic2(jtfg,conptr,w,(A)&dsCMINUS_NOT);}
 // negate moved to va1
-F1(jtdecrem){F12IP;ARGCHK1(w); SETCONPTR(1) IPSHIFTWA; R jtatomic2(jtfg,w,conptr,(A)&dsCMINUS_DEC);}
-F1(jtincrem){F12IP;ARGCHK1(w); SETCONPTR(1) R jtatomic2(jtfg,conptr,w,(A)&dsCPLUS_INC);}  // leave inplaceable in w only
-F1(jtduble ){F12IP;ARGCHK1(w); SETCONPTR(2) R jtatomic2(jtfg,conptr,w,(A)&dsCSTAR_DUBL);}  // leave inplaceable in w only
-F1(jtsquare){F12IP;ARGCHK1(w); R jtatomic2((J)((I)jtfg|JTINPLACEA),w,w,(A)&dsCSTAR_SQUARE);}   // Inplace OK since can't overflow
+F1(jtdecrem){F12IP;ARGCHK1(w); MEMCHK1(w); SETCONPTR(1) IPSHIFTWA; R jtatomic2(jtfg,w,conptr,(A)&dsCMINUS_DEC);}
+F1(jtincrem){F12IP;ARGCHK1(w); MEMCHK1(w); SETCONPTR(1) R jtatomic2(jtfg,conptr,w,(A)&dsCPLUS_INC);}  // leave inplaceable in w only
+F1(jtduble ){F12IP;ARGCHK1(w); MEMCHK1(w); SETCONPTR(2) R jtatomic2(jtfg,conptr,w,(A)&dsCSTAR_DUBL);}  // leave inplaceable in w only
+F1(jtsquare){F12IP;ARGCHK1(w); MEMCHK1(w); R jtatomic2((J)((I)jtfg|JTINPLACEA),w,w,(A)&dsCSTAR_SQUARE);}   // Inplace OK since can't overflow
 // recip moved to va1
-F1(jthalve ){F12IP;ARGCHK1(w); if(!(AT(w)&XNUM+RAT))R jtatomic2(jtfg,onehalf,w,(A)&dsCSTAR_HALVE); IPSHIFTWA; R jtatomic2(jtfg,w,num(2),(A)&dsCDIV_HALVE);}
+F1(jthalve ){F12IP;ARGCHK1(w); MEMCHK1(w); if(!(AT(w)&XNUM+RAT))R jtatomic2(jtfg,onehalf,w,(A)&dsCSTAR_HALVE); IPSHIFTWA; R jtatomic2(jtfg,w,num(2),(A)&dsCDIV_HALVE);}
 // pix moved to va1
 
 static AHDR2(zeroF,B,void,void){n=m<0?1:n; m>>=!SGNTO0(m); m^=REPSGN(m); mvc(m*n,z,MEMSET00LEN,MEMSET00);R EVOK;}

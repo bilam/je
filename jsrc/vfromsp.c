@@ -141,7 +141,7 @@ static A jtfrombs1(J jt,A ind,A w,I wf){A*iv,x,y,z;I j,m,n,wr,wcr;
 // return 0 if error, 1 if the boxes were not homogeneous.
 // used externally
 A jtaindex(J jt,A a,A w,I wf){A*av,q,z;I an,ar,c,j,k,t,*u,*v,*ws;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  an=AN(a);
  if(!an)R (A)1;
  ws=wf+AS(w); ar=AR(a); av=AAV(a);  q=C(av[0]); c=AN(q);   // q=addr, c=length of first box

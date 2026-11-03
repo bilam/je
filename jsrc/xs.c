@@ -20,7 +20,7 @@ B jtxsinit(JS jjt){A x;JJ jt=MTHREAD(jjt);
  R 1;
 }
 
-F1(jtsnl){F12IP;ASSERTMTV(w); R vec(BOX,AM(JT(jt,slist)),AAV(JT(jt,slist)));}
+F1(jtsnl){F12IP; MEMCHK1(w); ASSERTMTV(w); R vec(BOX,AM(JT(jt,slist)),AAV(JT(jt,slist)));}
      /* 4!:3  list of script names */
 
 
@@ -102,7 +102,7 @@ PROLOG(000);
  if(3==ce){z=num(jt->jerr==0); RESETERR;}else z=mtm; RE(0); EPILOG(z);
 }
 
-static F1(jtaddscriptname){F12IP;I i;A z;
+static F1(jtaddscriptname){F12IP; MEMCHK1(w); I i;A z;
  INCORP(w);  // make sure later ras() can't fail
  A boxw=box(ravel(w));   // take <w before locking
  WRITELOCK(JT(jt,startlock))
@@ -126,7 +126,7 @@ exit:
 
 // load (0!:n), when y is boxed.  Open & read the file, then call line to loop through it
 static A jtlinf(J jt,A a,A w,C ce,B tso){A x,y,z;B lk=0;C*s;I i=-1,n,oldi=jt->currslistx;  // push script#
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(AT(w)&BOX,EVDOMAIN);
  if(JT(jt,seclev)){
   y=C(AAV(w)[0]); n=AN(y); s=CAV(y); 
@@ -154,14 +154,14 @@ static A jtlinf(J jt,A a,A w,C ce,B tso){A x,y,z;B lk=0;C*s;I i=-1,n,oldi=jt->cu
 }
 
 // 4!:6 add script name to list and return its index
-F1(jtscriptstring){F12IP;
+F1(jtscriptstring){F12IP; MEMCHK1(w); 
  ASSERT(AT(w)&LIT,EVDOMAIN);  // literal
  ASSERT(AR(w)<2,EVRANK);  // list
  R jtaddscriptname(jt,w);   // add name if new; return index to name
 }
 
 // 4!:7 set script number to use and return previous value
-F1(jtscriptnum){F12IP;
+F1(jtscriptnum){F12IP; MEMCHK1(w); 
  I i=rei0(w);  // fetch index
  READLOCK(JT(jt,startlock)) I scriptn=AM(JT(jt,slist)); READUNLOCK(JT(jt,startlock))   // no problem if we lose lock since list only grows
  ASSERT(BETWEENO(i,-1,scriptn),EVINDEX);  // make sure it's _1 or valid index
@@ -171,18 +171,18 @@ F1(jtscriptnum){F12IP;
 }
 
 // entry points for 0!:0-0!:112
-DF1(jtscm00 ){DF12IP;I r; ARGCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscm00, self); R r?line(w,-1L,0,0):linf(mark,w,0,0);}  // 0!:[01]00
-DF1(jtscm01 ){DF12IP;I r; ARGCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscm01, self); R r?line(w,-1L,0,1):linf(mark,w,0,1);}  // 0!:[01]01
-DF1(jtscm10 ){DF12IP;I r; ARGCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscm10, self); R r?line(w,-1L,1,0):linf(mark,w,1,0);}  // 0!:[01]10
-DF1(jtscm11 ){DF12IP;I r; ARGCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscm11, self); R r?line(w,-1L,1,1):linf(mark,w,1,1);}  // 0!:[01]11
-DF1(jtsct1  ){DF12IP;I r; ARGCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtsct1,  self); R r?line(w,-1L,2,1):linf(mark,w,2,1);}  // 0!:2
-DF1(jtscz1  ){DF12IP;I r; ARGCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscz1,  self); R r?line(w,-1L,3,0):linf(mark,w,3,0);}  // 0!:3
-DF1(jtscy1  ){DF12IP;I r; ARGCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscy1,  self); R r?line(w,-1L,3,1):linf(mark,w,3,1);}  // 0!:4
+DF1(jtscm00 ){DF12IP;I r; ARGCHK1(w); MEMCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscm00, self); R r?line(w,-1L,0,0):linf(mark,w,0,0);}  // 0!:[01]00
+DF1(jtscm01 ){DF12IP;I r; ARGCHK1(w); MEMCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscm01, self); R r?line(w,-1L,0,1):linf(mark,w,0,1);}  // 0!:[01]01
+DF1(jtscm10 ){DF12IP;I r; ARGCHK1(w); MEMCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscm10, self); R r?line(w,-1L,1,0):linf(mark,w,1,0);}  // 0!:[01]10
+DF1(jtscm11 ){DF12IP;I r; ARGCHK1(w); MEMCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscm11, self); R r?line(w,-1L,1,1):linf(mark,w,1,1);}  // 0!:[01]11
+DF1(jtsct1  ){DF12IP;I r; ARGCHK1(w); MEMCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtsct1,  self); R r?line(w,-1L,2,1):linf(mark,w,2,1);}  // 0!:2
+DF1(jtscz1  ){DF12IP;I r; ARGCHK1(w); MEMCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscz1,  self); R r?line(w,-1L,3,0):linf(mark,w,3,0);}  // 0!:3
+DF1(jtscy1  ){DF12IP;I r; ARGCHK1(w); MEMCHK1(w);    r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F1RANK(     r,jtscy1,  self); R r?line(w,-1L,3,1):linf(mark,w,3,1);}  // 0!:4
 
-DF2(jtscm002){DF12IP;I r; ARGCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscm002,self); R r?line(w,-1L,0,0):linf(a,   w,0,0);}
-DF2(jtscm012){DF12IP;I r; ARGCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscm012,self); R r?line(w,-1L,0,1):linf(a,   w,0,1);}
-DF2(jtscm102){DF12IP;I r; ARGCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscm102,self); R r?line(w,-1L,1,0):linf(a,   w,1,0);}
-DF2(jtscm112){DF12IP;I r; ARGCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscm112,self); R r?line(w,-1L,1,1):linf(a,   w,1,1);}
-DF2(jtsct2  ){DF12IP;I r; ARGCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtsct2,  self); R r?line(w,-1L,2,1):linf(a,   w,2,1);}
-DF2(jtscz2  ){DF12IP;I r; ARGCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscz2,  self); R r?line(w,-1L,3,0):linf(a,   w,3,0);}
-DF2(jtscy2  ){DF12IP;I r; ARGCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscy2,  self); R r?line(w,-1L,3,1):linf(a,   w,3,1);}
+DF2(jtscm002){DF12IP;I r; ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscm002,self); R r?line(w,-1L,0,0):linf(a,   w,0,0);}
+DF2(jtscm012){DF12IP;I r; ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscm012,self); R r?line(w,-1L,0,1):linf(a,   w,0,1);}
+DF2(jtscm102){DF12IP;I r; ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscm102,self); R r?line(w,-1L,1,0):linf(a,   w,1,0);}
+DF2(jtscm112){DF12IP;I r; ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscm112,self); R r?line(w,-1L,1,1):linf(a,   w,1,1);}
+DF2(jtsct2  ){DF12IP;I r; ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtsct2,  self); R r?line(w,-1L,2,1):linf(a,   w,2,1);}
+DF2(jtscz2  ){DF12IP;I r; ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscz2,  self); R r?line(w,-1L,3,0):linf(a,   w,3,0);}
+DF2(jtscy2  ){DF12IP;I r; ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(!JT(jt,seclev),EVSECURE) r=ISDENSETYPE(AT(w),LIT+C2T+C4T); F2RANK(RMAX,r,jtscy2,  self); R r?line(w,-1L,3,1):linf(a,   w,3,1);}

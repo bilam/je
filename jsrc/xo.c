@@ -52,7 +52,7 @@ I jtfnum(J jt,A w){A y;I h,j,z=0;
 }    /* file# corresp. to standard argument w */
 
 // returns 0 if given file# is not open, otherwise the string name of the file
-F1(jtfname){F12IP;I j; A z=0;
+F1(jtfname){F12IP; MEMCHK1(w); I j; A z=0;
  I h=rei0(w); ASSERT(h!=0,EVFNUM);
  READLOCK(JT(jt,flock))  A*v=AAV0(JT(jt,fopafl));
  DO(AM(JT(jt,fopafl)), if(h==AM(v[i])){z=ca(v[i]); break;} )  // if filename found, return its file#.  Clone the string because we need the AM field in the table; also we don't do EPILOG
@@ -61,7 +61,7 @@ F1(jtfname){F12IP;I j; A z=0;
 }    /* string name corresp. to file# w */
 
 // 1!:20
-F1(jtjfiles){F12IP;A y,z=0; ASSERT(!JT(jt,seclev),EVSECURE)
+F1(jtjfiles){F12IP; MEMCHK1(w); A y,z=0; ASSERT(!JT(jt,seclev),EVSECURE)
  ASSERTMTV(w);
  READLOCK(JT(jt,flock))  A*v=AAV0(JT(jt,fopafl)); I nrows=AM(JT(jt,fopafl));
  // We are doing an uncomfortable amount of memory allocating here under lock.
@@ -76,7 +76,7 @@ errorexit: READUNLOCK(JT(jt,flock))
 
 // open named file in the OS.  Result is file handle, or 0 if error
 F jtjope(J jt,A w,C*mode){A t;F f;I n;static I nf=25; A z;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(BOX&AT(w),EVDOMAIN);
  RZ(t=str0(vslit(C(AAV(w)[0]))));
  n=AN(t)-1;
@@ -113,7 +113,7 @@ F jtjope(J jt,A w,C*mode){A t;F f;I n;static I nf=25; A z;
 
 // 1!:21
 F1(jtjopen){F12IP;A z;I h;
- ARGCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE)
+ ARGCHK1(w); MEMCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE)
  if(!AN(w))R w;
  if(AR(w))R rank1ex0(w,DUMMYSELF,jtjopen);
  RE(h=fnum(w));  // return non0 if the string is the # of an already-open file
@@ -135,7 +135,7 @@ F1(jtjopen){F12IP;A z;I h;
 
 // 1!:22
 F1(jtjclose){F12IP;A*av;I*iv,j,h;
- ARGCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE)
+ ARGCHK1(w); MEMCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE)
  if(!AN(w))R w;
  if(AR(w))R rank1ex0(w,DUMMYSELF,jtjclose);
  RZ(h=fnum(w));  // get the file # of the file referred to.  If nonexistent, fail
@@ -159,7 +159,7 @@ F1(jtjclose){F12IP;A*av;I*iv,j,h;
 }    /* close file# w */
 
 F jtstdf(J jt,A w){A y;F f;I n,r,t;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(AN(w),EVLENGTH);
  ASSERT(!AR(w),EVRANK);
  if(BOX&AT(w)){

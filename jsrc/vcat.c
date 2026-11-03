@@ -369,7 +369,7 @@ endcell:;  // here when we have moved all the data & fill for a or w
 }    /* overall control, and a,w and a,"r w for cell rank <: 2 */
 
 DF2(jtstitch){DF12IP;I ar,wr; A z;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ar=AR(a); wr=AR(w);
  ASSERT((-ar&-wr&-(AS(a)[0]^AS(w)[0]))>=0,EVLENGTH);  // a or w scalar, or same # items    always OK to fetch s[0]
  if(likely(((SGNIFDENSE(AT(a)|AT(w)))&(2-ar)&(2-wr))>=0))R z=IRS2(jtover,jtfg,a,(ar-1)&RMAX,w,(wr-1)&RMAX,self);  // not sparse or rank>2

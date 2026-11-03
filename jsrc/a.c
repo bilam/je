@@ -19,7 +19,7 @@ static DFI2(swap2){IARG2 DF12IP;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefn
 
 // w~, which is either reflexive/passive or evoke
 F1(jtswap){F12IP;A y;C*s;I n;
- ARGCHK1(w); 
+ ARGCHK1(w); MEMCHK1(w); 
  if(VERB&AT(w)){
   // reflexive/passive.  Create verb that swaps.  Most flags do not apply to the derived verb, but if u is atomic, so is u~
   I flag = FAV(w)->flag&VIRS2; flag = (FAV(w)->flag&VNOLOCCHG+VNONAME+VNOSELF+VISATOMIC2)+flag+(flag>>1);  // set NOLOCCHG, both irs bits from dyad; ISATOMIC immaterial, since always dyad
@@ -50,7 +50,7 @@ static DF2(jtbdot2){DF12IP;R from(plusA(duble(cvt(B01,a)),cvt(B01,w)),FAV(self)-
 static DF1(jtbdot1){DF12IP;R bdot2(num(0),w,self);}
 
 // (a b.) w
-static DF1(jtbasis1){DF12IP;A fs=FAV(self)->fgh[0]; A z;D*x;I j;V*v;
+static DF1(jtbasis1){DF12IP; MEMCHK1(w);A fs=FAV(self)->fgh[0]; A z;D*x;I j;V*v;
  F1RANK(0,jtbasis1,self);
  RZ(w=vi(w));  // force to INT type
  switch(AV(w)[0]){   // switch on arg
@@ -68,7 +68,7 @@ static DF1(jtbasis1){DF12IP;A fs=FAV(self)->fgh[0]; A z;D*x;I j;V*v;
 
 // a b.
 F1(jtbdot){F12IP;A b,h=0;I j=0,n,*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  A z; fdefallo(z)
  if(VERB&AT(w)){fdeffill(z,0,CBDOT,VERB,(AF)(jtbasis1),jtvalenceerr,w,0L,0L,VNOLOCCHG+VNONAME+VNOSELF,0,0,0) RETF(z);}  // if u b., prepare to run that
  RZ(w=vi(w));  // force function# to INT
@@ -160,8 +160,8 @@ static I jtint0(J jt,A w){A x;
  R w&&INT+B01&AT(w)?BIV0(w):IMIN;
 }
 
-static DF2(jtmemo12){DF12IP;A fs=FAV(self)->fgh[0];A z;I x,y;   // w is 0 for monad
- ARGCHK2(a,w); w=EPDYAD?w:0; AF f12=FAV(fs)->valencefns[!!w];
+static DF2(jtmemo12){DF12IP; MEMCHK2(a,w);A fs=FAV(self)->fgh[0];A z;I x,y;   // w is 0 for monad
+ ARGCHK2(a,w); MEMCHK2(a,w); w=EPDYAD?w:0; AF f12=FAV(fs)->valencefns[!!w];
  x=int0(a); y=w&&x!=IMIN?int0(w):x;  // get arg value, IMIN if not memoable; for monad let y=x
  if(MIN(x,y)==IMIN)R CALL12(w,f12,a,w,fs);  // IMIN is unmemoable, run fn
  R (z=memoget(x,y,self))?z:memoput(x,y,self,CALL12(w,f12,a,w,fs));  // if memo lookup returns empty, run the function and remember the result
@@ -169,7 +169,7 @@ static DF2(jtmemo12){DF12IP;A fs=FAV(self)->fgh[0];A z;I x,y;   // w is 0 for mo
 
 // Create the memoed verb.  We create an h argument of hashtable;key;value, as described above
 F1(jtmemo){F12IP;PROLOG(300);A h,*hv;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(VERB&AT(w),EVDOMAIN);
  V *v=FAV(w);
  GAT0(h,BOX,3,0); hv=AAV0(h);  // the components of fdef must be recursive if recursible, and are made so in fdef

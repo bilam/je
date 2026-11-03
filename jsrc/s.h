@@ -18,7 +18,7 @@
 
 #define SYMWALK(f,T,TYPE,COUNT,COL,SELECT,PROCESS)  \
  F2(f){F12IP;A z;LX *e,j,k;I i,m=0,n;L*d;T*zv;                         \
-  ARGCHK1(w);                                                     \
+  ARGCHK1(w); MEMCHK1(w);                                                     \
   n=AN(w); e=SYMLINFOSIZE+LXAV0(w);                                  \
   GATVS(z,(TYPE),(COUNT)*(COL),(1<(COL))?2:1,0,TYPE##SIZE,GACOPYSHAPE0,R 0);                \
   if(1<(COL)){AS(z)[0]=(COUNT); AS(z)[1]=(COL);}             \
