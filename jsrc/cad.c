@@ -139,23 +139,23 @@ static void jtadswitchls(J jt,ADLOC*s,A ls){A l=AKGST(ls);
 static A jtadresin(J jt,A f,ADLOC*s){A g,nm,l;
  s->sw=0; s->ols=0;
  RZ(g=jtadres(jt,f)); // One step of lookup.
- if(g==f||ADEXPLV(g))R g; // Nothing was resolved or an explicit definition (called through f which does the rest).
+ if(g==f||ADEXPLV(g))RETF (g); // Nothing was resolved or an explicit definition (called through f which does the rest).
  if(ADPSEUDO(f)){l=FAV(f)->fgh[1]; // a pseudoname (what adv_loc_ returns): the locale to run its verb in is in fgh[1]
-   if(!l||l==jt->global)R g; // no locale or already the current one: nothing to switch
+   if(!l||l==jt->global)RETF (g); // no locale or already the current one: nothing to switch
    s->old=jt->global; s->loc=l; s->chg=!(LXAV0(l)[SYMLEXECCT]&EXECCTPERM); s->sw=1; SYMSETGLOBAL(l); // record the switch
    if(s->chg){ACVCACHECLEAR; INCREXECCT(l);} // a real change
-   R g; // the verb to walk, now in its locale
+   RETF (g); // the verb to walk, now in its locale
   }
  nm=FAV(ADIMPL(f))->fgh[0];
- if(NAV(nm)->flag&NMIMPLOC){jtadswitchls(jt,s,(A)AM(jt->locsyms)); R g;} // u. v.
- if(!(NAV(nm)->flag&(NMLOC|NMILOC)))R g; // A plain name.
+ if(NAV(nm)->flag&NMIMPLOC){jtadswitchls(jt,s,(A)AM(jt->locsyms)); RETF (g);} // u. v.
+ if(!(NAV(nm)->flag&(NMLOC|NMILOC)))RETF (g); // A plain name.
  if(FAV(f)->flag2&VF2CACHEABLE&&FAV(f)->flag2&VF2CACHED&&FAV(f)->localuse.lu1.cachedlkp&&NAV(nm)->flag&NMLOC)l=FAV(f)->localuse.lu0.cachedloc; // cached reference to name_loc_
  else RZ(l=sybaseloc(nm)); // The locale of a locative.
- if(AR(l)&ARLOCALTABLE){if(l!=jt->locsyms)jtadswitchls(jt,s,l); R g;} // name___n
- if(l==jt->global)R g;
+ if(AR(l)&ARLOCALTABLE){if(l!=jt->locsyms)jtadswitchls(jt,s,l); RETF (g);} // name___n
+ if(l==jt->global)RETF (g);
  s->old=jt->global; s->loc=l; s->chg=!(LXAV0(l)[SYMLEXECCT]&EXECCTPERM); s->sw=1; // Switch the current locale.
  SYMSETGLOBAL(l); if(s->chg){ACVCACHECLEAR; INCREXECCT(l);}
- R g;
+ RETF (g);
 }
 static void jtadlocexit(J jt,ADLOC*s){if(!s->sw)R; if(s->ols)jt->locsyms=s->ols; SYMSETGLOBAL(s->old); if(s->chg){ACVCACHECLEAR; DECREXECCT(s->loc);} s->sw=0;}
 // Undo switches ls[0..nls-1] made by jtadfollow
@@ -168,9 +168,9 @@ static void jtadlocexitn(J jt,ADLOC*ls,I nls){
 // every step of the rules walk to the end of the stack.
 #define ADPBUDGET 0x40000
 static A jtadresinq(J jt,A f,ADLOC*s){A g; s->sw=0; s->ols=0;
- if(STACKPOS<jt->cstackmin+0x10000||(jt->adtrace&&STACKPOS+ADPBUDGET<(uintptr_t)jt->adtrace))R f;
- if(!(g=jtadresin(jt,f,s))){RESETERR; R f;}
- R g;
+ if(STACKPOS<jt->cstackmin+0x10000||(jt->adtrace&&STACKPOS+ADPBUDGET<(uintptr_t)jt->adtrace))RETF (f);
+ if(!(g=jtadresin(jt,f,s))){RESETERR; RETF (f);}
+ RETF (g);
 }
 // Follow the chain of names from f (a=:b, b=:c, ...) to the first value that is not a name, each step in the locale
 // J would use. Any length is followed; a cycle is detected and ends the walk at a reference.
@@ -180,15 +180,15 @@ static A jtadresinq(J jt,A f,ADLOC*s){A g; s->sw=0; s->ols=0;
 static A jtadfollown(J jt,A f,ADLOC*s,I*n,I cap,B*full){A g=f,saved=f; I lam=0,pow=1;
  *n=0; *full=0;
  while(adisref(g)){
-  if(*n==cap){*full=1; R g;}
+  if(*n==cap){*full=1; RETF (g);}
   A h=jtadresinq(jt,g,&s[*n]);
   if(s[*n].sw)++*n; // keep slot only if locale was switched
-  if(h==g)R g; // unresolved: the reference itself
+  if(h==g)RETF (g); // unresolved: the reference itself
   g=h;
-  if(g==saved)R g; // back at an earlier value: a cycle
+  if(g==saved)RETF (g); // back at an earlier value: a cycle
   if(++lam==pow){saved=g; pow<<=1; lam=0;}
  }
- R g;
+ RETF (g);
 }
 static A jtadfollow(J jt,A f,ADLOC*s,I*n,B*full){R jtadfollown(jt,f,s,n,ADMAXLOC,full);}
 // A predicate that sees through names (with the locales switched as J would, and switched back afterwards).
@@ -317,14 +317,14 @@ static I jtadtput(J jt,A x,A T){ADTRACE*t=ADT; I h;
 // enter primal z with tangent T in the trace. Result is the block to use for z (a copy if z is already a key).
 static A jtadtreg(J jt,A z,A T){A old;
  if(!z||!T)R 0; // an error computing the value or its tangent
- if(!ADT||ISZ(T)||!(AT(z)&NUMERIC))R z; // text and boxes are never traced
+ if(!ADT||ISZ(T)||!(AT(z)&NUMERIC))RETF (z); // text and boxes are never traced
  if(AT(z)&(XNUM|RAT))RZ(z=cvt(FL,z)); // traced values are floating point
  realizeifvirtual(z); // Keys must not be virtual.
  old=adtget(z);
- if(old==T)R z;
+ if(old==T)RETF (z);
  if(!ISZ(old)||ACISPERM(AC(z)))RZ(z=ca(z));
  RZ(jtadtput(jt,z,T)); // Enter the new key (the original z or the copy) with T.
- R z;
+ RETF (z);
 }
 #define adtreg(z,T) jtadtreg(jt,(z),(T))
 // slot of x in the table, or -1 (a slot number is only valid as long as the table isn't rebuilt).
@@ -449,12 +449,12 @@ static A jtadapply(J jt,A f,A x,A y){ADTRACE*t=ADT; A Tx,Ty,z,tz; B dyad=x!=0; I
  if(ISZ(Tx)&&ISZ(Ty)&&!jtadhastraced(jt,f)&&!ADBOXHOLDS(x)&&!ADBOXHOLDS(y)){ // nothing traced here: evaluate
   if(jtadrunscode(jt,f)){A z; // ". or a script: its sentences are traced at this level
    if(dyad)df2(z,x,y,f);
-   else df1(z,y,f); R z;
+   else df1(z,y,f); RETF (z);
   }
   R jtadop(jt,f,x,y);
  }
  if(t->rev){ // Reverse mode.
-  if((z=dyad?jtadrec2(jt,f,x,y):jtadrec1(jt,f,y)))R z;
+  if((z=dyad?jtadrec2(jt,f,x,y):jtadrec1(jt,f,y)))RETF (z);
  }else{ // Forward mode.
   ok=dyad?jtadfwd2(jt,f,x,Tx,y,Ty,t->k,&z,&tz):jtadfwd1(jt,f,y,Ty,t->k,&z,&tz);
   if(ok){
@@ -465,16 +465,16 @@ static A jtadapply(J jt,A f,A x,A y){ADTRACE*t=ADT; A Tx,Ty,z,tz; B dyad=x!=0; I
  R 0; // error or D.'s refusal
 }
 static A jtadop(J jt,A f,A x,A y){A z; ADTRACE*t=ADT;
- if(likely(!t||!t->prev)){if(x)df2(z,x,y,f);else df1(z,y,f); R z;}
+ if(likely(!t||!t->prev)){if(x)df2(z,x,y,f);else df1(z,y,f); RETF (z);}
  C otr=jt->parserstackframe.adtracing; jt->parserstackframe.adtracing=1; // explicit code run by the outer level is traced there
  jt->adtrace=t->prev; z=jtadapply(jt,f,x,y); jt->adtrace=t;
  jt->parserstackframe.adtracing=otr;
  if(!z&&t->prev->refused&&jt->jerr==EVNONCE){t->refused=1; t->fbfail=1;} // refused by the outer level, so refuse it here too
- R z;
+ RETF (z);
 }
 // c is a new block with value of z: give it z's derivatives at the levels outside the current one
 static A jtadalias(J jt,A c,A z){ADTRACE*t=ADT; A r=c;
- if(!c||c==z||!NESTED)R c;
+ if(!c||c==z||!NESTED)RETF (c);
  for(ADTRACE*s=t->prev;s&&r;s=s->prev){A T; jt->adtrace=s; T=adtget(z);
   if(ISZ(T))continue;
   if(s->rev){
@@ -484,7 +484,7 @@ static A jtadalias(J jt,A c,A z){ADTRACE*t=ADT; A r=c;
   }
   else if(!jtadtput(jt,c,T))r=0;
  }
- jt->adtrace=t; R r;
+ jt->adtrace=t; RETF (r);
 }
 static A jtadca(J jt,A z){A c; RZ(c=jtca(jt,z)); R jtadalias(jt,c,z);}
 static A jtadcvt(J jt,I t,A x){A z; if(x&&TYPESEQ(t,AT(x)))R x; RZ(z=jtcvt(jt,t,x)); R jtadalias(jt,z,x);} // convert x to type t.  x itself if it already has type t (sharing x is safe)
@@ -494,7 +494,7 @@ static A jtadopenat(J jt,A zb){ADTRACE*t=ADT; A z,T; B any=0;
  if(!(AT(zb)&BOX))R jtope(jt,zb);
  DO(AN(zb), A Ti=adtget(C(AAV(zb)[i])); if(!ISZ(Ti))any=1;)
  RZ(z=jtadope(jt,zb));
- if(!any)R z;
+ if(!any)RETF (z);
  if(t->rev)R jtadrecord(jt,ADKASSEMBLE,0,zb,0,z);
  RZ(T=jtadfwdasm(jt,zb,z));
  R adtreg(z,T);
@@ -503,7 +503,7 @@ static A jtadope(J jt,A zb){ADTRACE*t=ADT; A z;
  if(likely(!t||!t->prev))R jtope(jt,zb);
  jt->adtrace=t->prev; z=jtadopenat(jt,zb); jt->adtrace=t;
  if(!z&&t->prev->refused&&jt->jerr==EVNONCE){t->refused=1; t->fbfail=1;}
- R z;
+ RETF (z);
 }
 
 // ***************************************** tangent arithmetic **********************************
@@ -756,8 +756,8 @@ static A jtadstripneg(J jt,A f,B dyad){V*fv;
   R g==b?f:jtadmkdcap(jt,g,FAV(f)->fgh[1]);
  }
  fv=FAV(f);
- if(fv->id!=CQQ||!(AT(fv->fgh[0])&VERB))R f;
- if(!(dyad?((I)fv->localuse.lu1.srank[1]<0||(I)fv->localuse.lu1.srank[2]<0):(I)fv->localuse.lu1.srank[0]<0))R f;
+ if(fv->id!=CQQ||!(AT(fv->fgh[0])&VERB))RETF (f);
+ if(!(dyad?((I)fv->localuse.lu1.srank[1]<0||(I)fv->localuse.lu1.srank[2]<0):(I)fv->localuse.lu1.srank[0]<0))RETF (f);
  R qq(fv->fgh[0],ainf); // v"_
 }
 // Return the same verb with names in u replaced by what they stand for.
@@ -778,7 +778,7 @@ static A jtadnegv(J jt,A f,B dyad,ADLOC*ls,I*nls){A g,h; B full;
  if(full){jtadlocexitn(jt,ls,*nls); *nls=0; ASSERT(0,EVLIMIT);} // more than ADMAXLOC locale switches
  if(!(g=jtadfollowdcap(jt,g,ls,nls))){jtadlocexitn(jt,ls,*nls); *nls=0; R 0;}
  if(!(h=jtadstripneg(jt,g,dyad))||h==g){jtadlocexitn(jt,ls,*nls); *nls=0; R h?f:0;}
- R h;
+ RETF (h);
 }
 // cell loop when f is split at its own ranks: if one is negative the cells run f without it else f itself. T is type of call's result
 #define ADNEGCELLS(T,f,neg,dy,call) {if(!(neg)){A g_=(f); R (call);} ADLOC ls_[ADMAXLOC]; I nls_; A g_; T rc_; RZ(g_=jtadnegv(jt,f,dy,ls_,&nls_)); rc_=(call); jtadlocexitn(jt,ls_,nls_); R rc_;}
@@ -803,7 +803,7 @@ static A jtadwincell(J jt,B out,I x,I n,I i){A z; I s,l,*zv;
  adwin(x,n,i,&s,&l);
  if(!out)R apv(l,s,1); // infix: s + i. l
  GATV0(z,INT,n-l,1); zv=IAV(z); // outfix: the rest
- DO(s, zv[i]=i;) DO(n-s-l, zv[s+i]=s+l+i;) R z;
+ DO(s, zv[i]=i;) DO(n-s-l, zv[s+i]=s+l+i;) RETF (z);
 }
 // item indices of every cell (a table). 0 when the cells differ in length
 // or when the table and W { y would hold more than ADWINMAX atoms.
@@ -819,7 +819,7 @@ static A jtadwinidx(J jt,B out,I x,I n,I a){A W; I s,l,L,*wv;
   if(out){DO(s, *wv++=i;) DO(n-s-l, *wv++=s+l+i;)
   }else{DO(l, *wv++=s+i;)}
  )
- R W;
+ RETF (W);
 }
 
 // Rank machinery is run over an array of cell indices; each call differentiates one cell and
@@ -930,7 +930,7 @@ static A jtaditem(J,A,I);
 // allocate empty list of n boxes
 static A jtadboxlist(J jt,I n){A z;
  GATV0(z,BOX,n,1); A*v=AAV1(z); DO(n, v[i]=0;);
- AFLAGORLOCAL(z,BOX&RECURSIBLE); R z;
+ AFLAGORLOCAL(z,BOX&RECURSIBLE); RETF (z);
 }
 // store x as item i of box list made by jtadboxlist
 #define adboxset(z,i,x) {A _x=(x); INCORPRA(_x); AAV1(z)[i]=_x;}
@@ -1218,7 +1218,7 @@ static A jtadlinrec(J jt,B pre,A a,A X,I r){I n=AS(a)[0];
   RZ(gc3(&X,&a,0,old)); // free this step's temporaries
  }
  if(!pre)RZ(X=admap1(ds(CREV),X,r)); // reverse suffix case back
- R X; // X holds Z
+ RETF (X); // X holds Z
 }
 // Forward rule for */\ y and */\. y
 static I jtadfwdscanp(J jt,A f,B pre,A P,A T,A zg,A*pz,A*tz){A z,c;
@@ -1265,7 +1265,7 @@ static A jtadfoldw(J jt,A f,A P,A z){C id=FAV(FAV(f)->fgh[0])->id; A a,b;
  if(AT(a)&B01){I n1=0; B*cv=BAV(a);
   DO(AN(a), n1+=cv[i];) // one atom per result atom (no tie): c itself.
   B nan=0; if(AT(z)&FL)DO(AN(z), if(_isnan(DAV(z)[i])){nan=1; break;})
-  if(n1==AN(z)&&!nan)R a;
+  if(n1==AN(z)&&!nan)RETF (a);
  }
  RZ(b=AO1(slash(ds(CPLUS)),a)); // how many share each atom of the result
  R AO2(qq(ds(CDIV),ri),a,b);
@@ -1309,12 +1309,12 @@ static B adboxwalk(A f){
 }
 static A jtadrealarg(J jt,A x){
  if(x&&AFLAG(x)&AFVIRTUAL&&ISZ(adtget(x)))R realize(x);
- R x;
+ RETF (x);
 }
 static A jtadconstbox(J jt,A f,A x,A y){A z;
  if(ISPRIM(f)&&(x?adstructx(f)||adstructy(f)||adstructj(f):adstructm(f))){ // a verb that only moves items
   RZ(z=x?(AO2(f,x,y)):(AO1(f,y)));
-  if(AT(z)&BOX)R z; // boxes moved
+  if(AT(z)&BOX)RETF (z); // boxes moved
  }
  if(x)RZ(x=jtadrealarg(jt,x));
  RZ(y=jtadrealarg(jt,y));
@@ -1343,7 +1343,7 @@ static A jtadleafmap(J jt,A y,I*base,ADLEAVES*l){A z; I n=AN(y); // y with its n
   }
   INCORPRA(m); zv[i]=m;
  )
- R z;
+ RETF (z);
 }
 // The leaf that atom number s (1..ov[n]) of a box map belongs to. ov holds the leaves' offsets (n+1 of them, from 0);
 // j is a guess (the previous answer), right when the map runs in order
@@ -1356,7 +1356,7 @@ static I adleafof(I*ov,I n,I s,I j){I lo=0,hi=n-1;
 static A jtadleafoffs(J jt,A lv){A O; I n=AN(lv),*ov;
  GATV0(O,INT,n+1,1); ov=IAV(O); ov[0]=0;
  DO(n, ov[i+1]=ov[i]+AN(C(AAV(lv)[i]));)
- R O;
+ RETF (O);
 }
 // Compute tangent of a box rule's result in forward mode. A box rule here means > ; {:: or a selection etc. applied to boxes holding traced values.
 // Only the leaves that z uses and whose tangent is not zero are gathered, through a map renumbered for them.
@@ -1818,7 +1818,7 @@ static A jtadpowfx(J jt,A x,A y,A z){
 // solve  y mp t = c  for every direction of c (shape k,$z, z the solution of x %. y) with a single %.
 // the directions become extra columns of the right side, so y is factored once
 static A jtadsolvek(J jt,A c,A y,A z){A t; I n=AS(y)[0],k=AS(c)[0];
- if(!n||!AN(c))R c;
+ if(!n||!AN(c))RETF (c);
  RZ(t=cant2(num(0),c)); // direction axis last: ($z),k
  RZ(t=reshape(v2(n,AN(t)/n),t));
  RZ(t=AO2(ds(CDOMINO),t,y)); // one solve
@@ -1834,8 +1834,8 @@ static A jtadselx(J jt,C id,A x,A y){A c,d;
  PUSHCCT(1.0) c=AO2(ds(id==CMIN?CLE:CGE),x,y); d=c?AO2(ds(id==CMIN?CLT:CGT),x,y):0; POPCCT
  RZ(d);
  if(AT(c)&AT(d)&B01&&AN(c)==AN(d)){A z; B*cv=BAV(c),*dv=BAV(d);
-  if(!memcmp(cv,dv,AN(c)))R c; // no tie: c, boolean
-  GATV(z,FL,AN(c),AR(c),AS(c)); D*zv=DAV(z); DO(AN(c), zv[i]=0.5*(cv[i]+dv[i]);) R z; // a constant: one pass
+  if(!memcmp(cv,dv,AN(c)))RETF (c); // no tie: c, boolean
+  GATV(z,FL,AN(c),AR(c),AS(c)); D*zv=DAV(z); DO(AN(c), zv[i]=0.5*(cv[i]+dv[i]);) RETF (z); // a constant: one pass
  }
  R tymes(scf(0.5),plus(c,d));
 }
@@ -2222,16 +2222,16 @@ static A jtadidx(J jt,A y,I base){R reshape(shape(y),apv(AN(y),base,1));} // ($x
 // z was computed from x (and y) by f: make z a node and record the operation. Result is the block to use for z
 static A jtadrecord(J jt,I kind,A f,A x,A y,A z){A old;
  if(!z)R 0;
- if(!(AT(z)&NUMERIC))R z; // text and boxes are never nodes
+ if(!(AT(z)&NUMERIC))RETF (z); // text and boxes are never nodes
  if(AT(z)&(XNUM|RAT))RZ(z=jtcvt(jt,FL,z)); // nodes are floating point, the copy is a new block, recorded
  realizeifvirtual(z);
  old=adtget(z);
- if(old==ADNODE&&kind==ADKSTRUCT1)R z; // atom-moving subtree passed an existing node through: nothing happened to it
+ if(old==ADNODE&&kind==ADKSTRUCT1)RETF (z); // atom-moving subtree passed an existing node through: nothing happened to it
  // primitive with a derivative rule can return its argument too, as %: on a boolean 1 does: that is recorded on a copy so the backward pass applies its derivative
  if(!ISZ(old)||ACISPERM(AC(z))||z==x||z==y)RZ(z=ca(z));
  RZ(jtadtput(jt,z,ADNODE));
  RZ(jtadtapepush(jt,kind,f,x,y,z));
- R z;
+ RETF (z);
 }
 #define PRIM1(z) jtadrecord(jt,ADKPRIM1,f,P,0,(z))
 #define PRIM2(z) jtadrecord(jt,ADKPRIM2,f,x,y,(z))
@@ -2243,7 +2243,7 @@ static A jtaduntr(J jt,A z){if(!z)R 0; R TRC(z)?ca(z):z;}
 // So the value is J's as in forward mode and J's evaluation is not wasted
 static A jtadrecsame(J jt,A zf,A zj){
  if(!zf||!zj)R 0;
- if(!TRC(zf)||AR(zf)!=AR(zj)||memcmp(AS(zf),AS(zj),AR(zj)*SZI))R zf;
+ if(!TRC(zf)||AR(zf)!=AR(zj)||memcmp(AS(zf),AS(zj),AR(zj)*SZI))RETF (zf);
  R jtadrecord(jt,ADKSTRUCT1,0,zf,0,zj);
 }
 
@@ -2297,9 +2297,9 @@ static DF2(jtadrcelld){DF12IP; MEMCHK2(a,w); V*v=FAV(self); A f=v->fgh[0],*dv=AA
 // the results of the cells opened together: recorded if a cell result is a node.
 static A jtadrassemble(J jt,A zb){A z; B any=0;
  RZ(z=ope(zb));
- if(!(AT(z)&NUMERIC))R z;
+ if(!(AT(z)&NUMERIC))RETF (z);
  DO(AN(zb), A Ti=adtget(C(AAV(zb)[i])); if(!ISZ(Ti))any=1;)
- if(!any)R z;
+ if(!any)RETF (z);
  R jtadrecord(jt,ADKASSEMBLE,0,zb,0,z);
 }
 static A jtadrsplit(J jt,A P,I fr){I n=1; A cs,r;
@@ -2389,8 +2389,8 @@ static A jtadrecnorule(J jt,A f,A x,A y){A z;
 }
 static A jtadrec1x(J,A,A);
 static A jtadrec2x(J,A,A,A);
-static A jtadrec1(J jt,A f,A P){A z; if((z=jtadrec1x(jt,f,P)))R z; R jtadrecnorule(jt,f,0,P);}
-static A jtadrec2(J jt,A f,A x,A y){A z; if((z=jtadrec2x(jt,f,x,y)))R z; R jtadrecnorule(jt,f,x,y);}
+static A jtadrec1(J jt,A f,A P){A z; if((z=jtadrec1x(jt,f,P)))RETF (z); R jtadrecnorule(jt,f,0,P);}
+static A jtadrec2(J jt,A f,A x,A y){A z; if((z=jtadrec2x(jt,f,x,y)))RETF (z); R jtadrecnorule(jt,f,x,y);}
 static A jtadrec1x(J jt,A f,A P){A z,a,b; V*v; A fs,gs,hs; B tp,tr,bx=0;
  ASSERT(AT(f)&VERB,EVDOMAIN);
  tp=TRC(P); tr=jtadhastraced(jt,f);
@@ -2403,14 +2403,14 @@ static A jtadrec1x(J jt,A f,A P){A z,a,b; V*v; A fs,gs,hs; B tp,tr,bx=0;
   RZ(g=jtadresin(jt,f,&ls));
   if(g!=f){A r;
    if(ADEXPLV(g))df1(r,P,f); else r=REC1(g,P);
-   jtadlocexit(jt,&ls); R r;
+   jtadlocexit(jt,&ls); RETF (r);
   }
  }
  ASSERT(!tp||AT(P)&(B01|INT|FL),EVDOMAIN);
  v=FAV(f); fs=v->fgh[0]; gs=v->fgh[1]; hs=v->fgh[2];
  if(bx){A pz;
   if(ISPRIM(f)){
-   if(v->id==CGT||v->id==CRAZE){RZ(jtadboxmap(jt,f,0,P,0,&pz,0,1)); R pz;} // > ;
+   if(v->id==CGT||v->id==CRAZE){RZ(jtadboxmap(jt,f,0,P,0,&pz,0,1)); RETF (pz);} // > ;
    if(adconst1(f))R UNTR((_z=AO1(f,P)));
    R jtadconstbox(jt,f,0,P);
   }
@@ -2443,7 +2443,7 @@ boxwalkr1:
   if(AR(P)>2)R jtadrcells1(jt,f,2,P); // rank 2: a matrix at a time
   if(AR(P)!=2||AS(P)[0]!=AS(P)[1]){A zj; RZ(zj=AO1(f,P)); R jtadrecsame(jt,jtadpinvr(jt,P),zj);} // atom, list, non-square matrix: J's value
   RZ((z=AO1(f,P))); R PRIM1(z);
- case CLEFT: case CRIGHT: R P;
+ case CLEFT: case CRIGHT: RETF (P);
  case CDCAPDOT:
   if(v->valencefns[0]==jtadscatv){RZ(z=AO1(f,P)); R PRIM1(z);}
   ADASSERT(ISDCAP(f)); R df1(z,P,f); // u D.1 inside u: the inner D. runs and its arithmetic is recorded here
@@ -2476,7 +2476,7 @@ boxwalkr1:
  case CTILDE: ADASSERT(AT(fs)&VERB); R REC2(fs,P,P);
  case CCOLONE: ADASSERT(!ADPSEUDO(f)); R df1(z,P,f); // explicit definition: its sentences are recorded as it runs
  case CADVERSE: // u :: v
-  {I nt=ADT->ntape; WITHDEBUGOFF(z=REC1(fs,P);) if(z)R z;
+  {I nt=ADT->ntape; WITHDEBUGOFF(z=REC1(fs,P);) if(z)RETF (z);
   if(!jtadadvfails(jt))R 0;
   jtadtapecut(jt,nt); R AT(gs)&NOUN?gs:REC1(gs,P);}
  case CCOLON: ADASSERT(AT(fs)&VERB&&AT(gs)&VERB); R REC1(fs,P);
@@ -2491,22 +2491,22 @@ boxwalkr1:
  case CATDOT: ADASSERT(ADISAGENDA(v)); R jtadagendar(jt,f,0,P);
  case CSLASH: {I n;
   if(!bx&&AT(fs)&VERB&&ISPRIM(fs)&&(FAV(fs)->id==CPLUS||FAV(fs)->id==CMINUS)){ // +/ -/
-   if(!AR(P))R P;
+   if(!AR(P))RETF (P);
    RZ((z=AO1(f,P))); R PRIM1(z);
   }
-  if(!AR(P))R P;
+  if(!AR(P))RETF (P);
   n=AS(P)[0];
   if(!n)R UNTR((_z=AO1(f,P)));
   if(!bx&&adfoldfast(f)){RZ((z=AO1(f,P))); R PRIM1(z);} // */ >./ <./ one entry
   RZ(a=REC2(ds(CFROM),sc(n-1),P));
   DQ(n-1, RZ(b=REC2(ds(CFROM),sc(i),P)); RZ(a=REC2(fs,b,a));)
-  R a;}
+  RETF (a);}
  case CPOWOP: {I n;
   ADASSERT(AT(gs)&NOUN);
   RE(n=jtadpowcount(jt,gs));
   a=P;
   DQ(n, RZ(a=REC1(fs,a)););
-  R a;}
+  RETF (a);}
  case CUNDER: case CUNDCO: {A vi,m; I su=jtadsunder(jt,f,&m);
   if(su){
    RZ(a=REC1(gs,P)); RZ(b=REC1(fs,a));
@@ -2515,7 +2515,7 @@ boxwalkr1:
    R REC2(amend(m),b,P);
   }
   RZ(vi=inv(gs)); RZ(a=REC1(gs,P)); RZ(b=REC1(fs,a)); R REC1(vi,b);}
- ADFOLDCASES: {A tz; RZ(jtadfold(jt,f,0,ADZ,P,ADZ,0,1,&z,&tz)); R z;} // the folds: each step recorded
+ ADFOLDCASES: {A tz; RZ(jtadfold(jt,f,0,ADZ,P,ADZ,0,1,&z,&tz)); RETF (z);} // the folds: each step recorded
  case CCUT: ADASSERT(adcut0(f)); if(!AR(P))R REC1(fs,P); RZ(a=jtadcutrevx(jt,P)); R REC2(f,a,P); // u;.0 y
  default: ADASSERT(0);
  }
@@ -2544,14 +2544,14 @@ static A jtadrec2x(J jt,A f,A x,A y){A z,a,b,c; V*v; A fs,gs,hs; B tx,ty,tr,bx=0
   RZ(g=jtadresin(jt,f,&ls));
   if(g!=f){A r;
    if(ADEXPLV(g))df2(r,x,y,f); else r=REC2(g,x,y);
-   jtadlocexit(jt,&ls); R r;
+   jtadlocexit(jt,&ls); RETF (r);
   }
  }
  ASSERT((!tx||AT(x)&(B01|INT|FL))&&(!ty||AT(y)&(B01|INT|FL)),EVDOMAIN);
  v=FAV(f); fs=v->fgh[0]; gs=v->fgh[1]; hs=v->fgh[2];
  if(bx){A pz;
   if(ISPRIM(f)){B by=ADBOXHOLDS(y);
-   if(v->id==CFETCH&&by){RZ(jtadboxmap(jt,f,x,y,0,&pz,0,1)); R pz;}
+   if(v->id==CFETCH&&by){RZ(jtadboxmap(jt,f,x,y,0,&pz,0,1)); RETF (pz);}
    if(adconst2(f)||(!by&&!ty&&(v->id==CFETCH||v->id==CFROM)))R UNTR((_z=AO2(f,x,y)));
    R jtadconstbox(jt,f,x,y);
   }
@@ -2599,8 +2599,8 @@ boxwalkr2:
  case CGRADE: case CDGRADE: case CLESS: // y selects
   if(!tx)R UNTR((_z=AO2(f,x,y)));
   RZ((z=AO2(f,x,y))); R PRIM2(z);
- case CLEFT: R x;
- case CRIGHT: R y;
+ case CLEFT: RETF (x);
+ case CRIGHT: RETF (y);
  case CDOT: ADASSERT(adinnerid(f));
   if(!AR(x)||!AR(y)){A s=slash(ds(adinnerid(f))); // atom argument: x u/ . * y is u/ x * y (x an atom) or u/"1 x * y (y an atom)
    R REC1(AR(x)?qq(s,sc(1)):s,REC2(ds(CSTAR),x,y));
@@ -2651,7 +2651,7 @@ boxwalkr2:
   ADASSERT(adcut3(f)&&!tx&&AT(fs)&VERB&&adstructm(fs)&&!jtadhastraced(jt,fs));
   if(!ty)R UNTR((_z=AO2(f,x,y)));
   RZ((z=AO2(f,x,y))); R PRIM2(z);
- case CADVERSE: {I nt=ADT->ntape; WITHDEBUGOFF(z=REC2(fs,x,y);) if(z)R z;
+ case CADVERSE: {I nt=ADT->ntape; WITHDEBUGOFF(z=REC2(fs,x,y);) if(z)RETF (z);
   if(!jtadadvfails(jt))R 0;
   jtadtapecut(jt,nt); R AT(gs)&NOUN?gs:REC2(gs,x,y);}
  case CCOLON: ADASSERT(AT(fs)&VERB&&AT(gs)&VERB); R REC2(gs,x,y);
@@ -2664,13 +2664,13 @@ boxwalkr2:
   RE(n=jtadpowcount(jt,gs));
   a=y;
   DQ(n, RZ(a=REC2(fs,x,a)););
-  R a;}
+  RETF (a);}
  case CUNDER: case CUNDCO: {A vi;
   RZ(vi=inv(gs)); RZ(b=REC1(gs,y)); RZ(a=REC1(gs,x)); RZ(c=REC2(fs,a,b));
   R REC1(vi,c);
  }
  case CSEMICO: if(!ISPRIM(f))break; R AO2(f,x,y); // x ; y
- ADFOLDCASES: {A tz; RZ(jtadfold(jt,f,x,ADZ,y,ADZ,0,1,&z,&tz)); R z;}
+ ADFOLDCASES: {A tz; RZ(jtadfold(jt,f,x,ADZ,y,ADZ,0,1,&z,&tz)); RETF (z);}
  }
  ADASSERT(0);
 }
@@ -2683,10 +2683,10 @@ static A jtadcot(J jt,A x,B create){ADTRACE*t=ADT; I h; A cb;
  for(h=ADHASH(x,t->cap);t->keys[h];h=(h+1)&(t->cap-1))
   if(t->keys[h]==x){
    cb=t->tans[h];
-   if(cb!=ADNODE)R cb;
+   if(cb!=ADNODE)RETF (cb);
    if(!create)R 0;
    RZ(cb=reshape(over(sc(t->k),shape(x)),scf(0.0)));
-   ra(cb); t->tans[h]=cb; R cb;
+   ra(cb); t->tans[h]=cb; RETF (cb);
   }
  R 0;
 }
@@ -2735,10 +2735,10 @@ static A jtadunbc(J jt,A G,A x){I m=ADT->k,nx,ng; A z; D*gv,*zv;
   R reshape(over(sc(m),shape(x)),z);
  }
  RZ(z=reshape(over(sc(m),shape(x)),scf(0.0)));
- if(!nx)R z;
+ if(!nx)RETF (z);
  I rest=ng/(m*nx); gv=DAV(G); zv=DAV(z);
  DO(m*nx, D s=0.0; D*p=gv+i*rest; DQ(rest, s+=p[i];) zv[i]=s;)
- R z;
+ RETF (z);
 }
 // contribution Ct*F to node x
 static I jtadaccf(J jt,A x,A F,A Ct,A z){A G;
@@ -2760,7 +2760,7 @@ static DF1(jtadscatv){DF12IP; MEMCHK1(w);  A*dv=AAV(FAV(self)->fgh[1]); A ix=C(d
   for(I j=0;j<nz;++j)
    if(iv[j]>=0)zc[iv[j]]+=wc[j];
  }
- R z;
+ RETF (z);
 }
 static A jtadmkscat(J jt,A ix,A sx,I rz){
  R fdef(0,CDCAPDOT,VERB,jtadscatv,jtvalenceerr,0,jlink(ix,jlink(sx,sc(rz))),0,VFLAGNONE,RMAX,RMAX,RMAX);
@@ -3188,12 +3188,12 @@ static A jtadfwdasm(J jt,A zb,A z){I k=ADT->k,fr=AR(zb),n=AN(zb),nz=AN(z),rr=AR(
    {I d=rr-1; while(d>=0&&++ix[d]==ps[d]){ix[d]=0; --d;}}
   )
  )
- R T;
+ RETF (T);
 }
 // STRUCT1: tangent of z is gathered from the tangent T of the argument through index map m (atom numbers from 1,
 // 0 for a fill). No map: the identity.
 static A jtadfwdstruct(J jt,A m,A T,A z){I k=AS(T)[0],nx=k?AN(T)/k:0; A Tf,G;
- if(!m)R T;
+ if(!m)RETF (T);
  if(!k)R reshape(over(sc(0),shape(z)),scf(0.0)); // no directions (empty y), so empty tangent
  RZ(Tf=reshape(v2(k,nx),T)); // Tf =. (k,nx) $ T
  RZ(Tf=(AO2(qq(ds(CCOMMA),v2(1,1)),reshape(v2(k,1),scf(0.0)),Tf))); // Tf =. 0 ,"1 Tf
@@ -3251,7 +3251,7 @@ static A jtadreplay(J jt,A y,A zout){ADTRACE*t=ADT; I n=AN(y),*last; A T,Tz,r=0;
  else if((Tz=cant2(sc(0),Tz)))r=reshape(over(shape(zout),shape(y)),Tz); // direction axis to the end
 exit:
  free(last);
- R r;
+ RETF (r);
 }
 
 // Jacobian by reverse mode: record u at y, then one backward pass with one direction per atom of the result.
@@ -3268,7 +3268,7 @@ static A jtadjacrev(J jt,A u,A x,A y,B dyad,A*pz,B chooseok){A z,c,Jy; I m;
   C otr=jt->parserstackframe.adtracing; jt->parserstackframe.adtracing=0; // rules run J verbs: do not trace them
   A r=jtadreplay(jt,y,z);
   jt->parserstackframe.adtracing=otr;
-  R r;
+  RETF (r);
  }
  ADT->k=m;
  RZ(c=jtadcot(jt,z,1)); DO(m, DAV(c)[i*m+i]=1.0;) // seed: identity
@@ -3595,8 +3595,8 @@ static I jtadboxchk(J jt,A z,ADPSET*s){
 // This decides whether z can be used: is it certain no derivative was lost? It returns z if so, otherwise 0 with a final refusal.
 static A jtadnorule(J jt,A f,A z,A x,A y){ADPSET s={0,0,0}; I r;
  if(!z)R 0;
- if(z==x||z==y)R z;
- if(AT(z)&BOX?0:!(AT(z)&NUMERIC)||!AN(z)||!ISZ(adtget(z)))R z; // text (not followed), empty or traced (passed through)
+ if(z==x||z==y)RETF (z);
+ if(AT(z)&BOX?0:!(AT(z)&NUMERIC)||!AN(z)||!ISZ(adtget(z)))RETF (z); // text (not followed), empty or traced (passed through)
  if((x&&!jtadpsetadd(jt,&s,x))||!jtadpsetadd(jt,&s,y)||!jtadpsetverb(jt,&s,f)){free(s.v); RE(0); ASSERT(0,EVWSFULL);}
  qsort(s.v,s.n,sizeof(A),adpcmp);
  if(AT(z)&BOX)r=jtadboxchk(jt,z,&s);
@@ -3678,7 +3678,7 @@ static A jtaddiag(J jt,A d,I fr){I nf=1,nc=1,rc=AR(d)-fr; A z,s; D*dv,*zv;
  RZ(z=reshape(s,scf(0.0)));
  dv=DAV(d); zv=DAV(z);
  DO(nf, D*zc=zv+i*nc*nc; D*dc=dv+i*nc; DO(nc, zc[i*nc+i]=dc[i];))
- R z;
+ RETF (z);
 }
 // Take the diagonal out of that full Jacobian (only when forced reverse).
 static A jtaddiagof(J jt,A z,A y){I n=AN(y),np,r; A d,sp,ix;
@@ -3691,7 +3691,7 @@ static A jtaddiagof(J jt,A z,A y){I n=AN(y),np,r; A d,sp,ix;
  }
  RZ(d=reshape(sp,scf(0.0)));
  DO(np, DAV(d)[i]=DAV(z)[i*n+i/r];)
- R d;
+ RETF (d);
 }
 
 // The mode of one D.
@@ -3716,7 +3716,7 @@ exit:
  if(z)ra(z); // the result may be a block the trace holds, so keep it through the cleanup
  jtadtfree(jt,&t);
  if(z)tpush(z);
- R z;
+ RETF (z);
 }
 // what mode D. should use when it starts: automatic, forward or reverse?
 static I jtadmode(J jt){I d=0;
@@ -3727,7 +3727,7 @@ static I jtadmode(J jt){I d=0;
 F1(jtadmodeq){F12IP; MEMCHK1(w); A z; ASSERTMTV(w);
  GATV0(z,INT,sizeof(I),1);
  DO(sizeof(I), C m=jt->admodes[i]; IAV(z)[i]=m==ADMREV?-1:m==ADMFWD?1:0;)
- R z;
+ RETF (z);
 }
 // 9!:_11 set it: 0 automatic, 1 forward, _1 reverse; a list gives the outer levels first. Per thread. For testing
 F1(jtadmodes){F12IP; MEMCHK1(w); I n;
@@ -3807,7 +3807,7 @@ static DF2(jtdcap2){DF12IP; MEMCHK2(a,w); PROLOG(0);A u,z;
 
 // u D. n for an integer atom n>=0. Returns the derived verb or u itself for n=0.
 static A jtadmkdcap(J jt,A a,A w){I n=IAV(w)[0]; A v=0;
- if(n==0)R a; // u D.0 is u
+ if(n==0)RETF (a); // u D.0 is u
  if(n>1)RZ(v=jtadmkdcap(jt,a,sc(n-1))); // for n>1, the verb to differentiate is u D.(n-1); for n=1 it is u
  // u D.n has ranks of u
  R fdef(0,CDCAPDOT,VERB,jtdcap1,jtdcap2,a,w,v,VFLAGNONE,mr(a),lr(a),rr(a));

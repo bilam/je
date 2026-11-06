@@ -21,7 +21,7 @@ F1(jtvaspz){F12IP; MEMCHK1(w); A e,x,y;B c,*u,*xu,*xv;I j,n,*v,*yu,*yv,xc,yc;P*w
  e=SPA(wp,e); c=!*BAV(e);
  x=SPA(wp,x); xv=xu=u=BAV(x); xc=aii(x); n=AS(x)[0]; j=0;
  y=SPA(wp,i); yv=yu=   AV(y); yc=AS(y)[1];
- if(!(n&&xc&&yc))R w;
+ if(!(n&&xc&&yc))RETF (w);
  while(u=memchr(xv+xc*j,c,xc*(n-j))){
   j=(u-xv)/xc; v=yv+yc*j;
   if(v==yu){yu+=yc; xu+=xc;}
@@ -116,7 +116,7 @@ static A jtvaspeq(J jt,A a,A w,C id,VF ado,I cv,I t,I zt,I f,I r){A ae,ax,ay,we,
 
 A jtvasp(J jt,A a,A w,C id,VF ado,I cv,I t,I zt,I af,I acr,I wf,I wcr,I f,I r){A fs,z;
  if(!AR(a)||!AR(w))R vasp0(a,w,ado,cv,t,zt);
- if(ISSPARSE(AT(a)|AT(w))&&spmult(&z,a,w,id,af,acr,wf,wcr))R z;
+ if(ISSPARSE(AT(a)|AT(w))&&spmult(&z,a,w,id,af,acr,wf,wcr))RETF (z);
  if(af!=wf){RZ(fs=ds(id)); R sprank2(a,w,fs,acr,wcr,FAV(fs)->valencefns[1]);}
  if(acr!=wcr)R vaspc(a,w,id,ado,cv,t,zt,af,acr,wf,wcr,f,r);
  R vaspeq(a,w,id,ado,cv,t,zt,f,r);

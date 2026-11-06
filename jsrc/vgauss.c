@@ -31,7 +31,7 @@ DF1(jtgausselm){DF12IP; MEMCHK1(w); I c,e,i,j,r,r1,*s;Q p,*u,*v,*x;
   }
   if(!gc3(&w,0L,0L,old))R 0;  // use simple gc3 to ensure all changes use the stack, since w is modified inplace.  Alternatively could turn off inplacing here
  }
- R w;
+ RETF (w);
 }    /* Gaussian elimination in place */
 
 static F1(jtdetr){F12IP;A z;I c,e,g=1,i,j,k,r,*s;Q d,p,*u,*v,*x;
@@ -54,7 +54,7 @@ static F1(jtdetr){F12IP;A z;I c,e,g=1,i,j,k,r,*s;Q d,p,*u,*v,*x;
  }
  d=0<g?*v:qminus(Q0,*v); u=v+1+c; DQ(r-1, d=qtymes(d,*u); u+=1+c;);
  RE(0);
- GAT0(z,RAT,1,0); QAV0(z)[0]=d; R z;
+ GAT0(z,RAT,1,0); QAV0(z)[0]=d; RETF (z);
 }    /* determinant on rational matrix; works in place */
 
 static F1(jtdetd){F12IP;D g,h,p,q,*u,*v,*x,*y,z=1.0;I c,d,e,i,j,k,r,*s;
@@ -97,7 +97,7 @@ static F1(jtdetz){F12IP;A t;D g,h;I c,d,e,i,j,k,r,*s;Z p,q,*u,*v,*x,*y,z;
    if(ZNZ(u[j])){p=zdiv(u[j],q); for(k=j+1;k<r;++k)u[k]=zminus(u[k],ztymes(p,x[k]));}
  }}
  NAN1; RE(0);
- GAT0(t,CMPX,1,0); ZAV0(t)[0]=z; R t;
+ GAT0(t,CMPX,1,0); ZAV0(t)[0]=z; RETF (t);
 }    /* determinant on complex  matrix; works in place */
 
 F1(jtgaussdet){F12IP;A z;I*s;

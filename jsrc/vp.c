@@ -28,7 +28,7 @@ A jtpind(J jt,I n,A w){A z;I j,*v;
 
 #if C_AVX2 || EMU_AVX2
  // this is a prototype for a Duff loop that only reads
- if(unlikely(AN(z)==0))R z;
+ if(unlikely(AN(z)==0))RETF (z);
  I *pv=IAV(z);  // pointer to input
  __m256i endmask=_mm256_loadu_si256((__m256i*)(validitymask+((-AN(z))&(NPAR-1))));  /* mask for 0 1 2 3 4 5 is xxxx 0001 0011 0111 1111 0001 */
  __m256i u,eacc=_mm256_setzero_si256(),nacc=_mm256_setzero_si256(),maxvalid=_mm256_set1_epi64x(n-1);  // read into u; accumulate neg/errors; maximum valid value (maxvalid-u is neg if too high)
@@ -50,16 +50,16 @@ A jtpind(J jt,I n,A w){A z;I j,*v;
  u=_mm256_maskload_epi64(pv,endmask); INDCHK
  // if there is an error, we can abort.  If we saw a negative, it may be an error (if it was near IMIN)
  ASSERT(_mm256_testc_pd(_mm256_setzero_pd(),_mm256_castsi256_pd(eacc)),EVINDEX);  // error if any index too high
- if(likely(_mm256_testc_pd(_mm256_setzero_pd(),_mm256_castsi256_pd(nacc))))R z;  // all indexes positive, keep input buffer
+ if(likely(_mm256_testc_pd(_mm256_setzero_pd(),_mm256_castsi256_pd(nacc))))RETF (z);  // all indexes positive, keep input buffer
 #else
  // Make a quick scan to see if all are positive, as they usually are
  for(j=AN(z), v=IAV(z);j;--j)if((UI)*v++>=(UI)n)break;
- if(j==0)R z;  // if all indices in range, keep the original vector
+ if(j==0)RETF (z);  // if all indices in range, keep the original vector
 #endif
  // There was an out-of-bounds or negative index.  We may have to modify the index vector.  Reallocate it if we didn't already
  if(z==w)RZ(z=ca(z));  // Create temp area if we don't have one already
  for(j=AN(z), v=IAV(z);j;--j){if((UI)*v>=(UI)n){*v+=n; ASSERT((UI)*v<(UI)n,EVINDEX);} ++v;}  // replace negative indexes
- R z;
+ RETF (z);
 }    /* positive indices */
 
 // n is the order of permutation w; w may omit some indexes
@@ -95,7 +95,7 @@ static F1(jtcfd){F12IP;A b,q,x,z,*zv;B*bv;I c,i,j,n,*qv,*u,*v,zn;
  }
  AN(z)=AS(z)[0]=zn=i; j=zn-1; DO(zn>>1, x=zv[i]; zv[i]=zv[j]; zv[j]=x; --j;);
  AFLAGORLOCAL(z,AFPRISTINE)  // what we generated is always pristine
- R z;
+ RETF (z);
 }    /* cycle from direct */
 
 static A jtdfc(J jt,I n,A w){PROLOG(0082);A b,q,*wv,z;B*bv;I c,j,qn,*qv,*x;
@@ -136,7 +136,7 @@ F1(jtpparity){F12IP; MEMCHK1(w); A x,y,z;B *u;I i,j,k,m,n,p,r,*s,*v,*zv;
   zv[i]=p&(j-n-1);   // return parity or 0
   v+=n;
  }
- R z;
+ RETF (z);
 }    /* permutation parity; # interchanges to get i.n */
 
 // reduced form seems to be (>:i.<:-$y) #: y where y is the permutation number (note there is a redundant 0 at the end)
@@ -149,14 +149,14 @@ static F1(jtdfr){F12IP;A z;I c,d,i,j,m,n,*v,*x;
   DO(n-1, j=i; c=x[j+v[j]]; DO(1+v[j], d=x[j+i]; x[j+i]=c; c=d;););   // within the length-j suffix of the permutation, right-rotate the first v[j] elements 
   x+=n; v+=n;
  }
- R z;
+ RETF (z);
 }    /* direct from reduced */
 
 static F1(jtrfd){F12IP; MEMCHK1(w); A z;I j,k,m,n,r,*s,*x;
  RZ(z=ca(w)); x=AV(z);
  r=AR(w); s=AS(w); PROD(m,r-1,s);
  if(n=s[r-1])DO(m, j=n-1; ++x; DO(n-1, k=0; DO(j--, k+=*x>x[i];); *x++=k;););
- R z;
+ RETF (z);
 }    /* reduced from direct */
 
 DF1(jtadot1){DF12IP; MEMCHK1(w); A y;I n;

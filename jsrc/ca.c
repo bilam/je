@@ -71,7 +71,7 @@ static A jtintfloorlog2(J jt, A w, A compself) {  // compself is the floor/ceil 
     }else goto revert;  // neg, inf, NaN, or 0 - failover to by hand
    )
   }
-  R z;
+  RETF (z);
  }
 revert:;  // must do by hand
   A z; R dfv1(z,jtlogar2(jt,num(2),w),compself);   // lg, then [<>].[!.f]
@@ -109,7 +109,7 @@ static A jtintceillog2(J jt, A w, A compself) { // Similar to the above case wit
     }else goto revert;  // neg, inf, NaN, 0 - failover to by hand
    )
   }
-  R z;
+  RETF (z);
  }
 revert:;  // must do by hand
   A z; R dfv1(z,jtlogar2(jt,num(2),w),compself);   // lg, then [<>].[!.f]
@@ -169,7 +169,7 @@ static DF2(jtmodpow2){DF12IP; MEMCHK2(a,w); A h;B b,c;I m,n,x,z;  // scaf could 
  // both args are integral, but possibly extended
  PREF2(jtmodpow2);
  if(((AT(h)|AT(a)|AT(w))&XNUM)&&!((AT(a)|AT(w))&(NOUN&~(XNUM+INT)))){A z;  // if all values are integral and one is XNUM, process as extended
-  z=xmodpow(a,w,h); if(!jt->jerr)R z; RESETERR; R jtupon2(jt,a,w,self);
+  z=xmodpow(a,w,h); if(!jt->jerr)RETF (z); RESETERR; R jtupon2(jt,a,w,self);
  }
  // all values are INT
  n=AV(w)[0];
@@ -302,7 +302,7 @@ F2(jtatop){F12IP; MEMCHK2(a,w); A f,g,h=0,x;AF f1=on1,f2=jtupon2;B b=0,j;C c,d,e
    // We give the w the strange flagging of NAME AND ALSO LIT - it will be handled as a name when executed, but as a string for representations
    if(AR(w)<=1){RZ(g=tokens(vs(w),1)) if(AN(g)==1 && AT(g=QCWORD(AAV(g)[0]))&NAME){RZ(w=rifvs(g)) AT(w)|=LIT;}}
   }
-  fdeffill(z,0,CAT,VERB, onconst12,onconst12, a,w,h, FAV(a)->flag&VNOLOCCHG+VNONAME+VNOSELF, RMAX,RMAX,RMAX); R z;
+  fdeffill(z,0,CAT,VERB, onconst12,onconst12, a,w,h, FAV(a)->flag&VNOLOCCHG+VNONAME+VNOSELF, RMAX,RMAX,RMAX); RETF (z);
  }
  // The rest is u@v verbs
  wv=FAV(w); d=wv->id;
@@ -311,7 +311,7 @@ F2(jtatop){F12IP; MEMCHK2(a,w); A f,g,h=0,x;AF f1=on1,f2=jtupon2;B b=0,j;C c,d,e
   // We must copy forwarded flags from f to f@][.  These are WILLOPEN/WILLREALIZE/USESITEMCOUNT.  They are copied from the monad into the monad and (A if @[, W if @])
   // BOXATOP is set if a is <
   flag2|=(c==CBOX)*(VF2BOXATOP2+VF2BOXATOP1)+(av->flag2&VF2WILLOPEN1+VF2WILLOPEN1PROP+VF2WILLREALIZE1+VF2WILLREALIZE1PROP+VF2USESITEMCOUNT1)*(1+((d&1)?VF2WILLOPEN2WX/VF2WILLOPEN1:VF2WILLOPEN2AX/VF2WILLOPEN1));
-  fdeffill(z,flag2,CAT,VERB, jtonright12,d&1?jtonright12:onleft2, a,0,0, (av->flag&VNOLOCCHG+VNONAME+VNOSELF), RMAX,RMAX,RMAX); FAV(z)->fgh[1]=w; R z;  // ra not needed on w
+  fdeffill(z,flag2,CAT,VERB, jtonright12,d&1?jtonright12:onleft2, a,0,0, (av->flag&VNOLOCCHG+VNONAME+VNOSELF), RMAX,RMAX,RMAX); FAV(z)->fgh[1]=w; RETF (z);  // ra not needed on w
  }
  // Set flag with NOLOCCHG status from f/g; keep INPLACE? in sync with f1,f2.  But we can turn off inplacing that is not supported by v, which may
  // save a few tests during execution and is vital for handling <@v, where we may execute v directly without going through @ and therefore mustn't inplace
@@ -420,7 +420,7 @@ F2(jtatop){F12IP; MEMCHK2(a,w); A f,g,h=0,x;AF f1=on1,f2=jtupon2;B b=0,j;C c,d,e
  if(likely(f2==jtupon2)){flag2|=VF2RANKATOP2; f2=wv->lrr==0?jtupon20:f2; f2=wv->flag&VISATOMIC2?jtupon20atom:f2; f2=wv->lrr==(UI)R2MAX?jtupon2cell:f2;}
  fdeffillall(z,flag2,CAT,VERB, f1,f2, a,w,h, flag, (I)wv->mr,(I)lrv(wv),rrv(wv),fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.cct=cct);
  if(unlikely(mrecip!=0))FAV(z)->localuse.lu1.mrecip=mrecip;   // replace cct with mrecip if it is defined
- R z;
+ RETF (z);
 }
 
 // u@:v
@@ -434,7 +434,7 @@ F2(jtatco){F12IP; MEMCHK2(a,w); A f,g;AF f1=on1cell,f2=jtupon2cell;C c,d,e;I fla
   // We must copy forwarded flags from f to f@][.  These are WILLOPEN/USESITEMCOUNT.  WILLOPEN/USESITEMCOUNT are copied from the monad into the monad and (A if @[, W if @])
   // BOXATOP is set if a is <
   flag2|=(c==CBOX)*(VF2BOXATOP2+VF2BOXATOP1)+(av->flag2&VF2WILLOPEN1+VF2WILLOPEN1PROP+VF2USESITEMCOUNT1)*(1+(d&1)?VF2WILLOPEN2WX/VF2WILLOPEN1:VF2WILLOPEN2AX/VF2WILLOPEN1);
-  fdeffill(z,flag2,CATCO,VERB, jtonright12,d&1?jtonright12:onleft2, a,w,0, (av->flag&VNOLOCCHG+VNONAME+VNOSELF), RMAX,RMAX,RMAX); R z;  // must go through onright1 to set self
+  fdeffill(z,flag2,CATCO,VERB, jtonright12,d&1?jtonright12:onleft2, a,w,0, (av->flag&VNOLOCCHG+VNONAME+VNOSELF), RMAX,RMAX,RMAX); RETF (z);  // must go through onright1 to set self
  }
  // Set flag with NOLOCCHG status from f/g; keep INPLACE? in sync with f1,f2.  But we can turn off inplacing that is not supported by v, which may
  // save a few tests during execution and is vital for handling <@v, where we may execute v directly without going through @ and therefore mustn't inplace
@@ -518,7 +518,7 @@ F2(jtatco){F12IP; MEMCHK2(a,w); A f,g;AF f1=on1cell,f2=jtupon2cell;C c,d,e;I fla
  // if u and v both propagate, the compound does so also
  flag2|=(wv->flag2&(VF2WILLOPEN1PROP|VF2WILLOPEN2WPROP|VF2WILLOPEN2APROP))&REPSGN(SGNIF(av->flag2,VF2WILLOPEN1PROPX));
 
- fdeffillall(z,flag2,CATCO,VERB, f1,f2, a,w,0L, flag, RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.cct=cct); R z;
+ fdeffillall(z,flag2,CATCO,VERB, f1,f2, a,w,0L, flag, RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.cct=cct); RETF (z);
 }
 
 // u&:v
@@ -549,7 +549,7 @@ F2(jtampco){F12IP; MEMCHK2(a,w); AF f1=on1cell,f2=on2cell;C c,d;I flag,flag2=0,l
 
  // Install the flags to indicate that this function starts out with a rank loop, and thus can be subsumed into a higher rank loop
  flag2|=(f1==on1cell)<<VF2RANKATOP1X;  flag2|=VF2RANKATOP2;
- fdeffillall(z,flag2,CAMPCO,VERB, f1,f2, a,w,0L, flag, RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.linkvb=linktype) R z;
+ fdeffillall(z,flag2,CAMPCO,VERB, f1,f2, a,w,0L, flag, RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.linkvb=linktype) RETF (z);
 }
 
 // m&v and u&n.  Never inplace the noun argument, since the verb may
@@ -593,9 +593,9 @@ static DF1(jtfromadotifchar){DF12IP;
 
 // Here for m&i. and m&i:, computing a prehashed table from a.  Make sure we use the precision in effect when the hash was made
 // v->fgh[2] is the info/hash/bytemask result from calculating the prehash
-static DF1(ixfixedleft){DF12IP; MEMCHK1(w); V*v=FAV(self); PUSHCCT(v->localuse.lu1.cct) A z=jtindexofprehashed(jtfg,v->fgh[0],w,v->fgh[2],self); POPCCT R z;}  // must use the ct when table was created  pass inplaceability through
+static DF1(ixfixedleft){DF12IP; MEMCHK1(w); V*v=FAV(self); PUSHCCT(v->localuse.lu1.cct) A z=jtindexofprehashed(jtfg,v->fgh[0],w,v->fgh[2],self); POPCCT RETF (z);}  // must use the ct when table was created  pass inplaceability through
 // Here for compounds like (i.&0@:e.)&n  e.&n -.&n that compute a prehashed table from w
-static DF1(ixfixedright){DF12IP; MEMCHK1(w); V*v=FAV(self); PUSHCCT(v->localuse.lu1.cct) A z=jtindexofprehashed(jtfg,v->fgh[1],w,v->fgh[2],self); POPCCT R z;}  // must use the ct when table was created  pass inplaceability through
+static DF1(ixfixedright){DF12IP; MEMCHK1(w); V*v=FAV(self); PUSHCCT(v->localuse.lu1.cct) A z=jtindexofprehashed(jtfg,v->fgh[1],w,v->fgh[2],self); POPCCT RETF (z);}  // must use the ct when table was created  pass inplaceability through
 
 // u&v
 F2(jtamp){F12IP;A h=0;AF f1,f2;B b;C c;I flag,flag2=0,linktype=0,mode=-1,p,r;V*v;
@@ -652,7 +652,7 @@ F2(jtamp){F12IP;A h=0;AF f1,f2;B b;C c;I flag,flag2=0,linktype=0,mode=-1,p,r;V*v
   if(likely(f1==on1)){flag2|=VF2RANKATOP1; f1=r==RMAX?on1cell:f1; f1=r==0?jton10:f1;}
   if(likely(f2==on2)){flag2|=VF2RANKATOP2; f2=r==RMAX?on2cell:f2; f2=r==0?on20:f2;}
   fdeffillall(z,flag2,CAMP,VERB, f1,f2, a,w,0L, flag, r,r,r,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.linkvb=linktype);
-  R z;
+  RETF (z);
 
  }else ASSERT((AT(a)|AT(w))&VERB,EVDOMAIN)  // m&n not allowed
   // continuing must be m&v or u&n
@@ -688,5 +688,5 @@ F2(jtamp){F12IP;A h=0;AF f1,f2;B b;C c;I flag,flag2=0,linktype=0,mode=-1,p,r;V*v
 
   fdeffillall(z,flag2,CAMP,VERB, f1,jtvalenceerr, a,w,h, flag, RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.cct=cct);
   FAV(z)->localuse.lu1.bondfn=(AF)((I)FAV(z)->localuse.lu1.bondfn+(I)vbf2);  // Lifetime Achievement Award, float+address.  One must be exactly 0 if value used, saves a branch
-  R z;
+  RETF (z);
 }

@@ -82,7 +82,7 @@ F1(jtsiinfo){F12IP; MEMCHK1(w); A z,*zv;DC d;I c=5,n,*s;
   }
   zv+=c; d=d->dclnk;
  }
- R z;
+ RETF (z);
 }    /* 13!:32 si info */
 
 // w is the compiled cw/sentence table
@@ -199,7 +199,7 @@ A jtsusp(J jt, C superdebug){A z;
  if((JT(jt,dbuser)&TRACEDB1+TRACEDBSUSCLEAR)!=TRACEDB1)jt->cstackmin=jt->cstackinit-(CSTACKSIZE-CSTACKRESERVE);  // set stacklim to normal if we are exiting debug or clearing suspension
  JT(jt,insuspension)=stackedsuspension;   // restore previous suspension status 
  debz();   // remove spacer frame
- R z;
+ RETF (z);
 }    /* user keyboard loop while suspended */
 
 // Go into debug mode.  Run sentences in suspension until we come out of suspension
@@ -258,7 +258,7 @@ static A jtdebug(J jt){A z=0;C e;DC c,d;
 
  // If there is an error, set z=0; if not, make sure z is nonzero (use i. 0 0)
  if(jt->jerr){z=0; jt->emsgstate|=EMSGSTATEFORMATTED;} // return z=0 to cause us to look for resumption address.  any message is for a long-gone self; don't call eformat for it.  If no message, allow the next one to be formatted
- R z;
+ RETF (z);
 }
 
 // Take system lock before going into debug.  If the debug request is granted to another thread, keep putting it up until we get it
@@ -271,7 +271,7 @@ static A jtdebugmux(J jt){A z;
   if(!(jt->uflags.trace&TRACEDB)){RESETERR R 0;}  // if user turned off debug mode, fail all tasks (back to a try.) and print no message.  This is the only valid time for result 0 with jt->jerr=0
   if(jt->jerr==EVDEBUGEND){R 0;}  // if user suppressed this thread, fail it back to start/console (with no message)
  }while(z==(A)1);  // loop back if we were not the selected thread
- R z;  // if we were selected, carry on as requested by user: line# will have been set, and value if any
+ RETF (z);  // if we were selected, carry on as requested by user: line# will have been set, and value if any
 }
 
 // post-execution error.  Used to signal an error on sentences whose result is bad only in context, i. e. non-nouns or assertions
@@ -285,7 +285,7 @@ A jtpee(J jt,A *queue,UI8 tcesx2,I err,I lk){A z=0;
  jt->parserstackframe=oframe;  // restore to the executing sentence
  // enter debug mode if that is enabled, provided we are not on the way out of debug
  if(jt->sitop&&jt->sitop->dclnk&&(jt->uflags.trace&TRACEDB)&&!(JT(jt,dbuser)&TRACEDBSUSCLEAR)){jt->sitop->dcj=jt->jerr; z=jtdebugmux(jt); jt->sitop->dcj=0;} //  d is PARSE type; set d->dcj=err#; d->dcn must remain # tokens debz();  not sure why we change previous frame
- if(jt->jerr)z=0; R z;  // if we entered debug, the error may have been cleared.  If not, clear the result.  Return debug result, which is result to use or 0 to indicate jump
+ if(jt->jerr)z=0; RETF (z);  // if we entered debug, the error may have been cleared.  If not, clear the result.  Return debug result, which is result to use or 0 to indicate jump
 }
 
 // parsex: parse an explicit defn line when the debugger/pm/ATTN is running
@@ -327,7 +327,7 @@ noparse: ;
  // Or, it may be 0, in which case the running explicit definition will look for a restart.  In this case the error-code matters: the error will be printed when the failure reaches console level (in the master thread).  An error code of
  // EVDEBUGEND is used to force quiet failure all the way back to console level (usually in a task); an error code of 0, normal in a single-task system, will cause the failure to go back to
  // the first try./catch. or starting level and then print nothing.
- R parsez;
+ RETFA (parsez);
 }
 
 // Execute self under debug.  Bivalent a,w,self or w,self,self.  A stack frame must have been allocated on the top of the debug stack
@@ -352,7 +352,7 @@ A jtdbunquote(J jtfg,A a,A w,A self){F12IP; MEMCHK3(a,w,self); A t,z;B s;V*sv;
   }
  }
  if(d->dcss)ssnext(d,d->dcss);  // if we step over/into on the last line of a function, we must stop on the next line of the caller
- R z;
+ RETF (z);
 }    /* function call, debug version */
 
 F1(jtdbq){F12IP;ASSERTMTV(w); R sc(JT(jt,dbuser)&~TRACEDBSUSCLEAR);}
@@ -385,20 +385,20 @@ F1(jtdbc){F12IP;I k;
  jt->cstackmin=jt->cstackinit-((CSTACKSIZE-CSTACKRESERVE)>>(k&TRACEDB1));  // if we are setting debugging on, shorten the C stack to allow suspension commands room to run
  JT(jt,dbuser)|=TRACEDBSUSCLEAR; if(unlikely(k&(TRACEDBDEBUGENTRY|TRACEDBSUSFROMSCRIPT)))JT(jt,dbuser)&=~TRACEDBSUSCLEAR;  // come out of suspension, whether 0 or 1.  If going into pm debug or running, suppress so don't immediately come out of debug; also if staying in script mode
  if(!JT(jt,insuspension)&k)JT(jt,dbuser)&=~TRACEDBSUSCLEAR;  // if not in suspension, don't set suspension clearing for dbr 1.  If we are reading from a script or in jtxdefn, that would prevent stop on error
- A z; RZ(z=ca(mtm)); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;
+ A z; RZ(z=ca(mtm)); AFLAGORLOCAL(z,AFDEBUGRESULT) RETF (z);
 }    /* 13!:0  clear stack; enable/disable suspension */
 
 // The remaining suspension-ending commands are not allowed during PM debugging
-F1(jtdbrun ){F12IP; MEMCHK1(w); ASSERTMTV(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(box(sc(SUSRUN)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jtdbrun ){F12IP; MEMCHK1(w); ASSERTMTV(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(box(sc(SUSRUN)))); AFLAGORLOCAL(z,AFDEBUGRESULT) RETF (z);}
      /* 13!:4  run again */
 
-F1(jtdbnext){F12IP; MEMCHK1(w); ASSERTMTV(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(box(sc(SUSNEXT)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jtdbnext){F12IP; MEMCHK1(w); ASSERTMTV(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(box(sc(SUSNEXT)))); AFLAGORLOCAL(z,AFDEBUGRESULT) RETF (z);}
      /* 13!:5  run next */
 
-F1(jtdbret ){F12IP;ARGCHK1(w); MEMCHK1(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(jlink(sc(SUSRET),box(w)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jtdbret ){F12IP;ARGCHK1(w); MEMCHK1(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(jlink(sc(SUSRET),box(w)))); AFLAGORLOCAL(z,AFDEBUGRESULT) RETF (z);}
      /* 13!:6  exit with result */
 
-F1(jtdbjump){F12IP; MEMCHK1(w); ASSERT(jt->pmttop==0,EVUNTIMELY) I jump; jump=rei0(w); A z; RZ(z=mkwris(jlink(sc(SUSJUMP),sc(jump)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jtdbjump){F12IP; MEMCHK1(w); ASSERT(jt->pmttop==0,EVUNTIMELY) I jump; jump=rei0(w); A z; RZ(z=mkwris(jlink(sc(SUSJUMP),sc(jump)))); AFLAGORLOCAL(z,AFDEBUGRESULT) RETF (z);}
      /* 13!:7  resume at line n (return result error if out of range) */
 
 static F2(jtdbrr){F12IP; MEMCHK2(a,w); DC d;
@@ -407,7 +407,7 @@ static F2(jtdbrr){F12IP; MEMCHK2(a,w); DC d;
  ASSERT(d&&VERB&AT(d->dcf)&&!d->dcc,EVDOMAIN);  // must be tacit verb
  A z; RZ(z=box(w)); if(a)RZ(z=over(w,box(a))); 
  RZ(z=mkwris(jlink(sc(SUSRUN),z))); AFLAGORLOCAL(z,AFDEBUGRESULT)  // RUN ; w [;a]
- R z;
+ RETF (z);
 }
 
 F1(jtdbrr1 ){F12IP; MEMCHK1(w); ASSERT(jt->pmttop==0,EVUNTIMELY) R dbrr(0L,w);}   /* 13!:9   re-run with arg(s) */
@@ -415,7 +415,7 @@ F2(jtdbrr2 ){F12IP; MEMCHK2(a,w); ASSERT(jt->pmttop==0,EVUNTIMELY) R dbrr(a, w);
 
 // T. y - set debugging thread #
 // This is a suspension command, but not suspension-ending
-F1(jttcapdot1){F12IP; MEMCHK1(w); I thno; thno=rei0(w); ASSERT(BETWEENO(thno,0,THREADIDFORWORKER(JT(jt,wthreadhwmk))),EVDOMAIN) A z; RZ(z=mkwris(jlink(sc(SUSTHREAD),sc(thno)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jttcapdot1){F12IP; MEMCHK1(w); I thno; thno=rei0(w); ASSERT(BETWEENO(thno,0,THREADIDFORWORKER(JT(jt,wthreadhwmk))),EVDOMAIN) A z; RZ(z=mkwris(jlink(sc(SUSTHREAD),sc(thno)))); AFLAGORLOCAL(z,AFDEBUGRESULT) RETF (z);}
 
 // 13!:14, query suspension trap sentence
 F1(jtdbtrapq){F12IP; MEMCHK1(w); 
@@ -423,7 +423,7 @@ F1(jtdbtrapq){F12IP; MEMCHK1(w);
  // we must read & protect the sentence under lock in case another thread is changing it
  READLOCK(JT(jt,dblock)) A trap=JT(jt,dbtrap); if(trap)ras(trap); READUNLOCK(JT(jt,dblock))  // must ra() while under lock
  if(trap){tpushnr(trap);}else trap=mtv;  // if we did ra(), stack a fa() on the tpop stack
- R trap;
+ RETF (trap);
 }
 
 // 13!:15, set suspension trap sentence

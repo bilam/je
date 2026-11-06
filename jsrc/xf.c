@@ -96,7 +96,7 @@ static A jtrdns(J jt,F f){A za,z;I n=512;size_t r,tr=0;
  }
  if(tr==(U)n)z=za;
  else {GATV0(z,LIT,(I)tr,1); MC(CAV1(z),CAV(za),tr);}
- R z;
+ RETF (z);
 }    /* read entire file stream (non-seekable) */
 
 A jtrd(J jt,F f,I j,I n){A z;C*x;I p=0;size_t q=1;
@@ -115,7 +115,7 @@ A jtrd(J jt,F f,I j,I n){A z;C*x;I p=0;size_t q=1;
   p+=q=fread(p+x,sizeof(C),(size_t)(n-p),f);
   if(ferror(f))R jerrno();
  }
- R z;
+ RETF (z);
 }    /* read file f for n bytes at j */
 
 static B jtwa(J jt,F f,I j,A w){C*x;I n,p=0;size_t q=1;
@@ -160,7 +160,7 @@ DF2(jtjfwrite){DF12IP; MEMCHK2(a,w); B b;F f;
  PROLOG(000);
  if(BOX&AT(w)){ASSERT(1>=AR(a),EVRANK); ASSERT(!AN(a)||AT(a)&LIT+C2T+C4T,EVDOMAIN);}
  RE(f=stdf(w));   // f=0 if w is filename, else 1-6 for special files
- if(2==(I)f){RZ(jtjpr((J)((I)jt+MTYOFILE),a)) R a;}  // 2=write to console, convert to printable string and type out, with NOSTDOUT off; result is string
+ if(2==(I)f){RZ(jtjpr((J)((I)jt+MTYOFILE),a)) RETF (a);}  // 2=write to console, convert to printable string and type out, with NOSTDOUT off; result is string
 #ifdef ANDROID
  if(4==(I)f){A z=tocesu8(a); R (U)AN(z)!=fwrite(CAV(z),sizeof(C),AN(z),stdout)?jerrno():a;}  // 4=stdout
  if(5==(I)f){A z=tocesu8(a); R (U)AN(z)!=fwrite(CAV(z),sizeof(C),AN(z),stderr)?jerrno():a;}  // 5=stderr

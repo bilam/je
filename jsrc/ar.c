@@ -569,8 +569,8 @@ static A jtredsp1a(J jt,C id,A z,A e,I n,I r,I*s){A t;B b,p=0;D d=1;
   case CSTARDOT: R n?lcm(z,e):ca(e);
   case CMIN:     R n?minimum(z,e):ca(e);
   case CMAX:     R n?maximum(z,e):ca(e);
-  case CPLUS:    if(n&&equ(e,num(0)))R z; DO(r, d*=s[i];); t=tymes(e,d>=FLIMAX?scf(d-n):sc((I)d-n)); R n?plus(z,t):t;
-  case CSTAR:    if(n&&equ(e,num(1) ))R z; DO(r, d*=s[i];); t=expn2(e,d>=FLIMAX?scf(d-n):sc((I)d-n)); R n?tymes(z,t):t;
+  case CPLUS:    if(n&&equ(e,num(0)))RETF (z); DO(r, d*=s[i];); t=tymes(e,d>=FLIMAX?scf(d-n):sc((I)d-n)); R n?plus(z,t):t;
+  case CSTAR:    if(n&&equ(e,num(1) ))RETF (z); DO(r, d*=s[i];); t=expn2(e,d>=FLIMAX?scf(d-n):sc((I)d-n)); R n?tymes(z,t):t;
   case CEQ:      p=1;  /* fall thru */
   case CNE:
    ASSERT(B01&AT(e),EVNONCE); 
@@ -583,7 +583,7 @@ static A jtredsp1(J jt,A w,A self,C id,VARPSF ado,I cv,I f,I r,I zt){A e,x,z;I m
  ARGCHK1(w); MEMCHK1(w);
  wp=PAV(w); e=SPA(wp,e); x=SPA(wp,x); n=AN(x); m=AS(w)[0];
  GA00(z,zt,1,0);
- if(n){I rc=((AHDRRFN*)ado)(1L,n,1L,AV(x),AV(z),jt); if(255&rc)jsignal(rc); RE(0); if(m==n)R z;}
+ if(n){I rc=((AHDRRFN*)ado)(1L,n,1L,AV(x),AV(z),jt); if(255&rc)jsignal(rc); RE(0); if(m==n)RETF (z);}
  R redsp1a(id,z,e,n,AR(w),AS(w));
 }    /* f/"r w for sparse vector w */
 
@@ -630,7 +630,7 @@ static A jtredspd(J jt,A w,A self,C id,VARPSF ado,I cv,I f,I r,I zt){A a,e,x,z,z
  SPB(zp,e,cvt(AT(zx),e));
  SPB(zp,i,SPA(wp,i));
  SPB(zp,x,zx);
- R z;
+ RETF (z);
 }    /* f/"r w for sparse w, rank > 1, dense axis */
 
 static B jtredspsprep(J jt,C id,I f,I zt,A a,A e,A x,A y,I*zm,I**zdv,B**zpv,I**zqv,C**zxxv,A*zsn){
@@ -706,7 +706,7 @@ static A jtredsps(J jt,A w,A self,C id,VARPSF ado,I cv,I f,I r,I zt){A a,a1,e,sn
  SPB(zp,e,cvt(AT(zx),e));
  SPB(zp,x,zx); 
  SPB(zp,i,zy);
- R z;
+ RETF (z);
 }    /* f/"r w for sparse w, rank > 1, sparse axis */
 
 static DFI1(jtreducesp){A a,g,z;B b;I f,n,*v,wn,*ws,wt,zt;P*wp;
@@ -794,7 +794,7 @@ static A jtreduce2(J jt,A w,I cv,I f){A z=(A)1;B *zv;I m,*ws;
   case BR2CASE(FLX, CNE     ): TYPEDPAIRS(D,TNE(x,y)); break;
   default: ASSERTSYS(0,"reduce2");
  }
- R z;
+ RETF (z);
 }    /* f/"r for dense w over an axis of length 2; boolean results only */
 #define TW0(x,y) ((BR2CASE(x,y)>>LGBW)==0?1LL<<(BR2CASE(x,y)&(BW-1)):0)
 #define TW1(x,y) ((BR2CASE(x,y)>>LGBW)==1?1LL<<(BR2CASE(x,y)&(BW-1)):0)
@@ -895,7 +895,7 @@ static A jtredcatsp(J jt,A w,A z,I r){A a,q,x,y;B*b;I c,d,e,f,j,k,m,n,n1,p,*u,*v
   RZ(q=grade1(y)); RZ(y=from(q,y)); RZ(x=from(q,x));
   SPB(zp,x,x); SPB(zp,i,y);
  }
- R z;
+ RETF (z);
 }    /* ,/"r w for sparse w, 2<r */
 
 // ,&.:(<"r)  run together all axes above the last r.  r must not exceed AR(w)-1
@@ -914,7 +914,7 @@ A jtredcatcell(J jtfg,A w,I r){F12IP;A z;
  }
  I m; PROD(m,wr-r,AS(w));   // # cells being strung together
  AS(z)[0]=m; MCISH(AS(z)+1,AS(w)+wr-r,r);  // install # cells and then shift the last r axes back 
- R z;
+ RETF (z);
 }
 
 
@@ -927,7 +927,7 @@ DFI1(jtredcat){A z;B b;I f,*s,*v;
  if(likely(!ISSPARSE(AT(w)))){
   RZ(z=jtvirtual(jtfg,w,0,wr-1)); AN(z)=AN(w); // Allocate the block.  Then move in AN and shape
   I *zs=AS(z); MCISH(zs,s,f); if(!b){DPMULDE(s[f],s[f+1],zs[f]); MCISH(zs+f+1,s+f+2,wcr-2);}
-  R z;
+  RETF (z);
  }else{
   GASPARSE(z,AT(w),AN(w),wr-1,s); 
   if(!b){v=f+AS(z); DPMULDE(s[f],s[1+f],*v); MCISH(1+v,2+f+s,wcr-2);}
@@ -1007,7 +1007,7 @@ F1(jtslash){F12IP;A h;AF f1;C c;V*v;
  RZ(h=qq(w,v2(lr(w),RMAX)));  // create the rank compound to use if dyad
  fdeffillall(z,0,CSLASH,VERB, f1,jtoprod, w,0L,h, flag, RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.redfn=v->flag&VFUSEDOK2?va[v->lu2.lc&0x7f].rps:&rpsnull);
  // set localuse to point to the VARPSA block for w if w is primitive atomic dyad; otherwise to the null VARPSA block.  This localuse is valid only in CSLASH block
- R z;
+ RETF (z);
 }
 
 A jtaslash (J jt,C c,    A w){RZ(   w); A z; R dfv1(z,  w,   slash(ds(c))     );}
@@ -1037,7 +1037,7 @@ static DF2(jtfoldx){DF12IP; MEMCHK2(a,w);  // this stands in place of jtxdefn, w
  B foldrunning=jt->foldrunning; jt->foldrunning=1; A z=(*(FAV(self)->localuse.lu1.foldfn))(jt,a,w,self); jt->foldrunning=foldrunning;
  // if there was an error, save the error code and recreate the error at this level, to cover up details inside the script
  if(jt->jerr){I e=jt->jerr; RESETERR; jsignal(e);}
- R z;
+ RETF (z);
 }
 
 // u F. F.. F.: F: F:. F:: v
@@ -1055,7 +1055,7 @@ DF2(jtfold){DF12IP; MEMCHK2(a,w);
  FAV(derivvb)->lu2.lc=FAV(self)->id;
  // For display purposes, give the fold the spelling of the original
  FAV(derivvb)->id=FAV(self)->id;
- R derivvb;
+ RETF (derivvb);
 }
 
 // [x] Z: y, bivalent.  Must use ASSERTGOTO/RZGOTO everywhere
@@ -1066,7 +1066,7 @@ DF2(jtfoldZ){DF12IP; MEMCHK2(a,w);
  A z=unquote(a,EPMONAD?foldvb:w,foldvb); // Apply FoldZ_j_ to the input arguments, creating a derived verb to do the work.  If monad, overwrite w
  // if there was an error, save the error code and recreate the error at this level, to cover up details inside the script
  if(jt->jerr){I e=jt->jerr; RESETERR; jsignal(e);}
- R z;
+ RETF (z);
 }
 
 #else
@@ -1244,7 +1244,7 @@ DF2(jtfold){DF12IP; MEMCHK2(a,w);
  ASSERTVV(a,w);  // must be verb ops
  A z; fdefallo(z);   // allocate verb result
  fdeffillall(z,0,FAV(self)->id,VERB, jtfold12,jtfold12, a,w,0L, FAV(a)->flag&FAV(w)->flag&VNOLOCCHG+VNONAME+VNOSELF, RMAX,RMAX,RMAX,FAV(z)->lu2.lc=FAV(self)->id,);
- R z;
+ RETF (z);
 }
 
 // Z: y

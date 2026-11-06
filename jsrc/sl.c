@@ -18,7 +18,7 @@
   jt->numlocdelqn=1;  // init 1 value to allocate
   jt->numlocdelqt=IAV1(q);  // pointer to end of queue (queue is never empty - it starts at 1 and never allocates unless there are DELAYBEFOREREUSE empties
   *jt->numlocdelqh=(I)IAV1(q);  // Make the sole locale the end-of-chain by looping its chain to itself.  This is never needed as end-of-chain but it does ensure relocation
-  R q;  // return no error
+  RETF (q);  // return no error
  }
  
  // Get the locale number to use for the next numbered locale.  (0 if error, with error code set)
@@ -52,7 +52,7 @@
  
  // return the address of the locale block for number n, or 0 if not found
  A jtfindnl(J jt, I n){A z;
-  findnlz(n,z); R z;
+  findnlz(n,z); RETF (z);
  }
  
  // delete the locale numbered n, if it exists
@@ -92,7 +92,7 @@ static A jtinitnl(J jt){A q;
  JT(jt,stnum)=q;  // save address of block
  AS(JT(jt,stnum))[0]=0;  // set next number to allocate
  AM(JT(jt,stnum))=0;  // set number in use
- R q;  // return no error
+ RETF (q);  // return no error
 }
 
 // Install locale l in the numbered-locale table.  We have a write lock on stlock.  Return -1 if error (with the lock released), otherwise the locale number
@@ -134,7 +134,7 @@ A jtfindnl(J jt, I n){A z=0;  // init to failure
  NOUNROLL while(IAV1(JT(jt,stnum))[probe]){if(LOCNUM((A)IAV1(JT(jt,stnum))[probe])==n){z=(A)IAV1(JT(jt,stnum))[probe]; goto exit;} if(unlikely(--probe<0))probe=AN(JT(jt,stnum))-1;}  // return if locale match; wrap around at beginning of block
 exit: ;
  READUNLOCK(JT(jt,stlock))
- R z;  // if no match, return failure
+ RETF (z);  // if no match, return failure
 }
 
 // delete the locale numbered n, if it exists
@@ -243,7 +243,7 @@ A jtstcreate(J jt,I1 k,I p,I n,C*u){A g,x,xx;L*v;
   // local symbol tables don't have execcts
   break;
  }
- R g;
+ RETF (g);
 }    /* create locale, named (0==k) or numbered (1==k) */
 
 // initialization routine: INITZAP not required to protect blocks
@@ -302,7 +302,7 @@ F1(jtlocsizes){F12IP;I p,q,*v;
 }    /* 9!:39 default locale size set */
 
 // jtprobe, with readlock taken on stlock
-static A jtprobestlock(J jtfg, C *u,UI4 h){F12JT; READLOCK(ALOCK(JT(jt,stloc))) A z=probex((I)jtfg&255,u,SYMORIGIN,h,JT(jt,stloc)); READUNLOCK(ALOCK(JT(jt,stloc))) R z;}
+static A jtprobestlock(J jtfg, C *u,UI4 h){F12JT; READLOCK(ALOCK(JT(jt,stloc))) A z=probex((I)jtfg&255,u,SYMORIGIN,h,JT(jt,stloc)); READUNLOCK(ALOCK(JT(jt,stloc))) RETF (z);}
 
 // find the symbol table for locale with name u which has length n and hash/number bucketx
 // locale name is known to be valid
@@ -314,7 +314,7 @@ A jtstfind(J jt,I n,C*u,I bucketx){
  if(n>0&&'9'<*u){  // named locale   > because *u is known to be non-empty
   ASSERT(n<256,EVLIMIT);
   A v=jtprobestlock((J)((I)jt+n),u,(UI4)bucketx);
-  if(v)R v;   // if there is a symbol, return its value  scaf this fails if someone else is deleting this locale when we are referring to it through a locative
+  if(v)RETF (v);   // if there is a symbol, return its value  scaf this fails if someone else is deleting this locale when we are referring to it through a locative
  }else{
   R findnl(bucketx);
  }
@@ -340,7 +340,7 @@ A jtstfindcre(J jt,I n,C*u,I bucketx){
   if(likely(v!=0)){  // name found
    if(unlikely(LOCPATH(v)==0)){ra(v); WRITELOCK(ALOCK(JT(jt,stloc))) REINITZOMBLOC(v,1) WRITEUNLOCK(ALOCK(JT(jt,stloc)))}  // if the path is null, this is a zombie empty locale in the path of some other locale.  Bring it back to life
     // setting a path must be accompanied by raising the usecount, because a locale is liable to be erased when its path is nonnull and it must survive as a zombie then
-   R v;  // return the locale found
+   RETF (v);  // return the locale found
   }
   // here the locale must be created (rare)
   if(n>=0&&'9'<*u){  // nonnumeric locale:
@@ -368,7 +368,7 @@ static A jtvlocnl(J jt,I b,A w){A*wv,y;C*s;I i,m,n;
   ASSERT(((1-b) & (I)((UI)CAV(y)[0]-('9'+1)))>=0,EVDOMAIN);  // numeric locale not allowed except when called for in b
   if(b&1)ASSERTN(vlocnm(m,s),EVILNAME,nfs(m,s,0));
  }
- R w;
+ RETF (w);
 }    /* validate namelist of locale names  Returns list if all valid, else 0 for error */
 
 // p points to string of length l.  Result stored in z, which must be a declared lvalue
@@ -381,7 +381,7 @@ F1(jtlocnc){F12IP; MEMCHK1(w); A*wv,y,z;C c,*u;I i,m,n,*zv;
  RZ(vlocnl(0,w));
  n=AN(w); wv=AAV(w); 
  I zr=AR(w); GATV(z,INT,n,AR(w),AS(w)); zv=AVn(zr,z);
- if(!n)R z;  // if no input, return empty before handling numeric-atom case
+ if(!n)RETF (z);  // if no input, return empty before handling numeric-atom case
  if(AT(w)&(INT|B01)){IAV(z)[0]=(y=findnl(BIV0(w)))&&LOCPATH(y)?1:-1; RETF(z);}  // if integer, must have been atomic or empty.  Handle the one value
  for(i=0;i<n;++i){
   y=C(wv[i]);
@@ -454,7 +454,7 @@ static A jtlocale(J jt,B b,A w){A g=0,*wv,y;
   wv=AAV(w); 
   DO(AN(w), y=AT(w)&BOX?C(wv[i]):sc(IAV(w)[i]); if(!((g=(b?jtstfindcre:jtstfind)(jt,AT(y)&(INT|B01)?-1:AN(y),CAV(y),AT(y)&(INT|B01)?BIV0(y):BUCKETXLOC(AN(y),CAV(y))))&&LOCPATH(g)))R 0;);
  }
- R g;
+ RETF (g);
 }    /* last locale (symbol table) from boxed locale names; 0 if none or error.  if b=1, create locale for each name */
 
 // 18!:2 y  return boxed locale path.  y is locale name/number
@@ -632,9 +632,9 @@ static F1(jtlocmaplocked){F12IP;A g,q,x,y,*yv,z,*zv;I c=-1,d,j=0,m,*qv,*xv;
  GATV0(y,BOX,m,  1); yv=AAV1(y);
  DQ(m, *xv++=d=*qv++; *xv++=j=c==d?1+j:0; *xv++=*qv++; c=d; *yv++=incorp((A)*qv++););
  GAT0(z,BOX,2,1); zv=AAV1(z); zv[0]=incorp(x); zv[1]=incorp(y);
- R z;
+ RETF (z);
 }    /* 18!:_1 locale map */
-F1(jtlocmap){F12IP; MEMCHK1(w); READLOCK(JT(jt,stlock)) READLOCK(ALOCK(JT(jt,stloc))) READLOCK(JT(jt,symlock)) A z=jtlocmaplocked(jt,w); READUNLOCK(JT(jt,stlock)) READUNLOCK(ALOCK(JT(jt,stloc))) READUNLOCK(JT(jt,symlock)) R z;}
+F1(jtlocmap){F12IP; MEMCHK1(w); READLOCK(JT(jt,stlock)) READLOCK(ALOCK(JT(jt,stloc))) READLOCK(JT(jt,symlock)) A z=jtlocmaplocked(jt,w); READUNLOCK(JT(jt,stlock)) READUNLOCK(ALOCK(JT(jt,stloc))) READUNLOCK(JT(jt,symlock)) RETF (z);}
 
 // recalculate Bloom filter in table w
 SYMWALK(jtaccumbloom,B,B01,0,0,BLOOMSET(BLOOMBASE(w),i)&&0,;)  // i is chain#.  For each defined symbol, set the bit
@@ -712,7 +712,7 @@ DF2(jtlocexmark){DF12IP; MEMCHK2(a,w); A g,*wv,y,z;B *zv;C*u;I i,m,n;
  }
 exitlock:
  WRITEUNLOCK(JT(jt,locdellock))
- R z;
+ RETF (z);
 }
 
 // destroy symbol table g, which must be named or numbered and must be 'out of execution' (i. e. execct=0)

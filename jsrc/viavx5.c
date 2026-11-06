@@ -26,7 +26,7 @@ static A jtnodupgrade(J jt,A a,I acr,I ac,I acn,I ad,I n,I asct,I md,I bk){A*av,
   if(bk){hu=--hi; DQ(asct-1, q=*hi--; v=av+n*q; if((u<v)||!eqa(n,u,v)){u=v; *hu--=q;}); m1=hv-hu; if(asct>m1)hv[1-asct]=-m1;}
   else  {hu=++hi; DQ(asct-1, q=*hi++; v=av+n*q; if((v<u)||!eqa(n,u,v)){u=v; *hu++=q;}); m1=hu-hv; if(asct>m1)hv[asct-1]=-m1;}
  }
- R h;
+ RETF (h);
 } 
 
 // hiinc will inc or dec hi
@@ -88,7 +88,7 @@ IOF(jtiobs){A*av,*wv,y;B *yb,*zb;C*zc;I acn,*hu,*hv,l,m1,md,s,wcn,*zi,*zv;
   if(!(((uintptr_t)a^(uintptr_t)w)|(ac^wc)))md+=IIMODREFLEX&((((1<<IIDOT)|(1<<IICO)|(1<<INUBSV)|(1<<INUB)|(1<<INUBIP)|(1<<INUBI)|(1<<IFORKEY))<<IIMODREFLEXX)>>md);
   RZ(h=nodupgrade(a,(I)h,ac,acn,0,n,asct,md,bk));   // h is used to pass in acr
  }
- if(w==mark)R h;
+ if(w==mark)RETF (h);
  hv=AV(h)+bk*(asct-1);
  for(l=0;l<ac;++l,av+=acn,wv+=wcn,hv+=asct){  // loop for each result in a
   // m1=index of last item-1, which may be less than m-1 if there were discarded duplicates (signaled by last index <0)
@@ -117,6 +117,6 @@ IOF(jtiobs){A*av,*wv,y;B *yb,*zb;C*zc;I acn,*hu,*hv,l,m1,md,s,wcn,*zi,*zv;
   case IIFBEPS:      BSLOOPAW(if(-2==q)*zi++=i);              ZISHAPE;    break;
   }
  }
- R h;
+ RETF (h);
 }    /* a i.!.0 w on boxed a,w by grading and binary search */
 #endif

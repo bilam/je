@@ -122,7 +122,7 @@ DF1(jtjico1){DF12IP; MEMCHK1(w); A y,z;B b;D d,*v;I c,m,n;
 DFI1(jtnum1){A z=0;
  IARG1CR F12IP;
  A a=FAV(self)->fgh[2];  // fetch value to store: always an INT/boolean, but if boolean the high-order bytes are 0, so 0 is valid INT/FL and 1 a valid INT
- if(likely(wcr==wr))R a;  // at infinite rank, just return the value.  Because VFATOP[LR] puns with comparison flags,
+ if(likely(wcr==wr))RETF (a);  // at infinite rank, just return the value.  Because VFATOP[LR] puns with comparison flags,
    // it is possible that inplacing flags are set; so we must handle infinite rank before looking at inplacing
  // rank given, must replicate the value.  if rank 0, we can do it inplace
  I natoms;  // number of atoms to allocate
@@ -142,7 +142,7 @@ DFI1(jtnum1){A z=0;
  if(!z)GA(z,AT(a),natoms,AR(w)-wcr,AS(w));  // allocate result if not inplace
  // We now have the result area, with the right type.  Fill it
  mvc(natoms<<k,voidAV(z),1LL<<k,voidAV(a));  // could use voidAV0(a)
- R z;
+ RETF (z);
 }
 DF2(jtnum2){DF12IP;ARGCHK3(a,w,self); MEMCHK3(a,w,self); RETF(FAV(self)->fgh[2])}
 

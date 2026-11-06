@@ -608,7 +608,7 @@ notfound:;
  GETV(CAV(z),vv,dic->bloc.vbytelen,hsz&(DICFVINDIR<<DICFBASE));   // move the data & advance pointer to next one
 retz:;   // release lock & return, with z set
   DICLKRDRELKV(dic,lv)  // remove lock on keys and values.  Not worth it to release keys early
-  R z;
+  RETF (z);
 exiterr:; z=0; goto retz;
 }
 
@@ -1178,7 +1178,7 @@ static DF1(jtdicdel){DF12IP;A z;
 // result is last key we used
 static A dumptree(J jt,DIC *dic, UI nodex, C *dirstack, I depth, I blackdepth, I parentcolor, A prevkey, I *leafblackdepth, I *noerr, UI excludednode, I doprint){PROLOG(000);
  if(nodex<(TREENRES<<1)){if(*leafblackdepth>=0&&*leafblackdepth!=blackdepth){if(doprint)printf(" black vio"); *noerr=0;} *leafblackdepth=blackdepth;}  // leaf, check depth & save
- if(nodex<(TREENRES<<1)||nodex==excludednode)R prevkey;  // 
+ if(nodex<(TREENRES<<1)||nodex==excludednode)RETF (prevkey);  // 
  C *hashtbl=CAV3(dic->bloc.hash); I nodeb=dic->bloc.hashelesiz*(0x1000000+BB)+(dic->bloc.flags<<8)+(dic->bloc.emptysiz<<19);DRLRC(curr,nodex)   // fetch tree info, then children+color
  dirstack[depth]='0'; prevkey=dumptree(jt,dic,currl,dirstack,depth+1,blackdepth+currc,currc,prevkey,leafblackdepth,noerr,excludednode,doprint);
  A k; RZ(k=virtual(dic->bloc.keys,RENCEMPTY(nodex)*dic->bloc.kaii,AR(dic->bloc.keys)-1)) AN(k)=dic->bloc.kaii; MCISH(AS(k),AS(dic->bloc.keys)+1,AR(dic->bloc.keys)-1)
@@ -1884,7 +1884,7 @@ DF1(jtdicgetc){DF12IP;
  ASSERT(AT(w)&NOUN,EVDOMAIN)  // must be a dic.  Perhaps we should demand credentials
  A z; fdefallo(z);
  fdeffillall(z,0,CMODX,VERB, !(((DIC*)w)->bloc.flags&DICFRB)?jtdicget:jtdicgeto,!(((DIC*)w)->bloc.flags&DICFRB)?jtdicget:jtdicgeto,w,self,0, VNOLOCCHG+VNONAME+VNOSELF, RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.varno=0);
- R z;
+ RETF (z);
 }
 
 // u 16!:_12  has: u=dic
@@ -1895,7 +1895,7 @@ DF1(jtdichasc){DF12IP;
  ASSERT(AT(w)&NOUN,EVDOMAIN)  // must be a dic.  Perhaps we should demand credentials
  A z; fdefallo(z);
  fdeffillall(z,0,CMODX,VERB, !(((DIC*)w)->bloc.flags&DICFRB)?jtdicget:jtdicgeto,jtvalenceerr,w,self,0, VNOLOCCHG+VNONAME+VNOSELF, RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.varno=1);
- R z;
+ RETF (z);
 }
 
 // u 16!:_3  put: u=dic

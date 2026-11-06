@@ -88,13 +88,13 @@ static A jtzpadn(J jt,A z,A ind,B ip){A a,ai,i1,p,p1,q,t,x,x0,y,y0,y1;B*b;I c,d,
   if(jt->zombieval==z){RZ(ras(y)); RZ(ras(x)); fa(y0); fa(x0);}
   SPB(zp,i,y); SPB(zp,x,x);  // install the new indexes and values
  }
- R z;
+ RETF (z);
 }    /* create new indexed cells in z as necessary */
 
 static A jtastdn(J jt,A a,A z,A ind){A a1,q,r,s;B*b;I ar,*as,*av,d,ir,n,n1,*v,zr,*zs;P*zp;
  ar=AR(a); as=AS(a);
  zr=AR(z); zs=AS(z); 
- if(!ar)R a;
+ if(!ar)RETF (a);
  ir=AR(ind); n=AS(ind)[ir-1]; d=(ir-1)+(zr-n); ASSERT(ar<=d,EVRANK);  // n=shape of item of i; d is # unindexed axes
  GATV0(s,INT,d,1); v=AV1(s); MCISH(v,AS(ind),ir-1); MCISH(v+ir-1,zs+n,zr-n);
  ASSERTAGREE(as,AV(s)+d-ar,ar);
@@ -116,7 +116,7 @@ A jtamne(J jt,A a,A z,A ind,B ip){A i1,i2,x,y;C*u,*v;I*iv,*jv,k,m,n,vk,xk;P*zp;
  k=bpnoun(AT(x)); xk=k*aii(x); vk=k*csize(z,ind);
  u=CAV(a); v=CAV(x); iv=AV(i1); jv=AV(i2);
  DO(n, if(m>iv[i])mvc(vk,v+xk*iv[i]+k*jv[i],k,u););
- R z;
+ RETF (z);
 }    /* a (<"1 ind)}z, sparse z, integer array ind, sparse element a replacement */
 
 A jtamna(J jt,A a,A z,A ind,B ip){A i1,i2,x;C*u,*v;I*iv,*jv,k,n,vk,xk;P*zp;
@@ -129,7 +129,7 @@ A jtamna(J jt,A a,A z,A ind,B ip){A i1,i2,x;C*u,*v;I*iv,*jv,k,n,vk,xk;P*zp;
  u=CAV(a); v=CAV(x); iv=AV(i1); jv=AV(i2); 
  if(AR(a))DO(n, mvc(vk,v+xk*iv[i]+k*jv[i],vk,u); u+=vk;)
  else     DO(n, mvc(vk,v+xk*iv[i]+k*jv[i],k,u););
- R z;
+ RETF (z);
 }    /* a (<"1 ind)}z, dense a,integer array ind, sparse z */
 
 A jtamnsp(J jt,A a,A z,A ind,B ip){A i1,i2,t;C*ev,*u,*v,*vv;I c,*dv,i,*iv,j,*jv,k,m,n,p,q,r,*s,*yv,zk;P*ap,*zp;
@@ -152,5 +152,5 @@ A jtamnsp(J jt,A a,A z,A ind,B ip){A i1,i2,t;C*ev,*u,*v,*vv;I c,*dv,i,*iv,j,*jv,
    MC(vv,q?ev:u+k*p,k); 
    vv+=k;
  }}
- R z;
+ RETF (z);
 }    /* a (<"1 ind)}z, sparse a, integer array ind, sparse z */

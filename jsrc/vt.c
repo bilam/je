@@ -23,7 +23,7 @@ static A jttk0(J jt,B empty,I *u, I n,A w, I wf, I istake){A z;I m,r,*s;DPMULDDE
  GA(z,AT(w),m,r,AS(w));   // allocate result; init shape to w shape
  s=&AS(z)[wf]; DO(n, I m=ABS(u[i]); if(istake){if(unlikely(m==IMAX))m=ws[wf+i];}else{m=ws[wf+i]-m; m=m<0?0:m;} s[i]=ABS(m););  // install cell-shape from u; handle axes taken in full, convert drop counts to take counts
  if(m){I k=bpnoun(AT(w)); mvc(k*m,AVn(r,z),k,jt->fillv);}
- R z;
+ RETF (z);
 }
 
 
@@ -90,7 +90,7 @@ static INLINE A jttk(A w, I *u, I n, I wf, J jtfg, I istake, I wcr, A a, I wt){F
    AN(z)=tkabs*wcellsize;  // install # atoms
    // creating a virtual does not affect the pristinity of the backer
    RETF(z);
-  }else if(unlikely(tkabs==nitems))R w;  // if w taken in full, return w unchanged
+  }else if(unlikely(tkabs==nitems))RETF (w);  // if w taken in full, return w unchanged
  }
 
  if(unlikely(wf==wr)){ASSERT(wf+n<=RMAX,EVLIMIT) ws=shape1;}   // if cell of y is an atom, give it 1s as rank extension; make sure the extension doesn't exceed rank max

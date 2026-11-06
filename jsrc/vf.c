@@ -23,7 +23,7 @@ F2(jtsetfv){F12IP;A q=jt->fill;
  }else{fillv0(t);}    // empty or no fill.  create std fill in fillv0 and point jt->fillv at it
  w=TYPESEQ(t,AT(w))?w:cvt(t,w);  // convert w to dest type.  note if w is boxed and nonempty this won't change it
  if(unlikely(w==0)&&jt->jerr==EVDOMAIN)jt->jerr=EVINHOMO; // if we got an error here (always called DOMAIN), show it as EVHOMO when we eformat
- R w;
+ RETF (w);
 }
 // simpler version when there is only w.  We make AT(w) an argument to save a fetch
 A jtsetfv1(J jt, A w, I t){A q=jt->fill;
@@ -36,11 +36,11 @@ A jtsetfv1(J jt, A w, I t){A q=jt->fill;
   else if(unlikely(TYPESNE(t,AT(w)))){if(unlikely((w=cvt(t,w))==0)){if(jt->jerr==EVDOMAIN)jt->jerr=EVINHOMO; R 0;}}  // note if w is boxed and nonempty this won't change it
   jt->fillv=CAV(q); jt->fillvlen=bpnoun(t);   // jt->fillv points to the fill atom, which may have been allocated here & will be freed when the caller exits
  }else{fillv0(t);}    // default fill.   point jt->fillv at it
- R w;
+ RETF (w);
 }
 
 // Create a cell of fill for empty execution, type wt, rank r, shape *s.  Copy in the data.  The cell is NOT recursive
-A jtfiller(J jt, I wt, I r, I* s){A z; I n,klg; CPROD(1,n,r,s); klg=bplg(wt); fillv0(wt); GA(z,wt,n,r,s); mvc(n<<klg,CAVn(r,z),jt->fillvlen,jt->fillv); R z;}
+A jtfiller(J jt, I wt, I r, I* s){A z; I n,klg; CPROD(1,n,r,s); klg=bplg(wt); fillv0(wt); GA(z,wt,n,r,s); mvc(n<<klg,CAVn(r,z),jt->fillvlen,jt->fillv); RETF (z);}
 
 // Point jt->fillv to fill(s) of type t, and the # bytes of them into jt->fillv0len
 void jtfillv0(J jt,I t){
@@ -192,7 +192,7 @@ static FI1(jtrevsp){A a,q,x,y,z;I c,f,k,m,n,*v;P*wp,*zp;
  SPB(zp,e,ca(SPA(wp,e))); 
  SPB(zp,i,y); 
  SPB(zp,x,x);
- R z;
+ RETF (z);
 }    /* |."r w on sparse arrays */
 
 // Do not EPILOG
@@ -236,7 +236,7 @@ static A jtreshapesp0(J jt,A a,A w,I wf,I wcr){A e,p,x,y,z;B*b,*pv;I c,d,r,*v,wr
  wp=PAV(w); RZ(b=bfi(wr,SPA(wp,a),1));
  RZ(e=ca(SPA(wp,e))); x=SPA(wp,x); y=SPA(wp,i);
  v=AS(y); r=v[0]; c=v[1]; d=0; DO(wf, if(b[i])++d;);
- if(!wf){if(r&&c){v=AV(y); DO(c, if(v[i])R e;);} R AN(x)?reshape(mtv,x):e;}
+ if(!wf){if(r&&c){v=AV(y); DO(c, if(v[i])RETF (e););} R AN(x)?reshape(mtv,x):e;}
  GASPARSE(z,AT(w),1,wf,ws);
  zp=PAV(z); SPB(zp,e,e); A bvec=ifb(wf,b); makewritable(bvec) SPB(zp,a,bvec);  // avoid readonly
  GATV0(p,B01,r,1); pv=BAV1(p);
@@ -244,7 +244,7 @@ static A jtreshapesp0(J jt,A a,A w,I wf,I wcr){A e,p,x,y,z;B*b,*pv;I c,d,r,*v,wr
  DO(r, *pv=1; DO(c-d, if(v[d+i]){*pv=0; break;}); ++pv; v+=c;);
  SPB(zp,i,repeat(p,taker(d,y)));
  SPB(zp,x,irs2(mtv,repeat(p,x),0L,1L,wcr-(c-d),jtreshape));
- R z;
+ RETF (z);
 }    /* '' ($,)"wcr w for sparse w */
 
 static A jtreshapesp(J jt,A a,A w,I wf,I wcr){A a1,e,t,x,y,z;B az,*b,wz;I an,*av,c,d,j,m,*u,*v,wr,*ws;P*wp,*zp;
@@ -276,7 +276,7 @@ static A jtreshapesp(J jt,A a,A w,I wf,I wcr){A a1,e,t,x,y,z;B az,*b,wz;I an,*av
   SPB(zp,i,ca(y));
   SPB(zp,x,irs2(vec(INT,m,v),x,0L,1L,wcr-(an-m),jtreshape));
  }
- R z;
+ RETF (z);
 }    /* a ($,)"wcr w for sparse w and scalar or vector a */
 
 // x is floating-point left side of x $ y, w is right side.  Result is INT x, but if x contains _, replace _ with the number needed to use up y exactly.
@@ -285,12 +285,12 @@ static A jtreshapeblank(J jt, A a, A w, A rndfn, I nlens, I wcr){
  RZ(a=vib(a)); RZ(a=mkwris(a)) // convert to int, converting _ to IMAX; make it writable since we will change _
  I upos=IMAX, xprod=1, oflo=0;  // index of _ if any, */ x -. _, oflo flag
  DO(AN(a), DPMULDDECLS I xval=IAV(a)[i]; oflo=xval==0?xval:oflo; I nupos=xval==IMAX?i:upos; xval=xval==IMAX?1:xval; ASSERT(nupos<=upos,EVDOMAIN) upos=nupos; DPMULD(xprod,xval,xprod,oflo=1;);)  // multiple non-_, error if overflow of >1 _
- if(upos==IMAX)R a;  // if x didn't contain _, just use it as is
+ if(upos==IMAX)RETF (a);  // if x didn't contain _, just use it as is
  ASSERT(!oflo,EVLIMIT) ASSERT(xprod!=0,EVDOMAIN);  // detect overflow; if result is empty, we cannot calculate a value
  I nw; PRODX(nw,nlens,AS(w)+AR(w)-wcr,1)   // calculate # cells in a wcr-cell of w: use all axes or just the first
  A nblank; dfv1(nblank,divide(sc(nw),sc(xprod)),rndfn); RZ(nblank);  // rndfn */ (x-._) % */ $`#@.isitem y
  ASSERT(AR(nblank)==0,EVRANK) if(!(AT(nblank)&INT))RZ(nblank=cvt(INT,nblank))  // nblank must be stomic
- IAV(a)[upos]=IAV(nblank)[0]; R a;  // replace _ with calculated value and return new x
+ IAV(a)[upos]=IAV(nblank)[0]; RETF (a);  // replace _ with calculated value and return new x
 }
 
 DFI2(jtreshape){A z;B filling;C*wv,*zv;I c,k,m,n,p,q,r,*s,t,* RESTRICT u,wf,* RESTRICT ws,zn;

@@ -47,7 +47,7 @@ static A jtovs0(J jt,B p,I r,A a,A w){A a1,e,q,x,y,z;B*b;I at,*av,c,d,j,k,f,m,n,
  if(r)++AS(z)[f]; else AS(z)[wr]=2;
  A bvec=ifb(zr,b); makewritable(bvec)  // avoid readonly
  zp=PAV(z); SPB(zp,a,bvec); SPB(zp,e,e); SPB(zp,i,y); SPB(zp,x,x);
- R z;
+ RETF (z);
 }    /* a,"r w (0=p) or w,"r a (1=p) where a is scalar and w is sparse */
 
 static FI2(jtovs){A ae,ax,ay,q,we,wx,wy,x,y,z,za,ze;B*ab,*wb,*zb;I *as,c,m,n,r,t,*v,*ws,*zs;P*ap,*wp,*zp;

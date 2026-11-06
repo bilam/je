@@ -776,7 +776,7 @@ F2(jtqq){F12IP;AF f1,f2;I hv[3],n,r[3],vf,flag2=0,*v;A ger=0;C lc=0;
   // for noun w, to allow use of +"+ to avoid special code.  BUT: we can't trust a rank in a of _, which might be hiding an active negative rank; so we
   // keep the rank if only one of the dyad ranks in a is _
   I alr=av->lrr>>RANKTX, arr=av->lrr&RANKTMSK; 
-  if(unlikely((av->mr==hv[0])&&(alr==hv[1])&&(arr==hv[2])&&((alr!=RMAX&&arr!=RMAX)||alr==arr)&&!(VERB&AT(w))))R a;  // first test is usually enough
+  if(unlikely((av->mr==hv[0])&&(alr==hv[1])&&(arr==hv[2])&&((alr!=RMAX&&arr!=RMAX)||alr==arr)&&!(VERB&AT(w))))RETF (a);  // first test is usually enough
   // The flags for u indicate its IRS and atomic status.  If atomic (for monads only), ignore the rank, just point to
   // the action routine for the verb.  Otherwise, choose the appropriate rank routine, depending on whether the verb
   // supports IRS.

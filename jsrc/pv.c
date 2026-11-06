@@ -37,7 +37,7 @@ static F1(jtvtokens){F12IP; MEMCHK1(w); A t,*y,z;I n,*s;TA*x;
  x->a=mark; x->t=0; ++x;
  x->a=mark; x->t=0; ++x;
  AM(z)=tmonad;
- R z;
+ RETF (z);
 }    /* build string sentence into queue suitable for parsing */
 
 static F1(jtcfn){F12IP; MEMCHK1(w); I j; R !AR(w)&&INT&AT(w)&&(j=AV(w)[0],-9<=j&&j<=9)?FCONS(w):qq(w,ainf);}
@@ -203,7 +203,7 @@ static A jtvfinal(J jt,A w,I tmonad,I tsubst,TA *ttab,I *ttabi,I ttabi0){I i;V*u
  }
  RZ(w=tine(w));
  if(FAV(w)->id==CFORK&&AT(FAV(w)->fgh[0])&VERB&&FAV(FAV(w)->fgh[0])->id==CCAP){ASGR(w,0,FAV(w)->fgh[1]); ASGR(w,1,FAV(w)->fgh[2]); ASGRZ(w,2,0);}
- R w;
+ RETF (w);
 }    
 
 static A jttparse(J jt,A w,A locsyms,I tmonad,I tsubst,TA *ttab,I *ttabi,I ttabi0){A*s,t,x;C d;I b,*c,e,i,j,k,m,n;TA*stack;
@@ -222,7 +222,7 @@ static A jttparse(J jt,A w,A locsyms,I tmonad,I tsubst,TA *ttab,I *ttabi,I ttabi
    b=cases[i].b; j=n+b;
    e=cases[i].e; k=n+e;
    stack[k]=(cases[i].vf)(jt,j,k,stack,locsyms,tmonad,tsubst,ttab,ttabi,ttabi0);
-   if(!(stack[k].a))R A0;
+   if(!(stack[k].a))RETF (A0);
    DQ(b,stack[--k]=stack[--j];); n=k;
   } else {stack[n-1]=jtvmove(jt,n,m-1,stack,locsyms,tmonad,tsubst,ttab,ttabi,ttabi0); RE(0); n-=0<m--;}
  } while(0<=m);

@@ -392,7 +392,7 @@ A jtassembleresults(J jt, I ZZFLAGWORD, A zz, A zzbox, A* zzboxp, I zzcellp, I z
   }
   zz=ope(zztemp);  // do the full open on the result 
  }
- R zz;
+ RETF (zz);
 }
 
 // move in a cell with fill
@@ -479,7 +479,7 @@ static A jtopes(J jt,I zt,A cs,A w){A a,d,e,sh,t,*wv,x,x1,y,y1,z;B*b;C*xv;I an,*
  }
  SPB(zp,x,p==m?x:take(sc(p),x));
  SPB(zp,i,p==m?y:take(sc(p),y));
- R z;
+ RETF (z);
 }  // > w when w contains sparse contents, maxtype=zt
 
 // > y (rank is immaterial)

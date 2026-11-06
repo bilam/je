@@ -28,7 +28,7 @@ static DF2(jtexeccyclicgerund){DF12IP;  // call is w,self or a,w,self
  ++nexttoexec; nexttoexec=AN(FAV(self)->fgh[0])==nexttoexec?0:nexttoexec; FAV(self)->localuse.lu1.gercut.cgerx=nexttoexec; // cyclically advance exec pointer
  w=ismonad?vbtoexec:w; A z=(*fntoexec)(jtfg,a,w,vbtoexec);  // vector to the function, as a,vbtoexec or a,w,vbtoexec as appropriate
  if(unlikely(z==0)){jteformat(jt,vbtoexec,ismonad?0:a,w,0);}  // if error, we must format it here because cyclic gerund is invalid
- R z;
+ RETF (z);
 }
 
 // similar, for executing m@.v on cells sequentially.  This for I selectors
@@ -45,7 +45,7 @@ static DF2(jtexecgerundcellI){DF12IP;  // call is w,self or a,w,self
  ++nexttoexec; FAV(self)->localuse.lu1.gercut.cgerx=nexttoexec; // advance to next cell
  w=ismonad?vbtoexec:w; A z=(*fntoexec)(jtfg,a,w,vbtoexec);  // vector to the function, as a,vbtoexec or a,w,vbtoexec as appropriate
  if(unlikely(z==0)){jteformat(jt,vbtoexec,ismonad?0:a,w,0);}  // if error, we must format it here because cyclic gerund is invalid
- R z;
+ RETF (z);
 // in case of index error we have to call eformat right here, because our caller does not have the self block for the overall gerund.  The a and w values are unused except for valence.  We pass in all the selectors
 errorwind:;  // here if there is an error in the result of calculating the selector.  We must send that result to eformat
   jteformat(jt,FAV(self)->localuse.lu0.gerundself,ismonad?0:a,w,FAV(self)->fgh[1]);
@@ -64,7 +64,7 @@ static DF2(jtexecgerundcellB){DF12IP;  // call is w,self or a,w,self
  ++nexttoexec; FAV(self)->localuse.lu1.gercut.cgerx=nexttoexec;
  w=ismonad?vbtoexec:w; A z=(*fntoexec)(jtfg,a,w,vbtoexec);  // vector to the function, as a,vbtoexec or a,w,vbtoexec as appropriate
  if(unlikely(z==0)){jteformat(jt,vbtoexec,ismonad?0:a,w,0);}  // if error, we must format it here because cyclic gerund can't
- R z;
+ RETF (z);
 errorwind:;  // here if there is an error in the result of calculating the selector.  We must send that result to eformat
   jteformat(jt,FAV(self)->localuse.lu0.gerundself,ismonad?0:a,w,FAV(self)->fgh[1]);
   RETF(0);
@@ -80,7 +80,7 @@ A jtcreatecycliciterator(J jt, A z, A w){
  ACFAUX(z,ACPERMANENT) AT(z)=0; FAV(z)->fgh[0]=FAV(w)->fgh[0]; FAV(z)->mr=FAV(w)->mr; FAV(z)->valencefns[0]=FAV(z)->valencefns[1]=jtexeccyclicgerund; FAV(z)->localuse.lu1.gercut.cgerx=0;
  FAV(z)->flag2=0; FAV(z)->id=CCYCITER;   // clear flags, and give this verb a proper id so it can be checked for
  AFLAGFAUXAUDIT(z,0) FAUXFILL(z)  // in audit, flags must be valid
- R z;
+ RETF (z);
 }
 // Similar, but also install r, the list of gerund results that will select the verb to run.  Used when there are few cells.
 // in this case gerx is the cell#, and will be used to step through the result selectors sequentially
@@ -94,7 +94,7 @@ static A jtcreategerunditerator(J jt, A z, A w, A r){  // z is result area, w is
  FAV(z)->localuse.lu0.gerundself=w;  // save the self for m@.v so we can call eformat with it
  FAV(z)->flag2=0;
  AFLAGFAUXAUDIT(z,0) FAUXFILL(z)  // in audit, flags must be valid
- R z;
+ RETF (z);
 }
 
 // w is a gerund whose max rank is low 6 bits of r.  Result is a boxed array of VERBs, one for each gerund, if they are well formed
@@ -109,7 +109,7 @@ A jtfxeachv(J jt,I r,A w){A*wv,x,z,*zv;I n;
  ASSERT(BOX&AT(w),EVDOMAIN);   // must be boxed
  I zr=AR(w); GATV(z,BOX,n,AR(w),AS(w)); zv=AAVn(zr,z);  // allocate one box per gerund
  DO(n, RZ(zv[i]=x=incorp(fx(CPYX(wv[i])))); ASSERT(((r&ADV+CONJ)|VERB)&AT(x),EVDOMAIN););   // create verb, verify it is a verb  No incorporation since it's not a noun
- R z;
+ RETF (z);
 }
 
 // self blocks to pass into every and thence into jtfx.  AK holds the parm into jtfx
@@ -161,7 +161,7 @@ F2(jtevger){F12IP;A hs;I k;
 }
 
 // u`v.  Allow append-in-place to m
-F2(jttie){F12IP;ARGCHK2(a,w); MEMCHK2(a,w); I gflg; if(AT(a)&VERB){RZ(a=box(a)) gflg=AFGERUNDOK;}else gflg=AFLAG(a)&AFGERUNDOK; if(AT(w)&VERB){RZ(w=box(w))}else gflg&=AFLAG(w); RZ(a=over(a,w)) AFLAGORLOCAL(a,gflg) R a;}  // don't pass MODIFIER flag through.  Can't inplace lest a be used in adverbial hook
+F2(jttie){F12IP;ARGCHK2(a,w); MEMCHK2(a,w); I gflg; if(AT(a)&VERB){RZ(a=box(a)) gflg=AFGERUNDOK;}else gflg=AFLAG(a)&AFGERUNDOK; if(AT(w)&VERB){RZ(w=box(w))}else gflg&=AFLAG(w); RZ(a=over(a,w)) AFLAGORLOCAL(a,gflg) RETF (a);}  // don't pass MODIFIER flag through.  Can't inplace lest a be used in adverbial hook
 
 
 // m@.v y.  Execute the verbs at high rank
@@ -361,7 +361,7 @@ static F2(jtgerfrom){F12IP;A*av,*v,z;I n;
   n=AN(a); av=AAV(a); 
   GATV0(z,BOX,n,1); v=AAV1(z);
   DO(n, RZ(*v++=incorp(gerfrom(C(av[i]),w))););
-  R z;
+  RETF (z);
 }}
 
 // initial handler for u@.v, to create resulting verb

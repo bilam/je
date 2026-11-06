@@ -268,7 +268,7 @@ static F1(jtthx1){F12IP; MEMCHK1(w);
  if('-'==s[0])s[0]='_'; // use J's convention for negative
  I l= strlen(s); // maybe better to use AN(UNvoidAV1(s))-1 ??
  A z; GA10(z, LIT, l); MC(CAV1(z), s, l+1);
- R z;
+ RETF (z);
 }
 
 /* static */ A jtthq1(J jt,Q y){
@@ -281,7 +281,7 @@ static F1(jtthx1){F12IP; MEMCHK1(w);
  if('-'==s[0]) s[0]='_';
  C*r= strchr(s, '/'); if (r) *r= 'r';
  A z=cstr(s);
- R z;
+ RETF (z);
 }
 
 static F1(jtthxqe){F12IP; MEMCHK1(w); 
@@ -298,7 +298,7 @@ static F1(jtthxqe){F12IP; MEMCHK1(w);
  I p=0; DO(c, p+=++dv[i];);
  A z;GATV(z,LIT,m*p,r+!r,s); AS(z)[AR(z)-1]=p; C*zv=CAVn(r+!r,z); mvc(AN(z),zv,1,iotavec-IOTAVECBEGIN+' ');
  v=tv; DO(m, DO(c, zv+=dv[i]; A y=*v++; p=AN(y); MC(zv-p-(I )(c>1+i),AV(y),p);));
- R z;
+ RETF (z);
 }
 
 // w is an array of boxes of any shape, where the contents of each box are character tables.
@@ -449,7 +449,7 @@ static F1(jtenframe){F12JT; MEMCHK1(w); A x,y,z;C*zv;I ht,m,n,p,q,t,wd,wdb,wr,xn
  DPMULDE(ht,wd,p); q=MAX(1,xn*yn); m=n/q; DPMULDE(m,p,zn);  // in case 2-cells of w are empty, avoid zerodivide.  zn will be 0 then
  // Allocate result area, using max type of the children; initialize shape to shape of w with the last 2 dimensions replaced by (ht,wd) of result 2-cell
  GA(z,t,zn,wr,AS(w)); AS(z)[wr-2]=ht; AS(z)[wr-1]=wd; 
- if(!n)R z;  // If w has 0 cells, return the empty array
+ if(!n)RETF (z);  // If w has 0 cells, return the empty array
  // Here w has cells.
  zv=CAV(z);  // zv->result area
  wdb=wd*(t=bpnoun(t));  // Replace t with the length of a character of t; get length of line in bytes
@@ -457,7 +457,7 @@ static F1(jtenframe){F12JT; MEMCHK1(w); A x,y,z;C*zv;I ht,m,n,p,q,t,wd,wdb,wr,xn
  fminit(m,ht,wdb,x,y,zv,t);
  // Insert the data for each atom into the result
  fmfill(p,q,wdb,w,x,y,zv,t);
- R z;
+ RETF (z);
 }
 
 // Convert any character array to a table for display
@@ -487,7 +487,7 @@ F1(jtmat){F12IP;A z;B b=0;C*v,*x;I c,k,m=1,p,q,qc,r,*s,t,zn;
  if(2<r){fillv0(t); mvc(zn<<bplg(t),x,jt->fillvlen,jt->fillv);}
  // for each 2-cell, leave a gap if required, then copy in the 2-cell.  Change c to size in bytes; qc=size of 2-cell
  if(zn){c<<=klg; DPMULDE(q,c,qc); DO(m, ENGAP(i*q,r,s,x+=c;); MC(x,v,qc); x+=qc; v+=qc;);}
- R z;
+ RETF (z);
 }
 
 // Convert 1 box to character array, then to character table.  a is the box, w is prxthornuni
@@ -511,7 +511,7 @@ static A jtthbox(J jt,A w,A prxthornuni){A z;static UC ctrl[]=" \001\002\003\004
  case C2TX: {US *s=USAV(z); DO(AN(z), if(14>s[i]&&(s[i]||!i||s[i-1]<0x1100))s[i]=ctrl[s[i]];);} break;  // wide char
  default: {C4 *s=C4AV(z); DO(AN(z), if(14>s[i]&&(s[i]||!i||s[i-1]<0x1100))s[i]=ctrl[s[i]];);} break;  // must be literal4
  }
- R z;
+ RETF (z);
 }
 
 // format sparse array
@@ -526,7 +526,7 @@ static F1(jtths){F12IP; MEMCHK1(w); A e,i,x,z;C c,*u,*v;I d,m,n,*s;P*p;
  d=aii(z); v=CAV(z)-d; DQ(m, MC(v+=d,u+=n,n););
  if(2<AR(z))RZ(z=matth1(z,zeroionei(0)));  // no prxthornuni
  s=AS(z); d=s[1]; v=1+CAV(z); c=JT(jt,bx)[9]; DQ(*s, v[n]=c; v+=d;);
- R z;
+ RETF (z);
 }
 
 // ": y, returning character array.  prxthornuni must be an A so it can go through every; the value is xxyypu where
@@ -599,10 +599,10 @@ static A jtthorn1main(J jt,A w,A prxthornuni){PROLOG(0001);A z;
 // entry point to allow C2T result from thorn1.  But always pass byte arguments unchanged
 // This will enable null insertion/removal for CJK, but that's OK since the result goes to display
 // This is called only from jprx()
-F1(jtthorn1u){F12IP; A z; ARGCHK1(w); MEMCHK1(w); z = thorn1main(w,sc(jt->boxpos+2+!(AT(w)&(LIT)))); R z; }  // set prx and prxthornuni flags
+F1(jtthorn1u){F12IP; A z; ARGCHK1(w); MEMCHK1(w); z = thorn1main(w,sc(jt->boxpos+2+!(AT(w)&(LIT)))); RETF (z); }  // set prx and prxthornuni flags
 
 // entry point for returning LIT array only.  Allow C2T result, then convert.  But always pass literal arguments unchanged
-A jtthorn1xy(J jt,A w,I xypos){ A z; ARGCHK1(w); MEMCHK1(w); A prxthornuni=sc(xypos+!(AT(w)&(LIT+C2T+C4T))); z = thorn1main(w,prxthornuni); if (z&&AT(z)&(C2T+C4T))z = rank2ex(z,prxthornuni,DUMMYSELF,MIN(AR(z),1L),0,MIN(AR(z),1L),0, RoutineD); R z; }
+A jtthorn1xy(J jt,A w,I xypos){ A z; ARGCHK1(w); MEMCHK1(w); A prxthornuni=sc(xypos+!(AT(w)&(LIT+C2T+C4T))); z = thorn1main(w,prxthornuni); if (z&&AT(z)&(C2T+C4T))z = rank2ex(z,prxthornuni,DUMMYSELF,MIN(AR(z),1L),0,MIN(AR(z),1L),0, RoutineD); RETF (z); }
 
 // entry point to use default boxing
 F1(jtthorn1){F12IP; MEMCHK1(w);  R jtthorn1xy(jt,w,jt->boxpos); }
@@ -727,7 +727,7 @@ static A jtjprx(J jt,I ieol,I maxlen,I lb,I la,A w){A y,z;B ch;C e,eov[2],*v,x,*
  if(ieol){m=2; eov[0]=CCR; eov[1]=CLF;}else{m=1; eov[0]=CLF; eov[1]=0;}
  // q=#lines in a 2-cell, c=#chars in a row, n=#2-cells, nq=total # lines (without spacing)
  // if w is empty the values could overflow.  In that case, just display nothing
- SHAPEN(y,r-2,q); SHAPEN(y,r-1,c); nq=prod(r-1,s); if(jt->jerr){RESETERR z=str(m+1,eov); makewritable(z) CAV(z)[m]=0; AN(z)=AS(z)[0]=m; R z;}
+ SHAPEN(y,r-2,q); SHAPEN(y,r-1,c); nq=prod(r-1,s); if(jt->jerr){RESETERR z=str(m+1,eov); makewritable(z) CAV(z)[m]=0; AN(z)=AS(z)[0]=m; RETF (z);}
  // c1=#characters to put out per line, lba=max # lines to put out
  c1=MIN(c,maxlen);
  // calculate p=total # lines of spacing needed, as sum of (#k-cells-1) for k>=2
@@ -840,7 +840,7 @@ static A jtjprx(J jt,I ieol,I maxlen,I lb,I la,A w){A y,z;B ch;C e,eov[2],*v,x,*
  ASSERTSYS(p<=zn,"jprx zn");
  // Null-terminate the string, and set the size and shape of the valid part
  *zv=0; AN(z)=AS(z)[0]=p;
- R z;
+ RETF (z);
 }    /* output string from array w */
 
 // 5!:_1, to debug formatted display

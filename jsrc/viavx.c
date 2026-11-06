@@ -435,7 +435,7 @@ static IOF(jtiosfu){I i;
    
   }
  }
- R z;   // harmless nonzero return that we can fetch AM() from
+ RETF (z);   // harmless nonzero return that we can fetch AM() from
 }
 
 static IOFXWS(jtio82w,I,US)    static IOFXWS(jtio84w,I,UI4)  // INT-sized items, using small/large hashtable
@@ -768,7 +768,7 @@ A jtindexofsub(J jtfg,I mode,AD * RESTRICT afg,AD * RESTRICT wfg){A h=0;fauxbloc
 inplace:;
    RE(jtiosc(jt,mode,1,an,wn,1,1,a,w,z)); // simple sequential search without hashing.  error is stack error
    *(z==w?&AT(z):(I*)jt->shapesink)=INT;  // if inplace, force result to INT (op must not be EPS)
-   R z;  // not RETF because of FORKEY
+   RETF (z);  // not RETF because of FORKEY
   }
 
   //  See if we need to abort owing to shapes.
@@ -783,8 +783,8 @@ inplace:;
    SETICFR(a,af,acr,m);  f0=MAX(0,f1); DPMULDE(prod(f,s),prod(f0,ws+wf),zn)
    switch(mode&IIOPMSK){
    case IIDOT:  
-   case IICO:    GATV0(z,INT,zn,f+f0); MCISH(AS(z),s,f) MCISH(f+AS(z),ws+wf,f0); v=AVn(f+f0,z); DQ(zn, *v++=m;); R z;  // mustn't overfetch s
-   case IEPS:    GATV0(z,B01,zn,f+f0); MCISH(AS(z),s,f) MCISH(f+AS(z),ws+wf,f0); mvc(zn,BAVn(f+f0,z),MEMSET00LEN,MEMSET00); R z;  // mustn't overfetch s
+   case IICO:    GATV0(z,INT,zn,f+f0); MCISH(AS(z),s,f) MCISH(f+AS(z),ws+wf,f0); v=AVn(f+f0,z); DQ(zn, *v++=m;); RETF (z);  // mustn't overfetch s
+   case IEPS:    GATV0(z,B01,zn,f+f0); MCISH(AS(z),s,f) MCISH(f+AS(z),ws+wf,f0); mvc(zn,BAVn(f+f0,z),MEMSET00LEN,MEMSET00); RETF (z);  // mustn't overfetch s
    case ILESS:                              RCA(w);
    case IINTER:                             R take(zeroionei(0),w);
    case IIFBEPS:                            R mtv;
@@ -1101,12 +1101,12 @@ inplace:;
   // We also handle the case of i.&0@:e. when the rank of w is more than 1 greater than the rank of a cell of a;
   // in that case the search always fails
   case IIDOT:   R reshape(shape(z),sc(n?m:0  ));
-  case IFORKEY: {z=reshape(shape(z),take(sc(m),sc(m))); RZ(z=mkwris(z)); AM(z)=!!m; R z;}  // all 0 but the first has the total count.  Must install # partitions=1 if #items>0
+  case IFORKEY: {z=reshape(shape(z),take(sc(m),sc(m))); RZ(z=mkwris(z)); AM(z)=!!m; RETF (z);}  // all 0 but the first has the total count.  Must install # partitions=1 if #items>0
   case IICO:    R reshape(shape(z),sc(n?m:m-1));
   case INUBSV:  R reshape(shape(z),take(sc(m),num(1)));
-  case INUB: case INUBIP:    AN(z)=0; AS(z)[0]=m?1:0; R z;
-  case ILESS:   if(m&&fnx==-3)AN(z)=AS(z)[0]=0; else MC(AV(z),AV(w),AN(w)<<bplg(AT(w))); R z;
-  case IINTER:  if(!(m&&fnx==-3))AN(z)=AS(z)[0]=0; R z;  // y has atoms or something is empty, return all of w; otherwise empty
+  case INUB: case INUBIP:    AN(z)=0; AS(z)[0]=m?1:0; RETF (z);
+  case ILESS:   if(m&&fnx==-3)AN(z)=AS(z)[0]=0; else MC(AV(z),AV(w),AN(w)<<bplg(AT(w))); RETF (z);
+  case IINTER:  if(!(m&&fnx==-3))AN(z)=AS(z)[0]=0; RETF (z);  // y has atoms or something is empty, return all of w; otherwise empty
   case IEPS:    R reshape(shape(z),num(m&&(!n||(fnx&1))));  // fnx&1 is true if homo
   case INUBI:   R m?iv0:mtv;
   // th<0 means that the result of e. would have rank>1 and would never compare against either 0 or 1
@@ -1144,7 +1144,7 @@ inplace:;
  RZ(z=EPILOGNORET(z));
  // Since EPILOG may have rewritten AM, and IFORKEY never returns to the parser, we can store the FORKEY result in AM.
  *((mode&IIOPMSK)==IFORKEY?(I*)&AM(z):(I*)&jt->shapesink)=forkeyresult;
- R z;  // Not RETF, which may audit the AM field which we just modified
+ RETF (z);  // Not RETF, which may audit the AM field which we just modified
 }    /* a i."r w main control */
 
 // verb to vector combine@e. compounds.  The i. code is in the self
@@ -1305,7 +1305,7 @@ DF1(jtnubind0){DF12IP;A z;
  ARGCHK1(w); MEMCHK1(w);
  if(unlikely(ISSPARSE(AT(w))))R on1cell(jt,w,self);  // revert for sparse
  PUSHCCT(1.0) z=indexofsub(INUBI,w,w); POPCCT  // do operation intolerantly.  Could inplace
- R z;
+ RETF (z);
 }    /* I.@(~:!.0) w */
 
 // I.@e. y   does not have IRS
@@ -1319,7 +1319,7 @@ DF2(jtepsind0){DF12IP;A z;
  ARGCHK2(a,w); MEMCHK2(a,w);
  if(unlikely(ISSPARSE(AT(a)|AT(w))))R jtupon2cell(jt,a,w,self);  // revert for sparse
  PUSHCCT(1.0) z=indexofsub(IIFBEPS,w,a); POPCCT  // do operation intolerantly
- R z;
+ RETF (z);
 }
 
 
@@ -1351,7 +1351,7 @@ F1(jtsclass){F12IP;A e,x,xy,y,z;I c,j,m,n,*v;P*p;
  SPB(p,e,num(0));
  SPB(p,i,xy);
  SPB(p,x,reshape(sc(c),num(1)));
- R z;
+ RETF (z);
 }
 
 
@@ -1439,6 +1439,6 @@ A jtiocol(J jt,I mode,A a,A w){A h,z;I ar,at,c,d,m,t,wr,*ws,wt;IOCOLFN fn;
  case CMPX: fn=mode==IICO?jtjocolz:jtiocolz; ctmask=calcctmask(jt->cct); break;
  }
  fn(jt,m,c,d,a,w,z,h,ctmask);
- R z;
+ RETF (z);
 }    /* a i."1 &.|:w or a i:"1 &.|:w */
 #endif // C_VIAVX

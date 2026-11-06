@@ -89,7 +89,7 @@ static A jtattv(J jt,U x){A z;C*s;
  s[3]=x&_A_VOLID ?'v':'-';
  s[4]=x&_A_SUBDIR?'d':'-';
  s[5]=x&_A_ARCH  ?'a':'-';
- R z;
+ RETF (z);
 }    /* convert from 16-bit attributes x into 6-element string */
 
 static S jtattu(J jt,A w){C*s;I i,n;S z=0;
@@ -139,7 +139,7 @@ DF1(jtjfperm1){DF12IP; MEMCHK1(w); A y,fn,z;C *s;F f;int x; US *p,*q;
  s[0]=x?'-':'r';
  s[1]=_waccess(p,W_OK)?'-':'w';
  s[2]=wcscmp(q,L"exe")&&wcscmp(q,L"bat")&&wcscmp(q,L"com")?'-':'x';
- R z;
+ RETF (z);
 }
 
 DF2(jtjfperm2){DF12IP; MEMCHK2(a,w); A y,fn;C*s;F f;int x=0;US *p;
@@ -169,7 +169,7 @@ DF1(jtjfperm1){DF12IP; MEMCHK1(w); A y,z;C*p,*q,*s;F f; DWORD attr;
  s[0]='r';
  s[1]=attr&FILE_ATTRIBUTE_READONLY?'-':'w';
  s[2]=strcmp(q,"exe")&&strcmp(q,"bat")&&strcmp(q,"com")?'-':'x';
- R z;
+ RETF (z);
 }
 
 F2(jtjfperm2){F12IP; MEMCHK2(a,w); ASSERT(0,EVNONCE);}
@@ -215,7 +215,7 @@ static A jtdir1(J jt,LPWIN32_FIND_DATAW f,C* fn) {A z,*zv;C rwx[3],*s,*t;I n,ts[
 #endif
  RZ(zv[3]=incorp(str(3L,rwx)));
  RZ(zv[4]=incorp(attv((S)f->dwFileAttributes)));
- R z;
+ RETF (z);
 }
 
 // 1!:0
@@ -364,7 +364,7 @@ static A jtdir1(J jt,struct dirent64*f,struct_stat64 *dirstatbuf,C *diratts, C *
  RZ(zv[3]=incorp(vec(LIT,3L, dirrwx )));
  RZ(zv[4]=incorp(vec(LIT, 6L,diratts)));
  RZ(zv[5]=incorp(vec(LIT,10L,dirmode)));
- R z;
+ RETF (z);
 }
 
 // 1!:0

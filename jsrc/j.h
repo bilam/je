@@ -2194,9 +2194,20 @@ else{--_i; NOUNROLL do{z*=_zzt[_i-1];}while(--_i); } \
 #if ANASARGEEMENT   // For noun, AN() should always equal to */AS()  trap if not
 #define RETF(exp)       {A ZZZz = (exp); CHECKANAS(ZZZz); R ZZZz;}
 #else
+#if MEMAUDIT&0x80
+#define RETF(exp)       {A ZZZz = (exp); MEMCHK1(ZZZz) R ZZZz;}
+#else
 #define RETF(exp)       R exp;
 #endif
 #endif
+#endif
+#endif
+#if MEMAUDIT&0x80
+#define RETFA(exp)      {A ZZZz = (exp); MEMCHK1A(ZZZz) R ZZZz;}
+#define EPILOGA(z)      RETFA(EPILOGNORET(z))   // z is the result block
+#else
+#define RETFA(exp)      RETF(exp)
+#define EPILOGA(z)      EPILOG(z)
 #endif
 // Input is a byte.  It is replicated to all lanes of a UI
 #endif

@@ -40,7 +40,7 @@ INLINE static A jtssingleton1(J jtfg, A w,I caseno){F12JT;MEMCHK1(w); A z;void *
  case SSINGCASE(VA1CMIN-VA1ORIGIN,SSINGENC(FL)):
    {D x=wdv; wdv=jround(x); wdv-=TGT(wdv,x);}  // do round/floor in parallel
    if(likely(wdv>=FLIMIN&&wdv<FLIMAX))SSSTORE((I)wdv,z,INT,I) else SSSTORENVFL(wdv,z,FL,D)
-   R z;
+   RETF (z);
 
 
  case SSINGCASE(VA1CMAX-VA1ORIGIN,SSINGENC(B01)):
@@ -48,66 +48,66 @@ INLINE static A jtssingleton1(J jtfg, A w,I caseno){F12JT;MEMCHK1(w); A z;void *
  case SSINGCASE(VA1CMAX-VA1ORIGIN,SSINGENC(FL)):
    {D x=wdv; wdv=jround(x); wdv+=TLT(wdv,x);}  // do round/ceil in parallel
    if(likely(wdv>=FLIMIN&&wdv<FLIMAX))SSSTORE((I)wdv,z,INT,I) else SSSTORENVFL(wdv,z,FL,D)
-   R z;
+   RETF (z);
 
 
  case SSINGCASE(VA1CSTAR-VA1ORIGIN,SSINGENC(B01)): R w;
- case SSINGCASE(VA1CSTAR-VA1ORIGIN,SSINGENC(INT)): SSSTORENV(SGNTO0(-wiv)|(REPSGN(wiv)),z,INT,I) R z;
+ case SSINGCASE(VA1CSTAR-VA1ORIGIN,SSINGENC(INT)): SSSTORENV(SGNTO0(-wiv)|(REPSGN(wiv)),z,INT,I) RETF (z);
  case SSINGCASE(VA1CSTAR-VA1ORIGIN,SSINGENC(FL)):
    SSSTORE((wdv>=1.0-jt->cct)-(-wdv>=1.0-jt->cct),z,INT,I)
-   R z;
+   RETF (z);
 
 
  case SSINGCASE(VA1CROOT-VA1ORIGIN,SSINGENC(B01)): R w;  // normal code returns B01, but INT seems better
  case SSINGCASE(VA1CROOT-VA1ORIGIN,SSINGENC(INT)):
-    if(wiv>=0){SSSTORE(sqrt((D)wiv),z,FL,D) R z;}   // return value if real
+    if(wiv>=0){SSSTORE(sqrt((D)wiv),z,FL,D) RETF (z);}   // return value if real
     jt->jerr=EWIMAG; R 0;   // otherwise fall through to normal code, returning complex
  case SSINGCASE(VA1CROOT-VA1ORIGIN,SSINGENC(FL)):
-    if(wdv>=0){SSSTORENVFL(sqrt(wdv),z,FL,D) R z;}   // return value if real
+    if(wdv>=0){SSSTORENVFL(sqrt(wdv),z,FL,D) RETF (z);}   // return value if real
     jt->jerr=EWIMAG; R 0;   // otherwise fall through to normal code, returning complex
 
 
- case SSINGCASE(VA1CEXP-VA1ORIGIN,SSINGENC(B01)): SSSTORENV((B)wiv?2.71828182845904523536:1.0,z,FL,D) R z;
+ case SSINGCASE(VA1CEXP-VA1ORIGIN,SSINGENC(B01)): SSSTORENV((B)wiv?2.71828182845904523536:1.0,z,FL,D) RETF (z);
  case SSINGCASE(VA1CEXP-VA1ORIGIN,SSINGENC(INT)):
-    SSSTORE(unlikely(wiv<EMIN)?0.0:unlikely(EMAX<wiv)?inf:exp((D)wiv),z,FL,D) R z;
+    SSSTORE(unlikely(wiv<EMIN)?0.0:unlikely(EMAX<wiv)?inf:exp((D)wiv),z,FL,D) RETF (z);
  case SSINGCASE(VA1CEXP-VA1ORIGIN,SSINGENC(FL)):
-    SSSTORENVFL(unlikely(wdv<EMIN)?0.0:unlikely(EMAX<wdv)?inf:exp(wdv),z,FL,D) R z;
+    SSSTORENVFL(unlikely(wdv<EMIN)?0.0:unlikely(EMAX<wdv)?inf:exp(wdv),z,FL,D) RETF (z);
 
 
- case SSINGCASE(VA1CLOG-VA1ORIGIN,SSINGENC(B01)): SSSTORENV((B)wiv?0.0:infm,z,FL,D) R z;
+ case SSINGCASE(VA1CLOG-VA1ORIGIN,SSINGENC(B01)): SSSTORENV((B)wiv?0.0:infm,z,FL,D) RETF (z);
  case SSINGCASE(VA1CLOG-VA1ORIGIN,SSINGENC(INT)):
-    if(wiv>=0){SSSTORE(log((D)wiv),z,FL,D) R z;}   // return value if real
+    if(wiv>=0){SSSTORE(log((D)wiv),z,FL,D) RETF (z);}   // return value if real
     jt->jerr=EWIMAG; R 0;   // otherwise fall through to normal code, returning complex
  case SSINGCASE(VA1CLOG-VA1ORIGIN,SSINGENC(FL)):
-    if(wdv>=0){SSSTORENVFL(log(wdv),z,FL,D) R z;}   // return value if real
+    if(wdv>=0){SSSTORENVFL(log(wdv),z,FL,D) RETF (z);}   // return value if real
     jt->jerr=EWIMAG; R 0;   // otherwise fall through to normal code, returning complex
 
 
- case SSINGCASE(VA1CSTILE-VA1ORIGIN,SSINGENC(B01)): SSSTORENV((B)wiv,z,B01,B) R z;
+ case SSINGCASE(VA1CSTILE-VA1ORIGIN,SSINGENC(B01)): SSSTORENV((B)wiv,z,B01,B) RETF (z);
  case SSINGCASE(VA1CSTILE-VA1ORIGIN,SSINGENC(INT)):
-    {I nwiv=(I)((0U-(UI)wiv)); wiv=nwiv>0?nwiv:wiv;}  if(likely(wiv>=0)){SSSTORENV(wiv,z,INT,I)}else SSSTORE(-(D)IMIN,z,FL,D) R z;
+    {I nwiv=(I)((0U-(UI)wiv)); wiv=nwiv>0?nwiv:wiv;}  if(likely(wiv>=0)){SSSTORENV(wiv,z,INT,I)}else SSSTORE(-(D)IMIN,z,FL,D) RETF (z);
  case SSINGCASE(VA1CSTILE-VA1ORIGIN,SSINGENC(FL)):
-    wdv=ABS(wdv); SSSTORENVFL(wdv,z,FL,D) R z;
+    wdv=ABS(wdv); SSSTORENVFL(wdv,z,FL,D) RETF (z);
 
 
- case SSINGCASE(VA1CBANG-VA1ORIGIN,SSINGENC(B01)): SSSTORENV(1,z,B01,B) R z;
+ case SSINGCASE(VA1CBANG-VA1ORIGIN,SSINGENC(B01)): SSSTORENV(1,z,B01,B) RETF (z);
  case SSINGCASE(VA1CBANG-VA1ORIGIN,SSINGENC(INT)):
-    SSSTORE(dgamma(1.0+(D)wiv),z,FL,D) RE(0) R z;
+    SSSTORE(dgamma(1.0+(D)wiv),z,FL,D) RE(0) RETF (z);
  case SSINGCASE(VA1CBANG-VA1ORIGIN,SSINGENC(FL)):
-    SSSTORENVFL(_isnan(wdv)?wdv:dgamma(1.0+wdv),z,FL,D) RE(0) R z;
+    SSSTORENVFL(_isnan(wdv)?wdv:dgamma(1.0+wdv),z,FL,D) RE(0) RETF (z);
 
 
- case SSINGCASE(VA1CCIRCLE-VA1ORIGIN,SSINGENC(B01)): SSSTORENV((B)wiv?PI:0.0,z,FL,D) R z;
+ case SSINGCASE(VA1CCIRCLE-VA1ORIGIN,SSINGENC(B01)): SSSTORENV((B)wiv?PI:0.0,z,FL,D) RETF (z);
  case SSINGCASE(VA1CCIRCLE-VA1ORIGIN,SSINGENC(INT)):
-    SSSTORE(PI*(D)wiv,z,FL,D) R z;
+    SSSTORE(PI*(D)wiv,z,FL,D) RETF (z);
  case SSINGCASE(VA1CCIRCLE-VA1ORIGIN,SSINGENC(FL)):
-    SSSTORENVFL(PI*wdv,z,FL,D) R z;
+    SSSTORENVFL(PI*wdv,z,FL,D) RETF (z);
 
 
  case SSINGCASE(VA1CPLUS-VA1ORIGIN,SSINGENC(B01)): 
  case SSINGCASE(VA1CPLUS-VA1ORIGIN,SSINGENC(INT)):
  case SSINGCASE(VA1CPLUS-VA1ORIGIN,SSINGENC(FL)):
-  R w;  // conjugating reals is a NOP
+  RETF (w);  // conjugating reals is a NOP
 
  default: ASSERTSYS(0,"ssing1");
 
@@ -330,7 +330,7 @@ static A jtva1s(J jt,A w,A self,I cv,VA1F ado){A e,x,z,ze,zx;B c;I n,oprc,t,zt;P
  SPB(zp,i,ca(SPA(wp,i)));
  SPB(zp,e,ze);
  SPB(zp,x,zx);
- R z;
+ RETF (z);
 }
 
 #define VA1CASE(e,f) (10*(e)+(f))

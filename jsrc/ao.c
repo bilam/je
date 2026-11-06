@@ -46,7 +46,7 @@ static DF1(jtobqfslash){DF12IP;A y,z;B b=0,p;C er,id,*wv;I c,d,k,m,m1,n,n1,r,*s,
  y=FAV(self)->fgh[0]; y=FAV(y)->fgh[0]; id=FAV(y)->id;
  m=s[0]; m1=m-1;
  n=s[1]; n1=n-1; d=m+n-1; PROD(c,r-2,2+s);
- if(((1-m)&(1-n))>=0){GA(z,wt,AN(w),r-1,1+s); AS(z)[0]=d; MC(AVn(r-1,z),wv,AN(w)<<bplg(wt)); R z;}  // m=1 or n=1, return item of input
+ if(((1-m)&(1-n))>=0){GA(z,wt,AN(w),r-1,1+s); AS(z)[0]=d; MC(AVn(r-1,z),wv,AN(w)<<bplg(wt)); RETF (z);}  // m=1 or n=1, return item of input
  if(wt&FL+CMPX)NAN0;
  if(1==c)switch(OBQCASE(CTTZ(wt),id)){
   case OBQCASE(FLX,  CPLUS   ): OBQLOOP(D,D,wt,x=*u, x+=*u        ); break;
@@ -256,7 +256,7 @@ A jtkeyct(J jtfg,A a,A w,A self,D toler){F12IP;PROLOG(0009);A ai,z=0;I nitems;
     I nfrets=AM(ai);  // before we possibly clone it, extract # frets found
     makewritable(ai);  // we modify the size+index info to be running endptrs into the reorder area
     // allocate the result area(s)
-    GA(z,zt,nfrets*cellatoms,AR(w),AS(w)); AS(z)[0]=nfrets; if(AN(z)==0)R z;  // avoid calls with empty args
+    GA(z,zt,nfrets*cellatoms,AR(w),AS(w)); AS(z)[0]=nfrets; if(AN(z)==0)RETF (z);  // avoid calls with empty args
     if(unlikely(keyslashfn==3)){
      GA10(freq,zt&FL?FL:INT,nfrets);  // allocate place for divisor - INT if result may be XNUM/RAT
     }
@@ -334,7 +334,7 @@ A jtkeyct(J jtfg,A a,A w,A self,D toler){F12IP;PROLOG(0009);A ai,z=0;I nitems;
     I nparts=0;  // number of partitions in the result
     I *av=IAV(a); DQ(nitems, void * of=ftblv[*av&valmsk]; ftblv[*av&valmsk]=0; nparts+=(I)of&1; av=(I*)((I)av+k);)   // count partitions and set pointers there to 0
     // allocate the result area(s)
-    GA(z,zt,nparts*cellatoms,AR(w),AS(w)); AS(z)[0]=nparts; if(AN(z)==0)R z;  // avoid calls with empty args
+    GA(z,zt,nparts*cellatoms,AR(w),AS(w)); AS(z)[0]=nparts; if(AN(z)==0)RETF (z);  // avoid calls with empty args
     if(unlikely(keyslashfn==3)){
      GA10(freq,zt&FL?FL:INT,nparts);  // allocate place for divisor - INT if result may be XNUM/RAT
     }
@@ -849,7 +849,7 @@ F1(jtsldot){F12IP;A h=0;AF f1=jtoblique,f2;C c,d,e;I flag=0;V*v;
               // otherwise (including keymean) fall through to...
  default: f2=jtkey; flag |= (FAV(w)->flag&VNOLOCCHG); break;  // pass through NOLOCCHG.
  }
- fdeffill(z,0,CSLDOT,VERB, f1,f2, flag&VGERL?h:w,0L,0, flag, RMAX,RMAX,RMAX); R z;
+ fdeffill(z,0,CSLDOT,VERB, f1,f2, flag&VGERL?h:w,0L,0, flag, RMAX,RMAX,RMAX); RETF (z);
 }
 
 // f/.. - looks like /. except for id

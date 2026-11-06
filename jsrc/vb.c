@@ -205,7 +205,7 @@ matchfnd: ;
  // Return with value appropriate for function
  if((fullmatchmsk>>56)<1){R 0;  // E.
  }else if((fullmatchmsk>>56)==1){R sc((I)zv);   // +/@E.
- }else if((fullmatchmsk>>56)<3){AN(z)=AS(z)[0]=(I*)zv-IAV(z); R z;     // I.@E.  install actual item count
+ }else if((fullmatchmsk>>56)<3){AN(z)=AS(z)[0]=(I*)zv-IAV(z); RETF (z);     // I.@E.  install actual item count
  }else if((fullmatchmsk>>56)==3){R sc(wn);  // i.&1@:E.
  }else{R num(0);  // +./@E.
  }
@@ -228,9 +228,9 @@ F2(jtebar){F12IP;PROLOG(0065);A y,z;B*zv;C*av,*wv;I c,d,i,k=0,m,n,p,*yv;
   case -4: R ebarvec(a,w);
   }
  }
- I zr=AR(w); GATV0(z,B01,n,AR(w)); zv=BAVn(zr,z); mvc(n,zv,1,iotavec-IOTAVECBEGIN+(m==0)); if((-m&-n)>=0)R z;  // if x empty, return all 1s
+ I zr=AR(w); GATV0(z,B01,n,AR(w)); zv=BAVn(zr,z); mvc(n,zv,1,iotavec-IOTAVECBEGIN+(m==0)); if((-m&-n)>=0)RETF (z);  // if x empty, return all 1s
 #if C_AVX2 || EMU_AVX2
- if(AT(w)&LIT+B01){jtebar1C(jt, av,wv, m,n,zv,0,0); R z;}
+ if(AT(w)&LIT+B01){jtebar1C(jt, av,wv, m,n,zv,0,0); RETF (z);}
 #endif
  GATV0(y,INT,d,1); yv= AV1(y); DO(d, yv[i]=1+m;);
  switch(CTTZ(AT(w))){

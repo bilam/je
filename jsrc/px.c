@@ -57,7 +57,7 @@ F1(jtimmex){F12JT; MEMCHK1A(w); A z;
  if(!(jt->recurstate&RECSTATERENT))AKGST(jt->locsyms)=jt->global; // in case the sentence has operators, set a locale for it
  STACKCHKOFL z=parse(AT(w)&BOX?w:tokens(w,1+!!EXPLICITRUNNING));
  if(((I)z&REPSGN(SGNIFNOT(z,PARSERASGNX)))&&!(AFLAG(z)&AFDEBUGRESULT))jtjpr((J)((I)jtfg|JTPRFORSCREEN),z);   // print if z not 0 && LSB of z is 0 && Result is not for debug
- RETF(z);
+ RETFA (z);
 }
 
 // execute for assert during script: check result for not assigned or no error or non-noun or all 1
@@ -67,10 +67,10 @@ F1(jtimmea){F12JT; MEMCHK1(w); A t,z,z1;
  RZ(w=ddtokens(w,1+!!EXPLICITRUNNING)); z=jtimmex(jtfg,w);   // check for DD, allow continuation
  ASSERT(PARSERASGN(z)||!z||!(AT(z)&NOUN)||(t=eq(num(1),z),
      all1(ISSPARSE(AT(z))?df1(z1,t,atop(slash(ds(CSTARDOT)),ds(CCOMMA))):t)),EVASSERT);  // apply *./@, if sparse
- RETF(z);
+ RETFA (z);
 }
 
-static A jtcex(J jt,A w,AF f,A self){MEMCHK1(w); A z; RE(w); z=f(jt,w,self); if(jt->jerr!=EVSTACK)RESETERR; R z;}
+static A jtcex(J jt,A w,AF f,A self){MEMCHK1(w); A z; RE(w); z=f(jt,w,self); if(jt->jerr!=EVSTACK)RESETERR; RETF (z);}
      // conditional execute - return 0 if error, but EVSTACK is fatal
 
 // convert the gerund (i. e.  AR) in w into a CAVN.  If already a verb, use it as is

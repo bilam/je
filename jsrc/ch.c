@@ -11,7 +11,7 @@ static A jthparm(J jt,A j,A f,A h){A z;
  RZ(z=CALL1(FAV(f)->valencefns[0],j,f));
  ASSERT(1>=AR(z),EVRANK); 
  ASSERT(!AR(z)||AN(j)==AN(z),EVLENGTH);
- R z;
+ RETF (z);
 }
 
 static A jthgv(J jt,B b,I n,A w,A self){A c,d,e,h,*hv,j,y;V*sv=FAV(self);

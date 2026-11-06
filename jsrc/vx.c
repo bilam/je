@@ -34,8 +34,8 @@ XF1(jtxsgn){ // *w NB. X w, X result
 }
 XF2(jtxplus){ // a+w  NB. X a, w
  ARGCHK2(a,w); MEMCHK2(a,w);
- if (unlikely(ISX0(a))) R w;
- if (unlikely(ISX0(w))) R a;
+ if (unlikely(ISX0(a))) RETF (w);
+ if (unlikely(ISX0(w))) RETF (a);
  // X z= XaddXX(a,w); // XaddXX could become [temporary] syntactic sugar for jtxplus
  mp_size_t an= XLIMBLEN(a), wn= XLIMBLEN(w); // arg sizes
  mp_size_t m= MIN(an, wn), n= MAX(an, wn); // result sizes
@@ -55,17 +55,17 @@ XF2(jtxplus){ // a+w  NB. X a, w
   if (unlikely(!n)) R X0;
   XSGN(z)= zp ?n :-n;
  }
- R z;
+ RETF (z);
 }
 XF2(jtxminus){ // a-w  NB. X a, w
  ARGCHK2(a,w); MEMCHK2(a,w);
- if (unlikely(ISX0(w))) R a;
+ if (unlikely(ISX0(w))) RETF (a);
  if (unlikely(ISX0(a))) {
   X z; mp_size_t n= XLIMBLEN(w);
   GAX(z, n); mp_ptr zd= voidAV1(z), wd= voidAV1(w);
   DO(n, {*zd++= *wd++;}); // maybe/eventually should use virtual block here
   XSGN(z)= -XSGN(w);
-  R z;
+  RETF (z);
  }
  // X z= XaddXX(a,w); // XaddXX could become [temporary] syntactic sugar for jtxplus
  mp_size_t an= XLIMBLEN(a), wn= XLIMBLEN(w); // arg sizes
@@ -86,7 +86,7 @@ XF2(jtxminus){ // a-w  NB. X a, w
   if (unlikely(!n)) R X0;
   XSGN(z)= zp ?n :-n;
  }
- R z;
+ RETF (z);
 }
 XF2(jtxtymes){ // a*w  NB. X a, w
  ARGCHK2(a,w); MEMCHK2(a,w); A z;
@@ -110,13 +110,13 @@ X jtxdiv(J jt,X a,X w,I mode){ // a mode@% w NB. X a, w // mode is <. or >. or ]
    jmpz_fdiv_qr(mpz, mpr, mpa, mpw); 
    X z= Xmp(z); X r= Xmp(r);
    ASSERT(0==XSGN(r), EWRAT);
-   R z;
+   RETF (z);
   }
  }
  SEGFAULT; R0; // this should never happen
 }
 XF2(jtxrem){ // a | w
- if(!XSGN(a)) R w;
+ if(!XSGN(a)) RETF (w);
  R Xfdiv_rXX(w,a); /* a on right side here */
 }
 XF2(jtxgcd){ // a +. w
@@ -319,7 +319,7 @@ static A jtpiev(J jt,I n,X b){A e;I ek,i,n1=n-1;X bi,e0,e1,*ev,t;
   bi=xtymes(bi,b);        /* bi = b^i   */
  }
  ev[i]=rifvsdebug(xtymes(e0,xtymes(XCUBE(e1),bi)));
- RE(e); R e;
+ RE(e); RETF (e);
 } /* used in jtxpi (related to the denominator of the chudnovsky algorithm) */
 
 static XF1(jtxpi){
@@ -588,7 +588,7 @@ static DF2(jtmodularexplicitx){DF12IP; MEMCHK2(a,w);  // this stands in place of
  A z=jtxdefn(jt,a,w,self);   // the imp must be in an explicit def
  // if there was an error, save the error code and recreate the error at this level, to cover up details inside the script
  if(unlikely(jt->jerr)){I e=jt->jerr; RESETERR; jsignal(e);}
- R z;
+ RETF (z);
 }
 
 // entry point for monad and dyad %. m. n (type=0) and monad -/ . * m. n (type=1)
@@ -604,7 +604,7 @@ static A jtmodularexplicit(J jt,A a,A w,I type){
  FAV(derivvb)->valencefns[1]=type?jtvalenceerr:(AF)jtmodularexplicitx;  // dyad defined only for %.
  // For display purposes, give the compound the spelling of the original
  FAV(derivvb)->id=CMDOT;
- R derivvb;
+ RETF (derivvb);
 }
 
 // index is (fn#,extended)
@@ -642,7 +642,7 @@ F2(jtmdot){F12IP; MEMCHK2(a,w); A z=0;
  fdefallo(z)
  // we mark the compound as NAMELESS to avoid lookup overhead
  fdeffillall(z,VF2NAMELESS,CMDOT,VERB, fn1,fn2, a,w,h,VNOLOCCHG+VNONAME+VNOSELF, 0,0,0,fffv->localuse.lu0.modatomfn=modoptbl[fnx][nrecip==0],FAV(z)->localuse.lu1.mrecip=nrecip);
- R z;
+ RETF (z);
 }
 
 B jtxquad(J jt,E *Z,X W){

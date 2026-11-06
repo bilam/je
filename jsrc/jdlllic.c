@@ -77,7 +77,7 @@ F1(jtlock1){F12IP; MEMCHK1(w); A z; C* p; C* src;
  p+=SK;
  for(i=0;i<maxc2;++i) *p++= lobyte(rand());
  for(i=0;i<2*SERIALNUMSIZE;++i) *p++= lobyte(rand());
- R z;
+ RETF (z);
 }
 
 F2(jtlock2){F12IP;ASSERT(0,EVDOMAIN);}
@@ -106,5 +106,5 @@ F2(jtunlock2){F12IP; MEMCHK2(a,w); int i,j,len,tlen;UC c1,c2,k1[SK],*lp,*sp,*d;
   if(++j==SK) j=0;
  }
  while(sp<d+tlen)*sp++=' ';
- R w;
+ RETF (w);
 }    /* ignores left argument */

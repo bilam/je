@@ -287,7 +287,7 @@ static A jtth2a(J jt,B e,I m,I d,C*s,I n,I t,I wk,C*wv,B first,A*cellbuf){PROLOG
   // Allocate space for all results; set shape to (n,q); zv->result area
  GATV0(z,LIT,p,2); AS(z)[0]=n; AS(z)[1]=q; zv=CAV2(z);
  // If field length is fixed, format the column to that width & return it
- if(m){th2c(e,m,d,s,n,t,wk,wv,m,zv,cellbuf); R z;}
+ if(m){th2c(e,m,d,s,n,t,wk,wv,m,zv,cellbuf); RETF (z);}
  // Otherwise, field has variable width.  Format the values one by one.
  // q holds total length so far, p is length of allocated buffer.  ; m will hold the maximum length encountered
  // b will be set for exponential fields only, if no result is negative
@@ -366,7 +366,7 @@ static A jtth2ctrl(J jt,A a,A*ep,A*mp,A*dp,A*sp,I*zkp){A da,ea,ma,s;B b=1,*ev,r,
  // Now that we know the conversion buffer size, allocate it
  GATV0(s,LIT,lenreqd,1);
  // Output total line width if it is valid, 0 if not
- *zkp=b?zk:0; R s;
+ *zkp=b?zk:0; RETF (s);
 }    /* parse format control (left argument of ":) */
 
 // x ": y

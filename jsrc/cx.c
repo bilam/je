@@ -179,7 +179,7 @@ static CDATA* jtunstackcv(J jt,CDATA*cv,I assignvirt){
 static A swapitervbl(J jt,A old,L *asym){
  fa(old);  // discard the old value
  GAT0(old,INT,1,0); ACINITUNPUSH(old); AFLAGINIT(old,AFRO) SETLOCALFVAL(SETNAMED(MAKEFVAL(old,ATYPETOVALTYPE(INT))),asym,jt->locsyms)  // raise usecount, install as value of xyz_index (with flags set)
- R old;
+ RETF (old);
 }
 
 // tdv points to the try stack or 0 if none; tdv is NEXT try. slot to fill; i is goto line number
@@ -829,7 +829,7 @@ static A jtcolon0(J jt, I deftype){A l,z;C*p,*q,*s;A *sb;I m,n;
  }
  AT(z)=isboxed?BOX:LIT;  // If boxed, set that type (suppressed till now to avoid needless clears, since all is nonrecursive)
  AN(z)=AS(z)[0]=n;  // set final count of boxes or characters
- R z;  // return boxes or string
+ RETF (z);  // return boxes or string
 }    /* enter nl terminated lines; ) on a line by itself to exit */
 
 // w is character array or list
@@ -886,7 +886,7 @@ static A jtsent12b(J jt,A w){A t,*wv,y,*yv;I j,*v;
  wv=AAV(w); 
  I yr=AR(w); GATV(y,BOX,AN(w),AR(w),AS(w)); yv=AAVn(yr,y);
  DO(AN(w), RZ(yv[i]=incorp(ddtokens(vs(C(wv[i])),0b1110))); )  // ddtok: return string, no gets, env=explicit
- R y;
+ RETF (y);
 }    /* boxed sentences into monad/dyad */
 
 // If *t is a local name, replace it with a pointer to a shared copy, namely the block in the symbol-name already.  Install QC opointers in tv
@@ -1085,7 +1085,7 @@ A jtcrelocalsyms(J jt, A l, A c,I type, I dyad, I flags){A actst,*lv,pfst,t,wds;
    A *tv=AAV(t); DO(AN(t), tv[i]=QCWORD(jtcalclocalbuckets(jt,&tv[i],actstv,actstn-SYMLINFOSIZE,type>=3 || flags&VXOPR,AFLAG(t)&BOX));)  // calculate details about the boxed names.  Remove flags in strings
   }
  }
- R actst;
+ RETF (actst);
 }
 
 // l is the A block for all the words/queues used in the definition (modified in place and must be nonrecursive)
@@ -1186,7 +1186,7 @@ static A compiledefn(J jt, A sw, A cw){A z;
    (CWIS1(CWFLGGOEQNSITBLOCK,tcesx)&(go==i+1)&(cwv[i+1].tcesx>>TCESXTYPEX)==CTBLOCK)|  // first case/fcase
    (CWIS1(CWFLGGOBBLOCK,tcesx)&PEXT0(cwv[go].tcesx,TCESXTYPEX,31)==CBBLOCK)|(CWIS1(CWFLGNSIGOBBLOCK,tcesx)&PEXT0(cwv[go].tcesx,TCESXTYPEX,31)==CBBLOCK&PEXT0(cwv[i+1].tcesx,TCESXTYPEX,31)==CBBLOCK))<<(TCESXTYPEX+5);
    CWTCESX(base,~i)=tcesx; CWGO(base,-ncw,~i)=~go; CWSOURCE(base,-ncw,~i)=cwv[i].source;)  // create the output block
- R z;
+ RETFA (z);
 }
 
 // a is a local symbol table, possibly in use
@@ -1213,7 +1213,7 @@ A jtclonelocalsyms(J jt, A a){A z;I j;I an=AN(a); LX *av=LXAV0(a),*zv;
    ahx = (SYMORIGIN)[ahx].next;  // advance to next symbol
   }
  }
- R z;
+ RETF (z);
 }
 
 F2(jtcolon){F12IP;A h,*hv;C*s;I flag=VFLAGNONE,m,p;
@@ -1225,7 +1225,7 @@ F2(jtcolon){F12IP;A h,*hv;C*s;I flag=VFLAGNONE,m,p;
   if(unlikely(CCOLON==FAV(a)->id))a=FAV(a)->fgh[0];  // look for (v : delenda) : (delenda : v)
   if(unlikely(CCOLON==FAV(w)->id))w=FAV(w)->fgh[1];
   fdeffill(z,0,CCOLON,VERB,xv12,xv12,a,w,0L,((FAV(a)->flag&FAV(w)->flag)&VNOLOCCHG+VNONAME+VNOSELF),mr(a),lr(w),rr(w)) // derived verb is NOLOCCHG if both parents are 
-   R z;
+   RETF (z);
  }
  ASSERT(AT(w)&NOUN,EVDOMAIN);   // noun : verb is an error
  m=rei0(a);  // m : n; set m=value of a argument
@@ -1502,5 +1502,5 @@ A jtddtokens(J jtfg,A w,I env){F12IP;
 
  w=unwordil(wil,w,0);  // the word list is where everything is.  Collect to string
  if(!(env&8))w=tokens(w,env&3);  // enqueue if called for
- EPILOG(w);
+ EPILOGA(w);
 }

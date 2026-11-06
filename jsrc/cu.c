@@ -18,7 +18,7 @@ static A jteverysp(J jt,A w,A fs){A*wv,x,z,*zv;P*wp,*zp;
  wp=PAV(w); x=SPA(wp,x); wv=AAV(x);
  zp=PAV(z); x=SPA(zp,x); zv=AAV(x);
  DQ(AN(x), RZ(*zv++=CALL1(f1,C(*wv++),fs)));
- R z;
+ RETF (z);
 }
 
 #define EVERYI(exp)  {RZ(x=exp); INCORP(x); RZ(*zv++=x); ASSERT(!ISSPARSE(AT(x)),EVNONCE);}
@@ -35,7 +35,7 @@ A jtevery(J jtfg, A wfg, A fs){A * RESTRICT wv,x,z,* RESTRICT zv;
  I natoms=AN(w);
  // Allocate result area
  GATV(z,BOX,natoms,wr,AS(w));
- if(!natoms)R z;  // exit if no result atoms
+ if(!natoms)RETF (z);  // exit if no result atoms
  AF f1=FAV(fs)->valencefns[0];   // pointer to function to call
  I flags;  // flags are: ACINPLACE=pristine result; JTWILLBEOPENED=nonrecursive result; BOX=input was boxed; ACPERMANENT=input was recursive inplaceable pristine, contents can be inplaced AFPRISTINE=w must be marked non-PRIST
  // If the result will be immediately unboxed, we create a NONrecursive result and we can store virtual blocks in it.  This echoes what result.h does.
@@ -140,7 +140,7 @@ A jtevery(J jtfg, A wfg, A fs){A * RESTRICT wv,x,z,* RESTRICT zv;
  if(unlikely(flags&AFLAG(w)&AFPRISTINE))AFLAGCLRPRIST(w);  // if contents of w escaped, mark w no longer pristine
  // indicate pristinity of result
  AFLAGORLOCAL(z,SHMSK(flags,ACINPLACEX-AFPRISTINEX,AFPRISTINE))   // could synthesize rather than loading from z
- R z;
+ RETF (z);
 }
 
 // u&.> called from user level
@@ -328,7 +328,7 @@ static A jtrightcut0inv(J jt, A w, A vz, A uz, I negifipw,A sself){I t;
  I na=AN(vz), nb=na<<kg;   // number of atoms and bytes to copy
  if(AFLAG(w)&RECURSIBLE){na<<=PEXT0(t,RATX,1); DO(na, ra(AAV(uz)[i])); DO(na, fa(((A*)wv)[i]);) } // if w is recursive, raise the new blocks then lower the old
  MC(wv,voidAV(uz),nb);  // copy the data into the hole
- R w;   // return the block we copied into
+ RETF (w);   // return the block we copied into
 }
 
 // structural under, i. e. u&.v when v is a special noninvertible form that we recognize.  Currently only ,   m&{   m&(];.0) are recognized
@@ -393,7 +393,7 @@ F2(jtunder){F12IP;A x,wvb=w;AF f1,f2;B b,b1;C uid;I flag=0,gside=-1;V*u,*v;
  // Look for special cases of v.  If v is WILLOPEN, so will the compound be - for all valences
  switch(v->id&gside){  // never special if gerund - this could evaluate to 0 or 1, neither of which is one of these codes
  case COPE:   // u&.>
-  fdeffill(z,VF2WILLOPEN1|VF2WILLOPEN2A|VF2WILLOPEN2W,CUNDER,VERB,jteveryself,jtevery2self,a,w,0,flag|VIRS1,0,0,0) R z;   // this is the commonest case.  Return fast, avoiding analysis below
+  fdeffill(z,VF2WILLOPEN1|VF2WILLOPEN2A|VF2WILLOPEN2W,CUNDER,VERB,jteveryself,jtevery2self,a,w,0,flag|VIRS1,0,0,0) RETF (z);   // this is the commonest case.  Return fast, avoiding analysis below
    // We do not expose BOXATOP or ATOPOPEN flags, because we want all u&.> to go through this path & thus we don't want to allow other loops to break in
    // We set VIRS1 just in case a user writes u&.>"n which we can ignore
    // The flags are ignored during u&.>, but they can forward through to affect previous verbs.
@@ -417,7 +417,7 @@ F2(jtunder){F12IP;A x,wvb=w;AF f1,f2;B b,b1;C uid;I flag=0,gside=-1;V*u,*v;
  case CCOMMA:  // u&., structural under
   sundern=0;  // indic type of under
 sunder:  // come here for all structural under
-  fdeffillall(z,VF2NONE,CUNDER,VERB,jtsunder,jtvalenceerr,a,w,0,flag,RMAX,RMAX,RMAX,fffv->localuse.lu1.sundern=sundern,) R z;  // process the structural under when the argument arrives
+  fdeffillall(z,VF2NONE,CUNDER,VERB,jtsunder,jtvalenceerr,a,w,0,flag,RMAX,RMAX,RMAX,fffv->localuse.lu1.sundern=sundern,) RETF (z);  // process the structural under when the argument arrives
  }
  I flag2=(FAV(wvb)->flag2&(VF2WILLOPEN1|VF2WILLREALIZE1|VF2USESITEMCOUNT1))*((VF2WILLOPEN1+VF2WILLOPEN2A+VF2WILLOPEN2W)>>VF2WILLOPEN1X);   // copy open/realize/retore from monad w to monad/dyads
  I r=mr(wvb);
@@ -440,7 +440,7 @@ sunder:  // come here for all structural under
  // The standard verbs start with a rank loop; set the flag indicating that
  if(!f1){f1=r?(flag&VFUNDERHASINV?jtunderh1:jtunder1):(flag&VFUNDERHASINV?jtunderh10:jtunder10); flag2|=VF2RANKATOP1;}  // allow inplace if v is known inplaceable
  if(!f2){f2=rlr+rrr?(flag&VFUNDERHASINV?jtunderh2:jtunder2):(flag&VFUNDERHASINV?jtunderh20:jtunder20); flag2|=VF2RANKATOP2;}  // allow inplace if v is known inplaceable
- fdeffillall(z,flag2,CUNDER,VERB,(AF)(f1),(AF)(f2),a,w,h,(flag),rmr,rlr,rrr,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.wvb=wvb); R z;  // the verb is part of w & protected by it.  We could take it from w but this is easier (questionable decision)
+ fdeffillall(z,flag2,CUNDER,VERB,(AF)(f1),(AF)(f2),a,w,h,(flag),rmr,rlr,rrr,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.wvb=wvb); RETF (z);  // the verb is part of w & protected by it.  We could take it from w but this is easier (questionable decision)
 }
 
 F2(jtundco){F12IP;AF f1=0,f2;I gside=-1, flag=0;
@@ -474,5 +474,5 @@ F2(jtundco){F12IP;AF f1=0,f2;I gside=-1, flag=0;
  // under12 are inplaceable, and pass inplaceability based on the calculated verb.  underh just passes inplaceability through, so we have to transfer the setting from h here,
  // just in case the calculated verb is not inplaceable
  if(!f1)f1=flag&VFUNDERHASINV?jtunderh1:jtundco1; f2=flag&VFUNDERHASINV?jtunderh2:jtundco2; flag |= (FAV(a)->flag&FAV(wvb)->flag&VNOLOCCHG);
- fdeffillall(z,0,CUNDCO,VERB,(AF)(f1),(AF)(f2),a,w,h,flag,RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.wvb=wvb); R z;
+ fdeffillall(z,0,CUNDCO,VERB,(AF)(f1),(AF)(f2),a,w,h,flag,RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.wvb=wvb); RETF (z);
 }
