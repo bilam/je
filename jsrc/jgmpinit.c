@@ -315,7 +315,7 @@ X jtXmpzcommon(J jt, mpz_t mpz, I numeric) {
  jt->mfreegenallo+= sz;             // ditto
  A*pushp; tpushnoret(x);            // issue death warrant
  ASSERT(!(AFLAG(x)&AFRO),EVWSFULL); // error if we used an emergency buffer
- R x;
+ RETF (x);
 }
 
 // dehydrate fresh (mpq_t) as J (Q)

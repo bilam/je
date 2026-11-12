@@ -425,7 +425,7 @@ static F2(jtseg){F12IP;A z;I c,k,m,n,*u,zn;
  GA(z,AT(w),zn,MAX(1,AR(w)),AS(w)); AS(z)[0]=n;  // Allocate array of items, move in shape, override # items
  // Copy the selected items to the new block and return the new block
  MC(AV(z),CAV(w)+m*k,n*k);
- R z;
+ RETF (z);
 }
 
 // m is the infix length (x), w is the array (y)
@@ -440,7 +440,7 @@ static A jtifxi(J jt,I m,A w){A z;I d,j,k,n,p,*x;
  // x->result area; k=stride between infixes; j=starting index (prebiased); copy (index,length) for each infix;
  // repair last length if it runs off the end
  x=AV2(z); k=0>m?p:1; j=-k; DQ(d, *x++=j+=k; *x++=p;); if(d)*--x=MIN(p,n-j);
- R z;
+ RETF (z);
 }
 
 // Entry point for infix.  a is x, w is y, fs points to u
@@ -768,7 +768,7 @@ static A jtmovsumavg1(J jt,I m,A w,A fs,B avg){A y,z;D d=(D)m;I c,p,wt;
 
 static A jtmovsumavg(J jt,I m,A w,A fs,B avg){A z;
  WITHMSGSOFF(z=movsumavg1(m,w,fs,avg);)   // try with fast code.  Any error will go into jt->jerr
- if(jt->jerr!=EVNAN)R z;  // if not NaN error, return result/error
+ if(jt->jerr!=EVNAN)RETF (z);  // if not NaN error, return result/error
  RESETERR R jtinfixprefix2(jt,sc(m),w,fs);  // fail over to generic code
 }
 
@@ -932,7 +932,7 @@ static DF2(jtmovfslash){DF12IP; MEMCHK2(a,w); A x,z;B b;C id,*wv,*zv;I d,m,m0,p,
  I rc=EVOK;
  DQ(zi-b, I lrc=(adocv.f)(d,m,(I)1,wv,zv,jt); rc=lrc<rc?lrc:rc; zv+=zk; wv+=wk;);
  if(b){m=p-m*(zi-1); if(m>1){I lrc=(adocv.f)(d,m,(I)1,wv,zv,jt); rc=lrc<rc?lrc:rc;}else{copyTT(zv,wv,d,zt,wt);}}
- if(255&rc){jsignal(rc); if(rc>=EWOV){RESETERR; R movfslash(a,ccvt(FL,w,0),self);}R0;}else R z;
+ if(255&rc){jsignal(rc); if(rc>=EWOV){RESETERR; R movfslash(a,ccvt(FL,w,0),self);}R0;}else RETF (z);
 }    /* a f/\w */
 
 static DF1(jtiota1){DF12IP; MEMCHK1(w); I j; R apv(SETIC(w,j),1L,1L);}

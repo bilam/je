@@ -22,7 +22,7 @@ static A jtipprep(J jt,A a,A w,I zt,I*pm,I*pn,I*pp){A z=mark;I*as,ar,ar1,m,mn,n,
  GA00(z,zt,mn,ar1+wr1);   // allocate result area
  MCISH(AS(z),as,ar1);  // Set shape: 1-frame of a followed by shape of item of w
  MCISH(AS(z)+ar1,1+ws,wr1);
- R z;
+ RETF (z);
 }    /* argument validation & result for an inner product */
 
 #define IINC(x,y)    {b=0>x; x+=y; BOV(b==0>y&&b!=0>x);}
@@ -736,8 +736,8 @@ F2(jtpdt){F12IP;PROLOG(0038);A z;I ar,at,i,m,n,p,p1,t,wr,wt;
  // INT multiplies convert to float, for both 32- and 64-bit systems.  It is converted back if there is no overflow
  m=t; m=t&INT?FL:m; m=t&B01?INT:m;  // type of result, promoting bool and int
  RZ(z=ipprep(a,w,m,&m,&n,&p));  // allocate the result area, with the needed shape and type
- if(AN(z)==0)R z;  // return without computing if result is empty.  Type stays FL
- if(!p){mvc(AN(z)<<bplg(AT(z)),AV(z),MEMSET00LEN,MEMSET00); R z;}  // if dot-products are all 0 length, set them all to 0
+ if(AN(z)==0)RETF (z);  // return without computing if result is empty.  Type stays FL
+ if(!p){mvc(AN(z)<<bplg(AT(z)),AV(z),MEMSET00LEN,MEMSET00); RETF (z);}  // if dot-products are all 0 length, set them all to 0
  // If either arg is atomic, reshape it to a list
  if(!ar!=!wr){if(ar)RZ(w=reshape(sc(p),w)) else RZ(a=reshape(sc(p),a));}
  p1=p-1;
@@ -1065,7 +1065,7 @@ static A jtipbx(J jt,A a,A w,C c,C d){A g=0,x0,x1,z;B*av,*av0,b,*v0,*v1,*zv;C c0
 #include "cip_t.h"
    break;
  }
- R z;
+ RETF (z);
 }    /* a f/ . g w  where a and w are nonempty and a is boolean */
 
 static DF2(jtdotprod){DF12IP;A fs,gs;C c;I r;V*sv;
@@ -1117,7 +1117,7 @@ DF1(jtludecompg){DF12IP; MEMCHK1(w); PROLOG(823);
  A z=unquote(w,luvb,luvb);  // monadic call to unquote
  // if there was an error, save the error code and recreate the error at this level, to cover up details inside the script
  if(jt->jerr){I e=jt->jerr; RESETERR; jsignal(e);}
- R z;
+ RETF (z);
 }
 
 // LAPACK version for double

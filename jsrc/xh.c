@@ -161,7 +161,7 @@ DF1(jthost){DF12IP; MEMCHK1(w); A z;
  ASSERT(b&&f,EVFACE);
 }
 #endif
- R z;
+ RETF (z);
 }
 
 // 2!:1
@@ -240,7 +240,7 @@ DF1(jthostio){DF12IP; MEMCHK1(w); C*s;A z;F*pz;int fi[2],fo[2],r;int fii[2],foi[
  }
  close(fo[0]);close(fi[1]);
  add2(NULL,NULL,NULL); pz[0]=(F)(intptr_t)r;
- R z;
+ RETF (z);
 }
 
 F1(jtjwait){F12IP; MEMCHK1(w); I k;int s; ASSERT(!JT(jt,seclev),EVSECURE) k=rei0(w); if(-1==waitpid(k,&s,0))jerrno(); R sc(s);}  // 2!:3

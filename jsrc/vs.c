@@ -46,7 +46,7 @@ A jtpaxis(J jt,I r,A a){A y,z;B*b;I j,*u,*v;
  GATV0(z,INT,r,1); v= AV1(z); 
  DO(r, if( b[i])*v++=i;);
  DO(r, if(!b[i])*v++=i;);
- R z;
+ RETF (z);
 }    /* permuted axes per sparse axes specification a */
 
 static A jtvaxis(J jt,I r,A a){A y;B*b;I j,n,*v;
@@ -120,7 +120,7 @@ static A jtsparse1a(J jt,A s,A a,A e,A y,A x){A z;B*b;I an,*av,et,r,*sv,t,*v;P*p
  SPB(p,e,e); 
  SPB(p,i,y);
  SPB(p,x,x);
- R z;
+ RETF (z);
 }
 
 // convert w to sparse, with sparse element e (which must be a dense atom)
@@ -195,7 +195,7 @@ F2(jtreaxis){F12IP;A a1,e,p,q,x,y,z;B*b;I c,d,j,k,m,r,*u,*v,*ws,wt;P*wp,*zp;
   RZ(p=grade1(over(a,less(a1,a))));
   if(equ(p,IX(AN(p))))SPB(zp,i,repeat(q,y))
   else{y=fromr(p,repeat(q,y)); q=grade1(y); SPB(zp,i,from(q,y)); SPB(zp,x,from(q,x));}
-  R z;
+  RETF (z);
  }
  if(all1(eps(a1,a))){A x1,y1;B*pv;C*s,*t;I g,h,*iv,n;  /* new is subset of old */
   c=AN(a); d=AN(a1);
@@ -215,7 +215,7 @@ F2(jtreaxis){F12IP;A a1,e,p,q,x,y,z;B*b;I c,d,j,k,m,r,*u,*v,*ws,wt;P*wp,*zp;
   k=bpnoun(AT(x)); g=k*aii(x); h=k*aii(x1); mvc(k*AN(x1),t,k,AV(e));
   DO(m, MC(t+g*iv[i],s,g); s+=g; if(b[i]){ICPY(v,u+i*c,d); v+=d; t+=h;});
   SPB(zp,i,y1); SPB(zp,x,cant2(increm(indexof(p,daxis(r,a1))),x1));
-  R z;
+  RETF (z);
  }
  R reaxis(a1,reaxis(over(a,less(a1,a)),w));
 }    /* (2;a)$.w */
@@ -289,7 +289,7 @@ F2(jtrezero){F12IP;A x,z;I at,t,wt,zt;P*wp,*zp;
  SPB(zp,a,ca(SPA(wp,a)));
  SPB(zp,i,ca(SPA(wp,i)));
  SPB(zp,x,TYPESEQ(t,wt)?ca(x):cvt(t,x));
- R z;
+ RETF (z);
 }    /* respecify the sparse element */
 
 F1(jtunzero){F12IP;A e,q,x,z;I r;P*wp,*zp;
@@ -301,7 +301,7 @@ F1(jtunzero){F12IP;A e,q,x,z;I r;P*wp,*zp;
  SPB(zp,i,repeat(q,SPA(wp,i)));
  SPB(zp,a,ca(SPA(wp,a)));
  SPB(zp,e,ca(e));
- R z;
+ RETF (z);
 }    /* remove completely sparse cells */
 
 static F1(jtsparsep1){F12IP;A*wv;I n=0;
@@ -316,7 +316,7 @@ static F1(jtsparsen1){F12IP;A*u,z;P*p;
  ASSERT(ISSPARSE(AT(w)),EVDOMAIN);
  GAT0(z,BOX,3,1); u=AAV1(z); p=PAV(w);
  u[0]=shape(w); u[1]=ca(SPA(p,a)); u[2]=ca(SPA(p,e));
- RE(0); R z;
+ RE(0); RETF (z);
 }
 
 F1(jtsparse1){F12IP;
@@ -341,7 +341,7 @@ F2(jtsparse2){F12IP;A*av,q=0;B b;I j,k,t,*v;P*p;
  ASSERT(b||0<=k&&k<=2,EVDOMAIN);
  switch(k){
  case 0:  ASSERT(!q,EVDOMAIN); R ISSPARSE(t)?denseit(w):sparse1(w);
- case 1:  ASSERT(!q,EVDOMAIN); q=sparsep1(w); PRISTCLRF(w); R q;
+ case 1:  ASSERT(!q,EVDOMAIN); q=sparsep1(w); PRISTCLRF(w); RETF (q);
  case -1: ASSERT(!q,EVDOMAIN); R sparsen1(w);
  case 2:
   if(AR(a)){j=v[1]; ASSERT(q&&(1==j||2==j),EVDOMAIN); R 1==j?axbytes(q,w):axtally(q,w);}

@@ -391,7 +391,7 @@ static I hashallo(IH * RESTRICT hh,UI p,UI m,I md){
     case IALLEPS: s=1; XDO(hash,exp,inc,if(m==hj){s=0; break;}); *zb++=1&&s; break;  \
     case IIFBEPS: s=c; XDO(hash,exp,inc,if(m> hj)*zi++=i      ); ZISHAPE;    break;  \
   }}                                                                                 \
-  R z;                                                                               \
+  RETF (z);                                                                               \
  }
 
 //
@@ -512,7 +512,7 @@ static IOFX(I,jtioi,  hicw(v),           *v!=av[hj],                      ++v,  
     case IALLEPS: s=1; TDO(FXY,FYY,expa,expw,if(m==il&&m==ir){s=0; break;}); *zb++=1&&s; break;  \
     case IIFBEPS:      TDO(FXY,FYY,expa,expw,if(m> il||m> ir)*zi++=i      ); ZISHAPE;    break;  \
   }}                                                                                             \
-  R z;                                                                                           \
+  RETF (z);                                                                                           \
  }
 
 // Verbs for the types of inputs
@@ -686,7 +686,7 @@ static IOFT(A,jtioa1,THASHBX,TFINDBX,TFINDBX,!equ(C(*v),C(av[hj])),!equ(C(*v),C(
    SMFULLPACK(T,0,IIFBEPS,DCLZVO(I,0) I *zv0=zv; , (T,0,*zv=i+c; zv+=v;); *AS(z)=AN(z)=zv-zv0;)  \
    }  \
   }  \
-  R z; \
+  RETF (z); \
  }
 // init to 1 for ~. ~: NUBI LESS   others to 0
 
@@ -758,7 +758,7 @@ static A jtnodupgrade(J jt,A a,I acr,I ac,I acn,I ad,I n,I m,B b,B bk){A*av,h,*u
   if(bk){hu=--hi; DQ(m-1, q=*hi--; v=av+n*q; if(!eqa(n,u,v)){u=v; *hu--=q;}); m1=hv-hu; if(m>m1)hv[1-m]=1-m1;}
   else  {hu=++hi; DQ(m-1, q=*hi++; v=av+n*q; if(!eqa(n,u,v)){u=v; *hu++=q;}); m1=hu-hv; if(m>m1)hv[m-1]=1-m1;}
  }
- R h;
+ RETF (h);
 } 
 
 // hiinc will inc or dec hi
@@ -840,7 +840,7 @@ static IOF(jtiobs){A*av,h=*hp,*wv,y;B b,bk,*yb,*zb;C*zc;I acn,*hu,*hv,l,m1,md,s,
    case ISUMEPS: s=0; BSLOOPAW(if(-2==q)++s);                  *zi++=s;    break;
    case IIFBEPS:      BSLOOPAW(if(-2==q)*zi++=i);              ZISHAPE;    break;
  }}
- R z;
+ RETF (z);
 }    /* a i.!.0 w on boxed a,w by grading and binary search */
 
 static I jtutype(J jt,A w,I c){A*wv,x;I m,t;
@@ -1022,8 +1022,8 @@ A jtindexofsub(J jtfg,I mode,A afg,A wfg){A h=0,hi=mtv,z;B mk=wfg==mark,th;fauxb
    m=acr?as[af]:1; f0=MAX(0,f1); RE(zn=mult(prod(f,s),prod(f0,ws+wf)));
    switch(mode){
     case IIDOT:  
-    case IICO:    GATV(z,INT,zn,f+f0,s); if(af)MCISH(f+AS(z),ws+wf,f0); v=AVn(f+f0,z); DQ(zn, *v++=m;); R z;
-    case IEPS:    GATV(z,B01,zn,f+f0,s); if(af)MCISH(f+AS(z),ws+wf,f0); mvc(zn,BAVn(f+f0,z),MEMSET00LEN,MEMSET00); R z;
+    case IICO:    GATV(z,INT,zn,f+f0,s); if(af)MCISH(f+AS(z),ws+wf,f0); v=AVn(f+f0,z); DQ(zn, *v++=m;); RETF (z);
+    case IEPS:    GATV(z,B01,zn,f+f0,s); if(af)MCISH(f+AS(z),ws+wf,f0); mvc(zn,BAVn(f+f0,z),MEMSET00LEN,MEMSET00); RETF (z);
     case ILESS:                              RCA(w);
     case IIFBEPS:                            R mtv;
     case IANYEPS: case IALLEPS: case II0EPS: R num(0);
@@ -1108,11 +1108,11 @@ A jtindexofsub(J jtfg,I mode,A afg,A wfg){A h=0,hi=mtv,z;B mk=wfg==mark,th;fauxb
   // We also handle the case of i.&0@:e. when the rank of w is more than 1 greater than the rank of a cell of a;
   // in that case the search always fails
   case IIDOT:   R reshape(shape(z),sc(n?m:0  ));
-  case IFORKEY: {z=reshape(shape(z),take(sc(m),sc(m))); RZ(z=mkwris(z)); AM(z)=!!m; R z;}  // all 0 but the first has the total count
+  case IFORKEY: {z=reshape(shape(z),take(sc(m),sc(m))); RZ(z=mkwris(z)); AM(z)=!!m; RETF (z);}  // all 0 but the first has the total count
   case IICO:    R reshape(shape(z),sc(n?m:m-1));
   case INUBSV:  R reshape(shape(z),take(sc(m),num(1)));
-  case INUB:    AN(z)=0; *AS(z)=m?1:0; R z;
-  case ILESS:   if(m)AN(z)=*AS(z)=0; else MC(AV(z),AV(w),k1*AN(w)); R z;
+  case INUB:    AN(z)=0; *AS(z)=m?1:0; RETF (z);
+  case ILESS:   if(m)AN(z)=*AS(z)=0; else MC(AV(z),AV(w),k1*AN(w)); RETF (z);
   case IEPS:    R reshape(shape(z),num(m&&(!n||th)) );
   case INUBI:   R m?iv0:mtv;
   // th<0 means that the result of e. would have rank>1 and would never compare against either 0 or 1
@@ -1339,7 +1339,7 @@ A jtindexofsub(J jtfg,I mode,A afg,A wfg){A h=0,hi=mtv,z;B mk=wfg==mark,th;fauxb
  RZ(z=EPILOGNORET(z));
  // Since EPILOG may have rewritten AM, and IFORKEY never returns to the parser, we can store the FORKEY result in AM.
  *((mode&IIOPMSK)==IFORKEY?(I*)&AM(z):(I*)&jt->shapesink)=forkeyresult;
- R z;  // RETF fails under audit
+ RETF (z);  // RETF fails under audit
 }    /* a i."r w main control */
 
 // verb to vector combine@e. compounds.  The i. code is in the self
@@ -1447,7 +1447,7 @@ DF1(jtnubind){DF12IP;
 DF1(jtnubind0){DF12IP;A z;
  ARGCHK1(w); MEMCHK1(w);
  PUSHCCT(1.0) z=ISSPARSE(AT(w))?icap(nubsieve(w)):indexofsub(INUBI,w,w); POPCCT
- R z;
+ RETF (z);
 }    /* I.@(~:!.0) w */
 
 // I.@e. y   does not have IRS
@@ -1461,7 +1461,7 @@ DF2(jtepsind0){DF12IP;A z;
  ARGCHK2(a,w); MEMCHK2(a,w);
  if(unlikely(ISSPARSE(AT(a)|AT(w))))R jtupon2cell(jt,a,w,self);  // revert for sparse
  PUSHCCT(1.0) z=indexofsub(IIFBEPS,w,a); POPCCT  // do operation intolerantly
- R z;
+ RETF (z);
 }
 
 
@@ -1486,7 +1486,7 @@ F1(jtsclass){F12IP;A e,x,xy,y,z;I c,j,m,n,*v;P*p;
  SPB(p,e,num(0));
  SPB(p,i,xy);
  SPB(p,x,reshape(sc(c),num(1)));
- R z;
+ RETF (z);
 }
 
 
@@ -1565,7 +1565,7 @@ A jtiocol(J jt,I mode,A a,A w){A h,z;I ar,at,c,d,m,t,wr,*ws,wt;void(*fn)();
   case CMPXX: fn=mode==IICO?jtjocolz:jtiocolz; ctmask(jt); break;
  }
  fn(jt,m,c,d,a,w,z,h);
- R z;
+ RETF (z);
 }    /* a i."1 &.|:w or a i:"1 &.|:w */
 
 #endif // !(C_VIAVX)

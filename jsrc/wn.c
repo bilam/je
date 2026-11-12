@@ -333,14 +333,14 @@ A jtconnum(J jt,I n,C*s){PROLOG(0101);A y,z;B (*f)(J,I,C*,void*),p=1;C c,*v;I d=
   RZ(a=cvt(t,a)); a0=*(T*)AV(a);                                            \
   while(i<mc){                                                              \
    NOUNROLL while(u<uu&&C0==*u)++u;                                                  \
-   NOUNROLL while(u>=y){NOUNROLL while(i<j)zv[i++]=a0; j+=c; y+=n; if(i==mc)R z;}             \
+   NOUNROLL while(u>=y){NOUNROLL while(i<j)zv[i++]=a0; j+=c; y+=n; if(i==mc)RETF (z);}             \
    x=strchr(u,C0); if(x<uu)k=x-u; else{uu[-1]=C0; k=uu-1-u;}               \
    b=','==u[0]||','==u[k-1];                                                \
    x=u; DO(k, d=u[i]; if(','!=d)*x++=d==CSIGN?'-':d;); *x=C0;               \
    if(b||!f1(x-u,u,i+zv))zv[i]=a0;                                          \
    ++i; u+=1+k;                                                             \
   }                                                                         \
-  R z;                                                                      \
+  RETF (z);                                                                      \
  }
 
 static EXEC2F(jtexec2x,numx,  XNUM,X)  /* note: modifies argument w */
@@ -413,7 +413,7 @@ static A jtexec2r(J jt,A a,A w,I n,I m,I c,I fillreqd){A z;B b,e;C d,*u,*uu,*v,*
  r=AR(w)-(I )(1==c); r=MAX(0,r); 
  // Allocate the result array, as floats.  If the last atom of shape was not removed, replace it with c, the output length per list
  GATV(z,FL,mc,r,AS(w)); if(0<r&&1!=c)AS(z)[r-1]=c; zv=DAVn(r,z);
- if(!mc)R z;  // If no fields at all, exit with empty result (avoids infinite loop below)
+ if(!mc)RETF (z);  // If no fields at all, exit with empty result (avoids infinite loop below)
  // Convert the default to float, unless we are trying big integers.  We try ints if the default is int or infinite,
  // but only on 64-bit systems where int and float have the same size
  if(!(tryingint = sizeof(D)==sizeof(I) && (ISDENSETYPE(AT(a),B01+INT) || (fillreqd>=0 && ISDENSETYPE(AT(a),FL))))){RZ(a=ccvt(FL,a,0));}
@@ -481,7 +481,7 @@ static A jtexec2r(J jt,A a,A w,I n,I m,I c,I fillreqd){A z;B b,e;C d,*u,*uu,*v,*
  }
  // All done.  If we ended still looking for ints, the whole result must be int, so flag it as such
  if(tryingint)AT(z)=INT; if(unlikely(intoflo))AT(z)|=CONJ;  // set CONJ as flag in type if integer overflow, which must suppress conversion to INT
- R z;
+ RETF (z);
 }
 
 // x ". y

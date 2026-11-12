@@ -177,10 +177,10 @@ DF2(jticap2){DF12IP; MEMCHK2(a,w); A*av,*wv,z;C*uu,*vv;I ar,*as,at,b,c,ck,cm,ge,
  ASSERT((POSIFHOMO(at,wt)&-AN(a)&-AN(w))>=0,EVINHOMO); ASSERT(!ISSPARSE(at|wt),EVNONCE); // if no empties, verify agreement & non-sparse
  CPROD(AN(w),m,wr-r,ws); CPROD(AN(w),c,r,ws+wr-r);  // m=#atoms in result   c=# atoms in a cell of w
  GATV(z,INT,m,wr-r,ws); zv=AVn(wr-r,z);
- if(((m-1)|(n-1)|(c-1))<0){DQ(m, *zv++=0;); R z;}  // exit with zeros for empty args
+ if(((m-1)|(n-1)|(c-1))<0){DQ(m, *zv++=0;); RETF (z);}  // exit with zeros for empty args
  t=maxtyped(at,wt);
  if(1==c){  // the search is for atoms
-  if(at&B01&&wt&B01+INT+FL){RZ(iixBX(n,m,a,w,zv)); R z;}
+  if(at&B01&&wt&B01+INT+FL){RZ(iixBX(n,m,a,w,zv)); RETF (z);}
   if(at&wt&INT&0){
    // Integer search.  check for small-range
    // TUNE: given b=: 1e6?@$1e9, check tm=. {{ 1e9*1e6%~timex'a I.b' [ a=: /:~y?@$1e9 }}"0] 2^i.30  ns per lookup
@@ -189,7 +189,7 @@ DF2(jticap2){DF12IP; MEMCHK2(a,w); A*av,*wv,z;C*uu,*vv;I ar,*as,at,b,c,ck,cm,ge,
    // (above is also a good way of benchmarking the routine in general at various points at the cache hierarchy; check also float char matrix ...)
    UI r=IAV(a)[n-1]-IAV(a)[0]; r=IAV(a)[n-1]<IAV(a)[0]?0-r:r;  // get range, which may overflow I but will stay within UI
    UI4 nlg=CTLZI(n); nlg=(nlg<<1)+(SGNTO0(SGNIF((n<<1),nlg)));   // approx lg with 1 bit frac precision.  Can't shift 64 bits in case r=1
-   if((I)((r>>2)+2*n)<(I)(m*nlg)){RZ(iixI(n,m,a,w,zv)); R z;}  // weight misbranches as equiv to 8 stores
+   if((I)((r>>2)+2*n)<(I)(m*nlg)){RZ(iixI(n,m,a,w,zv)); RETF (z);}  // weight misbranches as equiv to 8 stores
   }
  }
  cc=0; uu=CAV(a); vv=CAV(a)+(c*(n-1)<<bplg(at));

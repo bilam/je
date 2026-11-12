@@ -81,7 +81,7 @@ F1(jtnmcaches){F12IP; MEMCHK1(w);
 }
 
 // 9!:2 query display modes
-F1(jtdispq){F12IP; MEMCHK1(w); A z; ASSERTMTV(w); GATV0(z,INT,*JT(jt,disp),1); DO(AN(z), IAV1(z)[i]=JT(jt,disp)[1+i];) R z;}
+F1(jtdispq){F12IP; MEMCHK1(w); A z; ASSERTMTV(w); GATV0(z,INT,*JT(jt,disp),1); DO(AN(z), IAV1(z)[i]=JT(jt,disp)[1+i];) RETF (z);}
 
 // 9!:3 set display modes
 F1(jtdisps){F12IP; MEMCHK1(w); UC n;
@@ -132,7 +132,7 @@ F1(jtiepq){F12IP; MEMCHK1(w);
  // we must read & protect the sentence under lock in case another thread is changing it
  READLOCK(JT(jt,felock)) A iep=JT(jt,iep); if(iep)ras(iep); READUNLOCK(JT(jt,felock))  // must ra() while under lock
  if(iep){tpushnr(iep);}else iep=mtv;  // if we did ra(), stack a fa() on the tpop stack
- R iep;
+ RETF (iep);
 }
 
 // 9!:27, immex sentence

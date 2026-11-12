@@ -191,7 +191,7 @@
    case IIFBEPS: {T * RESTRICT v=wv; I j, hj; I * RESTRICT zi=zv; TDOXY(T,TH,FXY,expa,expw,{},hj>=il,il=hj;,*zi=i; zi+=(asct>il);,); ZISHAPE;} break;  \
    } \
   }                                                                                             \
-  R h;                                                                                           \
+  RETF (h);                                                                                           \
  }
 
 // Verbs for the types of inputs
@@ -353,7 +353,7 @@ IOF(f){ \
   case IIFBEPS: {I zct=0; XSEARCH##ALG(T,TH,w,a,hash,mismatch,mismatchx,STRIDE,((I*)zv)[zct++]=i;,,8,wsct,lbls16,ALG) AS(z)[0]=AN(z)=zct; }    break;  \
   } \
  } \
- R h;  \
+ RETF (h);  \
 }
 IOFT1(D,US,jtiod1,HASHiCRC, CNEtD,CNE0tD,algt)     // FL atom
 // test IOFT(D,US,jtiod1,HIDMSK(v), TFINDXYT,TFINDY1T,TFINDY1TKEY,*v!=av[hj],                       !TCMPEQ(tl,*(D*)v,av[hj] ),INITTLTR INITXNEW INITXROT D x,algv)     // FL atom

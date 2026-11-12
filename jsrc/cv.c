@@ -43,7 +43,7 @@ static A jtfitct(J jt,A a,A w,I cno,A z){
  if(cno!=5){ASSERT(dw,EVDOMAIN) ASSERT(0<=d&&d<5.82076609134675e-11,EVLIMIT)}  // fit is ct, must be float and can't be greater than 2^_34
   // >!.f   we can't audit till we get the valence.  If error converting to float, make d give a runtime error.  Any w is OK for fill
  fdeffillall(z,0,CFIT,VERB,cno==5?(AF)(jtfitfill12):(AF)(jtfitct1),aff2[cno&~4],a,w ,0L,FAV(a)->flag&(VIRS1|VIRS2|VISATOMIC1|VFCOMPCOMP|VNOLOCCHG|VNONAME+VNOSELF),(I)(FAV(a)->mr),lrv(FAV(a)),rrv(FAV(a)),fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.cct = 1.0-d);  // preserve INPLACE flags
- R z;
+ RETF (z);
 }
 
 static DF2(jtfitexp2){DF12IP; MEMCHK2(a,w);

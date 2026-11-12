@@ -353,7 +353,7 @@ static A jtbrep(J jt,B b,B d,A w){
  if(unlikely(ISSPARSE(t)))R breps(b,d,w);  // sparse separately
  A y;I sz=bsizer(jt,d,1,w);GATV0(y,LIT,sz,1); // allocate entire result
  RZ(jtbrepfill(jt,b,d,w,CAV1(y)));   // fill it
- R y;  // return it
+ RETF (y);  // return it
 }
 
 static A jthrep(J jt,B b,B d,A w){A y,z;C c,*hex="0123456789abcdef",*u,*v;I n,s[2];
@@ -429,11 +429,11 @@ static A jtunbinr(J jt,B b,B d,B pre601,I m,A w,B g){C*u=(C*)w;
    if (unlikely(C_64 > d) && n&(SZI>>1)) { 
     I N= n+(SZI>>1);
     GAGMP(z,N);
-    if(unlikely(ACISPERM(AC(z))))R z; // guard against future optimization
+    if(unlikely(ACISPERM(AC(z))))RETF (z); // guard against future optimization
     UIAV1(z)[N/SZI-1]= 0; // clean our extra SZI>>1 bytes
    } else {
     GAGMP(z,n);
-    if(ACISPERM(AC(z)))R z;
+    if(ACISPERM(AC(z)))RETF (z);
    }
   }
  }else{

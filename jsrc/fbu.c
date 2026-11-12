@@ -324,7 +324,7 @@ static A wtownull(J jt,A w){US *wv,*zv;I n,i,nignulls=0,naddednulls=0;A z;
   else if(wv[i]>=0x1100)naddednulls += nignulls = extrawidth(wv[i]);
  }
  // If no padding is needed, no copy is required
- if(!naddednulls)R w;
+ if(!naddednulls)RETF (w);
  // Allocate result and copy the string, adding null padding where needed
  GATV0(z,C2T,n+naddednulls,1); zv=USAV1(z);
  nignulls = 0;
@@ -332,7 +332,7 @@ static A wtownull(J jt,A w){US *wv,*zv;I n,i,nignulls=0,naddednulls=0;A z;
   if(nignulls && (--nignulls,wv[i]==0));  // If an added null is already present, skip the copy
   else{*zv++ = wv[i]; if(wv[i]>=0x1100&&(nignulls = extrawidth(wv[i]))){*zv++=0;}}  // copy the char; if doublewide, copy the null for it
  }
- R z;
+ RETF (z);
 }
 
 static A utounull(J jt,A w){C4 *wv,*zv;I n,i,nignulls=0,naddednulls=0;A z;
@@ -345,7 +345,7 @@ static A utounull(J jt,A w){C4 *wv,*zv;I n,i,nignulls=0,naddednulls=0;A z;
   else if(wv[i]>=0x1100)naddednulls += nignulls = extrawidth(wv[i]);
  }
  // If no padding is needed, no copy is required
- if(!naddednulls)R w;
+ if(!naddednulls)RETF (w);
  // Allocate result and copy the string, adding null padding where needed
  GATV0(z,C4T,n+naddednulls,1); zv=C4AV1(z);
  nignulls = 0;
@@ -353,7 +353,7 @@ static A utounull(J jt,A w){C4 *wv,*zv;I n,i,nignulls=0,naddednulls=0;A z;
   if(nignulls && (--nignulls,wv[i]==0));  // If an added null is already present, skip the copy
   else{*zv++ = wv[i]; if(wv[i]>=0x1100&&(nignulls = extrawidth(wv[i]))){*zv++=0;}}  // copy the char; if doublewide, copy the null for it
  }
- R z;
+ RETF (z);
 }
 
 
@@ -404,7 +404,7 @@ Process:
 A RoutineA(J jt,A w,A prxthornuni){A z;I n,t,q,q1,b=0; UC* wv;
  ARGCHK1(w); MEMCHK1(w); ASSERT(1>=AR(w),EVRANK); n=AN(w); t=AT(w); wv=UAV(w);
  ASSERT(t&LIT,EVDOMAIN);
- if(!n) {GATV(z,LIT,n,AR(w),AS(w)); R z;}; // empty lit list 
+ if(!n) {GATV(z,LIT,n,AR(w),AS(w)); RETF (z);}; // empty lit list 
  DQ(n, if(127<*wv++){b=1;break;});
  if(!b)RCA(w);
  q=mtowsize(UAV(w),n);
@@ -423,7 +423,7 @@ A RoutineA(J jt,A w,A prxthornuni){A z;I n,t,q,q1,b=0; UC* wv;
 A RoutineB(J jt,A w,A prxthornuni){A z;I n,t,q,b=0; US* c2v; C4* c4v;
  ARGCHK1(w); MEMCHK1(w); ASSERT(1>=AR(w),EVRANK); n=AN(w); t=AT(w); I wr=AR(w);
  ASSERT(t&C2T,EVDOMAIN);
- if(!n) {GATV(z,C2T,n,wr,AS(w)); R z;}; // empty C2T list 
+ if(!n) {GATV(z,C2T,n,wr,AS(w)); RETF (z);}; // empty C2T list 
  q=wtousize(USAV(w),n);
  if(q<0||q!=n){
   GATV(z,C4T,n,wr,AS(w));
@@ -433,27 +433,27 @@ A RoutineB(J jt,A w,A prxthornuni){A z;I n,t,q,b=0; US* c2v; C4* c4v;
   R RoutineC(jt,z,prxthornuni);
  }
  if(BAV(prxthornuni)[0]&1)R wtownull(jt,w);
- R w;
+ RETF (w);
 }
 
 A RoutineC(J jt,A w,A prxthornuni){A z;I n,t,q,b=0; C4* wv;
  ARGCHK1(w); MEMCHK1(w); ASSERT(1>=AR(w),EVRANK); n=AN(w); t=AT(w); wv=C4AV(w);
  ASSERT(t&C4T,EVDOMAIN);
- if(!n) {GATV(z,C4T,n,AR(w),AS(w)); R z;}; // empty C4T list 
+ if(!n) {GATV(z,C4T,n,AR(w),AS(w)); RETF (z);}; // empty C4T list 
  DQ(n, if((UI4)(*wv-0xd800)<=(UI4)(0xdfff-0xd800)){b=1;break;};wv++;);
  if(b){
  q=utousize(C4AV(w),n);
  GATV0(z,C4T,q,1);
  utou(C4AV(w),n,C4AV1(z));
- if(BAV(prxthornuni)[0]&1)R utounull(jt,z); else R z;
+ if(BAV(prxthornuni)[0]&1)R utounull(jt,z); else RETF (z);
  }
  if(BAV(prxthornuni)[0]&1)R utounull(jt,w);
- R w;
+ RETF (w);
 }
 
 A RoutineD(J jt,A w,A prxthornuni){A z;I n,t,q,b=0;C4* c4v;
 ARGCHK1(w); MEMCHK1(w); ASSERT(1>=AR(w),EVRANK); n=AN(w); t=AT(w);
-if(!n) {GATV(z,LIT,n,AR(w),AS(w)); R z;}; // empty lit list
+if(!n) {GATV(z,LIT,n,AR(w),AS(w)); RETF (z);}; // empty lit list
 ASSERT(t&(C2T+C4T), EVDOMAIN);
 if(t&C4T)
 {

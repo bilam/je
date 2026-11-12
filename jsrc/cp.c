@@ -29,7 +29,7 @@ A jtopenforassembly(J jt, A x){
   jt->etxinfo->asseminfo.assemshape[0]=AS(x)[0];  // results were in a list
   jt->jerr=EVASSEMBLY;  // switch to assembly error type
  }
- R z;
+ RETF (z);
 }
 
 // chase the chain for transitive closure, starting at indexes[start].  length of indexes is n.  Result is list of indexes, or LIMIT error if cycle
@@ -41,7 +41,7 @@ static A jttclosure1(J jt, I start, I n, I *indexes){
  // as implemented a final negative index is emitted even if it repeates the previous positive index - too late to change in the field
  I rn=0,p,c0=c; do{p=c; if((UI)c>=(UI)n){c+=n; ASSERT((UI)c<(UI)n,EVINDEX);} ASSERT(rn<=n,EVLIMIT) ++rn; c=indexes[c];}while(c!=p);  // p is prev; rn is # loops, including the one that ends with the repeat
  A z; GATV0(z,INT,rn,1) I *zv=IAV1(z); c=c0; DO(rn, zv[i]=c; if((UI)c>=(UI)n)c+=n; c=indexes[c];);  // allocate the result and retraverse, copying
- R z; 
+ RETF (z);
 }
 // {&a^:(<_) w
 // AR(a)<=1 and AN(w)!=0

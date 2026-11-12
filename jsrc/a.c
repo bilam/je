@@ -35,7 +35,7 @@ F1(jtswap){F12IP;A y;C*s;I n;
   RZ(y=nameref(y,jt->locsyms));  // Create a name-reference pointing to the name
   // Make sure this reference is non-cached.  'name'~ is a way to get a non-cachable reference
   if(AT(y)&VERB+CONJ+ADV)FAV(y)->flag2&=~VF2CACHEABLE;  // turn off cachability if it's a reference (not if a noun, which doesn't have this flag)
-  R y;
+  RETF (y);
  }
 }
 
@@ -148,7 +148,7 @@ static A jtmemoget(J jt,I x,I y,A self){A z=0;  // init to not found
  I (*v)[2]=(I (*)[2])IAV2(keys); I *hv=IAV0(hasht);   // point to keys and hashtable
  I hi=INITHASH(hasht,x,y); while(hv[hi]>=0){if(((v[hv[hi]][0]^y)|(v[hv[hi]][1]^x))==0){z=AAV0(results)[hv[hi]]; break;} if(unlikely(--hi<0))hi+=AN(hasht);}           // init search, exiting when key found
  READUNLOCK(LOCKLOC);
- R z;  // return match if found, 0 if not
+ RETF (z);  // return match if found, 0 if not
 }
 
 
@@ -180,6 +180,6 @@ F1(jtmemo){F12IP;PROLOG(300);A h,*hv;
  AM(hv[0])=0; mvc(FULLHASHSIZE(30,BOXSIZE,1,0)*SZI,AAV0(hv[0]),1,MEMSETFF);  // clear hash table
  AM(hv[1])=0; AS(hv[1])[0]=FULLHASHSIZE(30,BOXSIZE,1,0)>>1;  // init empty key table, 2 INTs each row
  AM(hv[2])=0;   // init empty result table, recursive
- R z;
+ RETF (z);
  // Now we have converted the verb result to recursive usecount, and gotten rid of the pending tpops for the components of h
 }

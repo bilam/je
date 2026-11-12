@@ -166,6 +166,6 @@ A jtiosc(J jt,I mode,I n,I asct,I wsct,I ac,I wc,A a,A w,A z){I j,p,q; void *u,*
  default:  jsignal(EVSYSTEM);
  }
 
- R z;  // return non-error indic, but also where the partition count for IFORKEY is stored
+ RETF (z);  // return non-error indic, but also where the partition count for IFORKEY is stored
 }    /* right argument cell is scalar or list; only for modes IIDOT IICO IEPS, and intolerant IFORKEY */
 #endif

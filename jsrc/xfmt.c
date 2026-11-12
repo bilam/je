@@ -87,7 +87,7 @@ static F1(jtfmtbfc){F12IP;A*u,z;B t;C c,p,q,*s,*wv;I i,j,m,n;
   else if(s=strchr(pp,c)){t=1; q=qq[s-pp];}
  }
  RZ(*u=incorp(str(n-j,wv+j)));
- R z;
+ RETF (z);
 } /* format phrases: boxed from char */
 
 // install commas into *x, whose length l is big enough.  d is the number of decimal digits.  Discard non-digits (including sign)
@@ -178,7 +178,7 @@ static F1(jtfmtparse){F12IP;A x,z,*zv;B ml[2+NMODVALS],mod,t;C c,*cu="srqpnmdbij
   RZ(zv[NMODVALS]=incorp(str(5L,subs)));
  }
  vals[2]=fb; RZ(*zv=incorp(vec(INT,3,vals)));
- R z;
+ RETF (z);
 }
 
 typedef union u_DI8_tag { I8 i; D d; } DI8;
@@ -424,7 +424,7 @@ static F2(jtfmtprecomp) {F12IP;A*as,base,fb,len,strs,*u,z;B*bits,*bw;D dtmp,*dw;
  }
  ib=AV(base);
  if(1==nf){if(!ib[0])ib[0]=maxl;}else DQ(nf, if(ib[0]==0)ib[0]=ib[3]; ib+=4;);
- R z;
+ RETF (z);
 } /* format: precomputation to separate the group and column concept */
 
 /* a is jtfmtprecomp result */
@@ -557,7 +557,7 @@ static A jtfmtallcol(J jt, A a, A w, I mode) {A *a1v,base,fb,len,strs,*u,v,x;
   a1v++; il++; bits++; bv++; iv++; dv++; h++; j++;
  }
  
- R x;
+ RETF (x);
 } /* format w */
 
 static A jtfmtxi(J jt, A a, A w, I mode, I *omode){I lvl;
@@ -592,7 +592,7 @@ F2(jtfmt12){F12IP;A z;I mode,r,j;
  ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(2>=AR(w), EVRANK);
  RZ(z=fmtxi(a,w,1,&mode));
- if(mode==1)R z;
+ if(mode==1)RETF (z);
  r=AR(z);
  A t; dfv1(t,cant1(2==r?z:reshape(v2(1L,SETIC(z,j)),z)), qq(atco(ds(CBOX),ds(COPE)),num(1)));
  R ravel(t);
@@ -602,7 +602,7 @@ F2(jtfmt22){F12IP;A z;I mode,r,j;
  ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(2>=AR(w), EVRANK);
  RZ(z=fmtxi(a,w,2,&mode));
- if(mode==2)R z;
+ if(mode==2)RETF (z);
  r=AR(z);
  A t; dfv1(t,cant1(2==r?z:reshape(v2(1L,SETIC(z,j)),z)), qq(atco(ds(CBOX),ds(COPE)),num(1)));
  RZ(z=ravel(t));
