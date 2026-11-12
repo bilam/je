@@ -29,7 +29,7 @@ I (*taocomproutine[])()=   // routines for different datatypes. index is [precis
 
 // a 16!:0 w   compare 2 nouns that have the same shape and type, returning -1/0/1
 F2(jttao){F12IP;
- ARGCHK2(a,w)
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(!(ISSPARSE(AT(a)|AT(w))),EVNONCE)
  ASSERT(AR(a)==AR(w),EVRANK);
  ASSERTAGREE(AS(a),AS(w),AR(a))  // rank and shape must agree
@@ -70,7 +70,7 @@ B compqd(I n, Q *a, Q *b){SORT *sbk=(SORT *)n; I j; n=sbk->n; J jt=(J)((I)sbk->j
 // this is used by routines outside of sort/merge & therefore a & w can be dissimilar
 // jt has the JTDESCEND flag
 I jtcompare(J jt,A a,A w){C*av,*wv;I c,d,j,m,t;F1PREFJT;
- ARGCHK2(a,w); 
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I an=AN(a), wn=AN(w); I at=an?AT(a):B01, wt=wn?AT(w):B01; t=maxtyped(at,wt);  // types & common type
  if(unlikely(!HOMO(at,wt))){t=wt&JCHAR?0:t; t=at&JCHAR?1:t; t=wt&BOX?0:t; t=at&BOX?1:t; R RETGT(t);}  // inhomogeneous: priority is NUM(low, cannot be maxtype)/CHAR/BOX
  I ar=AR(a), wr=AR(w); if(unlikely(ar!=wr))R RETGT(ar>wr);  // unequal ranks, higher rank is bigger

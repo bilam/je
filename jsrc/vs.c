@@ -6,7 +6,7 @@
 #include "j.h"
 
 B jtscheck(J jt,A w){A a,e,x,y;I k1,k2,r,*s,t;P*p;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  r=AR(w); s=AS(w); t=AT(w);
  if(!ISSPARSE(t))R 1;
  ASSERTSYS(r,"scheck rank");
@@ -38,7 +38,7 @@ B jtscheck(J jt,A w){A a,e,x,y;I k1,k2,r,*s,t;P*p;
 static A jtselm(J jt,I t){R t&NUMERIC?cvt(t,num(0)):t&BOX?ds(CACE):chrspace;}
 
 A jtpaxis(J jt,I r,A a){A y,z;B*b;I j,*u,*v;
- ARGCHK1(a);
+ ARGCHK1(a); MEMCHK1(a);
  if(!ISDENSETYPE(AT(a),INT))RZ(a=cvt(INT,a));
  u=AV(a);
  GATV0(y,B01,r,1); b=BAV1(y); 
@@ -155,10 +155,10 @@ A jtsparseit(J jt,A w,A a,A e){PROLOG(0091);A ax,c,x,y,z;B b,*cv;I cm,cn,m,n,r,*
  EPILOG(z);
 }                                                                                                                                                                                                                                                                                                 ZZ(
  
-F1(jtspres){F12IP;ARGCHK1(w) ASSERT(0,EVNONCE); R w;}                                                                                                                                                                                                                                                                                       )
+F1(jtspres){F12IP;ARGCHK1(w); MEMCHK1(w); ASSERT(0,EVNONCE); R w;}                                                                                                                                                                                                                                                                                       )
 
 F1(jtdenseit){F12IP;A a,e,q,s1,x,y,z;B b;C*xv,*zv;I an,ck,k,n,r,t,*s,xn,*yv;P*wp;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  r=AR(w); t=AT(w);
  if(!r||!ISSPARSE(t))R ca(w);
  t=DTYPE(t);
@@ -175,7 +175,7 @@ F1(jtdenseit){F12IP;A a,e,q,s1,x,y,z;B b;C*xv,*zv;I an,ck,k,n,r,t,*s,xn,*yv;P*wp
 }    /* $.^:_1 */
 
 F2(jtreaxis){F12IP;A a1,e,p,q,x,y,z;B*b;I c,d,j,k,m,r,*u,*v,*ws,wt;P*wp,*zp;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  wt=AT(w);
  if(!ISSPARSE(wt))R sparseit(w,a,selm(wt));
  r=AR(w); ws=AS(w); wp=PAV(w);
@@ -230,7 +230,7 @@ static A jtaxbytes1(J jt,I t,I an,I m,I xr,I*xs){I k,z;
 }
 
 static F2(jtaxbytes){F12IP;A a1,e,p,q,x;B*b;I c,d,j,m,n=0,r,*u,*v,*ws,wt;P*wp;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  r=AR(w); ws=AS(w); wt=AT(w); 
  GATV0(q,INT,r,1); u=AV1(q); j=0;
  RZ(a1=vaxis(r,a)); d=AN(a1);  
@@ -255,7 +255,7 @@ static F2(jtaxbytes){F12IP;A a1,e,p,q,x;B*b;I c,d,j,m,n=0,r,*u,*v,*ws,wt;P*wp;
 }    /* bytes required for (2;a)$.w */
 
 static F2(jtaxtally){F12IP;A a1,e,p,q,x;B*b;I c,d,j,m,n=0,r,*u,*v,wt;P*wp;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  r=AR(w); wt=AT(w); 
  GATV0(q,INT,r,1); u=AV1(q); j=0;
  RZ(a1=vaxis(r,a)); d=AN(a1);  
@@ -278,7 +278,7 @@ static F2(jtaxtally){F12IP;A a1,e,p,q,x;B*b;I c,d,j,m,n=0,r,*u,*v,wt;P*wp;
 }    /* #4$.(2;a)$.w */
 
 F2(jtrezero){F12IP;A x,z;I at,t,wt,zt;P*wp,*zp;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  at=AT(a); wp=PAV(w); x=SPA(wp,x); wt=AT(x);
  ASSERT(!AR(a),EVRANK);
  ASSERT(HOMO(at,wt),EVDOMAIN);
@@ -293,7 +293,7 @@ F2(jtrezero){F12IP;A x,z;I at,t,wt,zt;P*wp,*zp;
 }    /* respecify the sparse element */
 
 F1(jtunzero){F12IP;A e,q,x,z;I r;P*wp,*zp;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  wp=PAV(w); e=SPA(wp,e); x=SPA(wp,x); r=AR(x)-1;
  GASPARSE(z,AT(w),1,AR(w),AS(w)); zp=PAV(z);
  RZ(q=not(irs2(x,reshape(vec(INT,r,1+AS(x)),e),0L,r,r,jtmatch)));
@@ -305,14 +305,14 @@ F1(jtunzero){F12IP;A e,q,x,z;I r;P*wp,*zp;
 }    /* remove completely sparse cells */
 
 static F1(jtsparsep1){F12IP;A*wv;I n=0;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(1>=AR(w),EVRANK); 
  if(BOX&AT(w)){n=AN(w); wv=AAV(w); ASSERT(1<=n&&n<=3||5==n,EVLENGTH);}
  R sparse1a(0<n?C(wv[0]):w,1<n?C(wv[1]):mark,2<n?C(wv[2]):mark,3<n?C(wv[3]):mark,4<n?C(wv[4]):mark);
 }
 
 static F1(jtsparsen1){F12IP;A*u,z;P*p;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(ISSPARSE(AT(w)),EVDOMAIN);
  GAT0(z,BOX,3,1); u=AAV1(z); p=PAV(w);
  u[0]=shape(w); u[1]=ca(SPA(p,a)); u[2]=ca(SPA(p,e));
@@ -320,13 +320,13 @@ static F1(jtsparsen1){F12IP;A*u,z;P*p;
 }
 
 F1(jtsparse1){F12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(!AR(w)||ISSPARSE(AT(w)))R ca(w);
  R sparseit(w,IX(AR(w)),selm(AT(w)));
 }    /* $. y */
 
 F2(jtsparse2){F12IP;A*av,q=0;B b;I j,k,t,*v;P*p;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(ISDENSETYPE(AT(a),BOX)){
   ASSERT(1==AR(a),EVRANK);
   ASSERT(2==AN(a),EVLENGTH);

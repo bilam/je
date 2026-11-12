@@ -47,11 +47,11 @@ UC* tohex(UC* dest, UC* src, I len)
   R dest;
 }
 
-F1(jtshasum1){F12IP;
+F1(jtshasum1){F12IP; MEMCHK1(w);
   R shasum2(num(1),w);
 }
 
-DF2(jtshasum2){DF12IP;
+DF2(jtshasum2){DF12IP; MEMCHK2(a,w);
   I n;
   A z;
   UC *v;

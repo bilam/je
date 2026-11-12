@@ -280,17 +280,17 @@ B jtsymbinit(JS jjt){A q,zloc;JJ jt=MTHREAD(jjt);
 
 // x 16!:2 y lock current locale  x is 1 for writelock, y is 1 for take lock
 F2(jtlockcurrent){F12IP;
- ARGCHK2(a,w)
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I write=reb0(a); I lock=reb0(w);   // get args, which must be boolean
  if(write){if(lock)WRITELOCK(*(US*)&AM(jt->global))else WRITEUNLOCK(*(US*)&AM(jt->global))}else{if(lock)READLOCK(*(US*)&AM(jt->global))else READUNLOCK(*(US*)&AM(jt->global))}  // do the lock on the current locale
  R mtv;
 }
 
-F1(jtlocsizeq){F12IP;C*v; ASSERTMTV(w); v=JT(jt,locsize); R v2(v[0],v[1]);}
+F1(jtlocsizeq){F12IP; MEMCHK1(w); C*v; ASSERTMTV(w); v=JT(jt,locsize); R v2(v[0],v[1]);}
      /* 9!:38 default locale size query */
 
 F1(jtlocsizes){F12IP;I p,q,*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(1==AR(w),EVRANK);
  ASSERT(2==AN(w),EVLENGTH);
  RZ(w=vi(w)); v=AV(w); p=v[0]; q=v[1];
@@ -353,7 +353,7 @@ A jtstfindcre(J jt,I n,C*u,I bucketx){
 
 // b is flags: 1=check name for validity, 2=do not allow numeric locales (whether atomic or not)
 static A jtvlocnl(J jt,I b,A w){A*wv,y;C*s;I i,m,n;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(((b-2) & (SGNIF(AT(w),INTX) | (SGNIF(AT(w),B01X) & (AR(w)-1))))<0)R w;  // integer list or scalar boolean is OK  C_LE
  n=AN(w);
  ASSERT(((n-1)|SGNIF(AT(w),BOXX))<0,EVDOMAIN);   // error if nonempty & nonboxed
@@ -377,7 +377,7 @@ static A jtvlocnl(J jt,I b,A w){A*wv,y;C*s;I i,m,n;
 // subroutine version
 I strtoI10s(I l,C* p) {I z; strtoI10(p,l,z); R z; }
 
-F1(jtlocnc){F12IP;A*wv,y,z;C c,*u;I i,m,n,*zv;
+F1(jtlocnc){F12IP; MEMCHK1(w); A*wv,y,z;C c,*u;I i,m,n,*zv;
  RZ(vlocnl(0,w));
  n=AN(w); wv=AAV(w); 
  I zr=AR(w); GATV(z,INT,n,AR(w),AS(w)); zv=AVn(zr,z);
@@ -405,14 +405,14 @@ static A jtlocnlx(J jt,A a, A w, I zomb){A y,z=mtv;B*wv;I m=0;
  R grade2(z,ope(z));
 }
 
-F1(jtlocnl1){F12IP;A a; GAT0(a,B01,256,1) mvc(256L,CAV1(a),MEMSET01LEN,MEMSET01);  R locnlx(a,w,0);}
+F1(jtlocnl1){F12IP; MEMCHK1(w); A a; GAT0(a,B01,256,1) mvc(256L,CAV1(a),MEMSET01LEN,MEMSET01);  R locnlx(a,w,0);}
     /* 18!:1 locale name list */
 
 // 18!:_3 locale name list, but including zombie locales
-F1(jtlocnlz1){F12IP;A a; GAT0(a,B01,256,1) mvc(256L,CAV1(a),MEMSET01LEN,MEMSET01);  R locnlx(a,w,1);}
+F1(jtlocnlz1){F12IP; MEMCHK1(w); A a; GAT0(a,B01,256,1) mvc(256L,CAV1(a),MEMSET01LEN,MEMSET01);  R locnlx(a,w,1);}
 
 // 18!:_4 locale header, including exec and del counts
-F1(jtlochdr){F12IP;
+F1(jtlochdr){F12IP; MEMCHK1(w);
  ASSERT(AR(w)==0,EVRANK)
  RZ(vlocnl(0,w));
  A y;
@@ -435,7 +435,7 @@ F1(jtlochdr){F12IP;
 
 
 F2(jtlocnl2){F12IP;UC*u;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(LIT&AT(a),EVDOMAIN);
  A tmp; GAT0(tmp,B01,256,1) mvc(256L,CAV1(tmp),MEMSET00LEN,MEMSET00);
  u=UAV(a); DQ(AN(a),CAV1(tmp)[*u++]=1;);
@@ -458,7 +458,7 @@ static A jtlocale(J jt,B b,A w){A g=0,*wv,y;
 }    /* last locale (symbol table) from boxed locale names; 0 if none or error.  if b=1, create locale for each name */
 
 // 18!:2 y  return boxed locale path.  y is locale name/number
-DF1(jtlocpath1){DF12IP;AD * RESTRICT g; AD * RESTRICT z; F1RANK(0,jtlocpath1,self); RZ(vlocnl(1,w)); RZ(g=locale(1,C(w)));
+DF1(jtlocpath1){DF12IP; MEMCHK1(w); AD * RESTRICT g; AD * RESTRICT z; F1RANK(0,jtlocpath1,self); RZ(vlocnl(1,w)); RZ(g=locale(1,C(w)));
  A *gp=LOCPATH(g);  // the path for the current locale.  It must be non0 normally, but if another deleted the locale while we are running it might be 0
  if(gp==0)RETF(mtv)   // if locale has been deleted, return something
  I npath; for(npath=0;*gp;--gp,++npath);  // npath is # names in path
@@ -472,7 +472,7 @@ DF1(jtlocpath1){DF12IP;AD * RESTRICT g; AD * RESTRICT z; F1RANK(0,jtlocpath1,sel
 // null systemlock handler to wait for quiet system.  Used for changing locale path
 static A jtnullsyslock(JTT* jt){R (A)1;}
 
-DF2(jtlocpath2){DF12IP;A g,h; AD * RESTRICT x;
+DF2(jtlocpath2){DF12IP; MEMCHK2(a,w); A g,h; AD * RESTRICT x;
  F2RANK(1,0,jtlocpath2,self);
  ACVCACHECLEAR;  // changing any path invalidates all lookups
  RZ(g=locale(1,w));
@@ -533,7 +533,7 @@ noextend: ;
 // create named locale
 // a is MARK (default size, permanent) or combined size/perm flag
 static F2(jtloccre){F12IP;A g,y,z=0;C*s;I n,p;A v;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(MARK&AT(a))p=JT(jt,locsize)[0]; else{p=rei0(a); ASSERT(BETWEENC(p,-15,14),EVLIMIT);}
  y=C(AAV(w)[0]); n=AN(y); s=CAV(y); ASSERT(n<256,EVLIMIT);
  SYMRESERVE(2)  // make sure we have symbols to insert, for the locale itself
@@ -568,7 +568,7 @@ exit:
 }    /* create a locale named w with hash table size a */
 
 static F1(jtloccrenum){F12IP;C s[20];I k,p;A x;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(MARK&AT(w))p=JT(jt,locsize)[1]; else{p=rei0(w); ASSERT(0<=p,EVDOMAIN); ASSERT(p<14,EVLIMIT);}
  p=FULLHASHSIZE(BIT(p+5),SYMBSIZE,1,SYMLINFOSIZE);  // get table, size 2^p+6 minus a little
  p-=(UI)p/(sizeof(LX)*BB)+1;  // leave room for Bloom filter
@@ -579,14 +579,14 @@ static F1(jtloccrenum){F12IP;C s[20];I k,p;A x;
 
 // 18!:3 create locale w, or numbered locale is w is empty
 F1(jtloccre1){F12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(AN(w))R rank2ex0(mark,vlocnl(2+1,w),DUMMYSELF,jtloccre);  // if arg not empty, it is a list of locale names
  ASSERT(1==AR(w),EVRANK);
  R loccrenum(mark);
 }    /* 18!:3  create locale */
 
 F2(jtloccre2){F12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(AN(w))R rank2ex0(a,vlocnl(2+1,w),DUMMYSELF,jtloccre);  // if arg not empty, it is a list of locale names
  ASSERT(1==AR(w),EVRANK);
  R rank1ex0(a,DUMMYSELF,jtloccrenum);
@@ -595,7 +595,7 @@ F2(jtloccre2){F12IP;
 
 // (formerly 18!:4) cocurrent/coclass.  Called only from unquote.  We return a flag requesting a change of locale
 F1(jtlocswitch){F12IP;A g;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  A *_ttop=jt->tnextpushp;  // stack restore point
  if(!(((AR(w)-1) & -(AT(w)&(INT|B01)))<0)){  // atomic integer/bool is OK as is
   // not a numeric atom.  perform boxxopen
@@ -606,7 +606,7 @@ F1(jtlocswitch){F12IP;A g;
  tpop(_ttop);  // we don't need EPILOG because the locale can't be on the stack anywhere
  R (A)((I)g+1);  // set LSB as flag to unquote that we ran cocurrent.  Don't EPILOG to avoid ra/fa on locale
 }
-F1(jtlocname){F12IP;A g=jt->global;
+F1(jtlocname){F12IP; MEMCHK1(w); A g=jt->global;
  ASSERTMTV(w);
  R boxW(sfn(0,LOCNAME(g)));
 }    /* 18!:5  current locale name */
@@ -621,7 +621,7 @@ static SYMWALK(jtlocmap1,I,INT,18,3,1,
      // produces a table of chain#,name class 0-3, 6 for symbol, _2 for other, pointer to name 
 
 static F1(jtlocmaplocked){F12IP;A g,q,x,y,*yv,z,*zv;I c=-1,d,j=0,m,*qv,*xv;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(!AR(w),EVRANK);
  RE(g=equ(w,zeroionei(0))?JT(jt,stloc):equ(w,zeroionei(1))?jt->locsyms:locale(0,w));
  ASSERT(g!=0,EVLOCALE);
@@ -634,17 +634,17 @@ static F1(jtlocmaplocked){F12IP;A g,q,x,y,*yv,z,*zv;I c=-1,d,j=0,m,*qv,*xv;
  GAT0(z,BOX,2,1); zv=AAV1(z); zv[0]=incorp(x); zv[1]=incorp(y);
  R z;
 }    /* 18!:_1 locale map */
-F1(jtlocmap){F12IP;READLOCK(JT(jt,stlock)) READLOCK(ALOCK(JT(jt,stloc))) READLOCK(JT(jt,symlock)) A z=jtlocmaplocked(jt,w); READUNLOCK(JT(jt,stlock)) READUNLOCK(ALOCK(JT(jt,stloc))) READUNLOCK(JT(jt,symlock)) R z;}
+F1(jtlocmap){F12IP; MEMCHK1(w); READLOCK(JT(jt,stlock)) READLOCK(ALOCK(JT(jt,stloc))) READLOCK(JT(jt,symlock)) A z=jtlocmaplocked(jt,w); READUNLOCK(JT(jt,stlock)) READUNLOCK(ALOCK(JT(jt,stloc))) READUNLOCK(JT(jt,symlock)) R z;}
 
 // recalculate Bloom filter in table w
 SYMWALK(jtaccumbloom,B,B01,0,0,BLOOMSET(BLOOMBASE(w),i)&&0,;)  // i is chain#.  For each defined symbol, set the bit
 
 // 18!:_5 return bloom filter, as character string
-F1(jtquerybloom){F12IP;A l; RZ(l=locale(0,w)); RETF(str(BLOOMLEN(l),BLOOMBASE(l)));}
+F1(jtquerybloom){F12IP; MEMCHK1(w); A l; RZ(l=locale(0,w)); RETF(str(BLOOMLEN(l),BLOOMBASE(l)));}
 
 // 18!:6 reset Bloom filter.  Result=old filter.
 F1(jtresetbloom){F12IP;A g;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(!(((AR(w)-1) & -(AT(w)&(INT|B01)))<0),EVDOMAIN)   // always error (numbered locale)
  // not a numeric atom.  perform boxxopen
  if(((AN(w)-1)|SGNIF(AT(w),BOXX))>=0)RZ(w=box(w));  // if not empty & not boxed, box it
@@ -659,7 +659,7 @@ F1(jtresetbloom){F12IP;A g;
 #if 0  // withdrawn
 // 18!:7 make locale permanent
 F1(jtsetpermanent){F12IP;A g;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(!(((AR(w)-1) & -(AT(w)&(INT|B01)))<0),EVDOMAIN)   // always error (numbered locale)
  // not a numeric atom.  perform boxxopen
  if(((AN(w)-1)|SGNIF(AT(w),BOXX))>=0)RZ(w=box(w));  // if not empty & not boxed, box it
@@ -678,7 +678,7 @@ F1(jtsetpermanent){F12IP;A g;
 
 // 18!:55 destroy locale(s) from user's point of view.  This counts as one usecount; others are in execution and in paths.  When all go to 0, delete the locale
 // Bivalent: if x is 271828, do the deletion even if on a permanent locale (for testcases only), but only in master thread
-DF2(jtlocexmark){DF12IP;A g,*wv,y,z;B *zv;C*u;I i,m,n;
+DF2(jtlocexmark){DF12IP; MEMCHK2(a,w); A g,*wv,y,z;B *zv;C*u;I i,m,n;
  ACVCACHECLEAR;  // destroying a locale invalidates all lookups
  if(unlikely(EPDYAD)){  // dyadic call
   I x=i0(a); if(jt->jerr){RESETERR; ASSERT(0,EVVALENCE)} ASSERT(x==271828,EVVALENCE)  // if not 271828, valence error
@@ -719,7 +719,7 @@ exitlock:
 // We cannot simply delete the symbol table, because it may be extant in paths.  So we empty the locale, and clear its path to 0
 // to indicate that it is a zombie.  We reset the Bloom filter to make sure the path doesn't respond to any names.  We also reduce the
 // usecount.  When the locale is no longer in any paths, it will be freed along with its name.
-B jtlocdestroy(J jt,A g){
+B jtlocdestroy(J jt,A g){MEMCHK1(g);
  // see if the locale has been deleted already.  Return fast if so
  A *path=(A*)__atomic_exchange_n(&LOCPATH(g),0,__ATOMIC_ACQ_REL);
  if(unlikely(path==0))R 1;  // already deleted - can't do it again

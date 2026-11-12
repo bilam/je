@@ -70,13 +70,13 @@
 #define jzungqr_(...) EXTERNCALL((jzungqr_)(__VA_ARGS__))
 #endif
 
-static F1(jtnorm){F12IP;R sqroot(pdt(w,conjug(w)));}
+static F1(jtnorm){F12IP; R sqroot(pdt(w,conjug(w)));}
 
 // take inverse of upper-triangular w.  We ASSUME w is inplaceable
 // n is the size of the nxn matrix w; ncomp codes for special processing
 // if n<=ncomp, this is a small FL matrix & we take the inverse inplace
 static A jtrinvip(J jt,A w,I n,I ncomp){PROLOG(0066);A ai,bx,di,z;I m;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(n<=ncomp){
   NAN0;
   // Handle 2x2 and smaller FL quickly and inplace to avoid recursion and memory-allocation overhead
@@ -121,7 +121,7 @@ static A jtrinvip(J jt,A w,I n,I ncomp){PROLOG(0066);A ai,bx,di,z;I m;
 
 // 128!:1 Invert Upper-triangular matrix R
 DF1(jtrinv){DF12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  F1RANK(2,jtrinv,self);
  ASSERT(AR(w)==2,EVRANK);  // rank at least 2
  ASSERT(AS(w)[0]==AS(w)[1],EVLENGTH);  // error if not square
@@ -132,7 +132,7 @@ DF1(jtrinv){DF12IP;
 
 // recursive subroutine for qr decomposition, returns q;r
 static F1(jtqrr){F12IP;PROLOG(0067);A a1,q,q0,q1,r,r0,r1,t,*tv,t0,t1,y,z;I m,n,p,*s;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(2>AR(w)){p=AN(w); n=1;}else{s=AS(w); p=s[0]; n=s[1];}  // p=#rows, n=#columns
  m=n>>1; I tom=SHMSK(0x01222100,(n&7)<<2,3); m=(m+tom<n)?m+tom:m;  // Minimize number of wasted multiply slots, processing in batches of 4
  if(1>=n){  // just 1 col
@@ -165,7 +165,7 @@ static F1(jtltqip){F12IP;PROLOG(0067);A l0,l1,y,z;
 #if C_AVX2 || EMU_AVX2
  D ipa[8], *ipv;
 #endif
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  fauxblock(virtwq0); A q0; D *w0v=DAV(w);  // q0 & q1 data
  I rw=AS(w)[0]; I cl=AS(w)[1];  // # rows, # columns
   // handle case of 2 rows
@@ -320,7 +320,7 @@ static B allfinite(A w){D *v=DAV(w); I n=AN(w)<<((AT(w)&CMPX)!=0);
 }
 
 // qr decomposition of w, returns q;r
-DF1(jtqr){F12IP;A r,z;D c=inf,d=0,x;I n1,n,*s,wr;
+DF1(jtqr){F12IP; MEMCHK1(w); A r,z;D c=inf,d=0,x;I n1,n,*s,wr;
  F1RANK(2,jtqr,self);
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);
  ASSERT(AT(w)&B01+INT2+INT4+INT+FL+CMPX+QP,EVDOMAIN);
@@ -361,7 +361,7 @@ static D ludet(A w,int *ipiv){D d=1.0;
 // determinant to integer and then each value to an integer multiple of the determinant.
 // The determinant was calculated when we inverted the matrix
 static A jticor(J jt,A w,D d){D *v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(d==0.0)R w;  // if not enabled or not applicable, return input unchanged
  d=jround(ABS(d));  // force determinant to integer
  D recipd=1/d;
@@ -467,7 +467,7 @@ static I jttrcondok(J jt,I t,C uplo,int n,void *fac,int lda){int info=0; D rcond
 
 // return inverse of w
 // If jtfg allows w to be inplaced, the LAPACK path for square w overwrites it and returns it as the result.
-static A jtlq(J jtfg,A w,D *det){F12IP;A l;D c=inf,d=0,x;I n1,n,*ws,wr;
+static A jtlq(J jtfg,A w,D *det){F12IP; MEMCHK1(w); A l;D c=inf,d=0,x;I n1,n,*ws,wr;
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);
  ASSERT(AT(w)&B01+INT2+INT4+INT+FL+CMPX+QP,EVDOMAIN);
  wr=AR(w); ws=AS(w);
@@ -568,7 +568,7 @@ static A jtlq(J jtfg,A w,D *det){F12IP;A l;D c=inf,d=0,x;I n1,n,*ws,wr;
  RETF(z);
 }
 
-static A jtminvdet(J jtfg,A w,D *det){F12IP;PROLOG(0068);A q,y,z;I m,n,*s,t,wr;
+static A jtminvdet(J jtfg,A w,D *det){F12IP; MEMCHK1(w); PROLOG(0068);A q,y,z;I m,n,*s,t,wr;
  F1RANK(2,jtminv,DUMMYSELF);
  t=AT(w); wr=AR(w); s=AS(w); m=wr?s[0]:1; n=1<wr?s[1]:1;
  if(!wr){ASSERT(t&NUMERIC,EVDOMAIN); *det=0.0; R recip(w);}
@@ -594,7 +594,7 @@ static A jtminvdet(J jtfg,A w,D *det){F12IP;PROLOG(0068);A q,y,z;I m,n,*s,t,wr;
  EPILOG(z);
 }
 
-F1(jtminv){F12IP;D detv; R jtminvdet(jtfg,w,&detv);}  // pass jtfg so an inplaceable w can be overwritten by LAPACK
+F1(jtminv){F12IP; MEMCHK1(w); D detv; R jtminvdet(jtfg,w,&detv);}  // pass jtfg so an inplaceable w can be overwritten by LAPACK
 
 // Is the nxn FL/CMPX w triangular? Returns the uplo LAPACK must be given (it sees the transpose of our row-major w):
 // 'L' if w is upper triangular, 'U' if it is lower triangular, 0 if neither. A diagonal w counts as upper.
@@ -626,7 +626,7 @@ static C trikind(A w,I n){B up=1, lo=1;
  R up?'L':(lo?'U':0); // LAPACK sees the transpose: our upper is its lower, our lower is its upper
 }
 // Solve (w+/ .*z)-:a using LAPACK for dense non-empty a and w where w is square matrix.  a is not an atom (jtmdiv extends an atom to a vector).
-static A jtgesv(J jtfg,A a,A w){F12IP;A z;
+static A jtgesv(J jtfg,A a,A w){F12IP; MEMCHK2(a,w); A z;
  int n=(int)AS(w)[0],nrhs,info,*ipiv=0; C trans='T', uplo=0; A ipa; I ok;
  I at=AT(a), wt=AT(w), t=((at|wt)&CMPX)?CMPX:FL;
  // Check inplaceability.
@@ -679,7 +679,7 @@ static A jtgesv(J jtfg,A a,A w){F12IP;A z;
 // (#a) = #w  (a is not an atom)
 // Result has shape (}.$w),}.$a
 // Domain error if w is rank-deficient (matrix rank of w < min(m,n) where (m,n) is shape of w).
-static A jtgels(J jtfg,A a,A w){F12IP;A b,z,zs;
+static A jtgels(J jtfg,A a,A w){F12IP; MEMCHK2(a,w); A b,z,zs;
  int m,n,r,c,nrhs,lda,ldb,lwork=-1,info; A wk;
  I t=((AT(a)|AT(w))&CMPX)?CMPX:FL; C trans=t==FL?'T':'C';
  I ar=AR(a), wr=AR(w), im=AS(w)[0], in=wr==2?AS(w)[1]:1, inrhs=AN(a)/im, ildb=MAX(im,in);
@@ -760,7 +760,7 @@ static B jttridiag(J jt,I n,A a,A x){D*av,d,p,*xv;I i,j,n1=n-1;
  R 1;
 }
 
-static F2(jtmdivsp){F12IP;A a1,x,y;I at,d,m,n,t,*v,xt;P*wp;
+static F2(jtmdivsp){F12IP; MEMCHK2(a,w); A a1,x,y;I at,d,m,n,t,*v,xt;P*wp;
  ASSERT(2==AR(w),EVRANK);
  v=AS(w); n=v[0];
  ASSERT(n>=v[1]&&n==AN(a),EVLENGTH);
@@ -777,7 +777,7 @@ static F2(jtmdivsp){F12IP;A a1,x,y;I at,d,m,n,t,*v,xt;P*wp;
 }    /* currently only handles tridiagonal sparse w */
 
 // a %. w  for all types
-DF2(jtmdiv){F12IP;PROLOG(0069);A z;I at=AT(a), wt=AT(w);
+DF2(jtmdiv){F12IP; MEMCHK2(a,w); PROLOG(0069);A z;I at=AT(a), wt=AT(w);
  F2RANK(RMAX,2,jtmdiv,self);
  if(ISSPARSE(at))RZ(a=denseit(a));
  if(ISSPARSE(wt))R mdivsp(a,w);

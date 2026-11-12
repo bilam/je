@@ -363,7 +363,7 @@ static I jtconword(J jt,I n,C*s){
 }
 
 // w is string, result is list of boxed strings, for each line (sentence text, [ending control word except on last line])
-static F1(jtgetsen){F12IP;A y,z,*z0,*zv;C*s;I i,j,k=-1,m,n,*v;
+static F1(jtgetsen){F12IP; MEMCHK1(w); A y,z,*z0,*zv;C*s;I i,j,k=-1,m,n,*v;
  RZ(y=wordil(w)); ASSERT(AM(y)>=0,EVOPENQ) // split string into words - result block has special format
  v=AV(y);   // v-> (index,end+1) for each word; #words neg if last is NB.
  n=AM(y)<<1;  // number of words not including any final NB., times 2 to get  # start/end+1 slots
@@ -395,7 +395,7 @@ static F1(jtgetsen){F12IP;A y,z,*z0,*zv;C*s;I i,j,k=-1,m,n,*v;
 
 B jtpreparse(J jt,A w,A*zl,A*zc){PROLOG(0004);A c,l,*lv,*v,w0,w1,*wv,x,y;B b=0,try=0;
      C*s;CW*d,*cv;I as=0,i,j,k,m,n,p,q,yn;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  p=AN(w); wv=AAV(w);  // p=#lines, wv->line 0 (a line is a boxed string)
  RZ(c=exta(CONW,1L,1L,3*p)); cv=(CW*)AAV1(c); n=0;  // allocate result control-word area (estimate 3 per line), cv->start of block of CWs, n=#cws encountered.  Always rank 1
  RZ(l=exta(INT, 1L,1L,5*p)); lv=    AAV1(l); m=0;  // allocate list of boxed words (estimate 5 per line), lv->&A for first word; m=#words.  Always rank 1.  INT to avoid clear

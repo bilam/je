@@ -486,7 +486,7 @@ static A jtexec2r(J jt,A a,A w,I n,I m,I c,I fillreqd){A z;B b,e;C d,*u,*uu,*v,*
 
 // x ". y
 F2(jtexec2){F12IP;A z;B b,p;C d,*v;I at,c,i,k,m,n,r,*s;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(!AR(a),EVRANK);  // x must be an atom
  at=AT(a);
  ASSERT(ISDENSETYPE(at,NUMERIC),EVDOMAIN);  // x must be numeric

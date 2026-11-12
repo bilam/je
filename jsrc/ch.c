@@ -44,7 +44,7 @@ static A jthgd(J jt,B b,I n,A w,A p,A q){A c,d,e,z;D r,s,t,*u,*v,x,*zv;I j,pn,qn
 }    /* real vector p,q; real scalar w; all terms (1=b) or last term (0=b) */
 
 static DF2(jthgeom2){DF12IP;PROLOG(0036);A h,*hv,t,z;B b;I an,*av,j,n;V*sv=FAV(self);
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(AR(w))R rank2ex0(a,w,self,jthgeom2);
  RZ(a=AT(a)&FL+CMPX+QP?vib(a):vi(a));  // kludge just call vib?
  an=AN(a); av=AV(a); n=0; DO(an, j=av[i]; ASSERT(0<=j,EVDOMAIN); if(n<j)n=j;);
@@ -64,7 +64,7 @@ static DF2(jthgeom2){DF12IP;PROLOG(0036);A h,*hv,t,z;B b;I an,*av,j,n;V*sv=FAV(s
 
 static DF1(jthgeom1){DF12IP;R hgeom2(sc(IMAX),w,self);}
 
-static F2(jtcancel){F12IP;A c,d,f,x,y;
+static F2(jtcancel){F12IP; MEMCHK2(a,w); A c,d,f,x,y;
  a=ravel(a); x=nub(a); c=keytally(a,a);  // nub of a, & # times values appear
  w=ravel(w); y=nub(w); d=keytally(w,w);  // same for w
  a=repeat(maximum(num(0),minus(c,from(indexof(y,x),over(d,zeroionei(0))))),x);
@@ -73,7 +73,7 @@ static F2(jtcancel){F12IP;A c,d,f,x,y;
 }
 
 F2(jthgeom){F12IP;A c,d,h=0;B p,q;I at,wt;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  at=AT(a); p=1&&at&NOUN; c=d=mtv;
  wt=AT(w); q=1&&wt&NOUN;
  if(p){c=a; ASSERT(!AN(a)||at&NUMERIC,EVDOMAIN); ASSERT(1>=AR(a),EVRANK);}
@@ -82,7 +82,7 @@ F2(jthgeom){F12IP;A c,d,h=0;B p,q;I at,wt;
  R fdef(0,CHGEOM,VERB, jthgeom1,jthgeom2, a,w,h, FAV(p?ds(CPLUS):a)->flag&FAV(q?ds(CPLUS):w)->flag&VNOLOCCHG+VNONAME+VNOSELF, 0L,0L,0L);
 }    /* a H. w */
 
-DF1(jthgcoeff){DF12IP;PROLOG(0037);A c,d,h,*hv,y,z;B b;I j,n,pn,qn,*v;V*sv=FAV(self);
+DF1(jthgcoeff){DF12IP; MEMCHK1(w); PROLOG(0037);A c,d,h,*hv,y,z;B b;I j,n,pn,qn,*v;V*sv=FAV(self);
  RZ(w=vi(w)); v=AV(w); 
  n=0; DO(AN(w), j=v[i]; ASSERT(0<=j,EVDOMAIN); if(n<j)n=j;);
  if(!n)R eq(w,w);

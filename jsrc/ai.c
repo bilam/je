@@ -19,14 +19,14 @@ static B jtconsf(J jt,A w){C c;
 }    // 1 iff w is a constant function or (constant function) g (constant function)
 
 static F2(jtfong){F12IP;A f;C c;V*v;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  v=FAV(a); c=v->id; f=v->fgh[0]; A g=v->fgh[1];  A h=v->fgh[2];
  if(c==CFORK&&h==0){h=g; g=f; f=ds(CCAP);}   // reconsitute capped fork 
  R (c&~1)==CLEFT ? w : c==CFORK&&(NOUN&AT(f)||CCAP==FAV(f)->id) ? folk(f,g,fong(h,w)) : folk(ds(CCAP),a,w);
 }   // [: f g  with simplifications: [: ][ w -> w;  [: (N/[: x y) w -> N/[: x [: y w   and y omitted if ][
 
 static F1(jtinvfork){F12IP;A f,fi,g,gi,h,k;B b,c;V*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  v=FAV(w);
  // extract fgh; replace nameref with value in fh
  if(v->fgh[2]){RZ(f=unname(v->fgh[0])); g=v->fgh[1]; RZ(h=unname(v->fgh[2]));}else{f=ds(CCAP); g=v->fgh[0]; RZ(h=unname(v->fgh[1]));}  // reconsitute capped fork
@@ -44,17 +44,17 @@ static F1(jtinvfork){F12IP;A f,fi,g,gi,h,k;B b,c;V*v;
  R fong(fi,gi);  // if f const, h^:_1 @: const&g^:_1   if h const, f^:_1 @: g&const^:_1
 }
 
-static DF1(jtexpandf){DF12IP;A f; ARGCHK2(w,self); f=FAV(self)->fgh[0]; R expand(FAV(f)->fgh[0],w);}
+static DF1(jtexpandf){DF12IP;A f; ARGCHK2(w,self); MEMCHK2(w,self); f=FAV(self)->fgh[0]; R expand(FAV(f)->fgh[0],w);}
 
 static DF1(jtexpandg){DF12IP;A f,g,z;V*v;
- ARGCHK2(w,self);
+ ARGCHK2(w,self); MEMCHK2(w,self);
  f=FAV(self)->fgh[0]; v=FAV(f); g=v->fgh[1];
  jt->fill=FAV(g)->fgh[1]; z=expand(v->fgh[0],w); jt->fill=0;   // elements of FAV cannot be virtual
  R z;
 }
 
 static F2(jtdiag){F12IP;I m,p,r,t,*v;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  r=AR(w); t=AT(w);
  v=AS(w);   m=0;      DO(r, m=MIN(m,v[i]););
  v=AS(w)+r;
@@ -70,7 +70,7 @@ static F2(jtdiag){F12IP;I m,p,r,t,*v;
 // This fails when a row/column is full of diagonals: there is no way to infer the shape.
 // We remove the diagonal support, which also removes most of the need for auditing
 static F1(jtbminv){F12IP;A*wv,x,z=w;I i,j,m,r,*s,t=0,*u,**v,*y,wn,wr,*ws;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
 // doesn't work  ASSERT(0,EVNONCE);
  ASSERT(BOX&AT(w),EVDOMAIN);    // must be boxed
  wn=AN(w); wr=AR(w); ws=AS(w); wv=AAV(w);    // info about w
@@ -104,7 +104,7 @@ static F1(jtbminv){F12IP;A*wv,x,z=w;I i,j,m,r,*s,t=0,*u,**v,*y,wn,wr,*ws;
 // find inverse of f&g when one arg is a noun and the other a verb
 // if f&g is known, it is in fampg, otherwise fampg is 0
 A jtinvamp(J jt, A f, A g, A fampg){A ff,h,x,y;B nf,ng;C c,d,*yv;I n;V*u,*v;
- ARGCHK2(f,g);
+ ARGCHK2(f,g); MEMCHK2(f,g);
  nf=!!(NOUN&AT(f));  // nf  is 1 if m&v
  h=nf?g:f; x=nf?f:g; c=FAV(h)->id; u=FAV(h);   // h=verb arg, x=noun arg. c is ID of the verb.  u is VB struct for the verb
  switch(c){
@@ -237,7 +237,7 @@ xco:
 
 // inverse of I., with domain extended to allow unsorted w
 static DF1(jticapdotinv){DF12IP;
- ARGCHK1(w); F1RANK(1,jticapdotinv,self);  // we handle only rank 1 here
+ ARGCHK1(w); MEMCHK1(w); F1RANK(1,jticapdotinv,self);  // we handle only rank 1 here
  // the rest applies only to lists
  if(unlikely(!(AT(w)&INT)))RZ(w=cvt(INT,w));  // integers needed
  I *wv=IAV(w), wn=AN(w);  // 
@@ -260,7 +260,7 @@ static const C simpleinv[128] = {
 // Return inverse of monad w.  recur is a recursion indicator, always forced to 0 for the initial call, and
 // set to 1 here for recursive calls
 A jtinv(J jt, A w, I recur){A f,ff,g;B b,nf,ng,vf,vg;C id;I p,q;V*v;
- ARGCHK1(w); STACKCHKOFL  // make sure we don't have a recursion loop through inv
+ ARGCHK1(w); MEMCHK1(w); STACKCHKOFL  // make sure we don't have a recursion loop through inv
  ASSERT(VERB&AT(w),EVDOMAIN); 
  id=FAV(w)->id; v=FAV(w);  // id=pseudochar for w, v->verb info
 #define simpleinvvalues(w) CCM(w,CDIV)+CCM(w,CPLUS)+CCM(w,CMINUS)+CCM(w,CLEFT)+CCM(w,CRIGHT)+CCM(w,CREV)+CCM(w,CCANT)+CCM(w,CPOLY)+ \
@@ -347,7 +347,7 @@ xco:
 }
 
 static F1(jtneutral){F12IP;A x,y;B b;V*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  v=FAV(w);
  ASSERT(!v->lrr,EVDOMAIN);
  RZ(y=v2(0L,1L));
@@ -363,7 +363,7 @@ static F1(jtneutral){F12IP;A x,y;B b;V*v;
 }    /* neutral of arbitrary rank-0 function */
 
 // return neutral element for verb, if known
-F1(jtiden){F12IP;A f,g,x=0;V*u,*v;
+F1(jtiden){F12IP; MEMCHK1(w); A f,g,x=0;V*u,*v;
  RZ(w=fix(w,zeroionei(0))); ASSERT(VERB&AT(w),EVDOMAIN);
  v=FAV(w); f=v->fgh[0]; g=v->fgh[1];   // f, g = args to modifier, if any
  switch(v->id){

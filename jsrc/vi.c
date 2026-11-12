@@ -1006,7 +1006,7 @@ static CR condrange2(US *s,I n,I min,I max,I maxrange){CR ret;I i;US x;
 
 A jtindexofsub(J jtfg,I mode,A afg,A wfg){A h=0,hi=mtv,z;B mk=wfg==mark,th;fauxblockINT(zfaux,1,0);
     I ac,af,ak,an,*as,at,datamin,f,f1,k,k1,n,r,*s,t,wc,wf,wk,wn,*ws,wt,zn;UI c,m,p;I forkeyresult;
- IARG2CR F12JT;PROLOG(0079);
+ IARG2CR F12JT; MEMCHK2(a,w); PROLOG(0079);
  // ?r=rank of argument, ?cr=rank the verb is applied at, ?f=length of frame, ?s->shape, ?t=type, ?n=#atoms
  // mk is set if w argument is omitted (we are just prehashing the a arg)   note: mark is an atom
  af=ar-acr; wf=wr-wcr;
@@ -1344,12 +1344,12 @@ A jtindexofsub(J jtfg,I mode,A afg,A wfg){A h=0,hi=mtv,z;B mk=wfg==mark,th;fauxb
 
 // verb to vector combine@e. compounds.  The i. code is in the self
 // because these are e. compounds we swap a and w.  No IRS
-DF2(jtcombineeps){DF12IP;ARGCHK3(a,w,self);R indexofsub(II0EPS+((FAV(self)->flag>>3)&7),w,a);}
+DF2(jtcombineeps){DF12IP;ARGCHK3(a,w,self); MEMCHK3(a,w,self);R indexofsub(II0EPS+((FAV(self)->flag>>3)&7),w,a);}
 
 // verb to handle compounds like m&i. e.&n .  m/n has already been hashed and the result saved away
 A jtindexofprehashed(J jtfg,A a,A w,A hs,A self){F12IP;A h,hi,*hv,x,z;AF fn;I ar,*as,at,c,f1,k,m,mode,n,
      r,t,*xv,wr,*ws,wt,ztype;
- ARGCHK3(a,w,hs);
+ ARGCHK3(a,w,hs); MEMCHK3(a,w,hs);
  // hv is (info vector);(hashtable);(byte index validity)
  hv=AAV(hs); x=hv[0]; h=hv[1]; hi=hv[2];  
  // get the info from the info vector
@@ -1390,23 +1390,23 @@ A jtindexofprehashed(J jtfg,A a,A w,A hs,A self){F12IP;A h,hi,*hv,x,z;AF fn;I ar
 // Now, support for the primitives that use indexof
 
 // x i. y, with IRS
-DFI2(jtindexof){IARG2 DF12IP; R indexofsub(IIDOT,afg,wfg);}
+DFI2(jtindexof){IARG2 DF12IP; MEMCHK2(a,w); R indexofsub(IIDOT,afg,wfg);}
      /* a i."r w */
 
 // x i: y, with IRS
-FI2(jtjico2){IARG2 F12IP; R indexofsub(IICO,afg,wfg);}
+FI2(jtjico2){IARG2 F12IP; MEMCHK2(a,w); R indexofsub(IICO,afg,wfg);}
      /* a i:"r w */
 
 // ~: y
 FI1(jtnubsieve){
- IARG1 F12IP;
+ IARG1 F12IP; MEMCHK1(w);
  if(unlikely(ISSPARSE(AT(w))))R nubsievesp(wfg); 
  R indexofsub(INUBSV,wfg,wfg); 
 }    /* ~:"r w */
 
 // ~. y  - does not have IRS
 F1(jtnub){F12IP; 
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(unlikely(ISSPARSE(AT(w)))||unlikely(AFLAG(w)&AFNJA))R repeat(nubsieve(w),w); 
  A z; RZ(z=indexofsub(INUB,w,w));
  // We extracted from w, so mark it (or its backer if virtual) non-pristine.  If w was pristine and inplaceable, transfer its pristine status to the result.  We overwrite w because it is no longer in use
@@ -1416,7 +1416,7 @@ F1(jtnub){F12IP;
 
 // x -. y.  does not have IRS
 F2(jtless){F12IP;A x=w;I ar,at,k,r,*s,wr,*ws,wt;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  at=AT(a); ar=AR(a); 
  wt=AT(w); wr=AR(w); r=MAX(1,ar);
  if(ar>1+wr)RCA(a);  // if w's rank is smaller than that of a cell of a, nothing can be removed, return a
@@ -1432,33 +1432,33 @@ F2(jtless){F12IP;A x=w;I ar,at,k,r,*s,wr,*ws,wt;
 
 // x e. y
 FI2(jteps){
- IARG2CR F12IP;
+ IARG2CR F12IP; MEMCHK2(a,w);
  if(ISSPARSE(AT(a)|AT(w)))R lt(irs2(w,a,0L,wcr,acr,jtindexof),sc(wcr?*(AS(w)+AR(w)-wcr):1));  // for sparse, implement as (# cell of y) > y i. x
  R indexofsub(IEPS,wfg,afg);  // swap args (& ranks)
 }    /* a e."r w */
 
 // I.@~: y   does not have IRS
 DF1(jtnubind){DF12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  R ISSPARSE(AT(w))?icap(nubsieve(w)):indexofsub(INUBI,w,w);
 }    /* I.@~: w */
 
 // i.@(~:!.0) y     does not have IRS
 DF1(jtnubind0){DF12IP;A z;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  PUSHCCT(1.0) z=ISSPARSE(AT(w))?icap(nubsieve(w)):indexofsub(INUBI,w,w); POPCCT
  R z;
 }    /* I.@(~:!.0) w */
 
 // I.@e. y   does not have IRS
 DF2(jtepsind){DF12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  R unlikely(ISSPARSE(AT(w)|AT(w)))?jtupon2cell(jt,a,w,self):indexofsub(IIFBEPS,w,a);  // revert for sparse
 } 
 
 // i.@(e.!.0) y     does not have IRS
 DF2(jtepsind0){DF12IP;A z;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(unlikely(ISSPARSE(AT(a)|AT(w))))R jtupon2cell(jt,a,w,self);  // revert for sparse
  PUSHCCT(1.0) z=indexofsub(IIFBEPS,w,a); POPCCT  // do operation intolerantly
  R z;
@@ -1467,7 +1467,7 @@ DF2(jtepsind0){DF12IP;A z;
 
 // = y    
 F1(jtsclass){F12IP;A e,x,xy,y,z;I c,j,m,n,*v;P*p;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  // If w is scalar, return 1 1$1
  if(!AR(w))R reshape(v2(1L,1L),num(1));
  SETIC(w,n);   // n=#items of y
@@ -1545,7 +1545,7 @@ static JOCOLFT(Z,jtjocolz,hid(*(D*)v),hid(tl*x),hid(tr*x),!zeq(*v,av[c*hj]))
 
 // support for a i."1 &.|:w or a i:"1 &.|:w   used only by some sparse-array stuff
 A jtiocol(J jt,I mode,A a,A w){A h,z;I ar,at,c,d,m,t,wr,*ws,wt;void(*fn)();
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  // require ct!=0   why??
  ASSERT(1.0!=jt->cct,EVNONCE);
  at=AT(a); ar=AR(a); m=*AS(a); c=aii(a);  // a: at=type ar=rank m=#items c=#atoms in an item

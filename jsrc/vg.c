@@ -687,7 +687,7 @@ static GF(jtgrc){F1PREFJT;A x;B b,q,up;I *g,*h,e,i,p,ps,*xv,yv[256];UC*vv,*wv;
  R 1;
 }    /* grade"r w on boolean or char or unicode w */
 
-F2(jtgrade1p){F12IP;PROLOG(0074);A x,z;I n,*s,*xv,*zv;
+F2(jtgrade1p){F12IP; MEMCHK2(a,w); PROLOG(0074);A x,z;I n,*s,*xv,*zv;
  RZ(x=curtail(a)); z=IRS2(jtfrom,jt,x,1L,w,1L,0L); z=grade1(z); EPILOG(z);
  // A special sort function for this is a bad idea, because the indirection is repeated so often
 }    /* /:(}:a){"1 w , permutation a, integer matrix w */
@@ -711,7 +711,7 @@ static B (*grroutine[])(J,I,I,I,A,I*,I,I) = {  // index is [bitx]
 
 // /: and \: with IRS support
 A jtgr1(JJ jtfg,A wfg,A self,I rmin,I rmax){A z;I f,ai,m,n,*s,t,wn,zn;   // like DFI1
- IARG1CR F12IP;PROLOG(0075);
+ IARG1CR F12IP; MEMCHK1(w); PROLOG(0075);
  t=AT(w);
  f=wr-wcr; s=AS(w);
  // Calculate m: #cells in w   n: #items in a cell of w   ai: #atoms in an item of a cell of w  c: #atoms in a cell of w  
@@ -731,12 +731,12 @@ A jtgr1(JJ jtfg,A wfg,A self,I rmin,I rmax){A z;I f,ai,m,n,*s,t,wn,zn;   // like
  EPILOG(z);
 }    /*   grade"r w main control for dense w */
 
-DFI1(jtgrade1){IARG1 DF12IP;A z; jtfg=(J)((I)jtfg&~JTDESCEND); if(likely(!ISSPARSE(AT(w))))RETF(gr1(wfg)); RETF(grd1sp(wfg));}
-DFI1(jtdgrade1){IARG1 DF12IP;A z; jtfg=(J)(((I)jtfg&~JTFLAGMSK)+JTDESCEND); if(likely(!ISSPARSE(AT(w))))RETF(gr1(wfg)); RETF(grd1sp(wfg));}
+DFI1(jtgrade1){IARG1 DF12IP; MEMCHK1(w); A z; jtfg=(J)((I)jtfg&~JTDESCEND); if(likely(!ISSPARSE(AT(w))))RETF(gr1(wfg)); RETF(grd1sp(wfg));}
+DFI1(jtdgrade1){IARG1 DF12IP; MEMCHK1(w); A z; jtfg=(J)(((I)jtfg&~JTFLAGMSK)+JTDESCEND); if(likely(!ISSPARSE(AT(w))))RETF(gr1(wfg)); RETF(grd1sp(wfg));}
 // Since grade2 pulls from a, mark a as non-pristine.  But since there can be no repeats, transfer a's pristinity to result if a is inplaceable
 // We do this in jtgr2 because it has a branch where all boxed values go
-FI2(jtgrade2){IARG2 F12IP;A z; if(likely(!ISSPARSE(AT(w))))RETF(jtgr2((J)((I)jtfg&~JTDESCEND),afg,wfg)); RETF(jtgrd2sp((J)((I)jtfg&~JTDESCEND),afg,wfg));}
-FI2(jtdgrade2){IARG2 F12IP;A z; if(likely(!ISSPARSE(AT(w))))RETF(jtgr2((J)((I)jtfg+JTDESCEND),afg,wfg)); RETF(jtgrd2sp((J)((I)jtfg+JTDESCEND),afg,wfg));}
+FI2(jtgrade2){IARG2 F12IP; MEMCHK2(a,w); A z; if(likely(!ISSPARSE(AT(w))))RETF(jtgr2((J)((I)jtfg&~JTDESCEND),afg,wfg)); RETF(jtgrd2sp((J)((I)jtfg&~JTDESCEND),afg,wfg));}
+FI2(jtdgrade2){IARG2 F12IP; MEMCHK2(a,w); A z; if(likely(!ISSPARSE(AT(w))))RETF(jtgr2((J)((I)jtfg+JTDESCEND),afg,wfg)); RETF(jtgrd2sp((J)((I)jtfg+JTDESCEND),afg,wfg));}
 
 #if 0 // obsolete
 // the rest of this file handles order statistics
@@ -780,7 +780,7 @@ FI2(jtdgrade2){IARG2 F12IP;A z; if(likely(!ISSPARSE(AT(w))))RETF(jtgr2((J)((I)jt
 
 DF2(jtordstat){DF12IP;A q,t=0;I j,m,m0,m1,n,wt;D *qv;
  I i=NRANDS-1;  // i points to the next random number to draw
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  n=AN(w); wt=AT(w); j=rei0(a);
  if(((4-n)&((AR(a)|(1^AR(w)))-1)&(-(wt&FL+INT)))>=0)R jthook2cell(jt,a,w,self);  // if not int/float, or short, or not (atom a and list w), do full grade
  if((UI)j>=(UI)n){j+=n; ASSERT((UI)j<(UI)n,EVINDEX);}
@@ -790,7 +790,7 @@ DF2(jtordstat){DF12IP;A q,t=0;I j,m,m0,m1,n,wt;D *qv;
 }    /* a{/:~w */
 
 DF2(jtordstati){DF12IP;A t;I n,wt;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  n=AN(w); wt=AT(w);
  if(((4-n)&((AR(a)|(1^AR(w)))-1)&(-(wt&FL+INT)))>=0)R jthook2cell(jt,a,w,self);  // revert if not int/float, len>4, and (atom a & list w)
  RZ(t=jtordstat(jt,a,w,0));   // Get the value of the ath order statistic.  No self, because it can't revert (checks are identical)

@@ -29,10 +29,10 @@
 #define CDERIV(id,f1,f2,flag,m,l,r)  CDERIVF(id,f1,f2,flag,0,m,l,r)
 
 // Assertions in conjunctions, to check operand types
-#define ASSERTVV(a,w)   ARGCHK2(a,w); ASSERT(VERB&AT(a)&AT(w),EVDOMAIN)
-#define ASSERTVVn(a,w)  ARGCHK2(a,w); ASSERT(VERB&AT(a),EVDOMAIN)
-#define ASSERTVN(a,w)   ARGCHK2(a,w); ASSERT((VERB&AT(a))>(VERB&AT(w)),EVDOMAIN)
-#define ASSERTNN(a,w)   ARGCHK2(a,w); ASSERT(!(VERB&(AT(a)|AT(w))),EVDOMAIN)
+#define ASSERTVV(a,w)   ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(VERB&AT(a)&AT(w),EVDOMAIN)
+#define ASSERTVVn(a,w)  ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(VERB&AT(a),EVDOMAIN)
+#define ASSERTVN(a,w)   ARGCHK2(a,w); MEMCHK2(a,w); ASSERT((VERB&AT(a))>(VERB&AT(w)),EVDOMAIN)
+#define ASSERTNN(a,w)   ARGCHK2(a,w); MEMCHK2(a,w); ASSERT(!(VERB&(AT(a)|AT(w))),EVDOMAIN)
 
 
 // TRUE if v is c!.0.  This is used for detecting use of special code.

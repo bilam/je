@@ -71,13 +71,13 @@ F1(jtsp){F12IP;ASSERTMTV(w); R sc(spbytesinuse());}  //  7!:0
 // 7!:1
 // Return (current allo),(max since reset)
 // If arg is an atom, reset hwmk to it
-F1(jtsphwmk){F12IP;
+F1(jtsphwmk){F12IP; MEMCHK1(w);
   I curr = jt->malloctotal+jt->malloctotalremote; I hwmk = jt->malloctotalhwmk;
   if(AN(w)){I new; new=rei0(w); jt->malloctotalhwmk=new;}
   R v2(curr,hwmk);
 }
 
-DF1(jtspit){DF12IP;A z;I k; 
+DF1(jtspit){DF12IP; MEMCHK1(w); A z;I k; 
  F1RANK(1,jtspit,self);
  jt->bytesmax=k=spstarttracking(); A *old=jt->tnextpushp;  // start keeping track of bytesmax
  z=exec1(w); spendtracking();  // end tracking, even if there was an error
@@ -103,7 +103,7 @@ static int read_off_memory_status(statm_t *result)
 
 // 7!:7
 // Return resident memory of the current process
-F1(jtspresident){F12IP;
+F1(jtspresident){F12IP; MEMCHK1(w);
 ASSERTMTV(w);
 #if defined(__wasm__)
  R v2(0, 0);    // not implemented 
@@ -148,20 +148,20 @@ ASSERTMTV(w);
 F1(jtparsercalls){F12IP;ASSERTMTV(w); R sc(jt->parsercalls);}
 
 // 9!:_5, window into the running J code
-F1(jtpeekdata){F12IP;ARGCHK1(w);  I opeek=JT(jt,peekdata);
+F1(jtpeekdata){F12IP;ARGCHK1(w); MEMCHK1(w);  I opeek=JT(jt,peekdata);
  JT(jt,peekdata)=rei0(w);
  R sc(opeek); }
 
 // 13!:_9, set/get recurstate
-F1(jtsetgetrecurstate){F12IP;I orstate=jt->recurstate; if(AN(w)){jt->recurstate=rei0(w);} R sc(orstate); }
+F1(jtsetgetrecurstate){F12IP; MEMCHK1(w); I orstate=jt->recurstate; if(AN(w)){jt->recurstate=rei0(w);} R sc(orstate); }
 
 // 13!:_10, call JDo to execute sentence
-F1(jtcallJDo){F12IP;ARGCHK1(w); PROLOG(0); ASSERT(AR(w)<=1,EVRANK) RZ(w=mkwris(str(AN(w),CAV(w)))) CAV(w)[AN(w)]=0; A z=sc(JDo(JJTOJ(jt),CAV(w))); EPILOG(z)  }
+F1(jtcallJDo){F12IP;ARGCHK1(w); MEMCHK1(w); PROLOG(0); ASSERT(AR(w)<=1,EVRANK) RZ(w=mkwris(str(AN(w),CAV(w)))) CAV(w)[AN(w)]=0; A z=sc(JDo(JJTOJ(jt),CAV(w))); EPILOG(z)  }
 
 #if SY_WIN32
  /* defined in jdll.c */
 #else
-F1(jtts){F12IP;A z;D*x;struct tm tr,*t=&tr;struct timeval tv;
+F1(jtts){F12IP; MEMCHK1(w); A z;D*x;struct tm tr,*t=&tr;struct timeval tv;
  ASSERTMTV(w);
  gettimeofday(&tv,NULL); t=localtime_r((time_t*)&tv.tv_sec,t);
  GAT0(z,FL,6,1); x=DAV1(z);
@@ -177,7 +177,7 @@ F1(jtts){F12IP;A z;D*x;struct tm tr,*t=&tr;struct timeval tv;
 
 // 6!:0
 F1(jtts0){F12IP;A x,z;C s[9],*u,*v,*zv;D*xv;I n,q;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(1>=AR(w),EVRANK);
  RZ(x=ts(mtv));
  n=AN(w); xv=DAV(x);
@@ -242,7 +242,7 @@ __int64 GetMachineCycleCount()
 F1(jttss){F12IP;ASSERTMTV(w); R scf(tod()-JT(jt,tssbase));}
 
 // 6!:2 dyad
-DF2(jttsit2){DF12IP;A z;D t;I n;I stackallo=0,i;
+DF2(jttsit2){DF12IP; MEMCHK2(a,w); A z;D t;I n;I stackallo=0,i;
  F2RANK(0,1,jttsit2,self);
  PROLOG(000);
  n=rei0(a);
@@ -304,7 +304,7 @@ exiterr: z=0; goto exit;   // clear rc before cleanup
 
 
 // 6!:2 monad
-F1(jttsit1){F12IP;R tsit2(num(1),w);}
+F1(jttsit1){F12IP; R tsit2(num(1),w);}
 
 #ifdef _WIN32
 #define sleepms(i) Sleep(i)
@@ -313,7 +313,7 @@ F1(jttsit1){F12IP;R tsit2(num(1),w);}
 #endif
 
 // 6!:3
-F1(jtdl){F12IP;D m,n,*v;UINT ms,s;
+F1(jtdl){F12IP; MEMCHK1(w); D m,n,*v;UINT ms,s;
  RZ(w=ccvt(FL,w,0));
  n=0; v=DAV(w); DQ(AN(w), m=*v++; ASSERT(0<=m,EVDOMAIN); n+=m;);
 #if PYXES
@@ -336,7 +336,7 @@ F1(jtqpfreq){F12IP;ASSERTMTV(w); R scf(pf);}
 F1(jtqpctr ){F12IP;ASSERTMTV(w); R scf(qpc());}
 
 // 6!:12
-F1(jtpmlvl){F12IP;I x;I q;
+F1(jtpmlvl){F12IP; MEMCHK1(w); I x;I q;
  q=rei0(w);
  ASSERT(JT(jt,pma),EVDOMAIN);
  if(__builtin_add_overflow(q,((PM0*)(CAV1(JT(jt,pma))))->pmlvl,&x)){ASSERT(0,EVDOMAIN)}
@@ -344,7 +344,7 @@ F1(jtpmlvl){F12IP;I x;I q;
  R sc(q);
 }    /* add w to pmlvl */
 
-static F1(jtpmfree){F12IP;A x,y;C*c;I m;PM*v;PM0*u;
+static F1(jtpmfree){F12IP; MEMCHK1(w); A x,y;C*c;I m;PM*v;PM0*u;
  if(w){
   c=CAV(w); u=(PM0*)c; v=(PM*)(c+sizeof(PM0)); 
   m=u->wrapped?u->n:u->i; 
@@ -354,11 +354,11 @@ static F1(jtpmfree){F12IP;A x,y;C*c;I m;PM*v;PM0*u;
  R num(1);
 }    /* free old data area */
 
-F1(jtpmarea1){F12IP;R pmarea2(vec(B01,2L,&zeroZ),w);}  // 6!:10
+F1(jtpmarea1){F12IP; R pmarea2(vec(B01,2L,&zeroZ),w);}  // 6!:10
 
 // 6!:10  y is data area to use   x is 2-ele list (record all lines),(wrap the buffer).  Result is #entries
 F2(jtpmarea2){F12IP;A x;B a0,a1,*av;C*v;I an,n=0,s=sizeof(PM),s0=sizeof(PM0),wn;PM0*u;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  RZ(a=cvt(B01,a));  // force x boolean
  an=AN(a);
  ASSERT(1>=AR(a),EVRANK);
@@ -414,7 +414,7 @@ void jtpmrecord(J jt,A name,A loc,I lc,int val){A x,y;B b;PM*v;PM0*u;
 
 // 6!:11
 F1(jtpmunpack){F12IP;A*au,*av,c,t,x,z,*zv;B*b;D*dv;I*iv,k,k1,m,n,p,q,wn,*wv;PM*v,*v0,*vq;PM0*u;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(JT(jt,pma),EVDOMAIN);
  if(!ISDENSETYPE(AT(w),INT))RZ(w=cvt(INT,w));
  wn=AN(w); wv=AV(w);
@@ -451,7 +451,7 @@ F1(jtpmunpack){F12IP;A*au,*av,c,t,x,z,*zv;B*b;D*dv;I*iv,k,k1,m,n,p,q,wn,*wv;PM*v
 }
 
 // 6!:13
-F1(jtpmstats){F12IP;A x,z;I*zv;PM0*u;
+F1(jtpmstats){F12IP; MEMCHK1(w); A x,z;I*zv;PM0*u;
  ASSERTMTV(w);
  GAT0(z,INT,6,1); zv=AV1(z);
  if(x=JT(jt,pma)){

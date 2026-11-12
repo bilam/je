@@ -32,13 +32,13 @@ void jmpn_com (mp_ptr rp, mp_srcptr up, mp_size_t n)
 // see jgmp.h for some notes on type X
 //
 #if C_LE
- #if PYXES && SY_64
+ #if (PYXES || (SY_64 && MEMAUDIT&0x80))
   #define Xrh 1,0,FHRHISGMP,0,0
  #else
   #define Xrh 1,0,FHRHISGMP
  #endif
 #else
- #if PYXES && SY_64
+ #if (PYXES || (SY_64 && MEMAUDIT&0x80))
   #define Xrh 0,0,FHRHISGMP,0,1
  #else
   #define Xrh FHRHISGMP,0,1
@@ -55,13 +55,13 @@ struct BDV1 {
  I k;I f;I m;I t;I c;I n;
 #if C_LE
  RANKT r;UC filler;US h;
-#if PYXES && SY_64
+#if (PYXES || (SY_64 && MEMAUDIT&0x80))
  US origin;S lock;
 #endif
 #else
- #if PYXES && SY_64
+#if (PYXES || (SY_64 && MEMAUDIT&0x80))
  S lock;US origin;
- #endif
+#endif
  US h;UC filler;RANKT r;
 #endif
  I s[1];UI d;};
@@ -301,8 +301,14 @@ X jtXmpzcommon(J jt, mpz_t mpz, I numeric) {
  XSGN(x)= mpz->_mp_size;            // size of number and its sign
  I n= AN(x);                        // length of memory allocated for number
  I sz= XHSZ+n;                      // bytes allocated
+#if MEMAUDIT&0x80
 #if PYXES
  AORIGIN(x)= THREADID1(jt);         // track thread which created this array
+ ALOCK(x)= 0;
+#elif (SY_64 && MEMAUDIT&0x80)
+ (x)->origin= 0x6b;
+ (x)->lock= 0x7c;
+#endif
 #endif
  jt->bytes+= sz;                    // summarize the size of the new space
  jt->malloctotal+= sz;              // ditto
