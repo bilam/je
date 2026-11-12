@@ -77,9 +77,9 @@ I jtaii(J jt,A w){I m; PROD(m,AR(w)-1,1+AS(w)); R m;}
 A jtapv(J jt,I n,I b,I m){A z;
  // see if we can use the canned ascending integers
  if((m==1) & (b>=IOTAVECBEGIN) & (b+n<=IOTAVECLEN+IOTAVECBEGIN)) {
-  if(unlikely((b|(n&~1))==0)){z=n?iv0:mtvi; R z;}  // i. 0/1, INT type
+  if(unlikely((b|(n&~1))==0)){z=n?iv0:mtvi; RETF (z);}  // i. 0/1, INT type
   GAT0(z,INT,0,1); AS(z)[0]=n; AN(z)=n; AK(z)=(C*)(iotavec+b-IOTAVECBEGIN)-(C*)z; ACINIT(z,ACUC1) AFLAGINIT(z,AFRO)  // mark block readonly and not inplaceable
-  R z;
+  RETF (z);
  }
  R apvwr(n,b,m);
 }    /* b+m*i.n */
@@ -87,7 +87,7 @@ A jtapv(J jt,I n,I b,I m){A z;
 A jtapvwr(J jt,I n,I b,I m){A z;
  GATV0(z,INT,n,1); I *x=AV1(z);
   DO(n, x[i]=b; b+=m;)
- R z;
+ RETF (z);
 }    /* b+m*i.n writable */
 
 
@@ -211,7 +211,7 @@ I bsum(I n,B*b){I q=(n-1)>>LGSZI,z=0;UI t,*v;
 }    /* sum of boolean vector b */
 
 // A block for null-terminated C string, with a trailing NUL (which is not included in the AN of the string)
-A jtcstr(J jt,C*s){A z; RZ(z=mkwris(str((I)strlen(s),s))); CAV(z)[AN(z)]=0; R z;}  // ensure writable string returned, since we modify it here.  The string has only the non-NUL, but add a trailing NUL.  There's always room.
+A jtcstr(J jt,C*s){A z; RZ(z=mkwris(str((I)strlen(s),s))); CAV(z)[AN(z)]=0; RETF (z);}  // ensure writable string returned, since we modify it here.  The string has only the non-NUL, but add a trailing NUL.  There's always room.
 
 // Return 1 iff w is the evocation of a name.  w must be a FUNC
 B evoke(A w){V*v=FAV(w); R CTILDE==v->id&&v->fgh[0]&&NAME&AT(v->fgh[0]);}
@@ -263,7 +263,7 @@ A jtifb(J jt,I n,B* RESTRICT b){A z;I p,* RESTRICT zv;
  if(p==n)R IX(n);
  GATV0(z,INT,p,1); zv=AV1(z);
 #if C_AVX2 || EMU_AVX2
- if(unlikely(p==0))R z;
+ if(unlikely(p==0))RETF (z);
  // do 64 bits at a time
  UI b64; __m256i b0,b1,bor,zero=_mm256_setzero_si256(); I zbase;
  B *bx=b;
@@ -309,7 +309,7 @@ A jtifb(J jt,I n,B* RESTRICT b){A z;I p,* RESTRICT zv;
   n-=BW;  // decr count left
  }
 #endif
- R z;
+ RETF (z);
 }    /* integer vector from boolean mask */
 
 // i. # w
@@ -520,19 +520,19 @@ A jtodom(J jt,I r,I n,I* RESTRICT s){A z;I m,mn,*u,*zv;
  PRODX(m,n,s,1) DPMULDE(m,n,mn);
  GATV(z,INT,mn,2==r?2:n,s);
  if(2==r){u=AS(z); u[0]=m; u[1]=n;}
- if(!mn)R z;
+ if(!mn)RETF (z);
  zv=IAV(z);
  if(1==n)DO(m, zv[i]=i;)
  else{
   I *zvo=zv-1; DQ(n, *zv++=0;)   // init first row, point zvo to before the first value
   DQ(m-1, I dontadd=0; zv=zvo+n; zvo=zv+n; DQ(n, I out=*zv + 1 + dontadd; dontadd=REPSGN(out-s[i]); *zvo = out&dontadd; --zv; --zvo;))  // add 1 first time, & continue as long as there is carry.  Once dontadd goes to -1 it stays there
  }
- R z;
+ RETF (z);
 }
 
 F1(jtrankle){F12IP; MEMCHK1(w); R!w||AR(w)?w:ravel(w);}
 
-A jtsc(J jt,I k)     {A z; if(BETWEENC(k,NUMMIN,NUMMAX)){z=num(k); z=k&~1?z:zeroionei(k); R z;} GAT0(z,INT, 1,0); IAV0(z)[0]=k;     RETF(z);}  // always return I
+A jtsc(J jt,I k)     {A z; if(BETWEENC(k,NUMMIN,NUMMAX)){z=num(k); z=k&~1?z:zeroionei(k); RETF (z);} GAT0(z,INT, 1,0); IAV0(z)[0]=k;     RETF(z);}  // always return I
 A jtscib(J jt,I k)   {A z; if(BETWEENC(k,NUMMIN,NUMMAX))R num(k); GAT0(z,INT, 1,0); IAV0(z)[0]=k;     RETF(z);}  // return b if 0 or 1, else I
 A jtsc4(J jt,I t,I v){A z; GA00(z,t,1,0); IAV0(z)[0]=v;     RETF(z);}  // return scalar with a given I-length type (numeric or box)
 A jtscb(J jt,B b)    {R num(b);}   // A block for boolean
@@ -557,7 +557,7 @@ A jtvci(J jt,I k){A z; GAT0(z,INT,1,1); IAV1(z)[0]=k; RETF(z);}
 
 // return A-block for list of type t, length n, and values *v
 // MUST NOT return virtual or fixed block, because we often modify the returned area
-A jtvec(J jt,I t,I n,void*v){A z; GA10(z,t,n); MC(AV(z),v,n<<bplg(t)); RETF(z);}
+A jtvec(J jt,I t,I n,void*v){A z; GA10(z,t,n); MC(AV(z),v,n<<bplg(t)); R z;}
 
 // return A-block for list of type t, length n, and values *v
 // with special handling to coerce boolean type.  We do not overfetch.
@@ -692,7 +692,7 @@ A jtfindnameinscript(J jt,C *script, C *name, I pos){
  for(step=0;step<2;++step){
   switch(step){  // try the startup, from the bottom up
   case 1: ; C buf[100]; eval(strcat(strcat(strcpy(buf,"load'"),script),"'"));  // load script and fall through
-  case 0: ; A w=nfs(strlen(name),name,0); A val; if((val=syrd(w,jt->locsyms))!=0){target=QCWORD(namerefacv(w,val)); if(target&&LOWESTBIT(AT(target))&pos)R target;}  // there is always a ref, but it may be to [:.  Undo ra() in syrd
+  case 0: ; A w=nfs(strlen(name),name,0); A val; if((val=syrd(w,jt->locsyms))!=0){target=QCWORD(namerefacv(w,val)); if(target&&LOWESTBIT(AT(target))&pos)RETF (target);}  // there is always a ref, but it may be to [:.  Undo ra() in syrd
   }
   RESETERR;  // if we loop back, clear errors
  }

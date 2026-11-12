@@ -42,7 +42,7 @@ D*wd=(D*)wc,*zd=(D*)zc;
  }
  // We modified w which is now not pristine.
  PRISTCLRF(w)
- R z;
+ RETF (z);
 }
 
 #define CASE2Z(T)  {T*xv=(T*)AV(x),*yv=(T*)AV(y),*zv=(T*)AV(z); DO(n, zv[i]=(bv[i]?yv:xv)[i];); break;}
@@ -505,7 +505,7 @@ static A jtcelloffset(J jt,AD * RESTRICT w,AD * RESTRICT ind,I wframelen){A z=0;
   I *sv=&AS(w)[wframelen];  // axis lengths
   DQ(nzcells, I r=0; if(naxes){I i=0; I s=sv[i]; while(1){r*=s; I in=iv[i]; if((UI)in>=(UI)s){in+=s; ASSERT((UI)in<(UI)s,EVINDEX);} r+=in; if(++i==naxes)break; s=sv[i];}} *zv++=r; iv+=naxes;)  // carried dependency unimportant because short; use 0 if no axes
  }
- R z;
+ RETF (z);
 }
 
 // axislen is length of axis, ind is doubly-boxed selector that is itself a boxed type, therefore complementary
@@ -532,7 +532,7 @@ static A jtcompidx(J jt,I axislen,A ind){
  I *iv=IAV(ind); DO(AN(ind),I ix=iv[i]; if((UI)ix>=(UI)axislen){ ix+=axislen; ASSERT((UI)ix<(UI)axislen,EVINDEX) } bv[ix>>LGBW]&=~BIT(ix&(BW-1)); )  // turn off the bit for each index
  I zbase=0; DO(bwds, I bmask=*bv++; while(bmask){I bitno=CTTZI(bmask); *zv++=zbase+bitno; bmask&=bmask-1;} zbase+=BW;)  // copy an index for each remaining bit, clearing LSBs one by one
  AN(z)=AS(z)[0]=zv-zv0;
- R z;
+ RETF (z);
 }
 
 // Execution of x m}"r y for sparse: one cell
@@ -790,8 +790,8 @@ static DF2(amccv2){DF12IP;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1];
 }
 
 
-static DF1(mergn1){DF12IP; MEMCHK1(w); A ind,z; z=jtmerge1(jt,w,ind=FAV(self)->fgh[0]); if(unlikely(z==0))jteformat(jt,self,w,0,ind); R z;}  // no inplacing
-static DF1(mergv1){DF12IP; MEMCHK1(w); A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0];A ind,z; z=jtmerge1(jt,w,ind=CALL1(f1,w,fs)); if(unlikely(z==0))jteformat(jt,self,w,0,ind); R z;}
+static DF1(mergn1){DF12IP; MEMCHK1(w); A ind,z; z=jtmerge1(jt,w,ind=FAV(self)->fgh[0]); if(unlikely(z==0))jteformat(jt,self,w,0,ind); RETF (z);}  // no inplacing
+static DF1(mergv1){DF12IP; MEMCHK1(w); A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0];A ind,z; z=jtmerge1(jt,w,ind=CALL1(f1,w,fs)); if(unlikely(z==0))jteformat(jt,self,w,0,ind); RETF (z);}
 
 // verb executed for [v0`]v1`v2} y
 static DF1(jtgav1){DF12IP; MEMCHK1(w); V* RESTRICT sv=FAV(self); A ff,ffm,ffx,*fv=AAV(sv->fgh[0]);
@@ -864,6 +864,6 @@ DF1(jtamend){DF12IP;
    FAV(z)->valencefns[1]=jtamnegate;    // if gerund is -@[:]{`[ [`]], change the dyad function pointer to the special code
    FAV(z)->flag|=VIRS2;  // also support IRS for this case
   }
-  R z;
+  RETF (z);
  }else R fdef(0,CRBRACE,VERB,(AF)mergn1,(AF)jtamendn2c,w,0L,0L,VNONAME+VNOSELF|VNOLOCCHG|VIRS2, RMAX,RMAX,RMAX);   // m}"r with IRS
 }

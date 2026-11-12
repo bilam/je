@@ -156,7 +156,7 @@
    SMFULLPACK(T,0,IIFBEPS,DCLZVO(I,0) I *zv0=zv; , (T,0,*zv=i+wsct; zv+=v;); AS(z)[0]=AN(z)=zv-zv0;)  \
    }  \
   }  \
-  R h; \
+  RETF (h); \
  }
 
 // The verbs to do the work, for different item lengths and hashtable sizes

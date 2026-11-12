@@ -67,7 +67,7 @@ static F1(jttoc2){F12IP;A z;C*wv,*zv;I n;C4*w4;US*z2;
  DQ(n, *z2++=(US)*w4++;);
  }
 #endif
- R z;
+ RETF (z);
 }    /* convert 1-byte chars or 4-byte chars(discard high order half) to 2-byte chars */
 
 static F1(jttoc2e){F12IP;A z;I m,n,r;

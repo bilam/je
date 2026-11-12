@@ -145,7 +145,7 @@ static A jtsortdirect(J jt,I m,I api,I n,A w){F1PREFJT;A x,z;I t;
   }
   wv=(void*)((C*)wv+bps); zv=(void*)((C*)zv+bps);
  );
- R z;  // multiple cells - return original z
+ RETF (z);  // multiple cells - return original z
 }    /* w grade"r w for direct types, by moving the data without pointers */
 
 
@@ -166,7 +166,7 @@ static SF(jtsortb){F12JT; MEMCHK1(w); A z;B up,*u,*v;I i,s;
   else  {mvc(s  ,v,MEMSET01LEN,MEMSET01); mvc(n-s,v+s,MEMSET00LEN,MEMSET00);}
   u+=n; v+=n;
  }
- R z;
+ RETF (z);
 }    /* w grade"1 w on boolean */
 
 static SF(jtsortb2){F12JT; MEMCHK1(w); A z;B up;I i,ii,yv[4];US*v,*wv;
@@ -178,7 +178,7 @@ static SF(jtsortb2){F12JT; MEMCHK1(w); A z;B up;I i,ii,yv[4];US*v,*wv;
   DQ(n, IND2(*wv++); ++yv[ii];);
   DO(4, ii=i^((up-1)&3); US b2=(ii+(ii<<9)); b2=SHMSK(b2,1,0x0101); mvc(yv[ii]*2,v+startfill,2,&b2); startfill+=yv[ii];)
  }
- R z;
+ RETF (z);
 }    /* w grade"r w on 2-byte boolean items */
 
 static SF(jtsortb4){F12JT; MEMCHK1(w); A z;B up;I i,ii,yv[16];UINT*v,*wv;
@@ -190,7 +190,7 @@ static SF(jtsortb4){F12JT; MEMCHK1(w); A z;B up;I i,ii,yv[16];UINT*v,*wv;
   DQ(n, IND4(*wv++); ++yv[ii];);
   DO(16, ii=i^((up-1)&15); UINT b4=(ii+(ii<<9)); b4=(b4+(b4<<18)); b4=SHMSK(b4,3,0x01010101); mvc(yv[ii]*4,v+startfill,4,&b4); startfill+=yv[ii];)
  }
- R z;
+ RETF (z);
 }    /* w grade"r w on 4-byte boolean items */
 
 static SF(jtsortc){F12JT; MEMCHK1(w); A z;B up;I i,ii,yv[256];UC*v,*wv;
@@ -202,7 +202,7 @@ static SF(jtsortc){F12JT; MEMCHK1(w); A z;B up;I i,ii,yv[256];UC*v,*wv;
   DQ(n, ++yv[*wv++];);
   DO(p, ii=i^((up-1)&(p-1)); mvc(yv[ii],v+startfill,1,&ii); startfill+=yv[ii];)
  }
- R z;
+ RETF (z);
 }    /* w grade"1 w on boolean or character */
 
 static SF(jtsortc2){F12JT; MEMCHK1(w); A z;B up;I i,yv[65536];US*v,*wv;
@@ -214,7 +214,7 @@ static SF(jtsortc2){F12JT; MEMCHK1(w); A z;B up;I i,yv[65536];US*v,*wv;
   DQ(n, ++yv[*wv++];);
   DO(65536, US ii=i^((up-1)&(65536-1)); ii=(ii<<sct)|(ii>>sct); mvc(yv[ii]*2,v+startfill,2,&ii); startfill+=yv[ii];)  // scaf could exit early when startfill goes to end
  }
- R z;
+ RETF (z);
 }    /* w grade"1 w on 2-byte character or unicode items */
 
 
@@ -235,7 +235,7 @@ static SF(jtsorti1){F12JT; MEMCHK1(w); A x,y,z;I*wv;I i,*xv,*zv;void *yv;
   grcol(65536,0L,yv,n,xv,zv,sizeof(I)/sizeof(US),INTMSBWDX+(US*)xv,colflags|1);
   wv+=n; zv+=n;
  }
- R z;
+ RETF (z);
 }    /* w grade"r w on large-range integers */
 
 //todo should use for avx2 too
@@ -344,7 +344,7 @@ static SF(jtsorti){F12JT; MEMCHK1(w); A y,z;I i;UI4 *yv;I j,s,*wv,*zv;
 //  if((UI)jt->workareas.compare.complt>>(BW-1)){ j=rng.min; DQ(rng.range, s=(I)yv[j]; DQ(s, *zv++=j;); ++j;);}  // generates rep stos, which is slow.  should fix
 //  else{j=rng.min+rng.range; DQ(rng.range, --j; s=(I)yv[j]; DQ(s, *zv++=j  ;););}
  }
- R z;
+ RETF (z);
 }    /* w grade"1 w on small-range integers */
 
 
@@ -365,7 +365,7 @@ static SF(jtsortu){F12JT; MEMCHK1(w); A y,z;I i;UI4 *yv;C4 j,s,*wv,*zv;
   I incr = 1-SHMSK((I)jtfg,JTDESCENDX-1,2); j=(C4)(rng.min+(REPSGN(incr)&(rng.range-1)));
   DQ(rng.range, s=yv[j]; DQ(s, *zv++=j;) j+=(C4)incr;)
  }
- R z;
+ RETF (z);
 }    /* w grade"1 w on small-range literal4 */
 
 // We are known to have 1 atom per item
@@ -381,7 +381,7 @@ static SF(jtsortu1){F12JT; MEMCHK1(w); A x,y,z;C4 *xu,*wv,*zu;I i;void *yv;
   grcol(65536, 0L, yv,n,(UI*)xu, (UI*)zu,sizeof(C4)/sizeof(US),INTLSBWDX+1*WDINC+(US*)xu ,colflags);
   wv+=n; zu+=n;
  }
- R z;
+ RETF (z);
 }    /* w grade"r w on large-range literal4 */
 
 
@@ -437,7 +437,7 @@ static SF(jtsortd){F12JT; MEMCHK1(w); A x,y,z;B b;D*g,*h,*xu,*wv,*zu;I i,nneg;vo
   }
   wv+=n; zu+=n;
  }
- R z;
+ RETF (z);
 #endif
 }    /* w grade"1 w on real w */
 

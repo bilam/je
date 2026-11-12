@@ -120,7 +120,7 @@ static F1(jtaddscriptname){F12IP; MEMCHK1(w); I i;A z;
  }
 exit:
  WRITEUNLOCK(JT(jt,startlock))
- R z;  // either where found or where added
+ RETF (z);  // either where found or where added
 }
 
 
@@ -167,7 +167,7 @@ F1(jtscriptnum){F12IP; MEMCHK1(w);
  ASSERT(BETWEENO(i,-1,scriptn),EVINDEX);  // make sure it's _1 or valid index
  A rv=sc(jt->currslistx);  // save the old value
  RZ(rv); jt->currslistx=i;  // set the new value (if no error)
- R rv;  // return prev value
+ RETF (rv);  // return prev value
 }
 
 // entry points for 0!:0-0!:112

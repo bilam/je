@@ -512,7 +512,7 @@ DFI2(jtmatch){A z;I m,n,mn;
   // The compare for each cell is 1 if the cell-shapes are the same
   p=AR(a)-af; b=p==(AR(w)-wf)&&TESTAGREE(af+AS(a),wf+AS(w),p);   // b =  shapes are the same
   // Allocate & return result
-  GATV(z,B01,mn,wf,AS(w)); mvc(mn,BAVn(wf,z),1,iotavec-IOTAVECBEGIN+(b^eqis0)); R z;
+  GATV(z,B01,mn,wf,AS(w)); mvc(mn,BAVn(wf,z),1,iotavec-IOTAVECBEGIN+(b^eqis0)); RETF (z);
  }
  // There are atoms.  If there is only 1 cell to compare, do it quickly
  if(wf==0){

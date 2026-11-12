@@ -220,7 +220,7 @@ DF1(jtbitwiseinsertchar){DF12IP;A fs,z;I d,j,n,r,wn,wr,zatoms;UC*u,*v,*wv,x,*zv;
   }
   *zv=x;
  }
- R z;
+ RETF (z);
 }
 
 // 1&(17 b.) w, i. e. test even/odd.   Run through atomic2, except when w is an atom; then return canned 0/1

@@ -2078,7 +2078,7 @@ struct ekctx opctx={YC(rowsperthread)YC(prx)YC(qk)YC(pcx)YC(pivotcolnon0)YC(pivo
  if(nthreads>1)jtjobrun(jt,(unsigned char (*)(JJ, void *, UI4))jtekupdatex,&opctx,nthreads,0);  // go run the tasks - default to threadpool 0
  else jtekupdatex(jt,&opctx,0);  // the one-thread case is not uncommon and we avoid thread overhead then
 
- R qk;
+ RETF (qk);
 }
 
 
@@ -2278,7 +2278,7 @@ struct ekctx opctx={YC(rowsperthread)YC(pcx)YC(qk)YC(prx)YC(coln0)YC(ncvals)YC(p
  if(nthreads>1)jtjobrun(jt,(unsigned char (*)(JJ, void *, UI4))jtqktupdatex,&opctx,nthreads,0);  // go run the tasks - default to threadpool 0
  else jtqktupdatex(jt,&opctx,0);  // the one-thread case is not uncommon and we avoid thread overhead then
 
- R qk;
+ RETF (qk);
 }
 
 #else

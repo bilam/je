@@ -138,7 +138,7 @@ ASSERTMTV(w);
  if(unlikely(cnt!=1)){kvm_close(kd);ASSERT(0,EVFACE);}
  A r=v2(p->p_vm_rssize*sysconf(_SC_PAGESIZE), 1024*(I)mem.ru_maxrss);
  kvm_close(kd);
- R r;
+ RETF (r);
 #else
  R v2(1024*(I)mem.ru_maxrss, 1024*(I)mem.ru_maxrss);   // linux only implemented max rss
 #endif
@@ -171,7 +171,7 @@ F1(jtts){F12IP; MEMCHK1(w); A z;D*x;struct tm tr,*t=&tr;struct timeval tv;
  x[3]=t->tm_hour;
  x[4]=t->tm_min;
  x[5]=t->tm_sec+(D)tv.tv_usec/1e6;
- R z;
+ RETF (z);
 }
 #endif
 
@@ -181,7 +181,7 @@ F1(jtts0){F12IP;A x,z;C s[9],*u,*v,*zv;D*xv;I n,q;
  ASSERT(1>=AR(w),EVRANK);
  RZ(x=ts(mtv));
  n=AN(w); xv=DAV(x);
- if(!n)R x;
+ if(!n)RETF (x);
  if(!ISDENSETYPE(AT(w),LIT))RZ(w=cvt(LIT,w));
  I zr=AR(w); GATV(z,LIT,n,AR(w),AS(w)); zv=CAVn(zr,z); MC(zv,CAV(w),n);
  q=0; v=zv; DQ(n, q+='Y'==*v++;); u=2==q?s+2:s;   // if only 2 Y, advance over century
@@ -191,7 +191,7 @@ F1(jtts0){F12IP;A x,z;C s[9],*u,*v,*zv;D*xv;I n,q;
  sprintf(s,FMTI02,(I)xv[3]);        u=s; v=zv; DQ(n, if(*v=='h'){*v=*u++; if(!*u)break;} ++v;);
  sprintf(s,FMTI02,(I)xv[4]);        u=s; v=zv; DQ(n, if(*v=='m'){*v=*u++; if(!*u)break;} ++v;);
  sprintf(s,FMTI05,(I)(1000*xv[5])); u=s; v=zv; DQ(n, if(*v=='s'){*v=*u++; if(!*u)break;} ++v;);
- R z;
+ RETF (z);
 }
 
 
@@ -327,7 +327,7 @@ F1(jtdl){F12IP; MEMCHK1(w); D m,n,*v;UINT ms,s;
  sleepms(ms);
 #endif
 #endif
- R w;
+ RETF (w);
 }
 
 
@@ -447,7 +447,7 @@ F1(jtpmunpack){F12IP;A*au,*av,c,t,x,z,*zv;B*b;D*dv;I*iv,k,k1,m,n,p,q,wn,*wv;PM*v
  v=vq; DO(p, if(b[i]  ){MC(dv,v->t,sizeof(D)); ++dv;} ++v;); 
  v=v0; DO(q, if(b[p+i]){MC(dv,v->t,sizeof(D)); ++dv;} ++v;); 
 #endif
- R z;
+ RETF (z);
 }
 
 // 6!:13
@@ -463,6 +463,6 @@ F1(jtpmstats){F12IP; MEMCHK1(w); A x,z;I*zv;PM0*u;
   zv[4]=u->wrapped;
   zv[5]=((PM0*)(CAV1(JT(jt,pma))))->pmlvl;
  }else zv[0]=zv[1]=zv[2]=zv[3]=zv[4]=zv[5]=0;
- R z;
+ RETF (z);
 }
 

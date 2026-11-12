@@ -48,7 +48,7 @@ A jtiovxs(J jt,I mode,A a,A w){A e,x,z;B h;I at,t,wt;P*ap=0,*wp,*zp;
   SPB(zp,e,indexofsub(mode,a,e));
   SPB(zp,x,indexofsub(mode,a,x));
  }
- R z;
+ RETF (z);
 }    /* vector i. sparse */
 
 A jtiovsd(J jt,I mode,A a,A w){A ae,ax,ay,p,z;B h,*pv;I at,j,m,n,t,wt,*v,*yv;P*ap;
@@ -61,7 +61,7 @@ A jtiovsd(J jt,I mode,A a,A w){A ae,ax,ay,p,z;B h,*pv;I at,j,m,n,t,wt,*v,*yv;P*a
  RZ(z=mkwris(indexofsub(mode,ax,w))); v=AV(z);  // ensure z writable since we may modify it here
  RZ(p=eq(ae,w)); pv=BAV(p); 
  DO(AN(w), *v=pv[i]?j:m>*v?yv[*v]:n; ++v;);
- R z;
+ RETF (z);
 }    /* (sparse vector) i. dense */
 
 
@@ -81,7 +81,7 @@ static F1(jtifdz){F12IP;I m;
  ARGCHK1(w); MEMCHK1(w);
  m=bplg(AT(w))-LGSZI; AN(w)<<=m; AS(w)[1]<<=m;
  AT(w)=INT;
- R w;
+ RETF (w);
 }    /* INT from FL or CMPX, in place */
 
 static A jtioe(J jt,I mode,A w){A b,j,p,y;I c,jn,*jv,k,n;P*wp;
@@ -173,7 +173,7 @@ A jtindexofss(J jt,I mode,A a,A w){A ai,aj,ax,wi,wj,wx,x,y,z;B aw=a!=w;I ar,c,m,
  SPB(zp,e,ioe(mode,a));
  SPB(zp,i,aw?wi:ai);
  SPB(zp,x,x);
- R z;
+ RETF (z);
 }    /* sparse i. sparse */
 
 FI1(jtnubsievesp){A e,x,y,z;I c,j,m,n,*s,*u,*v,*vv,*yv;P*p;
@@ -193,5 +193,5 @@ FI1(jtnubsievesp){A e,x,y,z;I c,j,m,n,*s,*u,*v,*vv,*yv;P*p;
  SPB(p,e,num(0));
  SPB(p,i,y);
  SPB(p,x,reshape(sc(m),num(1)));
- R z;
+ RETF (z);
 }

@@ -94,7 +94,7 @@ static REPF(jtrepbdx){F12IP;A z;I c,k,m,p;
   // since the input is abandoned and no cell is ever duplicated, pristinity is unchanged
  }
  AS(z)[wf]=p;  // move in length of item axis, #bytes per item of cell
- if(!zn)R z;  // If no atoms to process, return empty
+ if(!zn)RETF (z);  // If no atoms to process, return empty
 
  JMCDECL(endmask) JMCSETMASK(endmask,k,flgs&FLGSNOOSTORE)   // set up for irregular move, if we need one
   
@@ -180,7 +180,7 @@ static REPF(jtrepbdx){F12IP;A z;I c,k,m,p;
   wvv=(C*)wvv+(k*n);  // in case we loop back, back wvv to start of next input area, taking away the part of the last BW section we didn't use
   n=0;  // no bias for cells after the first
  } 
- R z;
+ RETF (z);
 }    /* (dense boolean)#"r (dense or sparse) */
 
 static REPF(jtrepbsx){F12IP;A ai,c,d,e,g,q,x,wa,wx,wy,y,y1,z,zy;B*b;I*dv,*gv,j,m,n,*u,*v,*v0;P*ap,*wp,*zp;
@@ -213,7 +213,7 @@ static REPF(jtrepbsx){F12IP;A ai,c,d,e,g,q,x,wa,wx,wy,y,y1,z,zy;B*b;I*dv,*gv,j,m
  SPB(zp,e,SPA(wp,e));
  SPB(zp,i,zy);
  SPB(zp,x,repeat(q,wx));
- R z;
+ RETF (z);
 }    /* (sparse boolean) #"r (dense or sparse) */
 
 static REPF(jtrepidx){F12IP;A y;I j,m,p=0,*v,*x;A z; 
@@ -322,12 +322,12 @@ static REPF(jtrep1d){F12IP;A z;C*wv,*zv;I c,k,m,n,p=0,q,t,*ws,zk,zn;
  DPMULDE(p,n,q);  // q=length of result item  axis.  +/a copies, each of length n
  DPMULDE(p,AN(w),zn);
  I zr=AR(w)+!wcr; GA00(z,AT(w),zn,zr); MCISH(AS(z),AS(w),zr) AS(z)[wf]=q;
- if(!zn)R z;
+ if(!zn)RETF (z);
  wv=CAV(w); zv=CAVn(zr,z);
  PROD(c,wf+(I )(wcr!=0),ws); PROD(k,wcr-1,ws+wf+1); k <<=bplg(AT(w));  // c=#cell-items to process  k=#atoms per cell-item
  zk=p*k;  // # bytes to fill per item
  DQ(c, mvc(zk,zv,k,wv); zv+=zk; wv+=k;);
- R z;
+ RETF (z);
 }    /* scalar #"r dense   or   dense #"0 dense */
 
 static B jtrep1sa(J jt,A a,I*c,I*d){A x;B b;I*v;
@@ -384,7 +384,7 @@ static REPF(jtrep1s){F12IP;A ax,e,x,y,z;B*b;I c,d,cd,j,k,m,n,p,q,*u,*v,wr,*ws;P*
  SPB(zp,a,ax);
  SPB(zp,i,y);
  SPB(zp,x,x);
- R z;
+ RETF (z);
 }    /* scalar #"r sparse   or  sparse #"0 (dense or sparse) */
 
 A (*reptab[])() = {jtrepisx,jtrepidx,jtrepbsx,jtrepbdx,jtrepzsx,jtrepzdx,jtrep1s,jtrep1d};

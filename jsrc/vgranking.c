@@ -28,7 +28,7 @@ static A jtrankingb(J jt,A w,I wf,I wcr,I m,I n,I k){A z;C*wv;I i,j,p,t,*zv;TTYP
   for(j=0,v=(int*)wv;j<n;++j){UI4 bb=*v&(UI4)VALIDBOOLEAN; v=(unsigned int*)((I)v+k); bb|=bb<<9; bb|=bb<<18; bb>>=(28-k); *zv++=yv[bb]++;}  // use histo
   wv+=n*k;
  }
- R z;
+ RETF (z);
 }    /* /:@/: w where w is boolean and items have length 2 or 4 */
 
 // /:@/:

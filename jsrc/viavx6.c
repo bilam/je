@@ -53,7 +53,7 @@
    case IEPS: {B * RESTRICT zb=BAV(z)+l*wsct; XDOWP##ALG(T,TH,B,zb,hash,exp,stride,0,ALG); XDOWA##ALG(T,TH,B,zb,hash,exp,stride,1,allfound2,ALG); allfound2: XDOWINDCLASS(zb); } break; \
    } \
   }                                                                                  \
-  R h;                                                                               \
+  RETF (h);                                                                               \
  }
 
 IOFXW(A, US,jtiowax1,,cthia(~0LL,1.0,C(*v)),!equ(C(*v),C(wv[hj])), 1,algv) // boxed exact 1-element item

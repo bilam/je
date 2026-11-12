@@ -43,7 +43,7 @@ static A jtssdo(J jt,A a,A w,C c){DC d,e;I n;
  }
  // Return a suspension-ending value.  Kludge we also set a flag to process the step because the labs can't route the value correctly
  JT(jt,dbuser)|=TRACEDBSUSSS;  // indicate single-step pending.  This is non-reentrant and may have multithread issues
- A z; RZ(z=mkwris(box(sc(SUSSS)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;
+ A z; RZ(z=mkwris(box(sc(SUSSS)))); AFLAGORLOCAL(z,AFDEBUGRESULT) RETF (z);
 }
 
 F1(jtdbcutback  ){F12IP;R ssdo(0L,w,SSCUTBACK);}  /* 13!:19 */

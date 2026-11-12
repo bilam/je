@@ -73,7 +73,7 @@ static DF2(jtlscapco12){DF12IP;PROLOG(556);A z;
   FAV(recurself)->localuse.lslevels[0]=efflev(FAV(self)->localuse.lslevels[0],a); FAV(recurself)->localuse.lslevels[1]=efflev(FAV(self)->localuse.lslevels[1],w);  // fill in the trigger levels
   FAV(recurself)->valencefns[1]=jtlev2; PRISTCLR(w) PRISTCLRNODCL(a) z=lev2(a,w,recurself);  // set recursion pointer and pristinity and start recursion
  }
- if(type!=CSCAPCO)R z;  // return if L:, fall through for S:
+ if(type!=CSCAPCO)RETF (z);  // return if L:, fall through for S:
 
  if(likely(z!=0)){
   // S: succeeded.  Assemble the results.  First make the result array look boxed, open it, then change to INT to avoid frees
@@ -95,7 +95,7 @@ static A jtlsub(J jt,C id,A a,A w){A h,t;I*hv,n,*v;
  I4 d1=v[n-1]; d1=d1!=v[n-1]?0x7fffffff+SGNTO0(v[n-1]):d1;  // right dyad; if there is upper significance, use I4 IMIN/IMAX
  I4 m=v[2==n]; m=m!=v[2==n]?0x7fffffff+SGNTO0(v[2==n]):m;  // monad; if there is upper significance, use I4 IMIN/IMAX
  A z; fdefallo(z); fdeffillall(z,0,id,VERB, jtlscapco12,jtlscapco12, a,w,0, FAV(a)->flag&VNONAME+VNOSELF, RMAX,RMAX,RMAX,fffv->localuse.lslevels[0]=d0;fffv->localuse.lslevels[1]=d1,fffv->localuse.lslevels[2]=m);
- R z;
+ RETF (z);
 
 }
 

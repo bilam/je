@@ -65,7 +65,7 @@ F1(jtcrccompile){F12IP;A h,*hv;UINT z; UINT crctab[256];
  RE(z=crcvalidate(w,crctab));
  RZ(hv[0]=incorp(vec(LIT,sizeof(crctab),crctab)));  // Save the table.  We don't have any other good type to use
  RZ(hv[1]=incorp(sc((I)z)));
- R h;
+ RETF (h);
 }
 
 // CRC where table has been precomputed and stored in h
@@ -153,7 +153,7 @@ size_t zlen=AN(z);
 base64_encode(wv, AN(w), CAV(z), &zlen, B64CODEC );
 ASSERT((I)zlen==AN(z),EVDOMAIN);  // make sure length agreed
 #endif
- R z;
+ RETF (z);
 
 }
 
@@ -203,7 +203,7 @@ size_t zlen=AN(z);
 int rc=base64_decode(CAV(w), AN(w), CAV1(z), &zlen, B64CODEC );
 ASSERT(rc==1&&(I)zlen==AN(z),EVDOMAIN);  // make sure no invalid input bytes
 #endif
- R z;
+ RETF (z);
 }
   // the 3 bytes are characters AAAAABB BBBBCCCC CCDDDDDD in bits
   //                            7     0 15     8 23    16
@@ -254,5 +254,5 @@ DF2(jtxxhash2){DF12IP; MEMCHK2(a,w);
   default:
     ASSERT(0,EVDOMAIN);
   }
-  R z;
+  RETF (z);
 }

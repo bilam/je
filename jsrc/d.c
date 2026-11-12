@@ -163,7 +163,7 @@ A jtunparse(J jt,A w,I nflag){A*v,z;
  jt->etxn=0;
  v=AAV(w); DO(AN(w), nflag=disp(QCWORD(v[i]),nflag);); z=str(jt->etxn,jt->etxinfo->etx);  // No C(): messages and sentences may contain LPAR/PYX
  jt->etxn=0;
- R z;
+ RETF (z);
 }
 
 // Display DCCALL stack frame
@@ -220,7 +220,7 @@ F1(jtdbstackz){F12IP; MEMCHK1(w); A y,z;
  R dfv1(z,y,cut(ds(CLEFT),num(-2)));
 }    /* 13!:18  SI stack as result */
 
-static A gahzap(J jt,I r,A w){RZ(w=gah(r,w)) ACINITUNPUSH(w); R w;}  // allocate header and ra()
+static A gahzap(J jt,I r,A w){RZ(w=gah(r,w)) ACINITUNPUSH(w); RETF (w);}  // allocate header and ra()
 // ratify the current emsg and call eformat_j_ to give a full message
 // This is called from CALL[12] when we know the arguments and self.  The error code will have been signaled earlier
 // self is the self for the failing entity; but if self is 0, a is a string to display for the error

@@ -22,7 +22,7 @@ static A jtcants(J jt,A a,A w,A z){A a1,q,y;B*b,*c;I*u,wr,zr;P*wp,*zp;
  RZ(q=grade1(y));
  SPB(zp,i,from(q,y));
  SPB(zp,x,from(q,canta(over(zeroionei(0),increm(grade1(less(a,a1)))),SPA(wp,x))));
- R z;
+ RETF (z);
 }    /* w is sparse */
 
 // do the innermost loop fast.  wcr must be >= 1
@@ -82,7 +82,7 @@ static DFI2(jtcanta){A m,s,t,z;C*wv,*zv;I*av,j,*mv,*sv,*tv,wf,*ws,zn,zr,ms[4],ss
   zn*=(I)axislenres; sv[j]=(I)axislenres; mv[j]=axislenin*cellsizeb;  // accumulate result: axis len multiplies * cells, smallest goes to sv, total stride to mv
  }
  if(unlikely(ISSPARSE(AT(w)))){GASPARSE(z,AT(w),1,zr,sv); R cants(a,w,z);}  // if sparse, go to sparse transpose code.
- GA(z,AT(w),zn,zr,sv); if(!zn)R z;  // allocate result.  If result is empty, return it now
+ GA(z,AT(w),zn,zr,sv); if(!zn)RETF (z);  // allocate result.  If result is empty, return it now
  // now run the transpose
  zv=CAVn(zr,z); wv=CAV(w);
  mvc(wcr*SZI,tv,MEMSET00LEN,MEMSET00);  // repurpose tv to be the index list of the input pointer, and set to 0s.  Only the first r axes matter

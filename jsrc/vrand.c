@@ -463,7 +463,7 @@ F1(jtrngraw){F12IP; MEMCHK1(w); A z;I n,*v;SETNEXT
  ASSERT(0<=n,EVDOMAIN);
  GATV0(z,INT,n,1); v=AV1(z);
  DQ(n, *v++=NEXT;);
- R z;
+ RETF (z);
 }
 
 B jtrnginit(J jt){
@@ -530,7 +530,7 @@ F1(jtrngstateq){F12IP; MEMCHK1(w); A x=0,z,*zv;D*u=0;I n;UI*v;
    u=(D*)jt->rngdata->rngparms0[MRI].rngV; GAT0(x,INT,MRN,1); v=AV1(x); DO(MRN, v[i]=(UI)u[i];);
    RZ(*zv++=incorp(sc(jt->rngdata->rngparms0[MRI].rngI))); *zv++=incorp(x);
 #endif
-   R z;
+   RETF (z);
   case GBI: n=GBN; v=jt->rngdata->rngv; break;
   case MTI: n=MTN; v=jt->rngdata->rngv; break;
   case DXI: n=DXN; v=jt->rngdata->rngv; break;
@@ -542,7 +542,7 @@ F1(jtrngstateq){F12IP; MEMCHK1(w); A x=0,z,*zv;D*u=0;I n;UI*v;
  }
  GAT0(z,BOX,3,1); zv=AAV1(z);
  RZ(*zv++=incorp(sc(jt->rngdata->rng))); RZ(*zv++=incorp(sc(jt->rngdata->rngi))); RZ(*zv++=incorp(vec(INT,n,v)));
- R z;
+ RETF (z);
 }
 
 static B jtrngstates1(J jt,I j,I n,struct rngparms*vv,I i,I k,A x,B p){D*u;UI*xv;
@@ -664,7 +664,7 @@ F2(jtrollksub){F12IP;A z;I an,*av,k,m1,n,p,q,r,sh;UI m,mk,s,t,*u,x=jt->rngdata->
   if(r&&s)DQ(r, NOUNROLL while(s<=(t=NEXT)); *u++=t%m;) else DQ(r, *u++=NEXT%m;);
  }
 exit:;
- R z;
+ RETF (z);
 }
 
 DF2(jtrollk){DF12IP;A g,z;V*sv;
@@ -727,7 +727,7 @@ static F1(jtrollxnum){F12IP; MEMCHK1(w); A z;B c=0;I d,n;X*u,*v,x;SETNEXT
   RZ(z=ccvt(FL,z,0)); d=DAV(z); v=XAV(w);
   DQ(n, x=*v++; if(!XSGN(x))*d=sh?NEXTD1:NEXTD0; ++d;);
  } 
- R z;
+ RETF (z);
 }    /* ?n$x where x is extended integer */
 
 
@@ -736,7 +736,7 @@ static F1(jtrollbool){F12IP; MEMCHK1(w); A z;B*v;D*u;I n,sh;UINT mk;SETNEXT
  I zr=AR(w); GATV(z,FL,n,AR(w),AS(w)); u=DAVn(zr,z);
  if(sh)DQ(n, *u++=*v++?0.0:NEXTD1;)
  else  DQ(n, *u++=*v++?0.0:NEXTD0;)
- R z;
+ RETF (z);
 }    /* ?n$x where x is boolean */
 
 // If w is all 2, deal Booleans, with each each bit of a random number providing a single Boolean
@@ -745,7 +745,7 @@ static F1(jtrollbool){F12IP; MEMCHK1(w); A z;B*v;D*u;I n,sh;UINT mk;SETNEXT
 static A jtroll2(J jt,A w,B*b){A z;I j,n,nslice,p,q,r,*v;UI mk,t,*zv;SETNEXT
  *b=0; n=AN(w); v=AV(w);  // init failure return; n=#atoms of w, v->first atom
  // If w contains non-2, return with error
- DO(n, if(v[i]!=2)R mark;);   // return fast if not all-Boolean result
+ DO(n, if(v[i]!=2)RETF (mark););   // return fast if not all-Boolean result
  // See how many RNG values to use.  jt->rngdata->rngw gives the number of bits in a generated random #
  // We will shift these out 4 or 8 bits at a time; the number of slices we can get out of
  // a random number is 8 - the number of non-random bits at the top of a word.  p will be the number
@@ -770,7 +770,7 @@ static A jtroll2(J jt,A w,B*b){A z;I j,n,nslice,p,q,r,*v;UI mk,t,*zv;SETNEXT
  // Output the rest, one bit at a time
  t=NEXT;  // Get random # for bits
  B*c=(B*)zv; DQ(r&(SZI-1), *c++=1&t; t>>=1;);
- *b=1; R z;
+ *b=1; RETF (z);
 }    /* ?n$x where x is 2, maybe */
 
 static A jtrollnot0(J jt,A w,B*b){A z;I j,m1,n,*u,*v;UI m,s,t,x=jt->rngdata->rngparms[jt->rngdata->rng].rngM;SETNEXT
@@ -784,7 +784,7 @@ static A jtrollnot0(J jt,A w,B*b){A z;I j,m1,n,*u,*v;UI m,s,t,x=jt->rngdata->rng
    m1=*v++; if(!m1)R mark; ASSERT(0<=m1,EVDOMAIN); m=m1;
    s=GMOF(m,x); t=NEXT; if(s){NOUNROLL while(s<=t)t=NEXT;} *u++=t%m;
  }}
- *b=1; R z;
+ *b=1; RETF (z);
 }    /* ?n$x where x is not 0, maybe */
 
 static A jtrollany(J jt,A w,B*b){A z;D*u;I j,m1,n,sh,*v;UI m,mk,s,t,x=jt->rngdata->rngparms[jt->rngdata->rng].rngM;SETNEXT
@@ -795,14 +795,14 @@ static A jtrollany(J jt,A w,B*b){A z;D*u;I j,m1,n,sh,*v;UI m,mk,s,t,x=jt->rngdat
   if(0==m)*u++=sh?NEXTD1:NEXTD0; 
   else{s=GMOF(m,x); t=NEXT; if(s){NOUNROLL while(s<=t)t=NEXT;} *u++=(D)(t%m);}
  }
- *b=1; R z;
+ *b=1; RETF (z);
 }    /* ?s$x where x can be anything and 1<#x */
 
 F1(jtroll){F12IP;A z;B b=0;I m,wt;
  ARGCHK1(w); MEMCHK1(w);
  wt=AT(w);
  ASSERT(!ISSPARSE(wt),EVDOMAIN);
- if(!AN(w)){GATV(z,B01,0,AR(w),AS(w)); R z;}
+ if(!AN(w)){GATV(z,B01,0,AR(w),AS(w)); RETF (z);}
  if(wt&B01)R rollbool(w);
  if(wt&XNUM+RAT)R rollxnum(w);
  RZ(w=vi(w)); m=AV(w)[0];
@@ -906,7 +906,7 @@ static F2(jtrollksubdot){F12IP;A z;I an,*av,k,m1,n,p,q,r,sh;UI m,mk,s,t,*u,x=jt-
   }
   if(r&&s)DQ(r, NOUNROLL while(s<=(t=NEXT)); *u++=t%m;) else DQ(r, *u++=NEXT%m;);
  }
- R z;
+ RETF (z);
 }
 
 #undef rollk
@@ -949,7 +949,7 @@ static F1(jtrollxnumdot){F12IP; MEMCHK1(w); A z;B c=0;I d,n;X*u,*v,x;SETNEXT
   RZ(z=ccvt(FL,z,0)); d=DAV(z); v=XAV(w);
   DQ(n, x=*v++; if(!XSGN(x))*d=sh?NEXTD1:NEXTD0; ++d;);
  } 
- R z;
+ RETF (z);
 }    /* ?.n$x where x is extended integer */
 
 #undef rollbool
@@ -959,7 +959,7 @@ static F1(jtrollbooldot){F12IP; MEMCHK1(w); A z;B*v;D*u;I n,sh;UINT mk;SETNEXT
  I zr=AR(w); GATV(z,FL,n,AR(w),AS(w)); u=DAVn(zr,z);
  if(sh)DQ(n, *u++=*v++?0.0:NEXTD1;)
  else  DQ(n, *u++=*v++?0.0:NEXTD0;)
- R z;
+ RETF (z);
 }    /* ?.n$x where x is boolean */
 
 // If w is all 2, deal Booleans, with each each bit of a random number providing a single Boolean
@@ -995,7 +995,7 @@ static A jtroll2dot(J jt,A w,B*b){A z;I j,n,nslice,p,q,r,*v;UI mk,t,*zv;SETNEXT
  // Output the rest, one bit at a time
  t=NEXT;  // Get random # for bits
  B*c=(B*)zv; DQ(r&(SZI-1), *c++=1&t; t>>=1;);
- *b=1; R z;
+ *b=1; RETF (z);
 }    /* ?.n$x where x is 2, maybe */
 
 #undef rollnot0
@@ -1011,7 +1011,7 @@ static A jtrollnot0dot(J jt,A w,B*b){A z;I j,m1,n,*u,*v;UI m,s,t,x=jt->rngdata->
    m1=*v++; if(!m1)R mark; ASSERT(0<=m1,EVDOMAIN); m=m1;
    s=GMOF(m,x); t=NEXT; if(s){NOUNROLL while(s<=t)t=NEXT;} *u++=t%m;
  }}
- *b=1; R z;
+ *b=1; RETF (z);
 }    /* ?.n$x where x is not 0, maybe */
 
 #undef rollany
@@ -1024,7 +1024,7 @@ static A jtrollanydot(J jt,A w,B*b){A z;D*u;I j,m1,n,sh,*v;UI m,mk,s,t,x=jt->rng
   if(0==m)*u++=sh?NEXTD1:NEXTD0; 
   else{s=GMOF(m,x); t=NEXT; if(s){NOUNROLL while(s<=t)t=NEXT;} *u++=(D)(t%m);}
  }
- *b=1; R z;
+ *b=1; RETF (z);
 }    /* ?.s$x where x can be anything and 1<#x */
 
 #undef roll
@@ -1033,7 +1033,7 @@ static F1(jtrolldot){F12IP;A z;B b=0;I m,wt;
  ARGCHK1(w); MEMCHK1(w);
  wt=AT(w);
  ASSERT(!ISSPARSE(wt),EVDOMAIN);
- if(!AN(w)){GATV(z,B01,0,AR(w),AS(w)); R z;}
+ if(!AN(w)){GATV(z,B01,0,AR(w),AS(w)); RETF (z);}
  if(wt&B01)R rollbool(w);
  if(wt&XNUM+RAT)R rollxnum(w);
  RZ(w=vi(w)); m=AV(w)[0];
@@ -1081,9 +1081,9 @@ static DF2(jtdealdot){DF12IP;A h,y,z;I at,d,*hv,i,i1,j,k,m,n,q,*v,wt,*yv,*zv;UI 
                      jt->rngdata->rngparms[GBI].rngV=jt->rngdata->rngfxsv; rngselects(sc(GBI)); gb_init(16807);}
 #define FXSOD       {jt->rngdata->rngparms[GBI].rngV=v; jt->rngdata->rngparms[GBI].rngI=jt->rngdata->rngi=i; I e=jt->jerr; jt->jerr=0; rngselects(sc(j)); jt->jerr=e;}  // rngselects doesn't function if there is error
 
-F1(jtrollx  ){F12IP;FXSDECL; ARGCHK1(w); MEMCHK1(w);                 FXSDO; z=roll(w);         FXSOD; R z;}       
-DF2(jtdealx  ){DF12IP; MEMCHK2(a,w); FXSDECL; F2RANK(0,0,jtdealx,self); FXSDO; z=deal(a,w);       FXSOD; R z;}        
-DF2(jtrollkx){DF12IP; FXSDECL; ARGCHK3(a,w,self); MEMCHK3(a,w,self);        FXSDO; z=rollk(a,w,self); FXSOD; R z;}      
+F1(jtrollx  ){F12IP;FXSDECL; ARGCHK1(w); MEMCHK1(w);                 FXSDO; z=roll(w);         FXSOD; RETF (z);}       
+DF2(jtdealx  ){DF12IP; MEMCHK2(a,w); FXSDECL; F2RANK(0,0,jtdealx,self); FXSDO; z=deal(a,w);       FXSOD; RETF (z);}        
+DF2(jtrollkx){DF12IP; FXSDECL; ARGCHK3(a,w,self); MEMCHK3(a,w,self);        FXSDO; z=rollk(a,w,self); FXSOD; RETF (z);}      
 
 
 /*
@@ -1098,7 +1098,7 @@ static F1(jtroll){F12IP;A z;D rl=jt->rl;static D dm=16807,p=2147483647L;I c,n,*v
   DQ(n, rl=fmod(rl*dm,p); *x++=rl>q;);
  }
  jt->rl=(I)rl;
- R z;
+ RETF (z);
 } */    /* P.C. Berry, Sharp APL Reference Manual, 1979, p. 126. */
 
 /*

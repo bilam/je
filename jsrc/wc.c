@@ -25,7 +25,7 @@ static A jtcongotoblk(J jt,I n,CW*con){A z;CW*d=con;I i,j,k,*u,*v;
    v[j]=i; k=1+j; j+=2;
   }
  }
- R z;
+ RETF (z);
 }    /* compute blocks for goto checking */
 
 // i is goto line, j is label line.  i (error line#) if label is inside a structure that goto isn't, -1 (OK) otherwise

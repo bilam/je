@@ -57,7 +57,7 @@ F1(jtfname){F12IP; MEMCHK1(w); I j; A z=0;
  READLOCK(JT(jt,flock))  A*v=AAV0(JT(jt,fopafl));
  DO(AM(JT(jt,fopafl)), if(h==AM(v[i])){z=ca(v[i]); break;} )  // if filename found, return its file#.  Clone the string because we need the AM field in the table; also we don't do EPILOG
  READUNLOCK(JT(jt,flock))
- R z;
+ RETF (z);
 }    /* string name corresp. to file# w */
 
 // 1!:20
@@ -71,7 +71,7 @@ F1(jtjfiles){F12IP; MEMCHK1(w); A y,z=0; ASSERT(!JT(jt,seclev),EVSECURE)
  z=y;  // success
 errorexit: READUNLOCK(JT(jt,flock))
  z=grade2(z,z);  //
- R z;
+ RETF (z);
 }    /* file (number,name) table in order */
 
 // open named file in the OS.  Result is file handle, or 0 if error
@@ -117,7 +117,7 @@ F1(jtjopen){F12IP;A z;I h;
  if(!AN(w))R w;
  if(AR(w))R rank1ex0(w,DUMMYSELF,jtjopen);
  RE(h=fnum(w));  // return non0 if the string is the # of an already-open file
- if(h){RZ(z=sc(h)); ASSERT(fname(z)!=0,EVFNUM); R z;}  // if already open, return # provided the file is open (it wouldn't be if the arg was an invalid file#)
+ if(h){RZ(z=sc(h)); ASSERT(fname(z)!=0,EVFNUM); RETF (z);}  // if already open, return # provided the file is open (it wouldn't be if the arg was an invalid file#)
   // opening a file by number seems weird - the only # you can use is for an open file, so what's the point?
  else{A ww;
   // opening a file by name.  We open the file and then add it to the table.  If the same name is opened more than once, they get

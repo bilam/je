@@ -764,7 +764,7 @@ static void convertup(void *pi,I n,C t,C sizes){
 static A jtcdgahash(J jt,I n){A z;
  I hn=FULLHASHSIZE(n,INTSIZE,0,0);
  GATV0(z,INT,hn,0); ACINITZAP(z); mvc(hn*SZI,AV0(z),1,MEMSETFF);  // no rank - use all words for table
- R z;
+ RETF (z);
 }
 
 B jtcdinit(JS jjt){A x;JJ jt=MTHREAD(jjt);
@@ -1383,7 +1383,7 @@ F2(jtcd){F12IP; MEMCHK2(a,w); A z;C *wv,*zv;CCT*cc;I k,m,n,p,q,t,wr,*ws,wt;
  wv=CAV(w); zv=CAV(z); k=bpnoun(wt);
  if(1==m)RZ(jtcdexec1(jtfg,cc,zv,wv,k,wt,0))
  else{p=n*k; q=cc->zbx?sizeof(A)*(1+n):bpnoun(AT(z)); DQ(m, RZ(jtcdexec1(jtfg,cc,zv,wv,k,wt,0)); wv+=p; zv+=q;);}
- R z;
+ RETF (z);
 }    /* 15!:0 */
 
 
@@ -1519,7 +1519,7 @@ DF2(jtmemalign){DF12IP; MEMCHK2(a,w); I *s, n, r;  // shape and rank
  A z; GA00(z,t,n,neededrank) AR(z)=r; MCISH(AS(z),s,r)  // allocate result with data on boundary; fill in correct rank
  I k=bplg(t);
  mvc(n<<k,voidAVn(neededrank,z),AN(w)<<k,voidAV(w));  // copy the data block in full
- R z;
+ RETF (z);
 }
 
 // 15!:15 memu - make a copy of y if it is not writable (inplaceable and not read-only)
