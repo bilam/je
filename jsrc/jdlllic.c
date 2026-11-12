@@ -32,11 +32,11 @@ int swapint(int n){C* p,c;
 }
 #endif
 
-F1(jtlock1){F12IP;A z; C* p; C* src;
+F1(jtlock1){F12IP; MEMCHK1(w); A z; C* p; C* src;
  UC c,c1,c2,k1[SK],k2[SK];    
  int r,len,xlen,maxc1,maxc2,i,j,k;
 
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(1==AR(w),EVRANK);
  ASSERT(AT(w)&LIT,EVDOMAIN);
  src=UAV(w);
@@ -84,8 +84,8 @@ F2(jtlock2){F12IP;ASSERT(0,EVDOMAIN);}
 
 F1(jtunlock1){F12IP;R unlock2(mtv,w);}
 
-F2(jtunlock2){F12IP;int i,j,len,tlen;UC c1,c2,k1[SK],*lp,*sp,*d;
- ARGCHK2(a,w);  
+F2(jtunlock2){F12IP; MEMCHK2(a,w); int i,j,len,tlen;UC c1,c2,k1[SK],*lp,*sp,*d;
+ ARGCHK2(a,w); MEMCHK2(a,w);
  d=UAV(w);
  tlen=(int)AN(w);
  if(!tlen || 255!=d[0] || 0 != d[1] || tlen<8+SK) return w; /* not jl */

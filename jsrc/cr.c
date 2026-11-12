@@ -35,7 +35,7 @@
 // JT flags: all these routines use JTINPLACEW, JTINPLACEA, JTCOUNTITEMS, JTWILLBEOPENED.  Other flags are untouched
 A jtrank1ex(J jtfg,AD * RESTRICT w,A fs,I rr,AF f1){F12IP;PROLOG(0041);A z;
    I mn,wcn,wf,wk;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  wf=AR(w)-rr;
  if(unlikely(!wf)){R CALL1IP(f1,w,fs);}  // if there's only one cell and no frame, run on it, that's the result.
  if(unlikely(ISSPARSE(AT(w))))R sprank1(w,fs,rr,f1);
@@ -119,7 +119,7 @@ A jtrank1ex(J jtfg,AD * RESTRICT w,A fs,I rr,AF f1){F12IP;PROLOG(0041);A z;
 // "Supports IRS", which means nothing except that we ignore input rank
 A jtrank1ex0(J jtfg,AD * RESTRICT w,A fs,AF f1){F12IP;PROLOG(0041);A z,virtw;
    I wk;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(unlikely(!AR(w))){R CALL1IP(f1,w,fs);}  // if there's only one cell and no frame, run on it, that's the result.  Make this as fast as possible.
  // Switch to sparse code if argument is sparse
  if(unlikely(ISSPARSE(AT(w))))R sprank1(w,fs,0,f1);
@@ -230,7 +230,7 @@ A jtrank2ex(J jtfg,AD * RESTRICT a,AD * RESTRICT w,A fs,UI lrrrlcrrcr,AF f2){F12
  I lrrr=(RANK2T)lrrrlcrrcr; I lcrrcr=lrrrlcrrcr>>RANK2TX;  // inner, outer ranks
  PROLOG(0042);A z;I acn,ak,mn,wcn,wk;
  I outerframect, outerrptct, innerframect, innerrptct, aof, wof, sof, lof, sif, lif, *lis, *los;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(unlikely((UI)lrrr==(((UI)AR(a)<<RANKTX)+AR(w)))){R CALL2IP(f2,a,w,fs);}  // if there's only one cell and no frame, run on it, that's the result.
  if(unlikely(ISSPARSE(AT(a)|AT(w))))R sprank2(a,w,fs,(UI)lcrrcr>>RANKTX,lcrrcr&RANKTMSK,f2);  // this needs to be updated to handle multiple ranks
 
@@ -424,7 +424,7 @@ A jtrank2ex(J jtfg,AD * RESTRICT a,AD * RESTRICT w,A fs,UI lrrrlcrrcr,AF f2){F12
 // This code does not set inplaceability on nonrepeated cells - hardly useful at rank 0
 A jtrank2ex0(J jtfg,AD * RESTRICT a,AD * RESTRICT w,A fs,AF f2){F12IP;PROLOG(0042);A z;
    I ak,ar,*as,ict,oct,mn,wk,wr,*ws;
- ARGCHK2(a,w); ar=AR(a); wr=AR(w); if(unlikely(!(ar+wr)))R CALL2IP(f2,a,w,fs);   // if no frame, make just 1 call
+ ARGCHK2(a,w); MEMCHK2(a,w); ar=AR(a); wr=AR(w); if(unlikely(!(ar+wr)))R CALL2IP(f2,a,w,fs);   // if no frame, make just 1 call
  if(unlikely(ISSPARSE(AT(a)|AT(w))))R sprank2(a,w,fs,0,0,f2);  // this needs to be updated to handle multiple ranks
 
 #define ZZFLAGWORD state
@@ -586,7 +586,7 @@ A jtrank2ex0(J jtfg,AD * RESTRICT a,AD * RESTRICT w,A fs,AF f2){F12IP;PROLOG(004
 // irs1() and irs2() are simply calls to the IRS-savvy function f[12] with the specified rank, faster than creating a verb with rank
 
 A jtirs1(J jtfg,A w,A fs,I m,AF f1){F12IP;A z;I wr; 
-  ARGCHK1(w);
+  ARGCHK1(w); MEMCHK1(w);
 // Get the rank of w; if the requested rank m is > wr, use ~0 because some verbs test for that as an expedient
 // If m is negative, use wr+m but never < 0
  wr=AR(w); m=m>=wr?R2MAX:m; wr+=m; wr=wr<0?0:wr; wr=m>=0?m:wr;   // requested rank, after negative resolution, or ~0
@@ -604,7 +604,7 @@ A jtirs1(J jtfg,A w,A fs,I m,AF f1){F12IP;A z;I wr;
 // we have it, we call the setup verb, which will go on to do its internal looping and (optionally) call
 // the verb f2 to finish operation on a cell
 A jtirs2(J jtfg,A a,A w,A fs,I l,I r,AF f2){F12IP;A z;I ar,wr;
-  ARGCHK2(a,w);
+  ARGCHK2(a,w); MEMCHK2(a,w);
  wr=AR(w); r=r>=wr?RMAX:r; wr+=r; wr=wr<0?0:wr; wr=r>=0?r:wr; r=AR(w)-wr;   // wr=requested rank, after negative resolution, or ~0; r=frame of w, possibly negative if no frame
  ar=AR(a); l=l>=ar?RMAX:l; ar+=l; ar=ar<0?0:ar; ar=l>=0?l:ar; l=AR(a)-ar;   // ar=requested rank, after negative resolution, or ~0; l=frame of a, possibly negative if no frame
  ASSERTAGREE(AS(a),AS(w),MAX(0,MIN(r,l)))  // verify agreement before we modify jt->ranks
@@ -615,30 +615,30 @@ A jtirs2(J jtfg,A a,A w,A fs,I l,I r,AF f2){F12IP;A z;I ar,wr;
 // end of sparse-only
 
 
-// obsolete static DF1(cons1a){DF12IP;RETF(FAV(self)->fgh[0])}
-static DF2(cons12a){DF12IP;RETF(FAV(self)->fgh[0])}  // bivalent
+// obsolete static DF1(cons1a){DF12IP; MEMCHK1(w); RETF(FAV(self)->fgh[0])}
+static DF2(cons12a){DF12IP; MEMCHK2(a,w); RETF(FAV(self)->fgh[0])}  // bivalent
 
 // Constant verbs do not inplace because we loop over cells.  We could speed this up if it were worthwhile.
 static DF1(cons1){DF12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  I mr=efr(AR(w),(I)FAV(self)->localuse.lu1.srank[0]);
  RETF(rank1ex(w,self,mr,cons12a))
 }
 static DF2(cons2){DF12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I lr2=efr(AR(a),(I)FAV(self)->localuse.lu1.srank[1]), rr2=efr(AR(w),(I)FAV(self)->localuse.lu1.srank[2]);
  RETF(rank2ex(a,w,self,lr2,rr2,lr2,rr2,cons12a))
 }
 
 // cyclic-gerund verbs for m"n create an iterator from the gerund and pass that into rank processing, looping over cells
 static DF1(cycr1){DF12IP;V*sv=FAV(self); I cger[128/SZI];
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  RZ(self=createcycliciterator((A)&cger, self));  // fill in an iterator for this gerund
  I mr=efr(AR(w),(I)sv->localuse.lu1.srank[0]);
  RETF(rank1ex(w,self,mr,FAV(self)->valencefns[0]))  // callback is to the cyclic-execution function
 }
 static DF2(cycr2){DF12IP;V*sv=FAV(self); I cger[128/SZI];
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  RZ(self=createcycliciterator((A)&cger, self));  // fill in an iterator for this gerund
  I lr2=efr(AR(a),(I)sv->localuse.lu1.srank[1]), rr2=efr(AR(w),(I)sv->localuse.lu1.srank[2]);
  RETF(rank2ex(a,w,self,lr2,rr2,lr2,rr2,FAV(self)->valencefns[1]))  // callback is to the cyclic-execution function
@@ -647,23 +647,23 @@ static DF2(cycr2){DF12IP;V*sv=FAV(self); I cger[128/SZI];
 // fast path for atomic2 verbs.  We don't check agreement and we don't clamp the rank to the arg rank
 #if SY_64
 // 64-bit linkage, through upper jt
-static DF2(rank2atomic){DF12IP; RETF(ATOMIC2(jtfg,a,FAV(self)->localuse.lu1.srank[1],w,FAV(self)->localuse.lu1.srank[2],self)) }  // self is used only for lc byte and ranks
-static DF2(rank2atomicneg){DF12IP;ARGCHK2(a,w); I elr=efr(AR(a),FAV(self)->localuse.lu1.srank[1]), err=efr(AR(w),FAV(self)->localuse.lu1.srank[2]); RETF(ATOMIC2(jtfg,a,elr,w,err,self)) }  // self is used only for lc byte and ranks
+static DF2(rank2atomic){DF12IP; MEMCHK2(a,w); RETF(ATOMIC2(jtfg,a,FAV(self)->localuse.lu1.srank[1],w,FAV(self)->localuse.lu1.srank[2],self)) }  // self is used only for lc byte and ranks
+static DF2(rank2atomicneg){DF12IP;ARGCHK2(a,w); MEMCHK2(a,w); I elr=efr(AR(a),FAV(self)->localuse.lu1.srank[1]), err=efr(AR(w),FAV(self)->localuse.lu1.srank[2]); RETF(ATOMIC2(jtfg,a,elr,w,err,self)) }  // self is used only for lc byte and ranks
 #else
 // 32-bit linkage, through lower a/w
-static DF2(rank2atomic){DF12IP; RETF(IRS2(jtatomic2,jtfg,a,FAV(self)->localuse.lu1.srank[1],w,FAV(self)->localuse.lu1.srank[2],self)) }  // self is used only for lc byte and ranks
-static DF2(rank2atomicneg){DF12IP;ARGCHK2(a,w); I elr=efr(AR(a),FAV(self)->localuse.lu1.srank[1]), err=efr(AR(w),FAV(self)->localuse.lu1.srank[2]); RETF(IRS2(jtatomic2,jtfg,a,elr,w,err,self)) }  // self is used only for lc byte and ranks
+static DF2(rank2atomic){DF12IP; MEMCHK2(a,w); RETF(IRS2(jtatomic2,jtfg,a,FAV(self)->localuse.lu1.srank[1],w,FAV(self)->localuse.lu1.srank[2],self)) }  // self is used only for lc byte and ranks
+static DF2(rank2atomicneg){DF12IP;ARGCHK2(a,w); MEMCHK2(a,w); I elr=efr(AR(a),FAV(self)->localuse.lu1.srank[1]), err=efr(AR(w),FAV(self)->localuse.lu1.srank[2]); RETF(IRS2(jtatomic2,jtfg,a,elr,w,err,self)) }  // self is used only for lc byte and ranks
 #endif
 
 // Handle u"n y where u supports irs.  Since the verb may support inplacing even with rank (,"n for example), pass inplaceability through.
-static DF1(rank1i){DF12IP;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0];ARGCHK1(w);
+static DF1(rank1i){DF12IP;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0];ARGCHK1(w); MEMCHK1(w);
  FILLREG(f1)  // get routine address ready for misbranch
  I m=FAV(self)->localuse.lu1.srank[0]; I r=AR(w); m+=REPSGN(m)&r; m=m<0?0:m; m=m>=r?RMAX:m;   // handle negative rank
  RETF(IRS1(f1,jtfg,w,m,fs))   // call with embedded rank parm
 }
 
 // dyadic forms also check agreement wrt the given ranks.  pass inplaceability through.
-static DF2(rank2i){DF12IP;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; ARGCHK1(w);
+static DF2(rank2i){DF12IP;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; ARGCHK1(w); MEMCHK1(w);
  FILLREG(f2)  // get routine address
  I ar=FAV(self)->localuse.lu1.srank[1]; I r=AR(a); ar+=REPSGN(ar)&r; ar=ar<0?0:ar; ar=ar>=r?RMAX:ar; I af=r-ar;   // left rank and frame, possibly negative
  I wr=FAV(self)->localuse.lu1.srank[2];   r=AR(w); wr+=REPSGN(wr)&r; wr=wr<0?0:wr; wr=wr>=r?RMAX:wr; I wf=r-wr;   // right rank and frame
@@ -676,7 +676,7 @@ static DF2(rank2i){DF12IP;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; 
 // u"n y when u does not support irs. We loop over cells
 // Pass inplaceability through
 static DF1(rank1){DF12IP;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0];
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  // rank is considered presumptively nugatory if the rank of u<=n or rank of arg <=n, i. e. if n>=MIN(ranku,rankarg)
  // This gives error in the case
  //  {{ > y }} "0 "1 ] 2 2 $ 1 2;3;4;5   NB. >"1 is caught in jtqq
@@ -696,13 +696,13 @@ static DF1(rank1){DF12IP;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0];
 
 // Version for rank 0.  Call rank1ex0, pointing to the u"r
 static DF1(jtrank10atom){DF12IP; A fs=FAV(self)->fgh[0]; RETF(CALL1IP(FAV(fs)->valencefns[0],w,fs))}  // rank is immaterial, since these are ATOMIC1
-static DF1(jtrank10){DF12IP;RETF(jtrank1ex0(jtfg,w,self,jtrank10atom))}  // pass inplaceability through.
+static DF1(jtrank10){DF12IP; MEMCHK1(w); RETF(jtrank1ex0(jtfg,w,self,jtrank10atom))}  // pass inplaceability through.
 
 // For the dyads, rank2ex does a quadruply-nested loop over two rank-pairs, which are the n in u"n (stored in h) and the rank of u itself (fetched from u).
 // We don't do this now because fill between the loops might change the result
 
 DF2(rank2){DF12IP;A fs=FAV(self)->fgh[0]; 
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I l=FAV(self)->localuse.lu1.srank[1], r=FAV(self)->localuse.lu1.srank[2], ul=FAV(fs)->lrr>>RANKTX, ur=FAV(fs)->lrr&RANKTMSK;   // ranks (possibly neg) of self and u
  if(unlikely(FAV(fs)->id==CQQ)){ul=FAV(fs)->localuse.lu1.srank[1]; ur=FAV(fs)->localuse.lu1.srank[2];}   // if u is u"r, get its possibly neg r
  AF f2=FAV(fs)->valencefns[1]; FILLREG(f2);  // bring function address into a register early.  Should survive till needed
@@ -723,14 +723,14 @@ DF2(rank2){DF12IP;A fs=FAV(self)->fgh[0];
 }
 
 // Version for rank 0.  Call rank2ex0, pointing to the u"r
-static DF2(jtrank20atom){DF12IP; A fs=FAV(self)->fgh[0]; RETF((FAV(fs)->valencefns[1])(jtfg,a,w,fs))}  // will be used only for no-frame executions.  Otherwise will be replaced by the flags loop.  pass inplaceability through.
+static DF2(jtrank20atom){DF12IP; MEMCHK2(a,w); A fs=FAV(self)->fgh[0]; RETF((FAV(fs)->valencefns[1])(jtfg,a,w,fs))}  // will be used only for no-frame executions.  Otherwise will be replaced by the flags loop.  pass inplaceability through.
 
-static DF2(jtrank20){DF12IP;RETF(jtrank2ex0(jtfg,a,w,self,jtrank20atom))}  // pass inplaceability through.
+static DF2(jtrank20){DF12IP; MEMCHK2(a,w); RETF(jtrank2ex0(jtfg,a,w,self,jtrank20atom))}  // pass inplaceability through.
 
 
 // a"w; result is a verb
 F2(jtqq){F12IP;AF f1,f2;I hv[3],n,r[3],vf,flag2=0,*v;A ger=0;C lc=0;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  A z; fdefallo(z)
  // The localuse value in the function will hold the ranks from w.
  I isfloat=AT(w)&FL;  // before we change w, remember if the value given was float.  We pass this through in srank[3] to tell the processing routines not to combine the rank op with others

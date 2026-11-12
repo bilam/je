@@ -165,7 +165,7 @@ static AHDR2FN* bwC[16]={(AHDR2FN*)bw0000CC,(AHDR2FN*)bw0001CC,(AHDR2FN*)bw0010C
 // no IRS
 DF2(jtunderh2);
 DF2(jtbitwisechar){DF12IP;A fs=FAV(self)->fgh[0]; A gs=FAV(self)->fgh[1]; A p,z;I b;I j,m,n,zn;AHDR2FN* ado;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  A x=a, y=w; I an=AN(a), wn=AN(w), ar=AR(a), wr=AR(w);
  if((-an&-wn&-(AT(a)&AT(w)&LIT))>=0)R jtunderh2(jt,a,w,self);  // empty or not LIT, revert
  b=ar<=wr; I minr=b?ar:wr; A longs=b?w:a; zn=b?wn:an; m=b?an:wn;  // b = 'x is repeated'  m=length of low-rank arg 
@@ -193,7 +193,7 @@ static AHDRRFN* bwinsI[16]={(AHDRRFN*)bw0000insI,(AHDRRFN*)bw0001insI,(AHDRRFN*)
 
 DF1(jtunderh1);
 DF1(jtbitwiseinsertchar){DF12IP;A fs,z;I d,j,n,r,wn,wr,zatoms;UC*u,*v,*wv,x,*zv;AHDRRFN* ado;
- ARGCHK2(w,self);
+ ARGCHK2(w,self); MEMCHK2(w,self);
  wr=AR(w); wn=AN(w); SETIC(w,n); z=FAV(self)->fgh[0]; fs=FAV(z)->fgh[0];  // z=(m b./), fs=m
  if((-(wn)&(SZI-n)&SGNIF(AT(w),LITX))>=0)R jtunderh1(jt,w,self);  // revert if not wn!=0 & n>SZI & LIT
  PROD(d,wr-1,AS(w)+1); zatoms=d; wv=CAV(w); j=IAV(FAV(fs)->fgh[1])[0]-16; ado=(AHDRRFN*)bwinsC[j];  // d=#atoms in an item of a cell.  There is only 1 cell here (rank _)
@@ -224,4 +224,4 @@ DF1(jtbitwiseinsertchar){DF12IP;A fs,z;I d,j,n,r,wn,wr,zatoms;UC*u,*v,*wv,x,*zv;
 }
 
 // 1&(17 b.) w, i. e. test even/odd.   Run through atomic2, except when w is an atom; then return canned 0/1
-DF1(jtisodd){DF12IP; if((AR(w)|(AT(w)&~(INT+B01)))==0)R zeroionei(BIV0(w)&1); R jtatomic2(jtfg,zeroionei(1),w,FAV(self)->fgh[1]);}
+DF1(jtisodd){DF12IP; MEMCHK1(w); if((AR(w)|(AT(w)&~(INT+B01)))==0)R zeroionei(BIV0(w)&1); R jtatomic2(jtfg,zeroionei(1),w,FAV(self)->fgh[1]);}

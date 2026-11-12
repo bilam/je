@@ -12,7 +12,7 @@
 // if w and a have the same type, w will not be converted
 // Result is possibly-converted w
 F2(jtsetfv){F12IP;A q=jt->fill;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I an=AN(a), wn=AN(w);   // empty flags for a/w 
  q=q?q:mtv;  // if no fill given, use empty vector
  I t=maxtypedne(AT(a)|((UI)-an<(UI)wn),AT(w)|((UI)-wn<(UI)an)); t=LOWESTBIT(t);   // If types not the same, get result type.  Treat empty arg as boolean if the other is nonempty.  If both empty, use higher type.  requires B01=1
@@ -27,7 +27,7 @@ F2(jtsetfv){F12IP;A q=jt->fill;
 }
 // simpler version when there is only w.  We make AT(w) an argument to save a fetch
 A jtsetfv1(J jt, A w, I t){A q=jt->fill;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  q=q?q:mtv;  // if no fill given, use empty vector.  No fill type specified
  if(unlikely(AN(q)!=0)){ // fill specified
   t=AN(w)?t:B01; // if w empty, give it the lowest priority
@@ -53,7 +53,7 @@ void jtfillv0(J jt,I t){
 
 
 static FI2(jtrotsp){A q,x,y,z;B bx,by;I af,*av,d,k,m,n,p,*qv,*s,*v,wf;P*wp,*zp;
- IARG2CR F12IP; PROLOG(0071);
+ IARG2CR F12IP; MEMCHK2(a,w); PROLOG(0071);
  ASSERT(!jt->fill,EVNONCE);
  af=ar-acr; p=acr?AS(a)[af]:1; wf=wr-wcr;
  if(1<acr||af)R df2(z,a,w,qq(qq(ds(CROT),v2(1L,wcr)),v2(acr,wcr)));  // wcr to force qq to create loop, as sparse needs
@@ -98,7 +98,7 @@ static FI2(jtrotsp){A q,x,y,z;B bx,by;I af,*av,d,k,m,n,p,*qv,*s,*v,wf;P*wp,*zp;
 
 // Do not EPILOG
 FI2(jtrotate){A z;C *u,*v;I af,d,k,m,n,p,*s,wf,wn;
- IARG2CR F12IP;
+ IARG2CR F12IP; MEMCHK2(a,w);
  if(unlikely(ISSPARSE(AT(w))))R rotsp(afg,wfg);
  A origw=w; af=ar-acr; p=acr?AS(a)[af]:1; wf=wr-wcr; // p=#axes to rotate
  RZ(a=vi(a));
@@ -179,7 +179,7 @@ FI2(jtrotate){A z;C *u,*v;I af,d,k,m,n,p,*s,wf,wn;
 }    /* a|.!.f"r w */
 
 static FI1(jtrevsp){A a,q,x,y,z;I c,f,k,m,n,*v;P*wp,*zp;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  ASSERT(!jt->fill,EVNONCE);
  f=wr-wcr; m=AS(w)[f]; wp=PAV(w);
  GASPARSE(z,AT(w),1,wr,AS(w)); zp=PAV(z);
@@ -197,7 +197,7 @@ static FI1(jtrevsp){A a,q,x,y,z;I c,f,k,m,n,*v;P*wp,*zp;
 
 // Do not EPILOG
 DFI1(jtreverse){A z;C*wv,*zv;I f,k,m,n,nk,*v,*ws,wt;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  if(unlikely(ISSPARSE(AT(w))))R revsp(wfg);  // if sparse, process, preserving rank
  if(unlikely(jt->fill!=0))R rotate(num(-1),wfg);  // if fill, switch to shift, keeping rank
  f=wr-wcr; ws=AS(w); I *an=ws+f; an=wcr?an:&oneone[0]; n=*an;    // n=number of subitems of the cell to be reversed
@@ -294,7 +294,7 @@ static A jtreshapeblank(J jt, A a, A w, A rndfn, I nlens, I wcr){
 }
 
 DFI2(jtreshape){A z;B filling;C*wv,*zv;I c,k,m,n,p,q,r,*s,t,* RESTRICT u,wf,* RESTRICT ws,zn;
- IARG2CR F12IP;
+ IARG2CR F12IP; MEMCHK2(a,w);
  wf=wr-wcr; ws=AS(w);
  if((I)(1<acr)|(I )(acr<ar)){z=rank2ex(a,w,DUMMYSELF,MIN(acr,1),wcr,acr,wcr,jtreshape); PRISTCLRF(w) RETF(z);}  // multiple cells of a - w must lose pristinity
  // now a is an atom or a list.  w can have any rank
@@ -336,7 +336,7 @@ DFI2(jtreshape){A z;B filling;C*wv,*zv;I c,k,m,n,p,q,r,*s,t,* RESTRICT u,wf,* RE
 }    /* a ($,)"r w */
 
 FI2(jtreitem){A y,z;I an,r,*v;
- IARG2CR F12IP;
+ IARG2CR F12IP; MEMCHK2(a,w);
  r=wcr-1;
  if((I)(1<acr)|(I)(acr<ar)){z=rank2ex(a,w,DUMMYSELF,MIN(acr,1),wcr,acr,wcr,jtreitem); PRISTCLRF(w) RETF(z);}  // multiple cells - must lose pristinity  // We handle only single operations here, where a has rank<2
  // acr<=ar; ar<=acr; therefore ar==acr here
@@ -353,7 +353,7 @@ FI2(jtreitem){A y,z;I an,r,*v;
 
 // x $[!.n]!.v"r y or x ($,)[!.n]!.v"r y which uses fn v if needed to resolve _ in x
 DFI2(jtreshapeblankfn){I r;
- IARG2CR F12IP;
+ IARG2CR F12IP; MEMCHK2(a,w);
  if((I )(1<acr)|(I )(acr<ar)){A z=rank2ex(a,w,DUMMYSELF,MIN(acr,1),wcr,acr,wcr,jtreshapeblankfn); PRISTCLRF(w) RETF(z);}  // multiple cells - must lose pristinity
  A fs=FAV(self)->fgh[0]; AF reshapefn=FAV(fs)->valencefns[1];  // next routine to call, $ ($,) or !.n
  if(likely(AT(a)&FL)){  // if there might be _, check for it
@@ -370,7 +370,7 @@ DFI2(jtreshapeblankfn){I r;
   }
 
 F2(jtexpand){F12IP;A z;B*av;C*wv,*zv;I an,i,k,p,wc,wk,wt,zn;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(!ISDENSETYPE(AT(a),B01))RZ(a=cvt(B01,a));
  ASSERT(1>=AR(a),EVRANK);  // x must be atom or list
  RZ(w=jtsetfv1(jt,w,AT(w)));   // surely fill is needed; maybe cvt w

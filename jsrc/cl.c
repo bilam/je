@@ -10,7 +10,7 @@
 // Result logger for S:   w is the result; we add it (boxed) to AK(self), reallocating as needed.  AN is buffer size, AS[0] is #filled
 // result is 0 for error or a harmless small result ('') which will be collected at higher levels and discarded
 static DF1(jtscfn){DF12IP;
- ARGCHK1(w); A log=AKASA(self);
+ ARGCHK1(w); MEMCHK1(w); A log=AKASA(self);
  if(AS(log)[0]==AN(log)){I n=AN(log); RZ(AKASA(self)=log=ext(1,log)); AS(log)[0]=n;}  // if current buffer is full, reallocate.  ext resets AS
  AAV1(log)[AS(log)[0]++]=incorp(w);  // copy in new result pointer.  log is allo'd at rank 1
  R mtv;  // harmless good return, with no atoms to save copying in every
@@ -22,13 +22,13 @@ static DF1(jtscfn){DF12IP;
 // AT(self) is the trigger level (the original n)
 // AM(self) is the block for u
 static DF1(jtlev1){DF12IP;
- ARGCHK1(w);  // self is never 0
+ ARGCHK1(w); MEMCHK1(w);  // self is never 0
  if(levelle(jt,w,FAV(self)->localuse.lslevels[2])){A z, fs=(A)AM(self); RZ(z=CALL1(FAV(fs)->valencefns[0],w,fs)); if(FAV(self)->id!=CSCAPCO)RETF(z); R scfn(z,self);} else{STACKCHKOFL R every(w,self);}  // since this recurs, check stack
 }
 
 // Like monad, but AT(self) is left trigger level, AC(self) is the right trigger level 
 static DF2(jtlev2){F12JT;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I aready=levelle(jt,a,FAV(self)->localuse.lslevels[0]); I wready=levelle(jt,w,FAV(self)->localuse.lslevels[1]);  // see if args are at the needed level
  // If both args are ready to process, do so.  Otherwise, drop down a level and try again.  If one arg is ready but the other isn't,
  // add a boxing level before we drop down so that when it is processed it will be the first level at which it became active.  To avoid 
@@ -52,7 +52,7 @@ static I jtefflev(J jt,I n,A x){I t; R n>=0?n:(t=level(jt,x),MAX(0,n+t));}
 // L: and S: will be rarely used on pristine blocks, which be definition have all DIRECT contents & would thus be
 // better served by &.> .  Thus, we just mark the inputs as non-pristinable.
 static DF2(jtlscapco12){DF12IP;PROLOG(556);A z;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I wt=AT(w);
  PRIM shdr; A recurself=(A)&shdr;  // allocate the block we will recur with.  Next fill in fields needed by every and jtlev[12]
  AM(recurself)=(I)FAV(self)->fgh[0];  // fill in the pointer to u
@@ -85,7 +85,7 @@ static DF2(jtlscapco12){DF12IP;PROLOG(556);A z;
 
 // common routine for L: S:
 static A jtlsub(J jt,C id,A a,A w){A h,t;I*hv,n,*v;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT((SGNIF(AT(a),VERBX)&-(AT(w)&NOUN))<0,EVDOMAIN);
  n=AN(w); 
  ASSERT(1>=AR(w),EVRANK);  // atom or list

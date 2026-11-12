@@ -43,7 +43,7 @@ static A jtipprep(J jt,A a,A w,I zt,I*pm,I*pn,I*pp){A z=mark;I*as,ar,ar1,m,mn,n,
   else    DQ(m, v=wv; mvc(zk,zv,MEMSET00LEN,MEMSET00); DQ(p, x=zv; INIT; DQ(n, if(*v++)INC(*x,c); ++x;);); zv+=n;  );  \
  }
 
-static F2(jtpdtby){F12IP;A z;B b,*u,*v,*wv;C er=0;I at,m,n,p,t,wt,zk;
+static F2(jtpdtby){F12IP; MEMCHK2(a,w); A z;B b,*u,*v,*wv;C er=0;I at,m,n,p,t,wt,zk;
  at=AT(a); wt=AT(w); t=at&B01?wt:at;
  RZ(z=ipprep(a,w,t,&m,&n,&p)); zk=n<<bplg(t); u=BAV(a); v=wv=BAV(w);
  NAN0;
@@ -719,7 +719,7 @@ I cachedmmult(J jt,D* av,D* wv,D* zv,I m,I n,I p,I flgs){D c[(CACHEHEIGHT+1)*CAC
 
 // +/ . *
 F2(jtpdt){F12IP;PROLOG(0038);A z;I ar,at,i,m,n,p,p1,t,wr,wt;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  // ?r = rank, ?t = type (but set Boolean type for an empty argument)
  ar=AR(a); at=AT(a); at=AN(a)?at:B01;
  wr=AR(w); wt=AT(w); wt=AN(w)?wt:B01;
@@ -998,7 +998,7 @@ oflo2:
 // c is pseudochar for f, d is pseudochar for g
 static A jtipbx(J jt,A a,A w,C c,C d){A g=0,x0,x1,z;B*av,*av0,b,*v0,*v1,*zv;C c0,c1;
     I ana,i,j,m,n,p,q,r,*uu,*vv,wc;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  RZ(z=ipprep(a,w,B01,&m,&n,&p));
  // m=#1-cells of a, n=# bytes in 1-cell of w, p=length of individual inner product creating an atom
  ana=!!AR(a); wc=AR(w)?n:0; q=(n-1)>>LGSZI; r=(-n)&(SZI-1);  // ana = 1 if a is not atomic; wc = stride between items of w; q=#fullwords to proc, r=#bytes of last one NOT to proc
@@ -1069,7 +1069,7 @@ static A jtipbx(J jt,A a,A w,C c,C d){A g=0,x0,x1,z;B*av,*av0,b,*v0,*v1,*zv;C c0
 }    /* a f/ . g w  where a and w are nonempty and a is boolean */
 
 static DF2(jtdotprod){DF12IP;A fs,gs;C c;I r;V*sv;
- ARGCHK3(a,w,self);
+ ARGCHK3(a,w,self); MEMCHK3(a,w,self);
  sv=FAV(self); fs=sv->fgh[0]; gs=sv->fgh[1];  // op is fs . gs
  if(((UI)(AT(a)&AT(w)&B01)>SGNTO0((SGNIFSPARSE(AT(a)|AT(w)))))&&(-AN(a)&-AN(w)&-(FAV(gs)->flag&VFUSEDOK2))<0&&CSLASH==FAV(fs)->id&&  // fs is c/
      (c=FAV(FAV(fs)->fgh[0])->id,BETWEENC((c^(CPLUSDOT^CEQ)),CSTARDOT,CNE)))R ipbx(a,w,c,FAV(gs)->id);  // [+.*.~:]/ . boolean   swap = and +., then test for range
@@ -1078,13 +1078,13 @@ static DF2(jtdotprod){DF12IP;A fs,gs;C c;I r;V*sv;
 }
 
 
-static F1(jtminors){F12IP;A d,z;
+static F1(jtminors){F12IP; MEMCHK1(w); A d,z;
  RZ(d=apvwr(3L,-1L,1L)); AV(d)[0]=0;
  R drop(d,dfv2(z,num(1),w,bsdot(ds(CLEFT))));  // 0 0 1 }. 1 [\. w
 }
 
 DF1(jtdet){DF12IP;A fs=FAV(self)->fgh[0]; A gs=FAV(self)->fgh[1]; AF f1=FAV(fs)->valencefns[0]; A h=FAV(self)->fgh[2];I c,r,*s;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  r=AR(w); s=AS(w);
  A z; if(h&&1<r&&2==s[r-1]&&s[r-2]==s[r-1])R dfv1(z,w,h);
  F1RANK(2,jtdet,self);
@@ -1092,10 +1092,10 @@ DF1(jtdet){DF12IP;A fs=FAV(self)->fgh[0]; A gs=FAV(self)->fgh[1]; AF f1=FAV(fs)-
  R !c ? dfv1(z,mtv,slash(gs)) : 1==c ? CALL1(f1,ravel(w),fs) : h && c==s[0] ? gaussdet(w) : detxm(w,self);
 }
 
-DF1(jtdetxm){DF12IP;A z; R dotprod(z=IRS1(jthead,jt,w,1L,0L),det(minors(w),self),self);}
+DF1(jtdetxm){DF12IP; MEMCHK1(w); A z; R dotprod(z=IRS1(jthead,jt,w,1L,0L),det(minors(w),self),self);}
      /* determinant via expansion by minors. w is matrix with >1 columns */
 
-F2(jtdot){F12IP;A f,h=0;AF f2=jtdotprod;C c,d;
+F2(jtdot){F12IP; MEMCHK2(a,w); A f,h=0;AF f2=jtdotprod;C c,d;
  ASSERTVV(a,w);
  if(CSLASH==FAV(a)->id){
   f=FAV(a)->fgh[0]; c=FAV(f)->id; d=FAV(w)->id;  // op was c/ . d
@@ -1108,7 +1108,7 @@ F2(jtdot){F12IP;A f,h=0;AF f2=jtdotprod;C c,d;
 }
 
 // general LU decomp using generic arithmetic
-DF1(jtludecompg){DF12IP;PROLOG(823);
+DF1(jtludecompg){DF12IP; MEMCHK1(w); PROLOG(823);
  F1RANK(2,jtludecompg,self)  // if rank > 2, call rank loop
  ASSERT(AR(w)>=2,EVRANK);   // require rank>=2
  ASSERT(AS(w)[0]==AS(w)[1],EVLENGTH);  // matrix must be square
@@ -1125,7 +1125,7 @@ DF1(jtludecompg){DF12IP;PROLOG(823);
 // 128!:10 LU decomposition for square real arrays LU=P{A
 // returns permutation P ; L+U-I (Doolittle form)
 // the ith element of the permutation is the original row# in A of row i of LU
-DF1(jtludecompblas){DF12IP;PROLOG(823);
+DF1(jtludecompblas){DF12IP; MEMCHK1(w); PROLOG(823);
  ASSERT(AR(w)>=2,EVRANK);   // require rank>=2
  ASSERT(AS(w)[0]==AS(w)[1],EVLENGTH);  // matrix must be square
  if(unlikely(!(AT(w)&FL)))RZ(w=ccvt(FL,w,0));
@@ -1150,7 +1150,7 @@ DF1(jtludecompblas){DF12IP;PROLOG(823);
 // 128!:10 LU decomposition for square complex arrays LU=P{A
 // returns permutation P ; L+U-I (Doolittle form)
 // the ith element of the permutation is the original row# in A of row i of LU
-DF1(jtludecompxblas){DF12IP;PROLOG(823);
+DF1(jtludecompxblas){DF12IP; MEMCHK1(w); PROLOG(823);
  ASSERT(AR(w)>=2,EVRANK);   // require rank>=2
  ASSERT(AS(w)[0]==AS(w)[1],EVLENGTH);  // matrix must be square
  ASSERT(AT(w)&CMPX,EVDOMAIN);
@@ -1174,7 +1174,7 @@ DF1(jtludecompxblas){DF12IP;PROLOG(823);
 // returns permutation P ; L+U-I (Doolittle form)
 // the ith element of the permutation is the original row# in A of row i of LU
 // Bivalent.  a, if given, is the sequence of thresholds to try
-DF2(jtludecomp){DF12IP;PROLOG(823);
+DF2(jtludecomp){DF12IP; MEMCHK2(a,w); PROLOG(823);
  static D pthresh[2]={1e-6,0}, *pivotthresh; I npivotthresh, curpivotthreshx;  // list of successive thresholds for pivots, last one usually 0.0
  C monad=0;
  if(AT(w)&NOUN){ASSERT(AR(a)<=1,EVRANK); ASSERT(AN(a)>0,EVLENGTH) if(unlikely(!(AT(a)&FL)))RZ(a=ccvt(FL,a,0)); pivotthresh=DAV(a); npivotthresh=AN(a);}else{w=a; pivotthresh=pthresh; npivotthresh=sizeof(pthresh)/sizeof(pthresh[0]);monad=1;}

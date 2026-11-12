@@ -21,10 +21,10 @@
 A jteval(J jt,C*s){R PARSERVALUE(parseforexec(tokens(cstr(s),1+!!EXPLICITRUNNING)));}
 
 // parse string s, producing an ACV, and apply the ACV as either a monad or a dyad.  w=0 if monad.  Result can be anything; use only when you control a, w, and s
-A jtev12(J jt,A a,A w,C*s){A z; A fs; RZ(fs=eval(s)); R (FAV(fs)->valencefns[!!w])((J)((I)jt+(AT(fs)&VERB?0:JTXDEFMODIFIER)),a,w?w:fs,fs);}  // if modifier, so flag (for unquote & xdefn, so not needed)
+A jtev12(J jt,A a,A w,C*s){MEMCHK2(a,w); A z; A fs; RZ(fs=eval(s)); R (FAV(fs)->valencefns[!!w])((J)((I)jt+(AT(fs)&VERB?0:JTXDEFMODIFIER)),a,w?w:fs,fs);}  // if modifier, so flag (for unquote & xdefn, so not needed)
 
 // ". y
-static F1(jtexec1cell){F12IP;A z;PROLOG(000);
+static F1(jtexec1cell){F12IP; MEMCHK1(w); A z;PROLOG(000);
   z=PARSERVALUE(parseforexec(ddtokens(vs(w),4+1+!!EXPLICITRUNNING)));  // replace DDs, but require that they be complete within the string (no jgets)
  // we MUST NOT call EPILOG, even though there is trash from ddtokens to clean up.  Local values are not protected by FAOWED but instead by the local symbol table.  If a local-named value is in execution
  // and the name is deleted (by name_: or 4!:55), we use tpush to defer the fa to the caller.  For this purpose sentences executed by ". are part of the containing sentence in parse, and must not do tpop
@@ -33,7 +33,7 @@ static F1(jtexec1cell){F12IP;A z;PROLOG(000);
  EPILOG(z)
 }
 DF1(jtexec1){DF12IP;A z;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(AT(w)&NAME){z=nameref(w,jt->locsyms);  // the case ".@'name' which is the fastest way to refer to a deferred name
  }else{
   protectlocals(jt,0);  // protect any locals on the stack already in this sentence
@@ -46,7 +46,7 @@ DF1(jtexec1){DF12IP;A z;
 // JT flags controlling print are passed through to jpr
 // Result has assignment flag
 // We check for system locks before executing the sentence
-F1(jtimmex){F12JT;A z;
+F1(jtimmex){F12JT; MEMCHK1(w); A z;
  if(!w)R A0;  // if no string, return error
  if(unlikely(JT(jt,adbreak)[1])!=0)jtsystemlockaccept(jt,LOCKALL);  // if a systemlock has been requested, accept it.
  // When we start a sentence, we need to establish AKGST in locsyms as a shadow of jt->global, because that's
@@ -63,19 +63,19 @@ F1(jtimmex){F12JT;A z;
 // execute for assert during script: check result for not assigned or no error or non-noun or all 1
 // jt has typeout flags, pass through to immex
 // Result has assignment flag
-F1(jtimmea){F12JT;A t,z,z1;
+F1(jtimmea){F12JT; MEMCHK1(w); A t,z,z1;
  RZ(w=ddtokens(w,1+!!EXPLICITRUNNING)); z=jtimmex(jtfg,w);   // check for DD, allow continuation
  ASSERT(PARSERASGN(z)||!z||!(AT(z)&NOUN)||(t=eq(num(1),z),
      all1(ISSPARSE(AT(z))?df1(z1,t,atop(slash(ds(CSTARDOT)),ds(CCOMMA))):t)),EVASSERT);  // apply *./@, if sparse
  RETF(z);
 }
 
-static A jtcex(J jt,A w,AF f,A self){A z; RE(w); z=f(jt,w,self); if(jt->jerr!=EVSTACK)RESETERR; R z;}
+static A jtcex(J jt,A w,AF f,A self){MEMCHK1(w); A z; RE(w); z=f(jt,w,self); if(jt->jerr!=EVSTACK)RESETERR; R z;}
      // conditional execute - return 0 if error, but EVSTACK is fatal
 
 // convert the gerund (i. e.  AR) in w into a CAVN.  If already a verb, use it as is
 F1(jtexg){F12IP;A*v,*wv,x,y,z;I n;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  STACKCHKOFL
  n=AN(w); wv=AAV(w); 
  ASSERT(n!=0,EVLENGTH);  // no empty AR
@@ -91,7 +91,7 @@ F1(jtexg){F12IP;A*v,*wv,x,y,z;I n;
 I jtjset(J jt,C*name,A x){R symbisdel(nfs((I)strlen(name),name,0),x,jt->global);}
 
 // 128!:2
-DF2(jtapplystr){DF12IP;PROLOG(0054);A fs,z;
+DF2(jtapplystr){DF12IP; MEMCHK2(a,w); PROLOG(0054);A fs,z;
  F2RANK(1,RMAX,jtapplystr,self);
  RZ(fs=PARSERVALUE(parseforexec(tokens(vs(a),1+!!EXPLICITRUNNING))));
  ASSERT(VERB&AT(fs),EVSYNTAX);

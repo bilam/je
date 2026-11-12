@@ -6,8 +6,8 @@
 #include "j.h"
 
 
-static F1(jtbtreetest){F12IP;ASSERT(0,EVDOMAIN);}
-static F1(jtbtreedft){F12IP;ASSERT(0,EVDOMAIN);}
+static F1(jtbtreetest){F12IP; MEMCHK1(w); ASSERT(0,EVDOMAIN);}
+static F1(jtbtreedft){F12IP; MEMCHK1(w); ASSERT(0,EVDOMAIN);}
 
 
 /*
@@ -25,7 +25,7 @@ mv=: 4 : 0     NB. sparse matrix +/ .* vector
 */
 
 static F2(jtpdtspvv){F12IP;A x;D*av,s,t,*wv,z;I i,*u,*u0,*uu,*v,*v0,*vv;P*ap,*wp;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ap=PAV(a); x=SPA(ap,i); u=u0=AV(x); uu=u+AN(x); x=SPA(ap,x); av=DAV(x);
  wp=PAV(w); x=SPA(wp,i); v=v0=AV(x); vv=v+AN(x); x=SPA(wp,x); wv=DAV(x);
  z=0.0;
@@ -41,7 +41,7 @@ static F2(jtpdtspvv){F12IP;A x;D*av,s,t,*wv,z;I i,*u,*u0,*uu,*v,*v0,*vv;P*ap,*wp
 }
 
 static F2(jtpdtspmv){F12IP;A ax,b,g,x,wx,y,yi,yj,z;B*bv;I m,n,s[2],*u,*v,*yv;P*ap,*wp,*zp;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ap=PAV(a); y=SPA(ap,i); yv=AV(y); s[0]=n=AS(y)[0]; s[1]=1;
  GATVR(yj,INT,n,2,s);
  if(!ISSPARSE(AT(w))){
@@ -69,7 +69,7 @@ static F2(jtpdtspmv){F12IP;A ax,b,g,x,wx,y,yi,yj,z;B*bv;I m,n,s[2],*u,*v,*yv;P*a
 }    /* (sparse matrix) +/ .* vector; non-complex */
 
 static F2(jtpdtspvm){F12IP;A ax,b,g,x,wx,y,yi,yj,z;B*bv;D*av,c,d,*wv,*xv;I m,n,s[2],*u,*v,*yv;P*ap,*wp,*zp;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  wp=PAV(w); y=SPA(wp,i); yv=AV(y); s[0]=n=AS(y)[0]; s[1]=1;
  if(!ISSPARSE(AT(a))){
   GATVR(yj,INT,n,2,s); v=AV2(yj); 
@@ -134,7 +134,7 @@ static B jtmmharvest(J jt,I ii,I zjn,A zj,D*zyv,I*n,A*zi,A*zx){A x;D*zxv,*zxv0;I
 
 static F2(jtpdtspmm){F12IP;A z,zi,zj,zx,zy,*old;D*axv,c,d,*dv,*wxv,*zyv;
      I*aiv,*aivm,i,ii,j,k,k0,m,n=0,p,q,*v,wm,*wiv,*wnv,*zjv,*zjv0;P*zp;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  RZ(mmprep(PAV(a),&m,&aiv,0L ,0L  ,&axv)); aivm=m+aiv;
  RZ(mmprep(PAV(w),&m,&wiv,&wm,&wnv,&wxv));
  GATV0(zy,FL,AS(w)[1],1); zyv=DAV1(zy); mvc(AN(zy)*sizeof(D),zyv,MEMSET00LEN,MEMSET00);
@@ -170,7 +170,7 @@ static F2(jtpdtspmm){F12IP;A z,zi,zj,zx,zy,*old;D*axv,c,d,*dv,*wxv,*zyv;
 
 
 F2(jtpdtsp){F12IP;A x;B ab=0,wb=0;P*p;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(!AR(a)||!AR(w)||AS(a)[AR(a)-1]==AS(w)[0],EVLENGTH);
  if(AT(a)&FL&&AT(w)&FL){
   if(ISSPARSE(AT(a))){p=PAV(a); x=SPA(p,a); ab=AR(a)==AN(x)&&equ(num(0),SPA(p,e));}

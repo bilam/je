@@ -6,21 +6,21 @@
 #include "j.h"
 
 // $: itself
-DF2(jtself12){DF12IP;A z;  A fs=jt->parserstackframe.sf; I dyad=EPDYAD; AF f12=FAV(fs)->valencefns[dyad]; STACKCHKOFL RETF((f12)(jtfg,a,dyad?w:fs,fs));}
+DF2(jtself12){DF12IP; MEMCHK2(a,w); A z;  A fs=jt->parserstackframe.sf; I dyad=EPDYAD; AF f12=FAV(fs)->valencefns[dyad]; STACKCHKOFL RETF((f12)(jtfg,a,dyad?w:fs,fs));}
 
 // (u $::) set recursion point.  Stack the old recursion point, set the new, then execute it
-static DF2(jtsetself12){DF12IP; A stacksf=jt->parserstackframe.sf; A fs=FAV(self)->fgh[0]; jt->parserstackframe.sf=fs; I dyad=EPDYAD; A z=((FAV(fs)->valencefns[dyad])(jtfg,a,dyad?w:fs,fs)); jt->parserstackframe.sf=stacksf; RETF(z)}
+static DF2(jtsetself12){DF12IP; MEMCHK2(a,w); A stacksf=jt->parserstackframe.sf; A fs=FAV(self)->fgh[0]; jt->parserstackframe.sf=fs; I dyad=EPDYAD; A z=((FAV(fs)->valencefns[dyad])(jtfg,a,dyad?w:fs,fs)); jt->parserstackframe.sf=stacksf; RETF(z)}
 // $:: set u as the recursion point
-F1(jtdolcoco){F12IP; ASSERT(VERB&AT(w),EVDOMAIN) R fdef(0,CSETSELF,VERB,(AF)(jtsetself12),(AF)(jtsetself12),w,0L,0L,FAV(w)->flag&VNOLOCCHG+VNONAME+VNOSELF,(I)mr(w),(I)rr(w),(I)lr(w));}
+F1(jtdolcoco){F12IP; MEMCHK1(w);  ASSERT(VERB&AT(w),EVDOMAIN) R fdef(0,CSETSELF,VERB,(AF)(jtsetself12),(AF)(jtsetself12),w,0L,0L,FAV(w)->flag&VNOLOCCHG+VNONAME+VNOSELF,(I)mr(w),(I)rr(w),(I)lr(w));}
 
 
 // not used A jtac1(J jt,AF f){R fdef(0,0,VERB, f,jtvalenceerr, 0L,0L,0L, VFLAGNONE, RMAX,RMAX,RMAX);}
 A jtac2(J jt,AF f){R fdef(0,0,VERB, jtvalenceerr,f, 0L,0L,0L, VFLAGNONE, RMAX,RMAX,RMAX);}  // f is entry point; result is VERB type to call f as dyad with infinite rank
 
-F1(jtvalenceerr){F12IP; ASSERT(0,EVVALENCE);}  // used for undefined valences, including [:
+F1(jtvalenceerr){F12IP; MEMCHK1(w);  ASSERT(0,EVVALENCE);}  // used for undefined valences, including [:
 
 B jtprimitive(J jt,A w){A x=w;V*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  v=FAV(w);
  if(CTILDE==v->id&&NOUN&AT(v->fgh[0]))RZ(x=fix(w,zeroionei(0)));  // fix any name reference
  R((I)FAV(x)->fgh[0]==0&&v->id!=CFORK);   // capped fork has f=0 as a flag
@@ -28,7 +28,7 @@ B jtprimitive(J jt,A w){A x=w;V*v;
 
 // w is a conj, f C n
 // Return 1 if f is of the form <@:g  (or <@g when g has infinite rank)
-B jtboxatop(J jt,A w){ARGCHK1(w); R 1&boxat(FAV(w)->fgh[0],RMAX,RMAX,RMAX);}
+B jtboxatop(J jt,A w){ARGCHK1(w); MEMCHK1(w); R 1&boxat(FAV(w)->fgh[0],RMAX,RMAX,RMAX);}
 
 // x is a verb
 // Return if verb is of the form <@:g  (or <@g when g has rank >= input rank)

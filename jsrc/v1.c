@@ -297,7 +297,7 @@ fail:
 
 // Return 1 if a and w match, 0 if not
 B jtequ(J jtfg,A a,A w){F12IP;A x;  // allow inplace request - it has no effect
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(a==w)R 1;
  if(unlikely(ISSPARSE(AT(a)|AT(w))))if(AR(a)&&AR(w)){RZ(x=matchs(a,w)); R BAV(x)[0];}
  B z=((B (*)())jtmatchsub)(jt,a,w,0   MATCHSUBDEFAULTS);  // don't check level - it takes too long for big arrays
@@ -305,18 +305,18 @@ B jtequ(J jtfg,A a,A w){F12IP;A x;  // allow inplace request - it has no effect
 }
 
 // Return 1 if a and w match, 0 if not   Passes inplaceability through
-B jtequx(J jtfg,X a,X w){F12IP;R 0==icmpXX(a,w);}
+B jtequx(J jtfg,X a,X w){F12IP; R 0==icmpXX(a,w);}
 
 // Return 1 if a and w match, 0 if not
 B jteqx(J jtfg,A a,A w){F12IP;A x;  // allow inplace request - it has no effect
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(a==w)R 1;
  if(unlikely(ISSPARSE(AT(a)|AT(w))))if(AR(a)&&AR(w)){RZ(x=matchs(a,w)); R BAV(x)[0];}
  R ((B (*)())jtmatchsub)(jt,a,w,0   MATCHSUBDEFAULTS);  // don't check level - it takes too long for big arrays
 }
 
 // Return 1 if a and w match intolerantly, 0 if not
-B jtequ0(J jtfg,A a,A w){F12IP;   // allow inplace request - it has no effect
+B jtequ0(J jtfg,A a,A w){F12IP; MEMCHK2(a,w);   // allow inplace request - it has no effect
  PUSHCCT(1.0) B res=equ(a,w); POPCCT R res;
 }
 
@@ -329,7 +329,7 @@ static B eqname(A a,A w){
 }
 
 // Test for equality of functions, 1 if they match.  To match, the functions must have the same pseudocharacter and fgh
-B jteqf(J jtfg,A a,A w){F12IP;A p,q;V*u=FAV(a),*v=FAV(w);
+B jteqf(J jtfg,A a,A w){F12IP; MEMCHK2(a,w); A p,q;V*u=FAV(a),*v=FAV(w);
  if(TYPESXOR(AT(a),AT(w))+(u->id^v->id))R 0;   // must match on type and id
  p=u->fgh[0]; q=v->fgh[0]; if(!((p==q||(p==0)==(q==0)&&((B (*)())jtmatchsub)(jt,p,q,0   MATCHSUBDEFAULTS))))R 0;
  p=u->fgh[1]; q=v->fgh[1]; if(!((p==q||(p==0)==(q==0)&&((B (*)())jtmatchsub)(jt,p,q,0   MATCHSUBDEFAULTS))))R 0;
@@ -388,7 +388,7 @@ B jteqf(J jtfg,A a,A w){F12IP;A p,q;V*u=FAV(a),*v=FAV(w);
 // m=#cells of shorter frame, n=#times a cell of shorter frame must be repeated
 // the comparands may not be sparse
 // arguments after x may be omitted if x==0, and are then assumed to be 0 0 1 1 1
-static B jtmatchsub(J jtfg,A a,A w,B* RESTRICT x,I af,I wf,I m,I n,I b1){F12IP;C*av,*wv;I at,c,j=0,t,wt;
+static B jtmatchsub(J jtfg,A a,A w,B* RESTRICT x,I af,I wf,I m,I n,I b1){F12IP; MEMCHK2(a,w); C*av,*wv;I at,c,j=0,t,wt;
  // we tested for a==w before the call, to save on call overhead (usually)
  // m*n cannot be 0.  If this is a recursive call, m=n=1; while if it is the first call, empty m/n were handled at the top level
  {
@@ -472,7 +472,7 @@ static B jtmatchsub(J jtfg,A a,A w,B* RESTRICT x,I af,I wf,I m,I n,I b1){F12IP;C
 }
 
 static FI2(jtmatchs){A ae,ax,p,q,we,wx,x;B*b,*pv,*qv;D d;I an=0,c,j,k,m,n,*s,*v,wn=0;P*ap,*wp;
- IARG2CR F12IP;
+ IARG2CR F12IP; MEMCHK2(a,w);
  if(ar>acr||wr>wcr)R rank2ex(a,w,DUMMYSELF,acr,wcr,acr,wcr,jtmatchs);
  if(ar!=wr||memcmpne(AS(a),AS(w),ar*SZI)||!HOMO(AT(a),AT(w)))R num(0);
  GATV0(x,B01,ar,1L); b=BAVn(1L,x); mvc(ar,b,MEMSET00LEN,MEMSET00);
@@ -497,7 +497,7 @@ static FI2(jtmatchs){A ae,ax,p,q,we,wx,x;B*b,*pv,*qv;D d;I an=0,c,j,k,m,n,*s,*v,
 
 // x -:"r y or x -.@-:"r y depending on LSB of jt
 DFI2(jtmatch){A z;I m,n,mn;
- IARG2CR F12JT;
+ IARG2CR F12JT; MEMCHK2(a,w);
  I eqis0 = !!((I)jtfg&JTNOTMATCH);   // remember whether we are -: or -.@-:
  I isatoms = (-AN(a))&(-AN(w));  // neg if both args have atoms
  if(unlikely(ISSPARSE(AT(a)|AT(w))))R ne(num(eqis0),matchs(a,w));
@@ -532,4 +532,4 @@ DFI2(jtmatch){A z;I m,n,mn;
  RETF(z);
 }    /* a -:"r w */
 
-DF2(jtnotmatch){DF12IP;R jtmatch((J)((I)jt+JTNOTMATCH),a,w,0);}   /* a -.@-:"r w */
+DF2(jtnotmatch){DF12IP; MEMCHK2(QCWORD(a),QCWORD(w)); R jtmatch((J)((I)jt+JTNOTMATCH),a,w,0);}   /* a -.@-:"r w */
