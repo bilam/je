@@ -692,7 +692,7 @@ static KF1(jtDfromX){
 static KF1(jtQfromX){X*v=XAV(w),*x=(X*)yv; DQ(AN(w), *x++=*v++; *x++=X1;); R 1;}
 
 static KF2(jtQfromD){
- GMP; ARGCHK1(w)
+ GMP; ARGCHK1(w); MEMCHK1(w);
  I n=AN(w), i; D*wv=DAV(w), t; Q*x=(Q*)yv, q; S*tv=3*C_LE+(S*)&t;
  for(i=0;i<n;++i){
   t=wv[i]; q.d= X1;
@@ -797,7 +797,7 @@ static KF1(jtZfromD){
 // Calls through bcvt are tagged with a flag in jt, indicating to set fuzz=0
 // For sparse arguments, this function calls other J verbs and must clear the ranks in that case only
 A jtccvt(J jt,I tflagged,A w,I natoms){A d,z;I n,r,*s,wt; void *wv,*yv;I t=tflagged&(NOUN|SPARSE);
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  r=AR(w); s=AS(w); wt=AT(w); n=AN(w);
  if(unlikely(((t|wt)&SPARSE+BOX+FUNC)!=0)){
   // Unusual cases: box, ticker, sparse, func (should not occur).
@@ -979,7 +979,7 @@ A jtcvt(J jt,I t,A w){
 // If mode bit 1 is set, minimum precision is INT; if mode bit 2 is set, minimum precision is FL; if mode bit 3 is set, minimum precision is CMPX 
 // Result is a new buffer, always
 A jtbcvt(J jtfg,C mode,A w){F12IP; A z=w;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
 #ifdef NANFLAG
  // there may be values (especially b types) that were nominally CMPX but might actually be integers.  Those were
  // stored with the real part being the actual integer value and the imaginary part as the special 'flag' value.  We
@@ -1024,7 +1024,7 @@ A jtbcvt(J jtfg,C mode,A w){F12IP; A z=w;
 
 // w is a D type with integral values.  If it can be converted to integer without overflow, do so and return the integer version, otherwise return w
 F1(jticvt){F12IP;A z;D*v,x;I i,n,*u;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w); v=DAV(w);
  I zr=AR(w); GATV(z,INT,n,AR(w),AS(w)); u=AVn(zr,z);
  for(i=0;i<n;++i){
@@ -1040,7 +1040,7 @@ A jtpcvt(J jt,I t,A w){
 
 #if !(C_VIAVX)
 F1(jtcvt0){F12IP;I n,t;D *u;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  t=AT(w); n=AN(w); 
  if(n&&t&FL+CMPX){
   if(t&CMPX)n+=n; u=DAV(w);
@@ -1050,10 +1050,10 @@ F1(jtcvt0){F12IP;I n,t;D *u;
 }    /* convert -0 to 0 in place */
 #endif
 
-F1(jtxco1){F12IP;ARGCHK1(w); ASSERT(!ISSPARSE(AT(w)),EVNONCE); if(likely(!(AT(w)&XNUM+RAT)))w=cvt(AT(w)&B01+INT+INT1+INT2+INT4+XNUM?XNUM:RAT,w); R w;}
+F1(jtxco1){F12IP;ARGCHK1(w); MEMCHK1(w); ASSERT(!ISSPARSE(AT(w)),EVNONCE); if(likely(!(AT(w)&XNUM+RAT)))w=cvt(AT(w)&B01+INT+INT1+INT2+INT4+XNUM?XNUM:RAT,w); R w;}
 
 F2(jtxco2){F12IP;A z;B b;I j,n,r,*s,t,*wv,*zu,*zv;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  n=AN(w); r=AR(w); t=AT(w);
  ASSERT(!ISSPARSE(t),EVNONCE);
  j=rei0(a);
@@ -1080,7 +1080,7 @@ F2(jtxco2){F12IP;A z;B b;I j,n,r,*s,t,*wv,*zu,*zv;
 // result is rc;index: rc: 0=OK, 1=nonnumeric, 2=nonintegral value 3=out of bounds
 // index=index list of failing entry, or empty if rc=0 or 1
 F2(jtindaudit){F12IP;PROLOG(365);
- ARGCHK2(a,w)
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(AT(w)&BOX,EVDOMAIN) ASSERT(AR(w)==1,EVRANK) ASSERT(AN(w)==2,EVLENGTH)  // need 2 boxes
  I type=rei0(C(AAV(w)[0])); ASSERT(BETWEENC(type,0,1),EVDOMAIN)  // first box must hold integer type 0 or 1
  I min=IMIN, max=IMAX; A mma=C(AAV(w)[1]); ASSERT(AR(mma)<=1,EVRANK) ASSERT(AN(mma)<=2,EVLENGTH) if(!(AT(mma)&INT))RZ(mma=cvt(INT,mma))  // second box must hold 0-2 int values

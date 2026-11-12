@@ -135,7 +135,7 @@ L* jtsymnew(J jt,LX*hv, LX tailx){LX j;L*u,*v;
 // For non-PERMANENT, delete name and value.
 // Reset the fields in the deleted blocks.
 // This is used only for freeing local symbol tables, thus does not need to clear the name/path or worry about CACHED values
-extern void jtsymfreeha(J jt, A w){I j,wn=AN(w); LX k,* RESTRICT wv=LXAV0(w);
+extern void jtsymfreeha(J jt, A w){MEMCHK1(w); I j,wn=AN(w); LX k,* RESTRICT wv=LXAV0(w);
  I arlflags=AR(w)&ARLSYMINUSE+ARHASACV;  // remember if this table is primary.  It is except during cleanup from PM debug
  LX freeroot=0; L *freetailchn=(L*)((I)jt->shapesink-offsetof(L,next));  // sym index of first freed ele; addr of chain field in last freed ele
  L *jtsympv=SYMORIGIN;  // Move base of symbol block to a register.  Block 0 is the base of the free chain.  MUST NOT move the base of the free queue to a register,
@@ -193,7 +193,7 @@ extern void jtsymfreeha(J jt, A w){I j,wn=AN(w); LX k,* RESTRICT wv=LXAV0(w);
 static SYMWALK(jtsympoola, I,INT,100,1, 1, *zv++=j;)
 
 F1(jtsympool){F12IP;A aa,q,x,y,*yv,z,zz=0,*zv;I i,n,*u,*xv;L*pv;LX j,*v;
- ARGCHK1(w); 
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(1==AR(w),EVRANK); 
  ASSERT(!AN(w),EVLENGTH);
  READLOCK(JT(jt,stlock)) READLOCK(ALOCK(JT(jt,stloc))) READLOCK(JT(jt,symlock))
@@ -246,7 +246,7 @@ exit: ;
 // if the symbol has a lookaside, the lookaside is cleared
 // if the symbol is CACHED, it is removed from the chain but otherwise untouched, leaving the symbol abandoned.  It is the caller's responsibility to handle the name
 // We take no locks on g.  They are necessary, but are the user's responsibility
-B jtprobedel(J jtfg,C*string,UI4 hash,A g){F12JT;B ret;
+B jtprobedel(J jtfg,C*string,UI4 hash,A g){F12JT; MEMCHK1(g); B ret;
  L *sympv=SYMORIGIN;  // base of symbol pool
  LX *asymx=LXAV0(g)+SYMHASH(hash,AN(g)-SYMLINFOSIZE);  // get pointer to index of start of chain; address of previous symbol in chain
  LX delblockx=*asymx;
@@ -340,7 +340,7 @@ A jtprobelocal(L *symorigin,A a,A locsyms){NM*u;I b,bx;
 // result is L* symbol-table entry to use; cannot fail, because symbol has been reserved
 // if not found, one is created.  Caller must ensure that a symbol is reserved
 // Takes a write lock on g and returns holding that lock
-static INLINE L* jtprobeis(J jt,A a,A g){C*s;LX tx;I m;L*v;NM*u;L *sympv=SYMORIGIN;
+static INLINE L* jtprobeis(J jt,A a,A g){MEMCHK1(a); MEMCHK1(g); C*s;LX tx;I m;L*v;NM*u;L *sympv=SYMORIGIN;
  u=NAV(a); m=u->m; s=u->s; UI4 hsh=u->hash;  // m=length of name  s->name  hsh=hash of name
  LX *hv=LXAV0(g)+SYMHASH(hsh,AN(g)-SYMLINFOSIZE);  // get hashchain base among the hash tables
  WRITELOCK(ALOCK(g));  // write-lock the table before we access it.  Could read-lock until we know we have to modify chains
@@ -370,9 +370,9 @@ L* jtprobeisres(J jt,A a,A g){SYMRESERVE(1) L *z=probeis(a,g); WRITEUNLOCK(ALOCK
 // If not found, one is created
 // We know that the name block DOES NOT have a direct symbol number, because we have checked that if there was a chance (if the name block was synthetic there is no chance)
 // May call probeis which takes a lock on the local table; if so we release the lock
-L *jtprobeislocal(J jt,A a,A lsym){NM*u;I bx;L *sympv=SYMORIGIN;
+L *jtprobeislocal(J jt,A a,A lsym){MEMCHK1(lsym); NM*u;I bx;L *sympv=SYMORIGIN;
  // If there is bucket information, there must be a local symbol table, so search it
- ARGCHK1(a);u=NAV(a);  // u->NM block
+ ARGCHK1(a); MEMCHK1(a); u=NAV(a);  // u->NM block
  I4 b=u->bucket;
  if((likely(b>0))){
   LX lx = LXAV0(lsym)[b];  // index of first block if any
@@ -419,7 +419,7 @@ L *jtprobeislocal(J jt,A a,A lsym){NM*u;I bx;L *sympv=SYMORIGIN;
 // Bit QCNAMEDLOC of the result is set iff the name was found in a named locale
 // We must have no locks coming in; we take a read lock on each symbol table we have to search
 // if we find a name, we ra() it under lock.  All we have to do is increment the name since it is known to be recursive if possible
-A jtsyrd1(J jtfg,C *string,UI4 hash,A g){F12JT;A*v,x,y;
+A jtsyrd1(J jtfg,C *string,UI4 hash,A g){F12JT; MEMCHK1(g); A*v,x,y;
  RZ(g);   // make sure there is a locale...
  // we store an extra 0 at the end of the path to allow us to unroll this loop once
  v=LOCPATH(g); L *sympv=SYMORIGIN;   // v->{:|.locales, with NUL at font; sympv doesn't change here
@@ -448,7 +448,7 @@ A jtsyrd1(J jtfg,C *string,UI4 hash,A g){F12JT;A*v,x,y;
  R 0;  // fall through: not found
 }    /* find name a where the current locale is g */ 
 // same, but return the locale in which the name is found, and no ra().  Takes readlock on searched locales.  Return 0 if not found
-A jtsyrd1forlocale(J jtfg,C *string,UI4 hash,A g){F12JT;
+A jtsyrd1forlocale(J jtfg,C *string,UI4 hash,A g){F12JT; MEMCHK1(g);
  RZ(g);   // make sure there is a locale...
  A *v=LOCPATH(g); NOUNROLL do{A gn=*v--; A y; I chainno=SYMHASH((UI4)hash,AN(g)-SYMLINFOSIZE); if(BLOOMTEST(BLOOMBASE(g),chainno)){READLOCK(ALOCK(g)) y=(probe)((I)jtfg&255,string,SYMORIGIN,((UI8)(hash)<<32)+(UI4)LXAV0(g)[chainno]); READUNLOCK(ALOCK(g)) if(y){break;}} g=gn;}while(g);  // return when name found.
  R g;
@@ -513,7 +513,7 @@ exitfa: ;
 // a is a locative NAME block; result is the starting locale, or 0 if error
 // if the locative is direct we just look up/create the locale with that name; if indirect we find the value, then look up that locale
 // Result is A block for locale
-A jtsybaseloc(J jt,A a) {I m,n;NM*v;
+A jtsybaseloc(J jt,A a) {MEMCHK1(a); I m,n;NM*v;
  v=NAV(a); n=v->n; m=v->m;
  // Locative: find the indirect locale to start on, or the named locale, creating the locale if not found
  if(likely(!(NMILOC&v->flag)))R stfindcre(n-m-2,1+m+v->s,v->bucketx);
@@ -523,8 +523,8 @@ A jtsybaseloc(J jt,A a) {I m,n;NM*v;
 // look up name a (either simple or locative) using the full name resolution
 // result is addr/global/flags for name (i. e. QCFAOWED semantics), or 0 if not found (no error on undefname)
 // If the block is found, the value has been ra()d
-A jtsyrd(J jt,A a,A locsyms){A g;
- ARGCHK1(a);
+A jtsyrd(J jt,A a,A locsyms){MEMCHK1C(locsyms); A g;
+ ARGCHK1(a); MEMCHK1(a);
  if(likely(!(NAV(a)->flag&(NMLOC|NMILOC)))){A val;
   // If there is a local symbol table, search it first
   if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,locsyms)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); R val;}  // return flagging the result if local.  Value pointers in symbols have QCSYMVAL semantics
@@ -539,7 +539,7 @@ A jtsyrd(J jt,A a,A locsyms){A g;
 }
 // same, but return locale in which found.  No ra(), 0 if symbol not found.  Takes & releases readlock on searched locales
 A jtsyrdforlocale(J jt,A a){A g;
- ARGCHK1(a);
+ ARGCHK1(a); MEMCHK1(a);
  if(likely(!(NAV(a)->flag&(NMLOC|NMILOC)))){
   // If there is a local symbol table, search it first
   if(probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,jt->locsyms)){R jt->locsyms;}  // return flagging the result if local
@@ -551,8 +551,8 @@ A jtsyrdforlocale(J jt,A a){A g;
 // look up a name (either simple or locative) using the full name resolution
 // result is addr/global/flags for name (i. e. QCFAOWED semantics), or 0 if not found
 // If the name/value are found, ra() the value if global
-A jtsyrdnobuckets(J jt,A a,A locsyms){A g,val;
- ARGCHK1(a);
+A jtsyrdnobuckets(J jt,A a,A locsyms){MEMCHK1C(locsyms); A g,val;
+ ARGCHK1(a); MEMCHK1(a);
  if(likely(!(NAV(a)->flag&(NMLOC|NMILOC)))){
   // If there is a local symbol table, search it first - but only if there is no bucket info.  If there is bucket info we have checked already
   if(unlikely(NAV(a)->bucket)<=0)if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,locsyms)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); R val;}  // return if found locally from name
@@ -567,7 +567,7 @@ A jtsyrdnobuckets(J jt,A a,A locsyms){A g,val;
 }
 
 // return symbol address for name, or 0 if not found
-static L *jtprobeforsym(J jtfg,C*string,UI4 hash,A g){F12JT;
+static L *jtprobeforsym(J jtfg,C*string,UI4 hash,A g){F12JT; MEMCHK1C(g);
  RZ(g);
   LX symx=LXAV0(g)[SYMHASH(hash,AN(g)-SYMLINFOSIZE)];  // get index of start of chain
  L *sympv=SYMORIGIN;  // base of symbol table
@@ -584,7 +584,7 @@ static L *jtprobeforsym(J jtfg,C*string,UI4 hash,A g){F12JT;
 // a is a NAME block.  Look up the name and return the requested component as an I
 // component is: 0=&symbol (deprecated) 1=&value data area 2=&value header 3=script number+1.  Result is 0 if name not found or error in locative name
 static I jtsyrdinternal(J jt, A a, I component){A g=0;L *l;
- ARGCHK1(a);
+ ARGCHK1(a); MEMCHK1(a);
  I stringlen=NAV(a)->m; C *string=NAV(a)->s; UI4 hash=NAV(a)->hash;
  if(likely(!(NAV(a)->flag&(NMLOC|NMILOC)))){
   // If there is a local symbol table, search it first
@@ -612,7 +612,7 @@ exitlock:
 // component selects the internal variable wanted.  We loop through the names
 // this is used mostly for testing and is not threadsafe
 static A jtdllsymaddr(J jt,A w,C component){A*wv,x,y,z;I i,n,*zv;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w); wv=AAV(w); 
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
  I zr=AR(w); GATV(z,INT,n,AR(w),AS(w)); zv=AVn(zr,z); 
@@ -633,17 +633,17 @@ static A jtdllsymaddr(J jt,A w,C component){A*wv,x,y,z;I i,n,*zv;
  RETF(z);
 }
 
-F1(jtdllsymget){F12IP;ASSERT(!JT(jt,seclev),EVSECURE) R dllsymaddr(w,0);}  // 15!:_1 deprecated, return address of symbol-table entry
-F1(jtdllsymdat){F12IP;ASSERT(!JT(jt,seclev),EVSECURE) R dllsymaddr(w,1);}  // 15!:14 address of data area
-F1(jtdllsymhdr){F12IP;ASSERT(!JT(jt,seclev),EVSECURE) R dllsymaddr(w,2);}  // 15!:12 address of header
-F1(jtscind){F12IP;if(AN(w)==0)RETF(sc(jt->currslistx)); RETF(dllsymaddr(w,3));}  // 4!:4 script index, of a name or of the currently running script
-F1(jtdllvaladdr){F12IP;ASSERT(!JT(jt,seclev),EVSECURE) R sc((I)w);}  // 15!:19, return address of header of noun w
+F1(jtdllsymget){F12IP; MEMCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE) R dllsymaddr(w,0);}  // 15!:_1 deprecated, return address of symbol-table entry
+F1(jtdllsymdat){F12IP; MEMCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE) R dllsymaddr(w,1);}  // 15!:14 address of data area
+F1(jtdllsymhdr){F12IP; MEMCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE) R dllsymaddr(w,2);}  // 15!:12 address of header
+F1(jtscind){F12IP; MEMCHK1(w); if(AN(w)==0)RETF(sc(jt->currslistx)); RETF(dllsymaddr(w,3));}  // 4!:4 script index, of a name or of the currently running script
+F1(jtdllvaladdr){F12IP; MEMCHK1(w); ASSERT(!JT(jt,seclev),EVSECURE) R sc((I)w);}  // 15!:19, return address of header of noun w
 
 // look up the name w using full name resolution.  Return the value if found, abort if not found or invalid name
-F1(jtsymbrd){F12IP;A z; ARGCHK1(w); ASSERTN(QCWORD(z=syrd(w,jt->locsyms)),EVVALUE,w); if(ISFAOWED(z))tpush(QCWORD(z)); R QCWORD(z);}   // undo the ra() in syrd
+F1(jtsymbrd){F12IP;A z; ARGCHK1(w); MEMCHK1(w); ASSERTN(QCWORD(z=syrd(w,jt->locsyms)),EVVALUE,w); if(ISFAOWED(z))tpush(QCWORD(z)); R QCWORD(z);}   // undo the ra() in syrd
 
 // look up name w, return value unless locked or undefined; then return just the name
-F1(jtsymbrdlocknovalerr){F12IP;A y;
+F1(jtsymbrdlocknovalerr){F12IP; MEMCHK1(w); A y;
 
  if(!(y=syrd(w,jt->locsyms))){
   // no value.  Could be undefined name (no error) or some other error including value error, which means error looking up an indirect locative
@@ -657,7 +657,7 @@ F1(jtsymbrdlocknovalerr){F12IP;A y;
 }
 
 // Same, but value error if name not defined
-F1(jtsymbrdlock){F12IP;A y;
+F1(jtsymbrdlock){F12IP; MEMCHK1(w); A y;
  RZ(y=symbrd(w));
  R FUNC&AT(y)&&(jt->glock||VLOCK&FAV(y)->flag)?nameref(w,jt->locsyms):y;
 }
@@ -669,7 +669,7 @@ F1(jtsymbrdlock){F12IP;A y;
 // as modified - xdefn will try to hot-swap to the new definition between lines
 // If the modified name is executing higher on the stack, fail
 // returns v for OK to allow the assignment to proceed, 0 if error (which never happens - we set sidamage and proceed with the assignment)
-A jtredef(J jt,A w,A v){A f;DC c,d;
+A jtredef(J jt,A w,A v){MEMCHK1(w); MEMCHK1(QCWORD(v)); A f;DC c,d;
  d=jt->sitop; NOUNROLL while(d&&!(DCCALL==d->dctype&&d->dcj))d=d->dclnk; if(!(d&&DCCALL==d->dctype&&d->dcj))R v;   // find the most recent DCCALL with error, exit if none
  // Now d->stack entry of executing entity, which is in suspension at an error
  if(v==(A)d->dcn){  // if we reassign any name whose value equals the executing value, we treat it as a reassignment of the executing name.  This is for comp ease
@@ -696,7 +696,7 @@ A jtredef(J jt,A w,A v){A f;DC c,d;
 // Result is &value for symbol, or 0, with no low-order flags
 // We are called for purposes of setting zombieval for inplace assignments, or for 15!:24.  We do not create the symbol because multiple threads may assign a name
 // We try to create the symbol table (not really needed).  This routine must not modify fillv, which is in use in parsing
-A jtprobequiet(J jt,A a){A g;
+A jtprobequiet(J jt,A a){MEMCHK1(a); A g;
  I n=NAV(a)->n; NM* v=NAV(a); I m=v->m;  // n is length of name, v points to string value of name, m is length of non-locale part of name
  if(likely(n==m)){g=jt->global;}   // if not locative, define in default locale
  else{C* s=1+m+v->s; if(!(g=NMILOC&v->flag?locindirect(n-m-2,1+s,v->bucketx):stfindcre(n-m-2,s,v->bucketx))){RESETERR; R 0;}}  // if locative, find the locale for the assignment; error is not fatal
@@ -709,7 +709,7 @@ A jtprobequiet(J jt,A a){A g;
 // public assignment is an error if the symbol is defined in the local table, but that test can be disabled by setting ARLCLONED in AR of the table
 // Result is 0 if error, otherwise low 2 bits are x1 = final assignment, 1x = local assignment, others garbage (but not 0)
 // flags set in jt: bit 0=this is a final assignment; bit 1 always 0
-I jtsymbis(J jtfg,A a,A w,A g){F12JT;
+I jtsymbis(J jtfg,A a,A w,A g){F12JT; MEMCHK3(a,w,g);
  // we don't ARGCHK because path is heavily used.  Caller's responsibility.
  I anmf=NAV(a)->flag; I wt=AT(w); // fetch flags for the name; type of w
  I gr=AR(g);   // rank-flags for g

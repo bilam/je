@@ -235,7 +235,7 @@ I jtthv(J jt,A w,I n,C*s){A t;B ov=0;C buf[WZ],*x,*y=s;I dec=REPSGN(n);n=n^dec;I
  *y=0; R y-s;
 }
 
-static F1(jtthb){F12IP;A z;B*x;C*y;I c,m,n,p,r,*s;
+static F1(jtthb){F12IP; MEMCHK1(w); A z;B*x;C*y;I c,m,n,p,r,*s;
  n=AN(w); r=AR(w); s=AS(w);
   SHAPEN(w,r-1,c); m=n/c; p=2*c-1;
  GATV(z,LIT,m*p,r+!r,s); AS(z)[AR(z)-1]=p; 
@@ -245,7 +245,7 @@ static F1(jtthb){F12IP;A z;B*x;C*y;I c,m,n,p,r,*s;
 }
 
 // default for for numerics
-static F1(jtthn){F12IP;A d,t,z;C*tv,*x,*y,*zv;I c,*dv,k,m,n,p,r,*s,wd;FMTFUN fmt;
+static F1(jtthn){F12IP; MEMCHK1(w); A d,t,z;C*tv,*x,*y,*zv;I c,*dv,k,m,n,p,r,*s,wd;FMTFUN fmt;
  n=AN(w); r=AR(w); s=AS(w);
  thcase(AT(w),&wd,&fmt);  // get default field width and routine address
  GATV0(t,LIT,wd*(1+n),1); tv=CAV1(t);
@@ -263,7 +263,7 @@ static F1(jtthn){F12IP;A d,t,z;C*tv,*x,*y,*zv;I c,*dv,k,m,n,p,r,*s,wd;FMTFUN fmt
 }
 
 
-static F1(jtthx1){F12IP;
+static F1(jtthx1){F12IP; MEMCHK1(w);
  C*s=SgetX(w); // base 10 representation
  if('-'==s[0])s[0]='_'; // use J's convention for negative
  I l= strlen(s); // maybe better to use AN(UNvoidAV1(s))-1 ??
@@ -284,7 +284,7 @@ static F1(jtthx1){F12IP;
  R z;
 }
 
-static F1(jtthxqe){F12IP;
+static F1(jtthxqe){F12IP; MEMCHK1(w);
  I n=AN(w), r=AR(w), *s=AS(w), *wv=AV(w), c;
  SHAPEN(w,r-1,c); I m=n/c; // m: # rows, c: # columns
  A t; GATV0(t,BOX,n,1); A*tv=AAV1(t);
@@ -307,7 +307,7 @@ static F1(jtthxqe){F12IP;
 // Also return the largest type encountered
 // Result is 1 normally, 0 if size out of bounds
 static B jtrc(J jt,A w,A*px,A*py, I *t){A*v,x,y;I j=0,k=0,maxt=0,r,*s,xn,*xv,yn,*yv;
- ARGCHK1(w);  // return failure if no input
+ ARGCHK1(w); MEMCHK1(w);  // return failure if no input
  // r = rank of w, s->shape of w, v->values
  r=AR(w); s=AS(w); v=AAV(w);
  // xn = #rows in 2-cell of joined table, x=vector of (xn+1) 0s, xv->data for vector
@@ -435,7 +435,7 @@ static void jtfmfill(J jt,I p,I q,I wd,A w,A x,A y,C*zv,I cw){A e,*wv;
 // 2-cell of w is opened and the contents joined to its neighbors, with boxing characters
 // installed around it.
 // All the 2-cells of the result have boxing characters in the same locations.
-static F1(jtenframe){F12JT;A x,y,z;C*zv;I ht,m,n,p,q,t,wd,wdb,wr,xn,*xv,yn,*yv,zn;
+static F1(jtenframe){F12JT; MEMCHK1(w); A x,y,z;C*zv;I ht,m,n,p,q,t,wd,wdb,wr,xn,*xv,yn,*yv,zn;
  // Find the positions of the cell boundaries within each 2-cell of the
  // result. x and y are lists, where x[i] and y[j] give the height/width of cell
  // (i,j) of the result 2-cell. This height/width includes the boxing char
@@ -464,7 +464,7 @@ static F1(jtenframe){F12JT;A x,y,z;C*zv;I ht,m,n,p,q,t,wd,wdb,wr,xn,*xv,yn,*yv,z
 // w is an r-dimensional array of characters; result is a table with
 // 1 blank line between 2-cells, 2 blank lines between 3-cells, etc
 F1(jtmat){F12IP;A z;B b=0;C*v,*x;I c,k,m=1,p,q,qc,r,*s,t,zn;
- ARGCHK1(w);  // return if no w
+ ARGCHK1(w); MEMCHK1(w);  // return if no w
  // r=rank of w, s->shape, v->characters, t=type
  r=AR(w); s=AS(w); v=CAV(w); t=AT(w);
  // set (q,c) to the shape of a 2-cell of the input
@@ -515,7 +515,7 @@ static A jtthbox(J jt,A w,A prxthornuni){A z;static UC ctrl[]=" \001\002\003\004
 }
 
 // format sparse array
-static F1(jtths){F12IP;A e,i,x,z;C c,*u,*v;I d,m,n,*s;P*p;
+static F1(jtths){F12IP; MEMCHK1(w); A e,i,x,z;C c,*u,*v;I d,m,n,*s;P*p;
  RZ(scheck(w));
  p=PAV(w); e=SPA(p,e); i=SPA(p,i); x=SPA(p,x); 
  RZ(i=thorn1(i)); s=AS(i); m=s[0]; n=s[1];
@@ -533,7 +533,7 @@ static F1(jtths){F12IP;A e,i,x,z;C c,*u,*v;I d,m,n,*s;P*p;
 // xx and yy are box-positioning, p is a flag to jpr, u is 1 to have LIT and C2T types return
 // C2T when there are unicodes present.
 static A jtthorn1main(J jt,A w,A prxthornuni){PROLOG(0001);A z;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(!AN(w))GATV(z,LIT,0,AR(w),AS(w))
  else if(ISSPARSE(AT(w)))z=ths(w);
  else
@@ -599,13 +599,13 @@ static A jtthorn1main(J jt,A w,A prxthornuni){PROLOG(0001);A z;
 // entry point to allow C2T result from thorn1.  But always pass byte arguments unchanged
 // This will enable null insertion/removal for CJK, but that's OK since the result goes to display
 // This is called only from jprx()
-F1(jtthorn1u){F12IP; A z; ARGCHK1(w); z = thorn1main(w,sc(jt->boxpos+2+!(AT(w)&(LIT)))); R z; }  // set prx and prxthornuni flags
+F1(jtthorn1u){F12IP; A z; ARGCHK1(w); MEMCHK1(w); z = thorn1main(w,sc(jt->boxpos+2+!(AT(w)&(LIT)))); R z; }  // set prx and prxthornuni flags
 
 // entry point for returning LIT array only.  Allow C2T result, then convert.  But always pass literal arguments unchanged
-A jtthorn1xy(J jt,A w,I xypos){ A z; ARGCHK1(w); A prxthornuni=sc(xypos+!(AT(w)&(LIT+C2T+C4T))); z = thorn1main(w,prxthornuni); if (z&&AT(z)&(C2T+C4T))z = rank2ex(z,prxthornuni,DUMMYSELF,MIN(AR(z),1L),0,MIN(AR(z),1L),0, RoutineD); R z; }
+A jtthorn1xy(J jt,A w,I xypos){ A z; ARGCHK1(w); MEMCHK1(w); A prxthornuni=sc(xypos+!(AT(w)&(LIT+C2T+C4T))); z = thorn1main(w,prxthornuni); if (z&&AT(z)&(C2T+C4T))z = rank2ex(z,prxthornuni,DUMMYSELF,MIN(AR(z),1L),0,MIN(AR(z),1L),0, RoutineD); R z; }
 
 // entry point to use default boxing
-F1(jtthorn1){F12IP; R jtthorn1xy(jt,w,jt->boxpos); }
+F1(jtthorn1){F12IP; MEMCHK1(w);  R jtthorn1xy(jt,w,jt->boxpos); }
 
 
 #define DDD(v)   {*v++='.'; *v++='.'; *v++='.';}
@@ -847,8 +847,8 @@ static A jtjprx(J jt,I ieol,I maxlen,I lb,I la,A w){A y,z;B ch;C e,eov[2],*v,x,*
 // a is the output control, (outeol, outmaxlen, outmaxbefore, outmaxafter)
 // w is any noun
 // Result is the UTF-8 byte string that would be displayed
-F2(jtoutstr){F12IP;I*v;
- ARGCHK2(a,w);
+F2(jtoutstr){F12IP; MEMCHK2(a,w); I*v;
+ ARGCHK2(a,w); MEMCHK2(a,w);
  RZ(a=vib(a));
  ASSERT(1==AR(a), EVRANK);
  ASSERT(4==AN(a), EVLENGTH);
@@ -862,7 +862,7 @@ F2(jtoutstr){F12IP;I*v;
 }
 
 // w is a character noun.  Convert it to a UTF-8 string and write it to the console
-static F1(jtjpr1){F12JT;PROLOG(0002);A z;
+static F1(jtjpr1){F12JT; MEMCHK1(w); PROLOG(0002);A z;
  // extract the output type buried in jt
  I mtyo=(I)jtfg&JTPRTYO;
  // convert the character array to a null-terminated UTF-8 string
@@ -883,7 +883,7 @@ static F1(jtjpr1){F12JT;PROLOG(0002);A z;
 // flag bits in jt indicate output class, print-enable, and screen destination
 // Result is 0 if error, otherwise a harmless constant
 F1(jtjpr){F12JT;A y;I i,n,t; UC *v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  t=AT(w);
   // if w is a noun, format it and output it
  if(t&NOUN&&!((I)jtfg&JTPRNOSTDOUT))RZ(jpr1(w))

@@ -545,7 +545,7 @@ APFX(powEE, E,E,E, pospowE,,HDR1JERR)
 
 
 F2(jtlogar2){F12IP;A z;I t;
- ARGCHK2(a,w); 
+ ARGCHK2(a,w); MEMCHK2(a,w);
  RE(t=maxtype(AT(a),AT(w)));
  if(!(t&XNUM)||jt->xmode==XMEXACT){jt->xmode=XMEXACT; R jtatomic2(JTIPAW,logar1(w),logar1(a),ds(CDIV));}  // better to multiply by recip, but not much, & it makes 0 ^. 0 not fail
  z=rank2ex0(cvt(XNUM,a),cvt(XNUM,w),DUMMYSELF,jtxlog2a); 
@@ -555,7 +555,7 @@ F2(jtlogar2){F12IP;A z;I t;
 }
     
 F2(jtroot){F12IP;A z;I t;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  RE(t=maxtype(AT(a),AT(w)));
  A ma=a; if(TYPESNE(t,AT(a)))RZ(ma=cvt(t,a));
  A mw=w; if(TYPESNE(t,AT(w)))RZ(mw=cvt(t,w));
@@ -572,7 +572,7 @@ F2(jtroot){F12IP;A z;I t;
 F1(jtjdot1){F12IP;R tymes(a0j1,w);}
 // j. should preserve -0 when given real arguments
 F2(jtjdot2){F12IP;
- ARGCHK2(a,w); I at=AT(a), wt=AT(w);
+ ARGCHK2(a,w); MEMCHK2(a,w); I at=AT(a), wt=AT(w);
  if((~(SGNIFSPARSE(at)|SGNIFSPARSE(wt))&-(at&B01+INT+FL)&-(wt&B01+INT+FL))<0){A z;  // if both args real and not sparse
   I ar=AR(a), wr=AR(w);
   ASSERTAGREE(AS(a),AS(w),MIN(ar,wr))  // verify agreement
@@ -582,15 +582,15 @@ F2(jtjdot2){F12IP;
  }
  R plus(a,tymes(a0j1,w));
 }
-F1(jtrdot1){F12IP;R expn1(jdot1(w));}
-F2(jtrdot2){F12IP;R tymes(a,rdot1(w));}
+F1(jtrdot1){F12IP; R expn1(jdot1(w));}
+F2(jtrdot2){F12IP; R tymes(a,rdot1(w));}
 
 
-F1(jtpolar){F12IP;ARGCHK1(w); A z; R cvt((AT(w)&SPARSE)+FL,dfv2(z,v2(10L,12L),w,qq(ds(CCIRCLE),v2(1L,0L))));}
+F1(jtpolar){F12IP;ARGCHK1(w); MEMCHK1(w); A z; R cvt((AT(w)&SPARSE)+FL,dfv2(z,v2(10L,12L),w,qq(ds(CCIRCLE),v2(1L,0L))));}
 
 // +. y split into real & imaginary parts.  No IRS
 DF1(jtrect){DF12IP;A e,z;B b;I r,t;P*wp,*zp;Z c;
- ARGCHK1(w); 
+ ARGCHK1(w); MEMCHK1(w);
  t=AT(w); r=AR(w);
  ASSERT(!AN(w)||t&NUMERIC,EVDOMAIN);
  if(ISDENSETYPE(t,CMPX)){GATV0(z,FL,2*AN(w),1+r); MCISH(AS(z),AS(w),r) AS(z)[r]=2; MC(AVn(1+r,z),AV(w),AN(z)*sizeof(D)); R z;}

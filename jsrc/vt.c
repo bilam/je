@@ -27,7 +27,7 @@ static A jttk0(J jt,B empty,I *u, I n,A w, I wf, I istake){A z;I m,r,*s;DPMULDDE
 }
 
 
-static F2(jttks){F12IP;PROLOG(0092);A a1,q,x,y,z;B b,c;I an,m,r,*s,*u,*v;P*wp,*zp;
+static F2(jttks){F12IP; MEMCHK2(a,w); PROLOG(0092);A a1,q,x,y,z;B b,c;I an,m,r,*s,*u,*v;P*wp,*zp;
  an=AN(a); u=AV(a); r=AR(w); s=AS(w); 
  GASPARSE(z,AT(w),1,r,s); v=AS(z); DO(an, v[i]=ABS(u[i]););
  zp=PAV(z); wp=PAV(w);
@@ -58,7 +58,7 @@ static F2(jttks){F12IP;PROLOG(0092);A a1,q,x,y,z;B b,c;I an,m,r,*s,*u,*v;P*wp,*z
 
 // general take/drop routine.  *u (length n) is the signed take values, w is array, wf is frame of operation.
 // istake is 1 for take, 0 for drop
-static INLINE A jttk(A w, I *u, I n, I wf, J jtfg, I istake, I wcr, A a, I wt){F12IP;PROLOG(0093);A y,z;C*yv,*zv;I c,dy,dz,e,i,k,m,p,q,r;
+static INLINE A jttk(A w, I *u, I n, I wf, J jtfg, I istake, I wcr, A a, I wt){F12IP; MEMCHK2(a,w); PROLOG(0093);A y,z;C*yv,*zv;I c,dy,dz,e,i,k,m,p,q,r;
  I wr=AR(w), t=AT(w), *ws=wr==wf?shape1:AS(w);  // ws points to shape of w, or all 1s if cell of w is an atom
  if(unlikely(ISSPARSE(t))){
   // sparse: reconstruct old parameters
@@ -157,7 +157,8 @@ endcopy:;
 
 // x {."r y, which allows infinities in x
 DFI2(jttake){A z;I n,*v;
- IARG2CR F12IP; I wt=AT(w);  // wt=type of w
+ IARG2CR F12IP; MEMCHK2(a,w); I wt=AT(w);  // wt=type of w
+ MEMCHK2(a,w);
  if(unlikely(ISSPARSE(AT(a))))RZ(a=denseit(a));  // force a to dense
  I wf=wr-wcr; I af=ar-acr;  // ?r=rank, ?cr=cell rank, ?f=length of frame
 
@@ -178,7 +179,7 @@ DFI2(jttake){A z;I n,*v;
 }
 
 DFI2(jtdrop){A z;I d,m,n,*u,*v;
- IARG2CR F12IP;
+ IARG2CR F12IP; MEMCHK2(a,w);
  RZ(a=vib(a));  // convert & audit a
  I af=ar-acr; I wf=wr-wcr;  // ?r=rank, ?cr=cell rank, ?f=length of frame
  I wt=AT(w);
@@ -199,7 +200,7 @@ DFI2(jtdrop){A z;I d,m,n,*u,*v;
 
 // create 1 cell of fill when head/tail of an array with no items (at the given rank)
 static FI1(jtrsh0){A x,y;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  I *ws=AS(w); I wf=wr-wcr;
  RZ(x=vec(INT,wr-1,ws)); MCISH(wf+AV(x),ws+wf+1,wcr-1);
  RZ(w=jtsetfv1(jt,w,AT(w))); GA00(y,AT(w),1,0); MC(AV0(y),jt->fillv,bpnoun(AT(w)));
@@ -209,7 +210,7 @@ static FI1(jtrsh0){A x,y;
 
 // {. y with IRS
 DFI1(jthead){
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  I wf=wr-wcr;
  if(unlikely(!wcr)){RETF(RETARG(w))  // {."0, a NOP
  }else if(likely(AS(w)[wf]!=0)){  // if cell is atom, or cell has items - which means it's safe to calculate the size of a cell
@@ -221,7 +222,7 @@ DFI1(jthead){
 
 // {: y with IRS
 DFI1(jttail){
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  I wf=wr-wcr;
  if(unlikely(!wcr)){RETF(RETARG(w))  // {:"0, a NOP
  }else if(likely(AS(w)[wf]!=0)){  // if cell is atom, or cell has items - which means it's safe to calculate the size of a cell

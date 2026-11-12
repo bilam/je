@@ -803,7 +803,7 @@ return4:;  // we have a preemptive result.  store and set minimp =-inf to cut of
 //  result is list of columns that have positive SPR (no line with col>ColBk0Threshold && bk<Bk0Threshold)
 //  
 // Rank is infinite
-F1(jtmvmsparse){F12IP;PROLOG(832);
+F1(jtmvmsparse){F12IP; MEMCHK1(w); PROLOG(832);
 #if PYXES && (C_AVX2 || EMU_AVX2)
  if(AN(w)==0){
   // empty arg just returns stats; none defined yet
@@ -1681,7 +1681,7 @@ return4:;  // we have a preemptive result.  store and set minimp =-inf to cut of
 //  result is list of columns that have positive SPR (no line with col>ColBk0Threshold && bk<Bk0Threshold)
 //  
 // Rank is infinite
-F1(jtmvmsparsee){F12IP;PROLOG(832);
+F1(jtmvmsparsee){F12IP; MEMCHK1(w); PROLOG(832);
 #if PYXES && (C_AVX2 || EMU_AVX2)
  if(AN(w)==0){
   // empty arg just returns stats; none defined yet
@@ -2025,7 +2025,7 @@ static unsigned char jtekupdatex(J jt,struct ekctx* const ctx,UI4 ti){
 // If Qk has rank > rank pivotrownon0 + rank prx, or pivotcolnon0/pivotrownon0 rank 2, calculate them in extended FP precision
 // Qk/bk is modified in place
 F2(jtekupdate){F12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  // extract the inputs
  A qk=w; ASSERT(AT(w)&FL,EVDOMAIN) ASSERT(ASGNINPLACESGN(SGNIF(jtfg,JTINPLACEWX),w),EVNONCE)
  ASSERT(AT(a)&BOX,EVDOMAIN) ASSERT(AR(a)==1,EVRANK) ASSERT(AN(a)==5,EVLENGTH)  // a is 5 boxes
@@ -2221,7 +2221,7 @@ __m256d prowdh, prowdl=_mm256_setzero_pd();  // values from the col of Qkt
 // prx is ordered so that the first part is paired even/odd indexes that reside in a single cacheline.  The number of these pairs is pivotcolnon0 -&# prx
 // w is Qkt or bk.
 F2(jtqktupdate){F12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  // extract the inputs
  A qk=w; ASSERT(AT(w)&QP,EVDOMAIN) ASSERT(ASGNINPLACESGN(SGNIF(jtfg,JTINPLACEWX),w),EVNONCE)  // w must be inplaceable
  ASSERT(AT(a)&BOX,EVDOMAIN) ASSERT(AR(a)==1,EVRANK) ASSERT(AN(a)==5,EVLENGTH)  // a is 5 boxes
@@ -2282,8 +2282,8 @@ struct ekctx opctx={YC(rowsperthread)YC(pcx)YC(qk)YC(prx)YC(coln0)YC(ncvals)YC(p
 }
 
 #else
-F2(jtekupdate){F12IP;ASSERT(0,EVNONCE);}
-F2(jtqktupdate){F12IP;ASSERT(0,EVNONCE);}
+F2(jtekupdate){F12IP; MEMCHK2(a,w); ASSERT(0,EVNONCE);}
+F2(jtqktupdate){F12IP; MEMCHK2(a,w); ASSERT(0,EVNONCE);}
 #endif
 
 #if PYXES && (C_AVX2 || EMU_AVX2)
@@ -2461,7 +2461,7 @@ static unsigned char jtfindsprx(J jt,struct sprctx* const ctx,UI4 ti){
 // w is ck;bk;ColThresh,bkthresh  or   ck value
 // result is row#,reciprocal of pivot hi,lo
 F1(jtfindspr){F12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  I row;  // will hold the row of the SPR
  D *ckd;  // pointer to column data
  I isqp;  // will be set if there is a qp value
@@ -2522,7 +2522,7 @@ struct sprctx opctx={YC(rowsperthread)YC(ck)YC(bk)YC(m).ckthreshd=DAV(thresh)[0]
  }
 }
 #else
-F1(jtfindspr){F12IP;ASSERT(0,EVNONCE);}
+F1(jtfindspr){F12IP; MEMCHK1(w); ASSERT(0,EVNONCE);}
 #endif
 
 
@@ -2926,7 +2926,7 @@ finis:;  // here we have flushed the ring at the end
 // compgrade shape s  is (\: comploads), the order stripes should be processed in to go from slowest to fastest
 // result is value of name after modification
 F2(jtbatchop){F12IP;PROLOG(000);
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(likely(AT(w)&VERB)){w=a; a=zeroionei(0);} I debopts=rei0(a);  // default options for monad and verify integer atom
  I4 *(colndxs)[MAXOP];  // pointers to column indexes, filled in by threads
  struct bopctx opctx={.nthreads=((lda(&JT(jt,systemlock))>2)?0:(*JT(jt,jobqueues))[0].nthreads)+1, .colndxs=&colndxs, .debopts=debopts,};  // suppress worker threads during system lock (i. e. debug)
@@ -2974,5 +2974,5 @@ errexit:;  // here on error to undo syrd
 
 }
 #else
-F2(jtbatchop){F12IP;ASSERT(0,EVNONCE);}
+F2(jtbatchop){F12IP; MEMCHK2(a,w); ASSERT(0,EVNONCE);}
 #endif

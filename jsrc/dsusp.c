@@ -64,7 +64,7 @@ DC jtdeba(J jt,I t,void *x,void *y,A fs){DC d;
 void jtdebz(J jt){if(jt->sitop!=0)jt->sitop=jt->sitop->dclnk;}  // stack may vanish if 13!:0]0
      /* remove     top of si stack */
 
-F1(jtsiinfo){F12IP;A z,*zv;DC d;I c=5,n,*s;
+F1(jtsiinfo){F12IP; MEMCHK1(w); A z,*zv;DC d;I c=5,n,*s;
  ASSERTMTV(w);
  n=0; d=jt->sitop; NOUNROLL while(d){++n; d=d->dclnk;}
  GATV0(z,BOX,c*n,2); s=AS(z); s[0]=n; s[1]=c; zv=AAV2(z);
@@ -110,7 +110,7 @@ static DC suspset(DC d){DC e=0;
 
 // 13!:24 Install suspension at the end of the debug stack.  Valid only when debug on.
 // Result is i.0
-F1(jtdbisolatestk){F12IP;
+F1(jtdbisolatestk){F12IP; MEMCHK1(w);
  ASSERT(jt->uflags.trace&TRACEDB1,EVNONCE);  // debug must be on
  ASSERTMTV(w)  // no arg
  if(jt->sitop)jt->sitop->dcsusp=1;  // install suspension
@@ -331,7 +331,7 @@ noparse: ;
 }
 
 // Execute self under debug.  Bivalent a,w,self or w,self,self.  A stack frame must have been allocated on the top of the debug stack
-A jtdbunquote(J jtfg,A a,A w,A self){F12IP;A t,z;B s;V*sv;
+A jtdbunquote(J jtfg,A a,A w,A self){F12IP; MEMCHK3(a,w,self); A t,z;B s;V*sv;
  I dyad=EPDYAD; DC d=jt->sitop;   // remember if dyad, fetch debug frame
  sv=FAV(self); t=sv->fgh[0]; 
  if(sv->id==CCOLONE&&t!=0){  // : explicit and not anonymous (if anonymous, it goes to unquote which will reexecute the verb with a name)
@@ -360,7 +360,7 @@ F1(jtdbq){F12IP;ASSERTMTV(w); R sc(JT(jt,dbuser)&~TRACEDBSUSCLEAR);}
 
 // x 13!:11 y set error number(s) in threads.  Error _1 is converted to EVDEBUGEND
 F2(jtdberr2){F12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(AR(a)<2,EVRANK); ASSERT(AN(a)>0,EVDOMAIN); if(AT(a)!=INT)RZ(a=cvt(INT,a));  // verify #threads OK
  ASSERT(AR(w)<2,EVRANK); ASSERT(AN(w)==1||AN(w)==AN(a),EVDOMAIN); if(AT(w)!=INT)RZ(w=cvt(INT,w));  // verify #err#s OK
  DONOUNROLL(AN(a), ASSERT(BETWEENO(IAV(a)[i],0,THREADIDFORWORKER(JT(jt,wthreadhwmk))),EVDOMAIN))  // verify threads exist
@@ -370,12 +370,12 @@ F2(jtdberr2){F12IP;
 }
 
 // x 13!:23 y  return y if it is a suspension result, otherwise x (which defaults to i. 0 0).  Bivalent 
-F2(jtdbpasss){F12IP;I t=AT(w); w=t&NOUN?w:a; a=t&NOUN?a:mtm; RETF(AFLAG(w)&AFDEBUGRESULT?w:a); }
+F2(jtdbpasss){F12IP; MEMCHK2(a,w); I t=AT(w); w=t&NOUN?w:a; a=t&NOUN?a:mtm; RETF(AFLAG(w)&AFDEBUGRESULT?w:a); }
 
 // Suspension-ending commands.  These commands return a list of boxes flagged with the AFDEBUGRESULT flag.  The first box is always an integer atom and gives the type
 // of exit (run, step, clear, etc).  Other boxes give values for the run and ret types.  EXCEPTION: 13!:0 returns i. 0 0 for compatibility, but still flagged as AFDEBUGRESULT
 F1(jtdbc){F12IP;I k;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  k=rei0(w);
  ASSERT(!(k&~(TRACEDBDEBUGENTRY|TRACEDBSUSFROMSCRIPT|TRACEDB1)),EVDOMAIN);
  ASSERT(!k||!jt->glock,EVDOMAIN);  // can't turn on debug if script locked
@@ -389,19 +389,19 @@ F1(jtdbc){F12IP;I k;
 }    /* 13!:0  clear stack; enable/disable suspension */
 
 // The remaining suspension-ending commands are not allowed during PM debugging
-F1(jtdbrun ){F12IP;ASSERTMTV(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(box(sc(SUSRUN)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jtdbrun ){F12IP; MEMCHK1(w); ASSERTMTV(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(box(sc(SUSRUN)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
      /* 13!:4  run again */
 
-F1(jtdbnext){F12IP;ASSERTMTV(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(box(sc(SUSNEXT)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jtdbnext){F12IP; MEMCHK1(w); ASSERTMTV(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(box(sc(SUSNEXT)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
      /* 13!:5  run next */
 
-F1(jtdbret ){F12IP;ARGCHK1(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(jlink(sc(SUSRET),box(w)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jtdbret ){F12IP;ARGCHK1(w); MEMCHK1(w); ASSERT(jt->pmttop==0,EVUNTIMELY) A z; RZ(z=mkwris(jlink(sc(SUSRET),box(w)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
      /* 13!:6  exit with result */
 
-F1(jtdbjump){F12IP;ASSERT(jt->pmttop==0,EVUNTIMELY) I jump; jump=rei0(w); A z; RZ(z=mkwris(jlink(sc(SUSJUMP),sc(jump)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jtdbjump){F12IP; MEMCHK1(w); ASSERT(jt->pmttop==0,EVUNTIMELY) I jump; jump=rei0(w); A z; RZ(z=mkwris(jlink(sc(SUSJUMP),sc(jump)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
      /* 13!:7  resume at line n (return result error if out of range) */
 
-static F2(jtdbrr){F12IP;DC d;
+static F2(jtdbrr){F12IP; MEMCHK2(a,w); DC d;
  RE(0); ASSERT(jt->pmttop==0,EVUNTIMELY) 
  d=jt->sitop; NOUNROLL while(d&&DCCALL!=d->dctype)d=d->dclnk; 
  ASSERT(d&&VERB&AT(d->dcf)&&!d->dcc,EVDOMAIN);  // must be tacit verb
@@ -410,15 +410,15 @@ static F2(jtdbrr){F12IP;DC d;
  R z;
 }
 
-F1(jtdbrr1 ){F12IP;ASSERT(jt->pmttop==0,EVUNTIMELY) R dbrr(0L,w);}   /* 13!:9   re-run with arg(s) */
-F2(jtdbrr2 ){F12IP;ASSERT(jt->pmttop==0,EVUNTIMELY) R dbrr(a, w);}
+F1(jtdbrr1 ){F12IP; MEMCHK1(w); ASSERT(jt->pmttop==0,EVUNTIMELY) R dbrr(0L,w);}   /* 13!:9   re-run with arg(s) */
+F2(jtdbrr2 ){F12IP; MEMCHK2(a,w); ASSERT(jt->pmttop==0,EVUNTIMELY) R dbrr(a, w);}
 
 // T. y - set debugging thread #
 // This is a suspension command, but not suspension-ending
-F1(jttcapdot1){F12IP;I thno; thno=rei0(w); ASSERT(BETWEENO(thno,0,THREADIDFORWORKER(JT(jt,wthreadhwmk))),EVDOMAIN) A z; RZ(z=mkwris(jlink(sc(SUSTHREAD),sc(thno)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
+F1(jttcapdot1){F12IP; MEMCHK1(w); I thno; thno=rei0(w); ASSERT(BETWEENO(thno,0,THREADIDFORWORKER(JT(jt,wthreadhwmk))),EVDOMAIN) A z; RZ(z=mkwris(jlink(sc(SUSTHREAD),sc(thno)))); AFLAGORLOCAL(z,AFDEBUGRESULT) R z;}
 
 // 13!:14, query suspension trap sentence
-F1(jtdbtrapq){F12IP;
+F1(jtdbtrapq){F12IP; MEMCHK1(w);
  ASSERTMTV(w); 
  // we must read & protect the sentence under lock in case another thread is changing it
  READLOCK(JT(jt,dblock)) A trap=JT(jt,dbtrap); if(trap)ras(trap); READUNLOCK(JT(jt,dblock))  // must ra() while under lock
@@ -428,7 +428,7 @@ F1(jtdbtrapq){F12IP;
 
 // 13!:15, set suspension trap sentence
 F1(jtdbtraps){F12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  RZ(w=vs(w));
  if(AN(w)){RZ(ras(w));}else w=0;  // protect w if it is nonempty; if empty, convert to null
  WRITELOCK(JT(jt,dblock)) A trap=JT(jt,dbtrap); JT(jt,dbtrap)=w; WRITEUNLOCK(JT(jt,dblock))  // swap addresses under lock

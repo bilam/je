@@ -10,7 +10,7 @@ static F1(jtdrr);
 EVERYFS(drrself,jtdrr,0,0,VFLAGNONE)
 
 static F1(jtdrr){F12IP;PROLOG(0055);A df,dg,hs,*x,z;B b,ex,xop;C c,id;I fl,*hv,m;V*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  // If the input is a name, it must be from ".@'name' which turned into ".@(name+noun)  - or in debug, but that's discarded
  if(AT(w)&NAME){RZ(w=sfn(0,w));}
  // If noun, return the value of the noun.
@@ -39,11 +39,11 @@ static F1(jtdrr){F12IP;PROLOG(0055);A df,dg,hs,*x,z;B b,ex,xop;C c,id;I fl,*hv,m
  EPILOG(z);
 }
 
-F1(jtdrep){F12IP;A z=drr(w); R z&&AT(z)&BOX?z:ravel(box(z));}
+F1(jtdrep){F12IP; MEMCHK1(w); A z=drr(w); R z&&AT(z)&BOX?z:ravel(box(z));}
 
 // create AR of w
 F1(jtaro){F12IP;A fs,gs,hs,s,*u,*x,y,z;B ex,xop;C id;I*hv,m;V*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(FUNC&AT(w)){
   if(unlikely(AFLAG(w)&AFRO))if(AT(w)&VERB){R str(12,"cocurrent_z_");}  // readonly name, must not expand it.  We don't have access to the name used
   v=FAV(w); id=v->id;
@@ -71,10 +71,10 @@ F1(jtaro){F12IP;A fs,gs,hs,s,*u,*x,y,z;B ex,xop;C id;I*hv,m;V*v;
  R z;
 }
 
-F1(jtarep){F12IP;R box(aro(w));}
+F1(jtarep){F12IP; R box(aro(w));}
 
 // Create A for a string - name~, a primitive, or the boxed string
-static DF1(jtfxchar){DF12IP;A y;C c,d,id,*s;I m,n;
+static DF1(jtfxchar){DF12IP; MEMCHK1(w); A y;C c,d,id,*s;I m,n;
  n=AN(w);
  ASSERT(1>=AR(w),EVRANK);  // string must be an atom or list
  ASSERT(n!=0,EVLENGTH);
@@ -91,7 +91,7 @@ static DF1(jtfxchar){DF12IP;A y;C c,d,id,*s;I m,n;
 // Convert an AR/gerund to an A block.  w is the contents of an AR/gerund.  If it originally came from a verb it can't be a pyx, but it may contain pyxes
 // self is normally 0; if nonzero, we return a noun type ('0';<value) as is rather than returning value, and leave adv/conj ARs looking like nouns
 DF1(jtfx){DF12IP;A f,fs,g,h,p,q,*wv,y,*yv;C id;I m,n=0;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(AT(w)&VERB+ADV+CONJ)R w;  // if gerund (boxed V), treat it as a verb - return it as is.  Also if other AR that has been converted to CAV
  // if string, handle that special case (name/primitive)
  if(LIT&AT(w))R fxchar(w,self);
@@ -145,7 +145,7 @@ DF1(jtfx){DF12IP;A f,fs,g,h,p,q,*wv,y,*yv;C id;I m,n=0;
 // if JTINPLACEA is set, make sure the result fits on one line for error display: stop copying if we hit LF and emit '...',
 // and don't put spaces before/after the delimiters
 // result is always incorpable
-A jtunDD(J jtfg, A w){F12JT;
+A jtunDD(J jtfg, A w){F12JT; MEMCHK1(w);
  I shortres=(I)jtfg&JTINPLACEA;  // set for short, one-line result
  C *wv=CAV(w);  // start of word string
  // quick scan for 9, :, '; if not, return the input
@@ -309,7 +309,7 @@ static A*jtunparse1a(J jt,I m,A*hv,A*zv){A x,y;A *v;I i,j,k;
 // w is aa explicit defn (a FUNC).  Return unparsed form (list of boxed character strings)
 // JT flags indicate valences to suppress.  If we suppress one, we also suppress the :
 F2(jtunparsem){F12IP;A h,*hv,dc,ds,mc,ms,z,*zu,*zv;I dn,m,mn,n,p;V*wv;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  wv=FAV(w); h=wv->fgh[2]; hv=AAV(h);  // h[2][HN] is preparsed def
  mc=hv[0];    ms=hv[2];    m=mn=CWNC(mc)-1;  // mc->control words ms->commented text  m,mn = #control words
  dc=hv[0+HN]; ds=hv[2+HN]; n=dn=CWNC(dc)-1;
@@ -353,7 +353,7 @@ A cw57rep(J jt, A x){I i, q[3];
 
 // 5!:7
 static F2(jtxrep){F12IP;A h,*hv,*v,x,z,*zv;CW*u;I i,j,n,q[3],*s;V*wv; 
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  j=rei0(a); ASSERT(1==j||2==j,EVDOMAIN); j=1==j?0:HN;
  ASSERT(AT(w)&VERB+ADV+CONJ,EVDOMAIN);
  wv=FAV(w); h=wv->fgh[2];

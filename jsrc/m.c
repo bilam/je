@@ -152,12 +152,12 @@ void memhashadd(I lineno, C *string){
 }
 
 // 9!:_6/_7  read/set memory histogram
-F1(jtmemhistoq){F12IP;
+F1(jtmemhistoq){F12IP; MEMCHK1(w);
  ASSERTMTV(w);
  R vec(INT,sizeof(jt->memhisto)/sizeof(jt->memhisto)[0],jt->memhisto);
 }
 
-F1(jtmemhistos){F12IP;I k;
+F1(jtmemhistos){F12IP; MEMCHK1(w); I k;
  ASSERTMTV(w); 
  mvc(sizeof(jt->memhisto),jt->memhisto,MEMSET00LEN,MEMSET00);
  R mtm;
@@ -167,10 +167,10 @@ F1(jtmemhistos){F12IP;I k;
 // return histo area
 
 // process using   ;"1 (":@{. ; ' ' ; 3 (3!:4) {:)"1 (20) {. \:~ |."1 (_2) ]\ 9!:_8''
-F1(jtmemhashq){F12IP;
+F1(jtmemhashq){F12IP; MEMCHK1(w);
  R vec(INT,sizeof(histarea)/sizeof(histarea)[0][0],histarea);
 }
-F1(jtmemhashs){F12IP;
+F1(jtmemhashs){F12IP; MEMCHK1(w);
  ASSERTMTV(w); 
  mvc(sizeof(histarea,histarea,MEMSET00LEN,MEMSET00));
  R mtm;
@@ -235,7 +235,7 @@ prevWx=Wx; Wx=AFCHAIN(Wx); ++Wj;}
 //  atom 0 is return code 0=OK 1=pool number corrupted 2=header corrupted 3=usecount corrupted (valid only if MEMAUDIT&0x4) 4=loop in chain 
 //  atom 1 is lg of failing blocksize
 // if arg is not empty, crash on any error
-F1(jtcheckfreepool){F12IP;
+F1(jtcheckfreepool){F12IP; MEMCHK1(w);
  I Wi,Wj,ecode=0;A Wx; 
  for(Wi=PMINL;Wi<=PLIML;++Wi){  // for each free list
   Wj=0; Wx=(jt->mempool[-PMINL+Wi]);  // get head of chain, init count of # eles
@@ -253,7 +253,7 @@ F1(jtcheckfreepool){F12IP;
  R v2(ecode,ecode?Wi:0);  // return error code and chain 
 }
 
-F1(jtspcount){F12IP;A z;I c=0,i,j,*v;A x;
+F1(jtspcount){F12IP; MEMCHK1(w); A z;I c=0,i,j,*v;A x;
  ASSERTMTV(w);
  GATV0(z,INT,2*(-PMINL+PLIML+1),2); v=AV2(z);
  for(i=PMINL;i<=PLIML;++i){j=0; x=(jt->mempool[-PMINL+i]); NOUNROLL while(x){x=AFCHAIN(x); ++j;} if(j){++c; *v++=(I)1<<i; *v++=j;}}
@@ -395,7 +395,7 @@ static D jtspfor1(J jt, A w){D tot=0.0;
 }
 
 F1(jtspfor){F12IP;A*wv,x,y,z;C*s;D*zv;I i,m,n;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w); wv=AAV(w);
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
  I zr=AR(w); GATV(z,FL,n,AR(w),AS(w)); zv=DAVn(zr,z); 
@@ -411,7 +411,7 @@ F1(jtspfor){F12IP;A*wv,x,y,z;C*s;D*zv;I i,m,n;
 }    /* 7!:5 space for named object; w is <'name' */
 
 F1(jtspforloc){F12IP;A*wv,x,y,z;C*s;D tot,*zv;I i,j,m,n;L*u;LX *yv,c;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w); wv=AAV(w);
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
  I zr=AR(w); GATV(z,FL,n,AR(w),AS(w)); zv=DAVn(zr,z);   // zv-> results
@@ -443,10 +443,10 @@ F1(jtspforloc){F12IP;A*wv,x,y,z;C*s;D tot,*zv;I i,j,m,n;L*u;LX *yv,c;
 }    /* 7!:6 space for a locale */
 
 
-F1(jtmmaxq){F12IP;ASSERTMTV(w); RETF(sc((I)1<<(JT(jt,lgmmax)+1)));}
+F1(jtmmaxq){F12IP; MEMCHK1(w); ASSERTMTV(w); RETF(sc((I)1<<(JT(jt,lgmmax)+1)));}
      /* 9!:20 space limit query */
 
-F1(jtmmaxs){F12IP;
+F1(jtmmaxs){F12IP; MEMCHK1(w);
  I n=rei0(w);
  ASSERT(n>=100000,EVLIMIT);  // Don't allow so small a value that we can't reset it
  JT(jt,lgmmax)=CTLZI(n-1);  // save lg(rounded-up max blksize)-1
@@ -477,7 +477,7 @@ static A jtspallthreadsx(J jt){I grandtotal;
 
 // 7!:8 Get total# bytes used in all threads
 // Call a system lock, then get bytes in use for each thread.  Inactive threads may have bytes in use.
-F1(jtspallthreads){F12IP;A z;
+F1(jtspallthreads){F12IP; MEMCHK1(w); A z;
  ASSERTMTV(w);  // no args allowed
  do{z=jtsystemlock(jt,LOCK78MEM,jtspallthreadsx);}while(z==(A)1);  // call a lock, and repeat if another thread got the same lock request
  R z;  // return value/err from call
@@ -597,7 +597,7 @@ void jtsetleakcode(J jt, I code) {
 #endif
 }
 
-F1(jtleakblockread){F12IP;
+F1(jtleakblockread){F12IP; MEMCHK1(w);
 #if LEAKSNIFF
 if(!leakblock)R num(0);
 R vec(INT,2*leaknbufs,IAV(leakblock));
@@ -605,7 +605,7 @@ R vec(INT,2*leaknbufs,IAV(leakblock));
 R num(0);
 #endif
 }
-F1(jtleakblockreset){F12IP;
+F1(jtleakblockreset){F12IP; MEMCHK1(w);
 #if LEAKSNIFF
 leakcode=0;
 leaknbufs=0;
@@ -651,7 +651,7 @@ void audittstack(J jt){
 // x 13!:_5 y  audit a recursive pyx array y 
 // result 0=ok, 1=pyx found with usecount<x 2=pyx found with usecount<0 (maybe deadbeef) 3=nonrecursive block found 4=dead value found
 F2(jtauditpyx){F12IP;I mindepth;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  mindepth=rei0(a);   // minimum expected depth
  I n=AN(w); // number of boxes
  ASSERT(n==0||AT(w)&BOX,EVDOMAIN)
@@ -681,7 +681,7 @@ F2(jtauditpyx){F12IP;I mindepth;
 
 
 // Free all symbols pointed to by the SYMB block w, including PERMANENT ones.  But don't return CACHED values to the symbol pool
-void freesymb(J jt, A w){I j,wn=AN(w); LX k,* RESTRICT wv=LXAV0(w);
+void freesymb(J jt, A w){MEMCHK1(w); I j,wn=AN(w); LX k,* RESTRICT wv=LXAV0(w);
 
  LX freeroot=0; L *freetailchn=(L*)((I)jt->shapesink-offsetof(L,next));  // sym index of first freed ele; addr of chain field in last freed ele
  L *jtsympv=SYMORIGIN;  // Move base of symbol block to a register.  Block 0 is the base of the free chain.  MUST NOT move the base of the free queue to a register,
@@ -713,7 +713,7 @@ void freesymb(J jt, A w){I j,wn=AN(w); LX k,* RESTRICT wv=LXAV0(w);
 }
 
 // free the symbol table (i. e. locale) w.  AR(w) has been loaded.  We return w so caller doesn't have to save it
-NOINLINE A jtfreesymtab(J jt,A w,I arw){  // don't make this static - it will be inlined and that will make jtmf() save several more registers.  It is called infrequently
+NOINLINE A jtfreesymtab(J jt,A w,I arw){MEMCHK1(w);  // don't make this static - it will be inlined and that will make jtmf() save several more registers.  It is called infrequently
  if(likely(arw&ARLOCALTABLE)){
   // local tables have no path or name, and are not listed in any index.  Just delete the local names
   freesymb(jt,w);   // delete all the names/values
@@ -765,10 +765,10 @@ NOINLINE A jtfreesymtab(J jt,A w,I arw){  // don't make this static - it will be
 // mf() frees a block.  If what is freed is a symbol table, all the symbols are freed first.
 
 // mark w incorporated, reassigning if necessary.  Return the address of the block.  Used when w is an rvalue
-A jtincorp(J jt, A w) {ARGCHK1(w); INCORP(w); R w;}
+A jtincorp(J jt, A w) {ARGCHK1(w); MEMCHK1(w); INCORP(w); R w;}
 
 // incorp+ra.  Return 0 if error.
-A jtincorpra(J jt, A w) {ARGCHK1(w); INCORPNC(w); ra(w); R w;}
+A jtincorpra(J jt, A w) {ARGCHK1(w); MEMCHK1(w); INCORPNC(w); ra(w); R w;}
 
 // allocate a virtual block, given the backing block
 // offset is offset in atoms from start of w; r is rank
@@ -778,7 +778,7 @@ A jtincorpra(J jt, A w) {ARGCHK1(w); INCORPNC(w); ra(w); R w;}
 // We fill in everything but AN and AS, which are done in the caller
 // If this code is called with inplacing turned on (in jtfg), we assume that w is going to be replaced by the virtual result,
 // and we make the virtual block inplaceable if w was
-RESTRICTF A jtvirtual(J jtfg, AD *RESTRICT w, I offset, I r){F12IP;AD* RESTRICT z;
+RESTRICTF A jtvirtual(J jtfg, AD *RESTRICT w, I offset, I r){F12IP; MEMCHK1(w); AD* RESTRICT z;
 ASSERT(RMAX>=r,EVLIMIT);
  I t=AT(w);  // type of input
  offset<<=bplg(t);  // length of an atom of t
@@ -822,7 +822,7 @@ ASSERT(RMAX>=r,EVLIMIT);
 // Might return 0
 A jtrealize(J jt, A w){A z; I t;
 // allocate a block of the correct type and size.  Copy the shape
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  t=AT(w);
  AFLAGPRISTNO(ABACK(w))  // clear PRISTINE in the backer, since its contents are escaping
  I zr=AR(w); GA(z,t,AN(w),zr,AS(w));
@@ -856,7 +856,7 @@ A jtrealize(J jt, A w){A z; I t;
 // the value is going to be opened & we don't want to free any backers
 
 A jtgc(J jt,A w,A* old){
- ARGCHK1(w);  // return if no input (could be error or unfilled box).  This is not a formality!  If we hit an error we must freeze tpops in case of PM debug
+ ARGCHK1(w); MEMCHK1(w); // return if no input (could be error or unfilled box).  This is not a formality!  If we hit an error we must freeze tpops in case of PM debug
  I c=AC(w);  // remember original usecount/inplaceability
  // We want to avoid realizing w if possible, so we handle virtual w separately
  if(unlikely(AFLAG(w)&(AFVIRTUAL|AFVIRTUALBOXED))){
@@ -1010,7 +1010,7 @@ A jtra(AD* RESTRICT wd,I t,A sv){I n=AN(wd);
 // is separately on the tpop stack.  However, we DO traverse a recursible block when its count goes to 0: making the block
 // recursive created the need to traverse, and that must be honored.  Ex: create - ra - fa - tpop.  The t argument is
 // AFLAG(wd)&RECURSIBLE, from which we can see the type and recursive status
-static void jtfamftrav(J jt,AD* RESTRICT wd,I t){I n=AN(wd);
+static void jtfamftrav(J jt,AD* RESTRICT wd,I t){I n=AN(wd); MEMCHK1B(wd);
  if((t&BOX+SPARSE)>0){AD* np;
   // boxed.  Loop through each box, recurring if called for.
   A* RESTRICT wv=AAV(wd);  // pointer to box pointers
@@ -1089,7 +1089,7 @@ finbox:;
  mf(wd);  // free the block after all contents have been decremented
 }
 // Entry point to free after optional traversal.  clang gets this just right: if not TRAVERSIBLE, it inlines jtmf and pushes/pops no registers.
-void jtfamf(J jt,AD* RESTRICT wd,I t){
+void jtfamf(J jt,AD* RESTRICT wd,I t){ MEMCHK1B(wd);
  if(!(t&TRAVERSIBLE)){mf(wd); R;}
  jtfamftrav(jt,wd,t);
 }
@@ -1183,6 +1183,7 @@ void jttpop(J jt,A *old,A *pushp){A *endingtpushp;
     I c=AC(np);  // fetch usecount.
     // We never tpush a PERMANENT block, but a block can become PERMANENT during the run, so we have to check
     if(likely(!ACISPERM(c))){     // if block not PERMANENT...
+     /* CHKORIGIN(np);*/
      I flg=AFLAG(np);  // fetch flags, just in case
      PREFETCH((C*)np0);   // prefetch the next box.  Might be 0; that's no crime
      // If count goes to 0: if the usercount is marked recursive, do the recursive fa(), otherwise just free using mf().  If virtual, the backer must be recursive, so fa() it
@@ -1225,12 +1226,12 @@ void jttpop(J jt,A *old,A *pushp){A *endingtpushp;
 // If the noun is assigned as part of a named derived verb, protection is not needed (but harmless) because if the same value is
 // assigned to another name, the usecount will be >1 and therefore not inplaceable.  Likewise, the the noun is non-DIRECT we need
 // only protect the top level, because if the named value is incorporated at a lower level its usecount must be >1.
-F1(jtrat){F12IP;ARGCHK1(w); ras(w); tpush(w); R w;}  // recursive.  w can be zero only if explicit definition had a failing sentence
+F1(jtrat){F12IP;ARGCHK1(w); MEMCHK1(w); ras(w); tpush(w); R w;}  // recursive.  w can be zero only if explicit definition had a failing sentence
 
-A jtras(J jt, AD * RESTRICT w) { ARGCHK1(w); realizeifvirtual(w); ra(w); R w; }  // subroutine version of ra() to save space
-A jtra00s(J jt, AD * RESTRICT w) { ARGCHK1(w); ra00(w,AT(w)); R w; }  // subroutine version of ra00() to save space
-A jtrifvs(J jt, AD * RESTRICT w) { ARGCHK1(w); realizeifvirtual(w); R w; }  // subroutine version of rifv() to save space and be an rvalue
-A jtmkwris(J jt, AD * RESTRICT w) { ARGCHK1(w); makewritable(w); R w; }  // subroutine version of makewritable() to save space and be an rvalue
+A jtras(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); realizeifvirtual(w); ra(w); R w; }  // subroutine version of ra() to save space
+A jtra00s(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); ra00(w,AT(w)); R w; }  // subroutine version of ra00() to save space
+A jtrifvs(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); realizeifvirtual(w); R w; }  // subroutine version of rifv() to save space and be an rvalue
+A jtmkwris(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); makewritable(w); R w; }  // subroutine version of makewritable() to save space and be an rvalue
 
 #if MEMAUDIT&8
 static I lfsr=(I)0xfeeefeee00000000LL;  // holds varying memory pattern
@@ -1259,6 +1260,8 @@ __attribute__((noinline)) A jtgafallopool(J jt){
 #if PYXES
 // the lock must always be cleared when the block is returned, so we can set it once.  The origin likewise doesn't change
 #define PYXMEMINIT(u) *(I4 *)&AORIGIN(u)=THREADID1(jt);  // init allocating thread# and clear the lock
+#elif (SY_64 && MEMAUDIT&0x80)
+#define PYXMEMINIT(u) (u)->origin=0x6b;(u)->lock=0x7c;
 #else
 #define PYXMEMINIT(u)
 #endif
@@ -1437,6 +1440,9 @@ RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
 A zfillind(A w, I bytes){AS(w)[0]=0; mvc((bytes-(offsetof(AD,s[1])-32))&-32,(C*)(AS(w)+1),MEMSET00LEN,MEMSET00); R w;}  // copy in 0s after the header, to the end of the block
 RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
  I bytes; if(likely(type&(BIT(LASTNOUNX+1)-1)))bytes=ALLOBYTESVSZLG(atoms,rank,bplg(type),(type)&C4T,0);else bytes=ALLOBYTESVSZ(atoms,rank,bpnonnoun(type),0,0);
+#if !SY_64 && NORMAHN==5
+ bytes+=8;   // kludge , bytes is too short when NORMAHN==5
+#endif
  ASSERT(((I)bytes>(I)(atoms)&&(I)(atoms)>=(I)0)&&!((rank)&~RMAX),EVLIMIT)
  RZ(z=jtgafv(jt, bytes));   // allocate the block, filling in AC and AFLAG
  AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank);  // UI to prevent reusing the value from before the call
@@ -1509,7 +1515,9 @@ extern void jgmpguard(X);
 I frfillvalue=(I)0xdeadbeef00000000;  // value to write before free
 #endif
 // free a block.  The usecount must make it freeable.  If the block was a small block allocated in a different thread, repatriate it
-void jtmf(J jt,A w,I hrh,I blockx){
+void jtmf(J jt,A w,I hrh,I blockx){ MEMCHK1B(w);
+CHKORIGIN(w);
+if(!AFHRH(w))SEGFAULT;
 #if MEMAUDIT&15
 if((I)jt&3)SEGFAULT;
 #endif
@@ -1608,7 +1616,7 @@ RESTRICTF A jtgah(J jt,I r,A w){A z;
 // clone noun w, returning the address of the cloned area.  Result is NOT recursive, not AFRO, not virtual
 // LSB of jt is 1 only in NAME blocks that should NOT clear AM
 F1(jtca){F12IP;A z;P*wp,*zp;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  I n=AN(w), t=AT(w);
  if(unlikely(ISSPARSE(t))){
   GASPARSE(z,t,n,AR(w),AS(w))
@@ -1633,10 +1641,10 @@ F1(jtca){F12IP;A z;P*wp,*zp;
  R z;
 }
 // clone block only if it is read-only
-F1(jtcaro){F12IP; if(AFLAG(w)&AFRO){RETF(ca(w));} RETF(w); }
+F1(jtcaro){F12IP; MEMCHK1(w);  if(AFLAG(w)&AFRO){RETF(ca(w));} RETF(w); }
 
 // clone virtual block, producing a new virtual block
-F1(jtclonevirtual){F12IP;
+F1(jtclonevirtual){F12IP; MEMCHK1(w);
  A z; RZ(z=virtual(w,0,AR(w)));  // allocate a new virtual block
  AN(z)=AN(w); MCISH(AS(z),AS(w),(I)AR(w));  // copy AN and shape; leave AC alone
  R z;
@@ -1652,7 +1660,7 @@ B jtspc(J jt){A z; RZ(z=MALLOC(1000)); FREECHK(z); R 1; }  // see if 1000 bytes 
 // NOTE: w is not recursive, and its usecount must always be 1
 // We leave AM of the block to be available to the user
 A jtext(J jt,B b,A w){A z;I c,k,m,m1,t;
- ARGCHK1(w);                               /* assume AR(w)&&AN(w)    */
+ ARGCHK1(w); MEMCHK1(w);                               /* assume AR(w)&&AN(w)    */
  m=AS(w)[0]; PROD(c,AR(w)-1,AS(w)+1);
  t=AT(w); I bpt=bp(t); k=c*bpt;
  I zr=AR(w); GA00(z,t,2*AN(w)+(AN(w)?0:c),zr);  // ensure we allocate SOMETHING to make progress

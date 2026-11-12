@@ -831,7 +831,7 @@ static A jtadwinidx(J jt,B out,I x,I n,I a){A W; I s,l,L,*wv;
 // direction axis is moved back to the front.
 
 // Monad. Differentiate one cell in forward mode. 0=cell i (P and T split into cells); 1=prefix i+1 (u\); 2=suffix i (u\.); 3=infix i (x u\ y); 4=outfix i (x u\. y). In 1-4 T is directions first.
-static DF1(jtadcellm){DF12IP;
+static DF1(jtadcellm){DF12IP; MEMCHK1(w);
  V*v=FAV(self); A f=v->fgh[0],*dv=AAV(v->fgh[1]); A p,t,pz,tz;
  I k=IAV(C(dv[2]))[0], mode=IAV(C(dv[2]))[1], i=IAV(w)[0]; A P=C(dv[0]),T=C(dv[1]);
  B b=!!(AT(P)&BOX); t=ADZ; // boxes have no tangent (their contents carry it)
@@ -848,7 +848,7 @@ static DF1(jtadcellm){DF12IP;
  R jlink(pz,tz);
 }
 // Dyad.
-static DF2(jtadcelld){DF12IP;V*v=FAV(self); A f=v->fgh[0],*dv=AAV(v->fgh[1]); A x,tx,y,ty,pz,tz;
+static DF2(jtadcelld){DF12IP; MEMCHK2(a,w); V*v=FAV(self); A f=v->fgh[0],*dv=AAV(v->fgh[1]); A x,tx,y,ty,pz,tz;
  I *kv=IAV(C(dv[4])); I k=kv[0];
  RZ(x=from(a,C(dv[0]))); tx=ADZ; if(!(kv[1]&1))RZ(tx=from(a,C(dv[1])));
  RZ(y=from(w,C(dv[2]))); ty=ADZ; if(!(kv[1]&2))RZ(ty=from(w,C(dv[3])));
@@ -2288,7 +2288,7 @@ ADLOCWRAPS(B,adstructm,0)
 
 // cell loops
 // Monad. Differentiate one cell in reverse mode. 0=cell i; 1=prefix i+1 (u\); 2=suffix i (u\.); 3=infix i (x u\ y); 4=outfix i (x u\. y).
-static DF1(jtadrcellm){DF12IP;V*v=FAV(self); A f=v->fgh[0],*dv=AAV(v->fgh[1]); A P=C(dv[1]),c,r; I mode=IAV(C(dv[2]))[0], i=IAV(w)[0];
+static DF1(jtadrcellm){DF12IP; MEMCHK1(w); V*v=FAV(self); A f=v->fgh[0],*dv=AAV(v->fgh[1]); A P=C(dv[1]),c,r; I mode=IAV(C(dv[2]))[0], i=IAV(w)[0];
  switch(mode){
  case 0: RZ(c=REC2(ds(CFROM),w,P)); break;
  case 1: RZ(c=REC2(ds(CTAKE),sc(i+1),P)); break;
@@ -2297,7 +2297,7 @@ static DF1(jtadrcellm){DF12IP;V*v=FAV(self); A f=v->fgh[0],*dv=AAV(v->fgh[1]); A
  }
  RZ(r=REC1(f,c)); R box(r);
 }
-static DF2(jtadrcelld){DF12IP;V*v=FAV(self); A f=v->fgh[0],*dv=AAV(v->fgh[1]); A c1,c2,r;
+static DF2(jtadrcelld){DF12IP; MEMCHK2(a,w); V*v=FAV(self); A f=v->fgh[0],*dv=AAV(v->fgh[1]); A c1,c2,r;
  RZ(c1=REC2(ds(CFROM),a,C(dv[0]))); RZ(c2=REC2(ds(CFROM),w,C(dv[1])));
  RZ(r=REC2(f,c1,c2)); R box(r);
 }
@@ -2756,7 +2756,7 @@ static I jtadaccf(J jt,A x,A F,A Ct,A z){A G;
  R jtadacc(jt,x,G);
 }
 // scatter-add: it adds atoms of its argument into chosen places of a result. The backward pass uses it only when an outer D. is watching.
-static DF1(jtadscatv){DF12IP; A*dv=AAV(FAV(self)->fgh[1]); A ix=C(dv[0]),sx=C(dv[1]),z; I rz=IAV(C(dv[2]))[0],nz=AN(ix),nt=1,L=1,fr;
+static DF1(jtadscatv){DF12IP; MEMCHK1(w);  A*dv=AAV(FAV(self)->fgh[1]); A ix=C(dv[0]),sx=C(dv[1]),z; I rz=IAV(C(dv[2]))[0],nz=AN(ix),nt=1,L=1,fr;
  ASSERT(AR(w)>=rz,EVRANK); fr=AR(w)-rz;
  DO(AN(sx), nt*=IAV(sx)[i];) DO(fr, L*=AS(w)[i];)
  ASSERT(AN(w)==L*nz,EVLENGTH);
@@ -3731,24 +3731,24 @@ static I jtadmode(J jt){I d=0;
  R jt->admodes[MIN(d,(I)sizeof(I)-1)];
 }
 // 9!:_10 query the switch: one mode per nesting depth, outermost first (the last applies to deeper levels too)
-F1(jtadmodeq){F12IP;A z; ASSERTMTV(w);
+F1(jtadmodeq){F12IP; MEMCHK1(w); A z; ASSERTMTV(w);
  GATV0(z,INT,sizeof(I),1);
  DO(sizeof(I), C m=jt->admodes[i]; IAV(z)[i]=m==ADMREV?-1:m==ADMFWD?1:0;)
  R z;
 }
 // 9!:_11 set it: 0 automatic, 1 forward, _1 reverse; a list gives the outer levels first. Per thread. For testing
-F1(jtadmodes){F12IP;I n;
+F1(jtadmodes){F12IP; MEMCHK1(w); I n;
  RZ(w=vi(w)); n=AN(w);
  ASSERT(AR(w)<=1,EVRANK); ASSERT(n<=(I)sizeof(I),EVLENGTH);
  DO(n, ASSERT(BETWEENC(IAV(w)[i],-1,1),EVDOMAIN);)
  DO(sizeof(I), I m=n?IAV(w)[MIN(i,n-1)]:0; jt->admodes[i]=m<0?ADMREV:m>0?ADMFWD:ADMAUTO;)
  R mtm;
 }
-static DF1(jtdcap1cell){DF12IP;PROLOG(0);A z;
+static DF1(jtdcap1cell){DF12IP; MEMCHK1(w); PROLOG(0);A z;
  RZ(z=jtadtraced(jt,DCAPU(self),0,w,0,0,jtadmode(jt),-1));
  EPILOG(z);
 }
-static DF2(jtdcap2cell){DF12IP;PROLOG(0);A z;
+static DF2(jtdcap2cell){DF12IP; MEMCHK1(w); PROLOG(0);A z;
  RZ(z=jtadtraced(jt,DCAPU(self),a,w,1,0,jtadmode(jt),-1));
  EPILOG(z);
 }
@@ -3802,8 +3802,8 @@ static A jtadboxcell(J jt,A a,A w,A self,B dyad){A u=FAV(self)->fgh[0],n=FAV(sel
  df2(z,p,dv,hv[3]); // blocks
  R z;
 }
-static DF1(jtadbox1){DF12IP;PROLOG(0);A z; RZ(z=jtadboxcell(jt,0,w,self,0)); EPILOG(z);}
-static DF2(jtadbox2){DF12IP;PROLOG(0);A z; RZ(z=jtadboxcell(jt,a,w,self,1)); EPILOG(z);}
+static DF1(jtadbox1){DF12IP; MEMCHK1(w); PROLOG(0);A z; RZ(z=jtadboxcell(jt,0,w,self,0)); EPILOG(z);}
+static DF2(jtadbox2){DF12IP; MEMCHK2(a,w); PROLOG(0);A z; RZ(z=jtadboxcell(jt,a,w,self,1)); EPILOG(z);}
 // [x] u D.n y with y boxed. self is u D.n. Cells of y are taken at u's rank, as for unboxed y.
 static A jtadboxed(J jt,A self,A a,A w,B dyad){A u=FAV(self)->fgh[0],n=FAV(self)->fgh[1],hv,v,b=0,z=0; I lc=0,rc; B neg; ADLOC ls[ADMAXLOC]; I nls=0;
  RZ(jtadboxychk(jt,w)); RZ(w=jtadboxyfl(jt,w));
@@ -3828,7 +3828,7 @@ static A jtadboxed(J jt,A self,A a,A w,B dyad){A u=FAV(self)->fgh[0],n=FAV(self)
  jtadlocexitn(jt,ls,nls);
  R z;
 }
-static DF1(jtdcap1){DF12IP;PROLOG(0);A u,z;
+static DF1(jtdcap1){DF12IP; MEMCHK1(w); PROLOG(0);A u,z;
  if(ISSPARSE(AT(w)))RZ(w=denseit(w));
  if(AT(w)&BOX){RZ(z=jtadboxed(jt,self,0,w,0)); EPILOG(z);} // y boxed: one block per box
  u=DCAPU(self); // u for n=1, u D.(n-1) for n>1
@@ -3847,7 +3847,7 @@ static DF1(jtdcap1){DF12IP;PROLOG(0);A u,z;
  RZ(z=jtadtraced(jt,u,0,w,0,0,jtadmode(jt),-1)); // Cell is the whole of y. Return the full Jacobian of shape ($u y),$y.
  EPILOG(z);
 }
-static DF2(jtdcap2){DF12IP;PROLOG(0);A u,z;
+static DF2(jtdcap2){DF12IP; MEMCHK2(a,w); PROLOG(0);A u,z;
  if(ISSPARSE(AT(a)))RZ(a=denseit(a)); if(ISSPARSE(AT(w)))RZ(w=denseit(w));
  if(AT(w)&BOX){RZ(z=jtadboxed(jt,self,a,w,1)); EPILOG(z);} // y boxed: one block per box
  u=DCAPU(self);
@@ -3888,7 +3888,7 @@ static A jtadmkdcap(J jt,A a,A w){I n=IAV(w)[0]; A v=0;
 }
 #define ADMAXORDER 100 // u D.n is built (and walked) one level per order
 F2(jtdcapdot){F12IP;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(AT(a)&VERB,EVDOMAIN);
  ASSERT(AT(w)&NOUN,EVDOMAIN);
  ASSERT(!AR(w),EVRANK);

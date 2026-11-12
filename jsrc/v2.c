@@ -74,7 +74,7 @@ static void sieve(I n,I m,B*b,B*u){I i,j,q;
 }    /* sieve b for n+i.m, but if 0=n then b=. 0 (2 3 5)}b */
 
 static F1(jtprime1){F12IP;A d,t,y,z;B*b,*u;I c,*dv,e,i,j,k,m,n,p,q,*wv,x,*zv;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  k=0; n=AN(w); wv=AV(w); RE(m=sup(n,wv)); JBREAK0;
  I zr=AR(w); GATV(z,INT,n,AR(w),AS(w)); zv= AVn(zr,z);
  RZ(d=grade1(ravel(w)));  dv= AV(d);
@@ -151,7 +151,7 @@ static void sieved(D n,I m,B*b){I c,d,e,i,q,r,*u,*v;
 }    /* sieve b for n+i.m; n>0; u is mask for primes */
 
 static F1(jtprime1d){F12IP;A d,z;D*wv,x,*zv;I*dv,k,n;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w); wv=DAV(w);
  I zr=AR(w); GATV(z,FL,n,AR(w),AS(w)); zv=DAVn(zr,z);
  RZ(d=grade1(ravel(w))); dv=AV(d);
@@ -166,7 +166,7 @@ static F1(jtprime1d){F12IP;A d,z;D*wv,x,*zv;I*dv,k,n;
 }
 
 F1(jtprime){F12IP;PROLOG(0061);A z;B b=1;I n,t;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  RZ(init4792(jt));
  n=AN(w); t=AT(w);
  if(!ISDENSETYPE(t,INT))RZ(w=pcvt(INT,w));
@@ -184,7 +184,7 @@ static I jtsuq(J jt,I n,I*wv){I c=24; DO(n, c=MAX(c,wv[i]););  R c==0x7fffffff?c
      /* 1+24>.>./w */
 
 F1(jtplt){F12IP;PROLOG(0062);A d,t,y,z;B*b,*u,xt;I c,*dv,e,i,j,k,m,n,p,q,*wv,x,*zv;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  xt=1&&AT(w)&XNUM+RAT;
  if(!(INT&AT(w)))RZ(w=vi(ceil1(w))); wv=AV(w); JBREAK0;
  j=3; k=p=c=0; e=*ptt; n=AN(w); 
@@ -223,7 +223,7 @@ static const B pmsk[]={0,0,1,1,0,1,0,1,0,0, 0,1,0,1,0,0,0,1,0,1, 0,0,0,1,0,0,0,0
      /* indicates which i<32 is prime */
 
 static F1(jtiprimetest){F12IP;A z;B*b;I d,j,n,*pv,q,*v,wn,*wv;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  wn=AN(w); wv=AV(w); pv=AV(JT(jt,p4792));
 #if SY_64
  DO(wn, if(2147483647L<wv[i])R xprimetest(cvt(XNUM,w)););
@@ -238,7 +238,7 @@ static F1(jtiprimetest){F12IP;A z;B*b;I d,j,n,*pv,q,*v,wn,*wv;
 }
 
 static F1(jtxprimetest){F12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  I wn=AN(w);I wt=AT(w);X*wv=XAV(w);I*pv=AV(JT(jt,p4792)); 
  B rat=1&&wt&RAT; X xmaxint;RZ(xmaxint=xc(2147483647L)); X y;RZ(y=xc(-1L));I*yv=AV(y);
  A z;I zr=AR(w); GATV(z,B01,wn,AR(w),AS(w)); B*b=BAVn(zr,z);
@@ -263,7 +263,7 @@ static F1(jtxprimetest){F12IP;
 }    /* prime test for extended integers or rationals */
 
 static F1(jtprimetest){F12IP;A x;I t;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  t=AT(w);
  if((UI)SGNIF(t,B01X)>=(UI)AN(w))R reshape(shape(w),num(0));  // AN is 0, or t is boolean
  switch(CTTZ(t)){
@@ -279,7 +279,7 @@ static F1(jtprimetest){F12IP;A x;I t;
 
 
 static F1(jtnextprime){F12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  I n=AN(w);
  if(unlikely((UI)SGNIF(AT(w),B01X)>=(UI)AN(w)))R reshape(shape(w),num(2));
  ASSERT(NUMERIC&AT(w),EVDOMAIN);
@@ -302,7 +302,7 @@ static F1(jtnextprime){F12IP;
 }
 
 static F1(jtprevprime){F12IP;
- ARGCHK1(w); I n=AN(w); if(!n)R w; ASSERT(NUMERIC&AT(w)&&!(B01&AT(w)),EVDOMAIN);
+ ARGCHK1(w); MEMCHK1(w); I n=AN(w); if(!n)R w; ASSERT(NUMERIC&AT(w)&&!(B01&AT(w)),EVDOMAIN);
  A fs;RZ(fs=eval("_2&+^:(0&p:)^:_"));
  if(unlikely(AT(w)&INT2+INT4))RZ(w=cvt(INT,w))
  if(INT&AT(w)){
@@ -325,7 +325,7 @@ static F1(jtprevprime){F12IP;
 }
 
 static F1(jttotient){F12IP;A b,x,z;B*bv,p=0;I k,n,t;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w); t=AT(w);
  if(t&B01)RCA(w);
  I br=AR(w); GATV(b,B01,n,AR(w),AS(w)); bv=BAVn(br,b);
@@ -370,7 +370,7 @@ static B jtspspx(J jt,I b,I n,I d,I h){I ai,n1;X a,ox,xn;
  R 0;
 }
 
-static F1(jtdetmr){F12IP;A z;B*zv;I d,h,i,n,wn,*wv;
+static F1(jtdetmr){F12IP; MEMCHK1(w); A z;B*zv;I d,h,i,n,wn,*wv;
  RZ(w=vi(w));
  wn=AN(w); wv=AV(w);
  I zr=AR(w); GATV(z,B01,wn,AR(w),AS(w)); zv=BAVn(zr,z);
@@ -386,7 +386,7 @@ static F1(jtdetmr){F12IP;A z;B*zv;I d,h,i,n,wn,*wv;
 }    /* deterministic Miller-Rabin */ 
 
 F2(jtpco2){F12IP;A z;B*b;I k;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  RZ(init4792(jt));
  k=rei0(a);
  switch(k){
@@ -417,7 +417,7 @@ static A jtqco2x(J jt,I m,A w){A y;I c,*dv,i,*pv,*yv;X d,q,r,x;
 }    /* m q: w where 0<:m and p: m is one xdigit and w is a single extended integer */
 
 F2(jtqco2){F12IP;A q,y,z;B b,bb,xt;I c,j,k,m,*qv,wn,wr,*yv,*zv;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(AN(a)==0||AT(a)&NUMERIC,EVDOMAIN)   // the left arg must be numeric of some kind
  wn=AN(w); wr=AR(w); b=all1(lt(a,zeroionei(0))); xt=1&&AT(w)&XNUM+RAT;  // b: every a is < 0
  if(AR(a)||wr&&(b||xt))R rank2ex0(a,w,DUMMYSELF,jtqco2);
@@ -445,7 +445,7 @@ F2(jtqco2){F12IP;A q,y,z;B b,bb,xt;I c,j,k,m,*qv,wn,wr,*yv,*zv;
 static F1(jtxfactor);
 
 F1(jtfactor){F12IP;PROLOG(0063);A y,z;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(unlikely(AN(w)==0)){R dfv1(z,w,qq(mtv,zeroionei(0)));}  // if w empty return an empty list for each value
  RZ(init4792(jt));
  if(AT(w)&XNUM+RAT)R xfactor(w);  // if XNUM, use elliptic routines
@@ -714,7 +714,7 @@ static XF1(jtfac_ecm){A tt;I b1,b2,*b1b2,i,m;X a,b,g,q[3];
 }
 
 // q: on extended numbers
-static F1(jtxfactor){F12IP;PROLOG(0064);
+static F1(jtxfactor){F12IP; MEMCHK1(w); PROLOG(0064);
  F1RANKSUFF(0,jtxfactor,DUMMYSELF,R maximum(z,zeroionei(1)););  // convert 0s added by fill to 1s
  if(!(XNUM&AT(w)))RZ(w=cvt(XNUM,w));
  X x=XAV(w)[0];
@@ -741,7 +741,7 @@ found:;
 /* ---------------------------------------------------- */
 
 static F1(test_ecm){F12IP;A*wv,z;X*ab,n,*zv;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  RZ(init4792(jt));
  ASSERT(4==AN(w),EVLENGTH);
  ASSERT(BOX&AT(w),EVDOMAIN);
@@ -758,7 +758,7 @@ static F1(test_ecm){F12IP;A*wv,z;X*ab,n,*zv;
 }
 
 static F1(test_ecm_s1){F12IP;A*wv,z;X*ab,n,*zv;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  RZ(init4792(jt));
  ASSERT(4==AN(w),EVLENGTH);
  ASSERT(BOX&AT(w),EVDOMAIN);
@@ -775,7 +775,7 @@ static F1(test_ecm_s1){F12IP;A*wv,z;X*ab,n,*zv;
 }
 
 static F1(test_ecm_s2){F12IP;A*wv,z;I*b1b2;X*ab,n,*zv;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  RZ(init4792(jt));
  ASSERT(4==AN(w),EVLENGTH);
  ASSERT(BOX&AT(w),EVDOMAIN);
@@ -793,7 +793,7 @@ static F1(test_ecm_s2){F12IP;A*wv,z;I*b1b2;X*ab,n,*zv;
 }
 
 static F1(test_fac_ecm){F12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  RZ(init4792(jt));
  ASSERT(!AR(w),EVRANK);
  ASSERT(XNUM&AT(w),EVDOMAIN);

@@ -6,10 +6,10 @@
 #include "j.h"
 
 // 9!:22 read current fill, or i. 0 0 if none.  Clear fill after reading it
-F1(jtqfill){F12IP;PROLOG(976); ASSERTMTV(w); A z=jt->fill; z=z?z:mtm; jt->fill=0; EPILOG(z);}
+F1(jtqfill){F12IP; MEMCHK1(w); PROLOG(976); ASSERTMTV(w); A z=jt->fill; z=z?z:mtm; jt->fill=0; EPILOG(z);}
 
 // here to set jt->fill over the execution of u
-static DF2(jtfitfill12){DF12IP;w=EPMONAD?0:w; A fs=FAV(self)->fgh[0]; AF f12=FAV(fs)->valencefns[!!w]; A z; jt->fill=FAV(self)->fgh[1]; z=CALL12IP(w,f12,a,w,fs); jt->fill=0; RETF(z);}
+static DF2(jtfitfill12){DF12IP; w=EPMONAD?0:w; A fs=FAV(self)->fgh[0]; AF f12=FAV(fs)->valencefns[!!w]; A z; jt->fill=FAV(self)->fgh[1]; z=CALL12IP(w,f12,a,w,fs); jt->fill=0; RETF(z);}
 
 static DF1(jtfitct1){DF12IP;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; A z; PUSHCCT(FAV(self)->localuse.lu1.cct) z=CALL1IP(f1,  w,fs); POPCCT RETF(z);}  // lD has the complementary ct
 
@@ -21,7 +21,7 @@ fitctvector(jtfitcteq, A2LINKIF(1,jtfg,a,w); z=jtatomic2(jtfg,a,w,fs))
 // Note: it is OK to call eformat before popping ct because ct cannot possibly introduce error
 
 // for key, we pass in the tolerance to use for the classification.  IRS passes through
-static DF2(jtfitctkey){DF12IP;A fs=FAV(self)->fgh[0]; R jtkeyct(jt,a,w,fs,FAV(self)->localuse.lu1.cct);}  // inplace is OK, since we don't use jt
+static DF2(jtfitctkey){DF12IP; MEMCHK2(a,w); A fs=FAV(self)->fgh[0]; R jtkeyct(jt,a,w,fs,FAV(self)->localuse.lu1.cct);}  // inplace is OK, since we don't use jt
 
 // To avoid multiple indirect branches, we vector the common comparisons to a routine that jumps directly to them
 static const AF aff2[] = {jtfitct2,jtfitcteq,jtfitctkey,
@@ -33,7 +33,7 @@ static const AF aff2[] = {jtfitct2,jtfitcteq,jtfitctkey,
 };
 // cno is 5 for >, 3 for i., 2 for f/.[.], 1 for atomic2 comparison, 0 otherwise (indirect branch)
 static A jtfitct(J jt,A a,A w,I cno,A z){
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(!AR(w),EVRANK);
  D d=1.0; A dw=w; // ct, when that's what we have (init to invalid); w converted to float
  if(likely(w==num(0)))d=0.0; else{if(!ISDENSETYPE(AT(w),FL))WITHJTJERROFF(dw=ccvt(FL,w,0);); if(dw)d=DAV(dw)[0]; RESETERR}  // 0 is usual; otherwise it better be FL, but convert in case its value is 0  It's not a hard error
@@ -46,33 +46,33 @@ static A jtfitct(J jt,A a,A w,I cno,A z){
  R z;
 }
 
-static DF2(jtfitexp2){DF12IP;
+static DF2(jtfitexp2){DF12IP; MEMCHK2(a,w);
  F2RANK(0,0,jtfitexp2,self);
  ASSERT(0<=rei0(w),EVDOMAIN);  // power must be nonnegative integral
  A z; R aslash(CSTAR,plus(a,dfv2(z,iota(w),FAV(self)->fgh[1],slash(ds(CSTAR)))));
 }    /* a ^!.s w */
 
-static DF2(jtfitpoly2){DF12IP;I j;
+static DF2(jtfitpoly2){DF12IP;I j; MEMCHK2(a,w);
  F2RANK(1,0,jtfitpoly2,self);
  A z; R aslash(CPLUS,tymes(a,ascan(CSTAR,shift1(plus(w,dfv2(z,IX(SETIC(a,j)),FAV(self)->fgh[1],slash(ds(CSTAR))))))));
 }    /* a p.!.s w */
 
 // print precision, just the number of fractional digits requested from sprintf
-static DF1(jtfitpp1){DF12IP;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; A z;
+static DF1(jtfitpp1){DF12IP; MEMCHK1(w); A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; A z;
  I stkppn=jt->ppn; jt->ppn=AV(FAV(self)->fgh[1])[0]; z=CALL1(f1,w,fs); jt->ppn=stkppn;
  RETF(z);
 }
 
 #if 0  // unimplemented
-static DF1(jtfitf1){DF12IP;V*sv=FAV(self); A z; R dfv1(z,  w,fit(fix(sv->fgh[0],zeroionei(0)),sv->fgh[1]));}  // ?? noun~!.n 
-static DF2(jtfitf2){DF12IP;V*sv=FAV(self); A z; R dfv2(z,a,w,fit(fix(sv->fgh[0],zeroionei(0)),sv->fgh[1]));}
+static DF1(jtfitf1){DF12IP; MEMCHK1(w); V*sv=FAV(self); A z; R dfv1(z,  w,fit(fix(sv->fgh[0],zeroionei(0)),sv->fgh[1]));}  // ?? noun~!.n 
+static DF2(jtfitf2){DF12IP; MEMCHK2(a,w); V*sv=FAV(self); A z; R dfv2(z,a,w,fit(fix(sv->fgh[0],zeroionei(0)),sv->fgh[1]));}
 #endif
 
 // Fit conjunction u!.v
 // Preserve IRS1/IRS2 from u in result verb (exception: CEXP)
 // Preserve VISATOMIC1 from u (applies only to numeric atomic ops)
 // Preserve comparison-combination flags for tolerance fit, in case this is a fit-allowing primitive that uses them
-F2(jtfit){F12IP;A f;C c;I k,l,m,r;
+F2(jtfit){F12IP; MEMCHK2(a,w); A f;C c;I k,l,m,r;
 //  ASSERTVN(a,w);  // a must be a verb, w a noun (except for $!.v)
  ASSERT(AT(a)&VERB,EVDOMAIN)  // a must be a verb
  A z; fdefallo(z)

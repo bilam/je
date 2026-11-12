@@ -6,7 +6,7 @@
 #include "j.h"
 
 
-DF1(jtcatalog){DF12IP;PROLOG(0072);A b,*wv,x,z,*zv;C*bu,*bv,**pv;I*cv,i,j,k,m=1,n,p,*qv,r=0,*s,t=0,*u;
+DF1(jtcatalog){DF12IP; MEMCHK1(w); PROLOG(0072);A b,*wv,x,z,*zv;C*bu,*bv,**pv;I*cv,i,j,k,m=1,n,p,*qv,r=0,*s,t=0,*u;
  F1RANK(1,jtcatalog,self);
  ASSERTF(!ISSPARSE((AT(w))),EVNONCE,"sparse arrays not supported");
  if((-AN(w)&-(AT(w)&BOX))>=0)R box(w);   // empty or unboxed, just box it
@@ -37,7 +37,7 @@ DF1(jtcatalog){DF12IP;PROLOG(0072);A b,*wv,x,z,*zv;C*bu,*bv,**pv;I*cv,i,j,k,m=1,
 #define SETJ(jexp) SETNDX(j,jexp,p)
 
 // return a single cell of w with rank wcr, from audited cell index j.  wr is AR(w), wt is AT(w)
-static INLINE A jtget1cell(J jtfg,A w,I wcr,I j,I wt,I wr){F12IP; A z;
+static INLINE A jtget1cell(J jtfg,A w,I wcr,I j,I wt,I wr){F12IP; MEMCHK1(w);  A z;
  I *ws=AS(w); I m; PROD(m,wcr,ws+wr-wcr);  // shape of w, number of atoms in a cell
  if(((I)jtfg&JTWILLBEREALIZED?0:m)<MINVIRTSIZE(wt)){  // if cell too small for virtual, allocate & fill here.  Any indirect can be virtual
   I k=bplg(wt); GA(z,wt,m,wcr,ws+wr-wcr) JMC(CAVn(wcr,z),CAV(w)+j*(m<<k),m<<k,0);  // copy in the data, possibly overstoring up to 7 bytes.  Nonrecursive block
@@ -180,7 +180,7 @@ zbase=zv; }
 
 // rflags is w minor cell rank/len of w frame/1B rank of result/1B /6B dimension of axes-1
 // if a is inplaceable in jt, ind in the last axis is the area that can be used for the result
-static A jtaxisfrom(J jtfg,A w,struct faxis *axes,I rflags){F12IP;I i;
+static A jtaxisfrom(J jtfg,A w,struct faxis *axes,I rflags){F12IP; MEMCHK1(w); I i;
  I r=rflags&RMAX, zr=PEXT0(rflags,8,0xff), wf=PEXT0(rflags,16,0xff), wcr=PEXT0(rflags,24,0xf), hasr=PEXT0(rflags,7,1);  // number of axes-1; result rank; w framelen; 1 iff 1st axis is from rank
  C *base=voidAV(w);  // will be starting cell number in all axes before last
  // convert lencell to bytes & roll it up; calculate base from sel0 values
@@ -381,7 +381,7 @@ endaxes:;
 
 // a is numeric
 FI2(jtifrom){A z;C*wv,*zv;I an,*av,j,k,p,pq,q,wf,wn,*ws,zn;
- IARG2CR F12IP;
+ IARG2CR F12IP; MEMCHK2(a,w);
  // IRS supported but only for a single a value.  This has implications for empty arguments.
  wf=wr-wcr;
  if(unlikely(ar>acr))R rank2ex(a,w,DUMMYSELF,acr,wcr,acr,wcr,jtifrom);  // split a into cells if needed.  Only 1 level of rank loop is used
@@ -422,7 +422,7 @@ FI2(jtifrom){A z;C*wv,*zv;I an,*av,j,k,p,pq,q,wf,wn,*ws,zn;
 // result is (<"1 a) { w
 // wf is length of the frame
 A jtfrombu(J jtfg,A a,A w,I wf){F12IP;
- ARGCHK2(a,w)
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(unlikely(!(AT(a)&INT)))RZ(a=ccvt(INT,a,0));  // integral indexes required
  I *as=AS(a); I af=AR(a)-1; I naxa=as[af]; naxa=af>=0?naxa:1; af=af>=0?af:0;  // naxa is length of the index list, i. e. number of axes of w that disappear during indexing
  I wr=AR(w); I *ws=AS(w); I wcr=wr-wf;
@@ -476,7 +476,7 @@ A jtfrombu(J jtfg,A a,A w,I wf){F12IP;
 
 // general boxed a
 static FI2(jtafrom){
- IARG2CR F12IP; PROLOG(0073);
+ IARG2CR F12IP; MEMCHK2(a,w); PROLOG(0073);
  I wf=wr-wcr;
  // We have IRS on w, but not a.  If there are multiple cells of a we use a rank loop.
  if(unlikely(ar!=0)){A t0;  // if there is an array of boxes
@@ -562,7 +562,7 @@ static FI2(jtafrom){
 
 // a{"r w  We handle the fast cases (atom{array) and (empty{"r array) here.  For others we go to a type-dependent processor for a that will build index lists
 DFI2(jtfrom){A z;
- IARG2CR F12IP;
+ IARG2CR F12IP; MEMCHK2(a,w);
  I at=AT(a), wt=AT(w);
  if(likely(!ISSPARSE(at|wt))){
   PROLOG(000);
@@ -632,7 +632,7 @@ DFI2(jtfrom){A z;
 }   /* a{"r w main control */
 
 DF2(fork242);
-DF2(jtsfrom){DF12IP;
+DF2(jtsfrom){DF12IP; MEMCHK2(a,w);
  if(likely(!ISSPARSE((AT(w))))){
   // not sparse, transfer to code to handle it if nonempty numeric.  If nonnumeric (must be boxed),
   // if the arg is empty, the details are tricky depending on the type and we just revert to boxed code
@@ -674,7 +674,7 @@ static F2(jtmapx);
 static EVERYFS(mapxself,0,jtmapx,0,VFLAGNONE)
 
 static F2(jtmapx){F12IP;A z1,z2,z3;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(!(BOX&AT(w)))R ope(a);
  RZ(z1=catalog(every(shape(w),ds(CIOTA))));  // create index list of each box
  z2=IRS1(jtbox,jt,z1,0,0);
@@ -683,16 +683,16 @@ static F2(jtmapx){F12IP;A z1,z2,z3;
  R every2(z3,w,(A)&mapxself);
 }
 
-F1(jtmap){F12IP;R mapx(ds(CACE),w);}
+F1(jtmap){F12IP; R mapx(ds(CACE),w);}
 
 // extract the single box a from w and open it.  Don't mark it no-inplace.  If w is not boxed, it had better be an atom, and we return it after auditing the index
-static F2(jtquicksel){F12IP;I index;
+static F2(jtquicksel){F12IP; MEMCHK2(a,w); I index;
  index=rei0(a);  // extract the index
  SETNDX(index,index,AN(w))   // remap negative index, check range
  R AT(w)&BOX?C(AAV(w)[index]):w;  // select the box, or return the entire unboxed w
 }
 
-DF2(jtfetch){DF12IP;A*av, z;I n;
+DF2(jtfetch){DF12IP; MEMCHK2(a,w); A*av, z;I n;
  F2RANKW(1,RMAX,jtfetch,self);  // body of verb applies to rank-1 a, and must turn pristine off if used higher, since there may be repetitions.
  if(unlikely(ISSPARSE(AT(w)|AT(a)))){   // sparse x or y
   ASSERT(!ISSPARSE(AT(a)),EVNONCE)  // selector must be dense

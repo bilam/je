@@ -109,7 +109,7 @@ A name(J jt,A a,A w){ \
 
 
 #define INDF(f,T0,T1,F)  \
- static F2(f){F12IP;I n;T0*av,x;T1*wv,y;                                      \
+ static F2(f){F12IP; MEMCHK2(a,w); I n;T0*av,x;T1*wv,y;                                      \
   av=(T0*)AV(a);                                                    \
   wv=(T1*)AV(w);             \
   if     (!AR(a)){x=*av;        DP(n=AN(w),          y=*wv++; if(F(x,y))R sc(n+i););} \
@@ -118,7 +118,7 @@ A name(J jt,A a,A w){ \
   R sc(n);                                                                    \
  }
 #define INDF0(f,T0,T1,F,C)  \
- static F2(f){F12IP;I n;T0*av,x;T1*wv,y;                                      \
+ static F2(f){F12IP; MEMCHK2(a,w); I n;T0*av,x;T1*wv,y;                                      \
   av=(T0*)AV(a);                                                    \
   wv=(T1*)AV(w);             \
   if     (!AR(a)){x=*av;        if(1.0==jt->cct)DP(n=AN(w),          y=*wv++; if(C(x,y))R sc(n+i);)else DP(n=AN(w),          y=*wv++; if(F(x,y))R sc(n+i);)} \
@@ -128,7 +128,7 @@ A name(J jt,A a,A w){ \
  }
 
 #define JNDF(f,T0,T1,F)  \
- static F2(f){F12IP;I n;T0*av,x;T1*wv,y;                                          \
+ static F2(f){F12IP; MEMCHK2(a,w); I n;T0*av,x;T1*wv,y;                                          \
   av=(T0*)AV(a);                                                        \
   wv=(T1*)AV(w);                  \
   if     (!AR(a)){x=*av; wv+=AN(w); DQ(n=AN(w),          y=*--wv; if(F(x,y))R sc(i););} \
@@ -137,7 +137,7 @@ A name(J jt,A a,A w){ \
   R sc(n);                                                                        \
  }
 #define JNDF0(f,T0,T1,F,C)  \
- static F2(f){F12IP;I n;T0*av,x;T1*wv,y;                                          \
+ static F2(f){F12IP; MEMCHK2(a,w); I n;T0*av,x;T1*wv,y;                                          \
   av=(T0*)AV(a);                                                        \
   wv=(T1*)AV(w);                  \
   if     (!AR(a)){x=*av; wv+=AN(w); if(1.0==jt->cct)DQ(n=AN(w),          y=*--wv; if(C(x,y))R sc(i);)else DQ(n=AN(w),          y=*--wv; if(F(x,y))R sc(i);)} \
@@ -147,7 +147,7 @@ A name(J jt,A a,A w){ \
  }
 
 #define SUMF(f,T0,T1,F)  \
- static F2(f){F12IP;I m=0,n;T0*av,x;T1*wv,y;                       \
+ static F2(f){F12IP; MEMCHK2(a,w); I m=0,n;T0*av,x;T1*wv,y;                       \
   av=(T0*)AV(a);                                         \
   wv=(T1*)AV(w);   \
   if     (!AR(a)){x=*av; DQ(n=AN(w),          y=*wv++; m+=(F(x,y)););} \
@@ -156,7 +156,7 @@ A name(J jt,A a,A w){ \
   R sc(m);                                                         \
  }
 #define SUMF0(f,T0,T1,F,C)  \
- static F2(f){F12IP;I m=0,n;T0*av,x;T1*wv,y;                       \
+ static F2(f){F12IP; MEMCHK2(a,w); I m=0,n;T0*av,x;T1*wv,y;                       \
   av=(T0*)AV(a);                                         \
   wv=(T1*)AV(w);   \
   if     (!AR(a)){x=*av; if(1.0==jt->cct)DQ(n=AN(w),          y=*wv++; m+=(C(x,y));)else DQ(n=AN(w),          y=*wv++; m+=(F(x,y));)} \
@@ -175,7 +175,7 @@ A name(J jt,A a,A w){ \
 #define JNDB3          {UI4 bitno=CTLZI(y); n=(i*SZI+(bitno>>LGBB)); break;}
 
 #define INDB(f,T0,T1,F)  \
- static F2(f){F12IP;I an,*av,n,q,wn,*wv,x,y;                                 \
+ static F2(f){F12IP; MEMCHK2(a,w); I an,*av,n,q,wn,*wv,x,y;                                 \
   an=AN(a); av=AV(a);                                                             \
   wn=AN(w); wv=AV(w); n=1; n=AR(a)?an:n; n=AR(w)?wn:n;                      \
   q=(n+(SZI-1))>>LGSZI;                                           \
@@ -186,7 +186,7 @@ A name(J jt,A a,A w){ \
  }
 
 #define JNDB(f,T0,T1,F)  \
- static F2(f){F12IP;I an,*av,n,q,r,wn,*wv,x,y;                                             \
+ static F2(f){F12IP; MEMCHK2(a,w); I an,*av,n,q,r,wn,*wv,x,y;                                             \
   an=AN(a); av=AV(a);                                                                         \
   wn=AN(w); wv=AV(w); n=1; n=AR(a)?an:n; n=AR(w)?wn:n;                      \
   if((q=(n-1)>>LGSZI)<0)R zeroionei(0); r=((n-1)&(SZI-1));  /* # first bytes to do minus 1 */                                                                           \
@@ -198,7 +198,7 @@ A name(J jt,A a,A w){ \
  }
 
 #define SUMB(f,T0,T1,F)  \
- static F2(f){F12IP;I an,*av,n,p,r1,wn,*wv,z=0;UI t,x;              \
+ static F2(f){F12IP; MEMCHK2(a,w); I an,*av,n,p,r1,wn,*wv,z=0;UI t,x;              \
   an=AN(a); av=AV(a);                                                        \
   wn=AN(w); wv=AV(w); n=1; n=AR(a)?an:n; n=AR(w)?wn:n;                      \
   p=n>>LGSZI; r1=n&(SZI-1);                                       \
@@ -636,7 +636,7 @@ static AF atcompX[]={0L, jti1ebar, 0L, 0L, jtsumebar, jtanyebar};
 // If no routine found, return 0 to failover to normal path
 // result bits 0-1 indicate postprocessing needed: 0x=none, 10=+./ (result is binary 0 if search completed), 11=*./ (result is binary 1 if search completed)
 AF jtatcompf(J jt,A a,A w,A self){I m;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  m=FAV(self)->flag&255;
  if((m&6)!=6){   // normal comparison
   // verify rank is OK, based on operation

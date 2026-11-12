@@ -27,7 +27,7 @@ static AIFX(gtCC,  B, UC,UC, >  )
 #endif
 
 DF2(jtcharfn2){DF12IP;A z;B b;C c;I an,ar,*as,m,n,wn,wr,*ws,zn,zt;V*v;VF ado=0;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  v=FAV(self); c=FAV(v->fgh[0])->id;
  if(CUNDER==v->id)
   switch(c){

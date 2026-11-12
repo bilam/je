@@ -168,8 +168,8 @@ static void jtiixfi(I*z,D*a,I*w,I n,I m,I c,B ge){I k,p,q;C x,y;
 #endif //C_AVX2 && SY_LINUX
 
 // x I. y
-DF2(jticap2){DF12IP;A*av,*wv,z;C*uu,*vv;I ar,*as,at,b,c,ck,cm,ge,gt,j,k,m,n,p,q,r,t,wr,*ws,wt,* RESTRICT zv;I cc;
- ARGCHK2(a,w);
+DF2(jticap2){DF12IP; MEMCHK2(a,w); A*av,*wv,z;C*uu,*vv;I ar,*as,at,b,c,ck,cm,ge,gt,j,k,m,n,p,q,r,t,wr,*ws,wt,* RESTRICT zv;I cc;
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ar=AR(a); at=AT(a); as=AS(a); SETIC(a,n); r=ar-((UI)ar>0);  // n=length of 1-cell of a, r=frame of a
  wr=AR(w); wt=AT(w); ws=AS(w);
  ASSERT(r<=wr,EVRANK);

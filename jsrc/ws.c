@@ -126,7 +126,7 @@ void spellit(UC c,UC *s){
 }
 
 F1(jtspella){F12JT;C c,s[3];V*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  v=FAV(w); c=v->id;
  if(c==CFCONS)R apip(thorn1(v->fgh[2]),chrcolon); 
  spellit(c,s); 

@@ -97,14 +97,14 @@ A jtnfs(J jt,I n,C*s,I notlocal){A z;C f,*t;I m,p;NM*zv;
 
 // string from name: returns string for the name
 // if b&SFNSIMPLEONLY, return only the simple name
-A jtsfn(J jt,B b,A w){NM*v; ARGCHK1(w); v=NAV(w); R str(b&SFNSIMPLEONLY?v->m:v->n,v->s);}
+A jtsfn(J jt,B b,A w){NM*v; ARGCHK1(w); MEMCHK1(w); v=NAV(w); R str(b&SFNSIMPLEONLY?v->m:v->n,v->s);}
 
 // string from name evocation: returns string for name UNLESS the name is u/v which is always by value; in that case it returns w f. which will be a verb
-A jtsfne(J jt,A w){ARGCHK1(w); A wn=FAV(w)->fgh[0]; if(AT(wn)&NAMEBYVALUE)R fix(w,zeroionei(0)); R sfn(0,wn);}
+A jtsfne(J jt,A w){ARGCHK1(w); MEMCHK1(w); A wn=FAV(w)->fgh[0]; if(AT(wn)&NAMEBYVALUE)R fix(w,zeroionei(0)); R sfn(0,wn);}
 
 
 F1(jtnfb){F12IP;A y;C*s;I n;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(BOX&AT(w),EVDOMAIN);
  ASSERT(!AR(w),EVRANK);
  RZ(y=vs(ope(w)));
@@ -114,7 +114,7 @@ F1(jtnfb){F12IP;A y;C*s;I n;
 }    /* name from scalar boxed string */
 
 // w is an A for a name string; return NAME block or 0 if error
-F1(jtstdnm){F12IP;C*s;I j,n,p,q;
+F1(jtstdnm){F12IP; MEMCHK1(w); C*s;I j,n,p,q;
  if(!(w=vs(w)))R 0;  // convert to ASCII
  n=AN(w); s=CAV(w);  // n = #characters, s->string
  if(!(n))R 0;
@@ -126,11 +126,11 @@ F1(jtstdnm){F12IP;C*s;I j,n,p,q;
 
 // x is a (possibly) boxed string; result is NAME block for name x, error if invalid name
 // if stdnm has already set an error, leave it, because the name might not be ASCII
-F1(jtonm){F12IP;A x,y; RZ(x=ope(w)); RE(y=stdnm(x)); ASSERTN(y!=0,EVILNAME,nfs(AN(x),CAV(x),0)); R y;}
+F1(jtonm){F12IP; MEMCHK1(w); A x,y; RZ(x=ope(w)); RE(y=stdnm(x)); ASSERTN(y!=0,EVILNAME,nfs(AN(x),CAV(x),0)); R y;}
 
 // w is array of boxed strings; result is name class for each
 F1(jtnc){F12IP;A*wv,x,y,z;I i,n,t,*zv; 
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  PROLOG(000);
  n=AN(w); wv=AAV(w);   // n=#names  wv->first box
  ASSERT(!n||BOX&AT(w),EVDOMAIN);   // verify boxed input (unless empty)
@@ -166,7 +166,7 @@ static const I nlmask[] = {NOUN,ADV,CONJ,VERB, MARK,MARK,SYMB,MARK};
 // a is the rank-1 256-byte initial-letter mask
 // w is the type to look for
 // result is list of names
-static F2(jtnlx){F12IP;A z=mtv;B b;I m=0,*v,x;
+static F2(jtnlx){F12IP; MEMCHK2(a,w); A z=mtv;B b;I m=0,*v,x;
  RZ(w=vi(w)); v=AV(w); 
  DQ(AN(w), x=*v++; m|=nlmask[BETWEENC(x,0,6)?x:7];); 
  AS(a)[0]=m&RHS; b=1&&AS(a)[0]&RHS;  // AS(a)[0] is used for the type mask   b='type is NOUN/VERB/ADV/CONJ'
@@ -177,11 +177,11 @@ static F2(jtnlx){F12IP;A z=mtv;B b;I m=0,*v,x;
  R nub(grade2(z,ope(z)));
 }
 
-F1(jtnl1){F12IP;A a; GAT0(a,B01,256,1) mvc(256L,CAV1(a),MEMSET01LEN,MEMSET01); R nlx(a,w);}
+F1(jtnl1){F12IP; MEMCHK1(w); A a; GAT0(a,B01,256,1) mvc(256L,CAV1(a),MEMSET01LEN,MEMSET01); R nlx(a,w);}
      /* 4!:1  name list */
 
 F2(jtnl2){F12IP;UC*u;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(LIT&AT(a),EVDOMAIN);
  A tmp; GAT0(tmp,B01,256,1) mvc(256L,CAV1(tmp),MEMSET00LEN,MEMSET00);
  u=UAV(a); DQ(AN(a),CAV1(a=tmp)[*u++]=1;);
@@ -189,7 +189,7 @@ F2(jtnl2){F12IP;UC*u;
 }    /* 4!:1  name list */
 
 static A jtnch1(J jt,B b,A w,I*pm,A ch){A*v,x,y;C*s,*yv;LX *e;I i,k,m,p,wn;L*d;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  wn=AN(w); e=LXAV0(w);                               // w is locale, e->hashchains
  x=LOCNAME(w); p=NAV(x)->n; s=NAV(x)->s;  /* locale name/number           */
  m=*pm; v=AAV(ch)+m;                               /* result to append to */
@@ -214,7 +214,7 @@ static A jtnch1(J jt,B b,A w,I*pm,A ch){A*v,x,y;C*s,*yv;LX *e;I i,k,m,p,wn;L*d;
  R ch;
 }
 
-static F1(jtnch2){F12IP;A ch;B b;LX *e;I i,m,n;L*d;
+static F1(jtnch2){F12IP; MEMCHK1(w); A ch;B b;LX *e;I i,m,n;L*d;
  RZ(w=cvt(B01,w)); ASSERT(!AR(w),EVRANK); b=BAV(w)[0];
  GAT0(ch,BOX,20,1); m=0;
  if(JT(jt,stch)){
@@ -236,12 +236,12 @@ static F1(jtnch2){F12IP;A ch;B b;LX *e;I i,m,n;L*d;
  R grade2(ch,ope(ch));
 }    /* 4!:5  names changed */
 
-F1(jtnch){F12IP;READLOCK(JT(jt,stlock)) READLOCK(ALOCK(JT(jt,stloc))) READLOCK(JT(jt,symlock)) A z=jtnch2(jt,w); READUNLOCK(JT(jt,stlock)) READUNLOCK(ALOCK(JT(jt,stloc))) READUNLOCK(JT(jt,symlock)) R z;}
+F1(jtnch){F12IP; MEMCHK1(w); READLOCK(JT(jt,stlock)) READLOCK(ALOCK(JT(jt,stloc))) READLOCK(JT(jt,symlock)) A z=jtnch2(jt,w); READUNLOCK(JT(jt,stlock)) READUNLOCK(ALOCK(JT(jt,stloc))) READUNLOCK(JT(jt,symlock)) R z;}
 
 // 4!:55 y.  y is boxed names.  Delete names in y
 // Result is array of booleans, 1 if name OK
 DF1(jtex){DF12IP;jtfg=jt;A*wv,y,z;B*zv;I i,n;  // clear all jt flags in jtfg
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  PROLOG(000);
  protectlocals(jt,0);  // we must ra() any local names on the current sentence's stack, since we may be about to delete them
  n=AN(w); wv=AAV(w);  // if dyad, set flag for probedel (require magic a)

@@ -7,7 +7,7 @@
 
 // if w is a reference (name~), replace it with its value, recursively
 A jtunname(J jt,A w,I recurct){A x;V*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(!(AT(w)&FUNC))RETF(w);   // non-FUNC is an invalid pointer
  if(recurct>100)RETF(w);  // avoid infinite recursion
  v=FAV(w);
@@ -16,7 +16,7 @@ A jtunname(J jt,A w,I recurct){A x;V*v;
 }
 // See if there are references to implicit locatives.  Return 1 if so, 0 if not
 B jthasimploc(J jt,A w){A hs,*u;V*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(AT(w)&NOUN+NAME+SYMB)R 0;
  v=FAV(w);
  switch(v->id){
@@ -56,10 +56,10 @@ EVERYFS(arofixaself,jtaro,jtfixa,0,VFLAGNONE)  // create A block to be used in e
 // a has to be an A type because it goes into every2.  It is always an I type with rank 0 and AN=1 so it can go into every, but it has multiple items.
 //   It may be virtual in callbacks from every2 so must not use IAV0
 // IAV0(aa)[1-2] are len/addr of the recursion name-list and must be passed to all recursion levels
-static A jtfixa(J jtfg,A a,A w){F12JT;A z;
+static A jtfixa(J jtfg,A a,A w){F12JT; MEMCHK2(a,w); A z;
 #define REFIXA(a,x) (IAV0(aa)[0]=(aif|(a)), fixa((A)aa,(x)))  // a indicates which side of the input may need $::
 #define R255(x) if(unlikely((I)(x)&-256)==0)R x;  // return values of 1-255 indicate cycles; return cycle position in that case.  We return the cycle position up the line till we find the start of cycle, which becomes the result
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  // If we are only interested in replacing locatives, and there aren't any, exit fast
  if(NOUN&AT(w)){R w;}  // return noun value; only way a name gets here is by ".@noun which turns into ".@(name+noun) for execution.  Also in debug, but that's discarded
  if(FAV(w)->flag&VNONAME)R w;  // if value already fixed (or m : n which gets VNONAME+VNOSELF set), keep it.  This prunes all branches with no names, since VNONAME+VNOSELF is propagated from the bottom up during tree creation
@@ -204,7 +204,7 @@ cycfound:;  // cycle found, running from cyci to cycn; now back it down to find 
 // w=string list of keywords (or boxed list), 'recur', 'public', or 'all'.  'public' means non-locatives
 // if self=0 (internal call), bits 0-1 of w are passed through to the flags into fixa, and 'recur all' is implied
 DF2(jtfix){DF12IP;PROLOG(0005);A z;
- ARGCHK1(a);
+ ARGCHK1(a); MEMCHK2(a,w);
  if(unlikely(LIT&AT(a))){ASSERT(1>=AR(a),EVRANK); RZ(a=nfs(AN(a),CAV(a),0));}   // convert string to name, to allow us to fix modifiers.  Only verbs/noun can get in through the parser, but internally we also vet adv/conj
  ASSERT(AT(a)&NAME+VERB+ADV+CONJ,EVDOMAIN);   // other nouns are errors
  if(unlikely(AT(a)&NAME))RZ(a=jtnameref(jt,a,jt->locsyms))  // convert a name to a reference (must have come from string - other verb names are already converted to references)

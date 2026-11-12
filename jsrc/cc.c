@@ -16,14 +16,14 @@
 
 
 // f;.0 w
-static DF1(jtcut01){DF12IP;A x,z;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; 
+static DF1(jtcut01){DF12IP; MEMCHK1(w); A x,z;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; 
  RZ(x=from(box(every(negate(shape(w)),ds(CIOTA))),w));   // create reversed indexes, extract reversed array
  if(VGERL&FAV(self)->flag){R df1(z,x,AAV(fs)[0]);}else{ R CALL1(f1,x,fs);}  // not inplaceable
 }    /* f;.0 w */
 
 // a f;.0 w
 static DF2(jtcut02){DF12IP;A fs,q,qq,*qv,z,zz=0;I*as,c,e,i,ii,j,k,m,n,*u,*ws;PROLOG(876);I cger[128/SZI];
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
 #define ZZFLAGWORD state
  I state=ZZFLAGINITSTATE;  // init flags, including zz flags
 
@@ -130,7 +130,7 @@ static DF2(jtcut02){DF12IP;A fs,q,qq,*qv,z,zz=0;I*as,c,e,i,ii,j,k,m,n,*u,*ws;PRO
 }    /* a f;.0 w */
 
 // a ];.0 w
-DF2(jtrightcut0){DF12IP;
+DF2(jtrightcut0){DF12IP; MEMCHK2(a,w);
  // We check for the special case of substr (a has 1 column) and handle it fast with a virtual result; revert for others
  if(unlikely(AR(w)==0)||unlikely(AR(a)!=2)||((AS(a)[0]^2)+(AS(a)[1]^1)+((I)jtfg&JTWILLBEREALIZED))!=0)R jtcut02(jt,a,w,self);  // exit if multiple substrs or w atomic, or if the caller will realize our result
  RZ(a=vib(a));  // audit for valid integers
@@ -149,7 +149,7 @@ DF2(jtrightcut0){DF12IP;
 // self is a compound, using @/@:/&/&:, that we tried to run with special code, but we found that we don't support the arguments
 // here we revert to the non-special code for the compound, without inplacing
 DF2(jtspecialatoprestart){DF12IP;
-  ARGCHK3(a,w,self);  // return fast if there has been an error
+  ARGCHK3(a,w,self); MEMCHK3(a,w,self);  // return fast if there has been an error
   V *sv=FAV(self);  // point to verb info for the current overall compound
   R a==mark?on1(jt,w,self) : jtupon2(jt,a,w,self);  // figure out the default routine that should process the compound, and transfer to it
 }
@@ -157,7 +157,7 @@ DF2(jtspecialatoprestart){DF12IP;
 // x <;.0 y  and  x (<;.0~ -~/"2)~ y   where _1 { $x is 1 (i. e. 1 dimension of selection)  localuse distinguishes the two cases (relative vs absolute length)
 // We go for minimum overhead in the box allocation and copy
 DF2(jtboxcut0){DF12IP;A z;I i;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  // NOTE: this routine is called from jtwords.  In that case, self comes from jtwords and is set up with the parm for x (<;.0~ -~/"2)~ y but with no failover routine.
  // Thus, the preliminary tests must not cause a failover.  They don't, because the inputs from jtwords are known to be well-formed
  // We require a have rank >=2, not sparse
@@ -228,7 +228,7 @@ DF2(jtboxcut0){DF12IP;A z;I i;
 // if we encounter a reversal, we abort
 // if it's a case we can't handle, we fail over to the normal code, with BOXATOP etc flags set
 DF2(jtrazecut0){DF12IP;A z;C*wv,*zv;I ar,*as,(*av)[2],j,k,m,n,wt;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  wt=AT(w); wv=CAV(w);
  ar=AR(a); as=AS(a);
  // we need rank of a>2 (otherwise why bother?), rank of w>0, w not sparse, a not empty, w not empty (to make item-size easier)
@@ -252,7 +252,7 @@ DF2(jtrazecut0){DF12IP;A z;C*wv,*zv;I ar,*as,(*av)[2],j,k,m,n,wt;
 
 
 static DF2(jtcut2bx){DF12IP;A*av,b,t,x,*xv,y,*yv;B*bv;I an,bn,i,j,m,p,q,*u,*v,*ws;
- ARGCHK3(a,w,self);
+ ARGCHK3(a,w,self); MEMCHK3(a,w,self);
  q=(I)FAV(self)->localuse.lu1.gercut.cutn;  // fetch the n in the original u;.n
  an=AN(a); av=AAV(a);  ws=AS(w);
  ASSERT(an<=AR(w),EVLENGTH);
@@ -333,7 +333,7 @@ static DF2(jtcut2bx){DF12IP;A*av,b,t,x,*xv,y,*yv;B*bv;I an,bn,i,j,m,p,q,*u,*v,*w
  if(pfx)for(i=m;i>=1;--i){q=yu[i-1]-yu[i  ]; d=q-neg; v1=wv+k*(b+p); stmt; p+=q;}  \
  else   for(i=1;i<=m;++i){q=yu[i  ]-yu[i-1]; d=q-neg; v1=wv+k*(b+p); stmt; p+=q;}
 
-static F1(jtcps){F12IP;A z;P*wp,*zp;
+static F1(jtcps){F12IP; MEMCHK1(w); A z;P*wp,*zp;
  GASPARSE(z,AT(w),1,AR(w),AS(w)); 
  zp=PAV(z);
  wp=PAV(w); 
@@ -343,14 +343,14 @@ static F1(jtcps){F12IP;A z;P*wp,*zp;
  R z;
 }
 
-static A jtselx(J jt,A x,I r,I i){A z;I c,k;
+static A jtselx(J jt,A x,I r,I i){MEMCHK1(x); A z;I c,k;
  PROD(c,AR(x)-1,AS(x)+1) k=c<<bplg(AT(x));
  GA(z,AT(x),r*c,AR(x),AS(x)); AS(z)[0]=r;
  MC(CAV(z),CAV(x)+i*k,r*k);
  R z;
 }    /* (i+i.r){x */
 
-static A jtsely(J jt,A y,I r,I i,I j){A z;I c,*s,*v;
+static A jtsely(J jt,A y,I r,I i,I j){MEMCHK1(y); A z;I c,*s,*v;
  c=AS(y)[1];
  GATV0(z,INT,r*c,2); s=AS(z); s[0]=r; s[1]=c;
  v=AV(z);
@@ -359,7 +359,7 @@ static A jtsely(J jt,A y,I r,I i,I j){A z;I c,*s,*v;
  R z;
 }    /* ((i+i.r){y)-"1 ({:$y){.j */
 
-static DF2(jtcut2sx){DF12IP;V* RESTRICT sv=FAV(self); A fs=sv->fgh[0]; AF f1=FAV(fs)->valencefns[0]; PROLOG(0024);A h=0,*hv,y,yy;B b,neg,pfx,*u,*v;C id;I d,e,hn,m,n,p,t,yn,*yu,*yv;P*ap;V*vf;
+static DF2(jtcut2sx){DF12IP; MEMCHK2(a,w); V* RESTRICT sv=FAV(self); A fs=sv->fgh[0]; AF f1=FAV(fs)->valencefns[0]; PROLOG(0024);A h=0,*hv,y,yy;B b,neg,pfx,*u,*v;C id;I d,e,hn,m,n,p,t,yn,*yu,*yv;P*ap;V*vf;
  PREF2(jtcut2sx); SETIC(w,n); t=AT(w); m=(I)sv->localuse.lu1.gercut.cutn; neg=0>m; pfx=m==1||m==-1; b=neg&&pfx;  // m = n from u;.n
  RZ(a=a==mark?eps(w,take(num(pfx?1:-1),w)):!ISSPARSE(AT(a))?sparse1(a):a);
  ASSERT(n==AS(a)[0],EVLENGTH);
@@ -442,7 +442,7 @@ static DF2(jtcut2sx){DF12IP;V* RESTRICT sv=FAV(self); A fs=sv->fgh[0]; AF f1=FAV
 }}   // (sparse or dense)  f;.n (dense or sparse)
 
 // sv is u;.n *zz is ??  result is ??
-static C*jtidenv0(J jt,A a,A w,V*sv,I zt,A*zz){A fs,y,z;
+static C*jtidenv0(J jt,A a,A w,V*sv,I zt,A*zz){MEMCHK2(a,w); A fs,y,z;
  *zz=0; 
  fs=sv->fgh[0];
  RE(df1(y,num(0),iden(FAV(fs)->fgh[0])));
@@ -568,7 +568,7 @@ void jtcopyTT(J jt, void *zv, void *wv, I n, I zt, I wt){
   else {D *targ=zv; I *src=wv; DQ(n, *targ++ = (D)*src++;)}
 }
 
-DF2(jtcut2){DF12IP;PROLOG(0025);A fs,z,zz;I neg,pfx;C id,*v1,*wv,*zc;I cger[128/SZI];
+DF2(jtcut2){DF12IP; /*MEMCHK1(a);*/ MEMCHK1(w); PROLOG(0025);A fs,z,zz;I neg,pfx;C id,*v1,*wv,*zc;I cger[128/SZI];
      I ak,at,wcn,d,k,m=0,n,r,wt,*zi;I d1[32]; A pd0; UC *pd, *pdend;  // Don't make d1 too big - it fill lots of stack space
  F2RANKIP(lr(self),RMAX,jtcut2,self);  // left rank of ;.2 is 1, but left rank of /. is _ .  Right rank always _ .  For the monad, mark has rank 0
  SETIC(w,n); wt=AT(w);   // n=#items of w; wt=type of w
@@ -968,9 +968,9 @@ static DF1(jtcut1){DF12IP;R jtcut2(jtfg,mark,w,self);}  // pass inplaceability t
 // also [: ; (<@(f/\));._2 _1 1 2)  when no rank loop required
 // NOTE: if there are no cuts, this routine produces different results from the normal routine if the operation is one we recognise.
 //  This routine produces an extra axis, as if the shape of the boxed result were preserved even when there are no boxed results
-DF2(jtrazecut2){DF12IP;A fs,gs,z=0;B b; I neg,pfx;C id,sep,*u,*v,*wv,*zv;I d,k,m=0,wi,p,q,r,*s,wt;
+DF2(jtrazecut2){DF12IP; MEMCHK2(a,w); A fs,gs,z=0;B b; I neg,pfx;C id,sep,*u,*v,*wv,*zv;I d,k,m=0,wi,p,q,r,*s,wt;
     VARPS adocv;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  gs=FAV(self)->fgh[1]; fs=FAV(FAV(gs)->fgh[0])->fgh[1];  // self is ;@:(<@(f/\);.1)     gs  gs is <@(f/\);.1   y is <@(f/\)  fs is   f/\  ...
  p=SETIC(w,wi); wt=AT(w); k=(I)FAV(gs)->localuse.lu1.gercut.cutn; neg=0>k; pfx=k==1||k==-1; b=neg&&pfx;   // k is n from u;.n  p,wi is # items of w; 
  id=FAV(fs)->id;  // fs is f/id   where id is \ \.
@@ -1013,7 +1013,7 @@ DF1(jtrazecut1){DF12IP;R jtrazecut2(jtfg,mark,w,self);}  // pass inplaceability 
 // we look at all the axes even if we don't store them all; if any are 0 we set
 // n is the op type (as in u;.n)
 static A jttesos(J jt,A a,A w,I n, I *pv){A p;I*av,c,axisct,k,m,s,*ws;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  axisct=c=AS(a)[1]; av=AV(a); ws=AS(w);
  if(pv){c=(c>2)?2:c; p=0; // if more than 2 axes requested, limit the return to that
  }else{GATV0(p,INT,c,1); pv=AV1(p); AS(p)[0]=c;}  // all requested, make an A block for it
@@ -1024,7 +1024,7 @@ static A jttesos(J jt,A a,A w,I n, I *pv){A p;I*av,c,axisct,k,m,s,*ws;
 
 
 static F2(jttesa){F12IP;A x;I*av,ac,c,d,k,r,*s,t,*u,*v;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  t=AT(a);
  RZ(a=vib(a));    // convert a to integer (possibly with infinities)
  r=AR(a); s=AS(a); SHAPEN(a,r-1,c);  ac=c; av=AV(a); d=AR(w);  // r = rank of x; s->shape of x; c=#axes specd in x, av->data; d=rank of w
@@ -1042,7 +1042,7 @@ static F2(jttesa){F12IP;A x;I*av,ac,c,d,k,r,*s,t,*u,*v;
 #define STATEREFLECTX 0x400  // subarray must be reflected
 #define STATEREFLECTY 0x800
 #define STATETAKE 0x1000  // subarray must be shortened at the end
-static DF2(jttess2){DF12IP;A z,zz=0,strip;I n,rs[3],cellatoms,cellbytes,vmv,hmv,vsz,hsz,hss,hds,vss1,vss,vds1,vds,vlrc,vtrc,lrchsiz,hi,vi,vkeep1,vtrunc,hkeep1,htrunc;C *svh,*dvh;
+static DF2(jttess2){DF12IP; MEMCHK2(a,w); A z,zz=0,strip;I n,rs[3],cellatoms,cellbytes,vmv,hmv,vsz,hsz,hss,hds,vss1,vss,vds1,vds,vlrc,vtrc,lrchsiz,hi,vi,vkeep1,vtrunc,hkeep1,htrunc;C *svh,*dvh;
  PROLOG(600);
  F2RANK(2,RMAX,jttess2,self)
 #define ZZFLAGWORD state
@@ -1242,7 +1242,7 @@ static DF2(jttess2){DF12IP;A z,zz=0,strip;I n,rs[3],cellatoms,cellbytes,vmv,hmv,
 }
 
 static DF1(jttess1){DF12IP;A s;I m,r,*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  r=AR(w); RZ(s=shape(w)); RZ(s=mkwris(s)); v=AV(s);
  m=IMAX; DO(r, if(m>v[i])m=v[i];); DO(r, v[i]=m;);  // Get length of long axis; set all axes to that length in a arg to cut
  R tess2(s,w,self);
@@ -1335,7 +1335,7 @@ success:;
  PBOXCUTCHUNK t={pe,z,ss};c->c[ti]=t; R 0;}
 
 // <;.[12] 
-DF1(jtboxcutm21){DF12IP;
+DF1(jtboxcutm21){DF12IP; MEMCHK1(w);
  if(AR(w)!=1||!(AT(w)&LIT)||AN(w)<=65536)R jtcut1(jt,w,self);  // no need to inplace this
  PROLOG(0026);
 #if 1   // test code
@@ -1386,7 +1386,7 @@ DF1(jtboxcutm21){DF12IP;
 F2(jtcut){F12IP;A h=0;I flag=0,k;
 // NOTE: u/. is processed using the code for u;.1 and passing the self for /. into the cut verb.  So, the self produced
 // by /. and ;.1 must be the same as far as flags etc.  For the shared case, inplacing is OK
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(NOUN&AT(w),EVDOMAIN);
  k=rei0(w); if(!(AT(w)&B01))w=sc(k);  // force w to INT/B01
  A z; fdefallo(z)

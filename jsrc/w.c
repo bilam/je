@@ -57,7 +57,7 @@ static const ST state[SDDD+1][16]={
 // AM(z) gives # of words before the first comment
 // If there are mismatched quotes, AM(z) is set to -1 and the number of valid tokens is in AS(z)[0]
 F1(jtwordil){F12IP;A z;I s,i,m,n,*x;UC*v;
- ARGCHK1(w);  // if no string, could be empty line from keyboard; return null A in that case
+ ARGCHK1(w); MEMCHK1(w);  // if no string, could be empty line from keyboard; return null A in that case
  n=AN(w); v=UAV(w); GATV0(z,INT,n+n,3); x=AVn(3,z); AS(z)[1]=2; AS(z)[2]=1;  // get count of characters n and address v; turn into suitable shape for ;.0 (x 2 1)
   // allocate absolute worst-case output area (each char is 1 word); point x to output indexes
  s=SE(SS,0);
@@ -102,7 +102,7 @@ A jtunwordil(J jt, A wil, A w, I opts){A z;
 }
 
 // ;: y
-DF1(jtwords){DF12IP;A t,*x,z;C*s;I k,n,*y;
+DF1(jtwords){DF12IP; MEMCHK1(w); A t,*x,z;C*s;I k,n,*y;
  F1RANK(1,jtwords,self);
  PROLOG(000);
  RZ(w=vs(w));  // convert w to LIT if it's not already
@@ -138,7 +138,7 @@ static A jtconstr(J jt,I n,C*s){A z;C b,c,p,*t,*x;I m=0;
 // The input is words from a single sentence.  It never contains control words, which were used as frets by the explicit definition
 #define EFORMENQ R jteformat(jt,ds(CENQUEUE),w,sc(i),0);   // call eformat, indicating error in word formation, giving the list of words and the number of the failing word
 A jtenqueue(J jt,A a,A w,I env){A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  s=CAV(w); u=AV(a);
  n=AM(a);  // get # words not including any final NB.
  if((jt->usertracefn2))jtexctrace(jt,w);  // write current execution line for debug
@@ -224,10 +224,12 @@ A jtenqueue(J jt,A a,A w,I env){A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
     j=4; DO(m, yv[i]=p=QCWORD(v[j]); j+=2; if(NAV(p)->n==k&&!memcmpne(s,NAV(p)->s,k))c=i;);  // move name into argument, remember if matched abc
     yv[m]=QCWORD(v[2]); RZ(yv[m+1]=incorp(sc(c))); yv[m+2]=incorp(z);    // add the 3 ending elements
     x[0]=v[0]; x[1]=v[1]; x[2]=QCINSTALLTYPE(ds(CCASEV),QCVERB); x[3]=QCINSTALLTYPE(incorp(y),QCNOUN);  // build the sentence
+    MEMCHK1(QCWORD(z1));
     RETF(z1);  // that's what we'll execute
    }
   }
  }
+ MEMCHK1(QCWORD(z));
  RETF(z);
 }    /* produce boxed list of words suitable for parsing */
                                                             
@@ -331,7 +333,7 @@ static A jtfsmdo(J jt,I f,A s,A m,I*ijrd,A w,A w0){A x,z;C*cc,*wv0;
  R z;
 }
 
-F1(jtfsmvfya){F12IP;PROLOG(0099);A a,*av,m,s,x,z,*zv;I an,c,e,f,ijrd[4],k,p,q,*sv,*v;
+F1(jtfsmvfya){F12IP; MEMCHK1(w); PROLOG(0099);A a,*av,m,s,x,z,*zv;I an,c,e,f,ijrd[4],k,p,q,*sv,*v;
  RZ(a=w);
  ASSERT(1==AR(a),EVRANK);
  ASSERT(BOX&AT(a),EVDOMAIN);
@@ -367,7 +369,7 @@ F1(jtfsmvfya){F12IP;PROLOG(0099);A a,*av,m,s,x,z,*zv;I an,c,e,f,ijrd[4],k,p,q,*s
 
 // handle x ;: y; if chka=0, x is in internal fsm form
 static A jtfsm0(J jt,A a,A w,C chka){PROLOG(0100);A*av,m,s,x,w0=w;B b;I c,f,*ijrd,k,n,q,*v;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(chka)RZ(a=fsmvfya(a)); 
  av=AAV(a); 
  f=i0(C(av[0])); s=C(av[1]); m=C(av[2]); ijrd=AV(C(av[3]));   // default f to 0
@@ -393,8 +395,8 @@ static A jtfsm0(J jt,A a,A w,C chka){PROLOG(0100);A*av,m,s,x,w0=w;B b;I c,f,*ijr
  EPILOG(z);
 }
 
-F2(jtfsm){F12IP;R fsm0(a,w,1);}
+F2(jtfsm){F12IP; R fsm0(a,w,1);}
      /* x;:y */
 
-DF1(jtfsmfx){DF12IP;ARGCHK2(w,self); R fsm0(FAV(self)->fgh[0],w,0);}
+DF1(jtfsmfx){DF12IP;ARGCHK2(w,self); MEMCHK2(w,self); R fsm0(FAV(self)->fgh[0],w,0);}
      /* x&;: y */

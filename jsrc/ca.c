@@ -7,7 +7,7 @@
 #include "jsleef.h"
 
 // [><].@[:]*  monad inner loop
-static DF1(jtonf1cell){DF12IP;PROLOG(0021);A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; A gs=FAV(self)->fgh[1]; AF g1=FAV(gs)->valencefns[0];
+static DF1(jtonf1cell){DF12IP; MEMCHK1(w); PROLOG(0021);A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; A gs=FAV(self)->fgh[1]; AF g1=FAV(gs)->valencefns[0];
  PREF1(jtonf1cell);
  if(RAT&AT(w))RZ(w=pcvt(XNUM,w));
  A z=CALL1(f1,CALL1(g1,w,gs),fs);
@@ -15,7 +15,7 @@ static DF1(jtonf1cell){DF12IP;PROLOG(0021);A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)
 }
 
 // [><].@[:]*  monad
-static DF1(jtonf1){DF12IP;A gs=FAV(self)->fgh[1]; PROLOG(0021);I flag=FAV(self)->flag,m=jt->xmode;
+static DF1(jtonf1){DF12IP; MEMCHK1(w); A gs=FAV(self)->fgh[1]; PROLOG(0021);I flag=FAV(self)->flag,m=jt->xmode;
  if(primitive(gs))if(flag&VFLR)jt->xmode=XMFLR; else if(flag&VCEIL)jt->xmode=XMCEIL;
  A z=jtonf1cell(jt,w,self);
  jt->xmode=m;  // ...we must restore xmode...
@@ -24,7 +24,7 @@ static DF1(jtonf1){DF12IP;A gs=FAV(self)->fgh[1]; PROLOG(0021);I flag=FAV(self)-
 
 // <.@ >.@ and the like, dyad
 static DF2(jtuponf2){DF12IP;A fs=FAV(self)->fgh[0]; AF f1=FAV(fs)->valencefns[0]; A gs=FAV(self)->fgh[1]; AF g2=FAV(gs)->valencefns[1]; PROLOG(0022);A z;I flag=FAV(self)->flag,m=jt->xmode;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  if(primitive(gs))if(flag&VFLR)jt->xmode=XMFLR; else if(flag&VCEIL)jt->xmode=XMCEIL;
  if(RAT&AT(a))RZSUFF(a=pcvt(XNUM,a), z=0; goto restore;);
  if(RAT&AT(w))RZSUFF(w=pcvt(XNUM,w), z=0; goto restore;);
@@ -44,7 +44,7 @@ restore:;
 12
 */
 static A jtintfloorlog2(J jt, A w, A compself) {  // compself is the floor/ceil op, possibly with fit
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if ((INT|FL) & AT(w)) { // Special cases only for integers and floats ([<>].@f for extended integers is handled in vx.c).
   A z; I wn=AN(w); I wr=AR(w); I *ws=AS(w); // GATV documentation advises using variables for arguments.
   GATV(z, INT, wn, wr, ws); I *zv = IAVn(wr,z); // zv points to allocated result area.
@@ -79,7 +79,7 @@ revert:;  // must do by hand
 
 // >.@(2&^.) monad with variants <.  !.f  2^][
 static A jtintceillog2(J jt, A w, A compself) { // Similar to the above case with floor (almost rewritten, but inner loops differ).
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if ((INT|FL) & AT(w)) {
   A z; I wn = AN(w); I wr = AR(w); I *ws = AS(w);
   GATV(z, INT, wn, wr, ws); I *zv = IAVn(wr,z);
@@ -116,15 +116,15 @@ revert:;  // must do by hand
 }
 
 // variant entry points
-static DF1(jtintfloorlog2at) {DF12IP; R jtintfloorlog2(jt,w,FAV(self)->fgh[0]);}  // <.[!.f]@[:](2&^.)
-DF1(jtintfloorlog2cap) {DF12IP; R jtintfloorlog2(jt,w,FAV(self)->fgh[1]);}  // [: <.[!.f] [:](2&^.)
-static DF2(jtintfloorlog2left) {DF12IP; R jtintfloorlog2(jt,a,FAV(self)->fgh[0]);} // <.[!.f]@[:](2 ^. [)   bivalent
-static DF2(jtintfloorlog2right) {DF12IP; a=EPMONAD?a:w; R jtintfloorlog2(jt,a,FAV(self)->fgh[0]);} // <.[!.f]@[:](2 ^. ])   bivalent
+static DF1(jtintfloorlog2at) {DF12IP; MEMCHK1(w);  R jtintfloorlog2(jt,w,FAV(self)->fgh[0]);}  // <.[!.f]@[:](2&^.)
+DF1(jtintfloorlog2cap) {DF12IP; MEMCHK1(w);  R jtintfloorlog2(jt,w,FAV(self)->fgh[1]);}  // [: <.[!.f] [:](2&^.)
+static DF2(jtintfloorlog2left) {DF12IP; MEMCHK2(a,w); R jtintfloorlog2(jt,a,FAV(self)->fgh[0]);} // <.[!.f]@[:](2 ^. [)   bivalent
+static DF2(jtintfloorlog2right) {DF12IP; MEMCHK2(a,w); a=EPMONAD?a:w; R jtintfloorlog2(jt,a,FAV(self)->fgh[0]);} // <.[!.f]@[:](2 ^. ])   bivalent
 
-static DF1(jtintceillog2at) {DF12IP; R jtintceillog2(jt,w,FAV(self)->fgh[0]);}  // >.[!.f]@[:](2&^.)
-DF1(jtintceillog2cap) {DF12IP; R jtintceillog2(jt,w,FAV(self)->fgh[1]);}  // [: >.[!.f] [:](2&^.)
-static DF2(jtintceillog2left) {DF12IP; R jtintceillog2(jt,a,FAV(self)->fgh[0]);} // >.[!.f]@[:](2 ^. [)   bivalent
-static DF2(jtintceillog2right) {DF12IP; a=EPMONAD?a:w;  R jtintceillog2(jt,a,FAV(self)->fgh[0]);} // >.[!.f]@[:](2 ^. ])   bivalent
+static DF1(jtintceillog2at) {DF12IP; MEMCHK1(w);  R jtintceillog2(jt,w,FAV(self)->fgh[0]);}  // >.[!.f]@[:](2&^.)
+DF1(jtintceillog2cap) {DF12IP; MEMCHK1(w);  R jtintceillog2(jt,w,FAV(self)->fgh[1]);}  // [: >.[!.f] [:](2&^.)
+static DF2(jtintceillog2left) {DF12IP; MEMCHK2(a,w); R jtintceillog2(jt,a,FAV(self)->fgh[0]);} // >.[!.f]@[:](2 ^. [)   bivalent
+static DF2(jtintceillog2right) {DF12IP; MEMCHK2(a,w); a=EPMONAD?a:w;  R jtintceillog2(jt,a,FAV(self)->fgh[0]);} // >.[!.f]@[:](2 ^. ])   bivalent
 
 // scaf replace all these modular functions with (u m.)
 static X jtxmodpow(J jt,A a,A w,A h){A ox,z;
@@ -159,7 +159,7 @@ static UI imodpow(UI x,I n,UI m,UI mrecip){
  while(n){UI zz=z*x; zz=modm(zz); x=x*x; x=modm(x); z=n&1?zz:z; n>>=1;}  //  repeated square/mod
  R z;
 }
-static DF2(jtmodpow2){DF12IP;A h;B b,c;I m,n,x,z;  // scaf could inplace
+static DF2(jtmodpow2){DF12IP; MEMCHK2(a,w); A h;B b,c;I m,n,x,z;  // scaf could inplace
  h=FAV(self)->fgh[2];
  if(unlikely(((AT(a)|AT(w))&(NOUN&~(INT+XNUM)))!=0)){  // convert any non-INT arg to INT if it can be done exactly
   if(RAT&AT(a))RZ(a=pcvt(XNUM,a)) else if(!(AT(a)&INT+XNUM))RZ(a=pcvt(INT,a));
@@ -188,25 +188,25 @@ static DF2(jtmodpow2){DF12IP;A h;B b,c;I m,n,x,z;  // scaf could inplace
  R sc(z-((-b)&m));  // if m neg, move result to range -m..-1
 }    /* a m&|@^ w ; m guaranteed to be INT or XNUM */
 
-static DF1(jtmodpow1){DF12IP;A g=FAV(self)->fgh[1]; R rank2ex0(FAV(g)->fgh[0],w,self,jtmodpow2);}  // m must be an atom; I think n can have shape.  But we treat w as atomic
+static DF1(jtmodpow1){DF12IP; MEMCHK1(w); A g=FAV(self)->fgh[1]; R rank2ex0(FAV(g)->fgh[0],w,self,jtmodpow2);}  // m must be an atom; I think n can have shape.  But we treat w as atomic
      /* m&|@(n&^) w ; m guaranteed to be INT or XNUM */
 
 // #@> y
-static DF1(jttallyatopopen){DF12IP; A z; ARGCHK1(w); I an=AN(w); I zr=AR(w); GATV(z,INT,an,AR(w),AS(w)) I *zv=IAVn(zr,z);
+static DF1(jttallyatopopen){DF12IP; A z; ARGCHK1(w); MEMCHK1(w); I an=AN(w); I zr=AR(w); GATV(z,INT,an,AR(w),AS(w)) I *zv=IAVn(zr,z);
  if(likely(AT(w)&BOX)){A *wv=AAV(w); DO(an, A wc=C(wv[i]); I ic; SETIC(wc,ic); zv[i]=ic;)}  // boxed w, copy item counts
  else{mvc(an*SZI, zv, SZI, (iotavec-IOTAVECBEGIN+1));}  // all other like 1:"0
  RETF(z);
 }
 
 // #@,@> and #@:,@> y
-static DF1(jtnatomsatopopen){DF12IP; A z; ARGCHK1(w); I an=AN(w); I zr=AR(w); GATV(z,INT,an,AR(w),AS(w)) I *zv=IAVn(zr,z);
+static DF1(jtnatomsatopopen){DF12IP; A z; ARGCHK1(w); MEMCHK1(w); I an=AN(w); I zr=AR(w); GATV(z,INT,an,AR(w),AS(w)) I *zv=IAVn(zr,z);
  if(likely(AT(w)&BOX)){A *wv=AAV(w); DO(an, zv[i]=AN(C(wv[i]));)}  // boxed w, copy atom counts
  else{mvc(an*SZI, zv, SZI, (iotavec-IOTAVECBEGIN+1));}  // all other like 1:"0
  RETF(z);
 }
 
 // #@$@> and #@:$@> y
-static DF1(jtrankatopopen){DF12IP; A z; ARGCHK1(w); I an=AN(w); I zr=AR(w); GATV(z,INT,an,AR(w),AS(w)) I *zv=IAVn(zr,z);
+static DF1(jtrankatopopen){DF12IP; A z; ARGCHK1(w); MEMCHK1(w); I an=AN(w); I zr=AR(w); GATV(z,INT,an,AR(w),AS(w)) I *zv=IAVn(zr,z);
  if(likely(AT(w)&BOX)){A *wv=AAV(w); DO(an, zv[i]=AR(C(wv[i]));)}  // boxed w, copy item ranks
  else{mvc(an*SZI, zv, SZI, (iotavec-IOTAVECBEGIN));}  // all other like 0:"0
  RETF(z);
@@ -225,15 +225,15 @@ DF2(jtupon2){DF12IP;PREF2IP(jtupon2cell); R jtupon2cell(jtfg,a,w,self);}  // u@v
 static DF1(jton10){DF12IP;R jtrank1ex0(jtfg,w,self,on1cell);}  // pass inplaceability through
 static DF2(jtupon20){DF12IP;R jtrank2ex0(jtfg,a,w,self,jtupon2cell);}  // pass inplaceability through
 // these versions are called for f@atomic; they warn if executed on more than one atom
-static DF1(jton10atom){DF12IP; if(unlikely(AN(w)>1&&JT(jt,deprecct)!=0))RZ(jtdeprecmsg(jt,5,"(005) f@atomic executed on multiple cells; use f\"0@:atomic (or f@:atomic if f has 0 rank)\n")); R jtrank1ex0(jtfg,w,self,on1cell);}  // pass inplaceability through
-static DF2(jtupon20atom){DF12IP; if(unlikely((AN(a)|AN(w))>1&&JT(jt,deprecct)!=0))RZ(jtdeprecmsg(jt,6,"(006) f@atomic executed on multiple cells; use f\"0@:atomic (or f@:atomic if f has 0 rank)\n")); R jtrank2ex0(jtfg,a,w,self,jtupon2cell);}  // pass inplaceability through
+static DF1(jton10atom){DF12IP; MEMCHK1(w);  if(unlikely(AN(w)>1&&JT(jt,deprecct)!=0))RZ(jtdeprecmsg(jt,5,"(005) f@atomic executed on multiple cells; use f\"0@:atomic (or f@:atomic if f has 0 rank)\n")); R jtrank1ex0(jtfg,w,self,on1cell);}  // pass inplaceability through
+static DF2(jtupon20atom){DF12IP; MEMCHK2(a,w); if(unlikely((AN(a)|AN(w))>1&&JT(jt,deprecct)!=0))RZ(jtdeprecmsg(jt,6,"(006) f@atomic executed on multiple cells; use f\"0@:atomic (or f@:atomic if f has 0 rank)\n")); R jtrank2ex0(jtfg,a,w,self,jtupon2cell);}  // pass inplaceability through
 
 // special lightweight case for u@[ and u@].
-static DF2(onleft2){DF12IP; jtfg=(J)(((I)jtfg&~(JTINPLACEA+JTINPLACEW))+PEXT0((I)jtfg,JTINPLACEAX-JTINPLACEWX,JTINPLACEW)); A fs=FAV(self)->fgh[0]; R CALL1IP(FAV(fs)->valencefns[0],a,fs);}  // move inplaceable a to w, pass other JT flags
-static DF2(jtonright12){DF12IP; jtfg=(J)((I)jtfg&~JTINPLACEA); A fs=FAV(self)->fgh[0]; R CALL1IP(FAV(fs)->valencefns[0],VERB&AT(w)?a:w,fs);}  // keep inplaceability of w; turn a off for monad
+static DF2(onleft2){DF12IP; MEMCHK2(a,w); jtfg=(J)(((I)jtfg&~(JTINPLACEA+JTINPLACEW))+PEXT0((I)jtfg,JTINPLACEAX-JTINPLACEWX,JTINPLACEW)); A fs=FAV(self)->fgh[0]; R CALL1IP(FAV(fs)->valencefns[0],a,fs);}  // move inplaceable a to w, pass other JT flags
+static DF2(jtonright12){DF12IP; MEMCHK2(a,w); jtfg=(J)((I)jtfg&~JTINPLACEA); A fs=FAV(self)->fgh[0]; R CALL1IP(FAV(fs)->valencefns[0],VERB&AT(w)?a:w,fs);}  // keep inplaceability of w; turn a off for monad
 
 // u@n
-static DF2(onconst12){DF12IP;A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1];R CALL1IP(FAV(fs)->valencefns[0],FAV(self)->fgh[1],FAV(self)->fgh[0]);}  // pass inplaceability through
+static DF2(onconst12){DF12IP; MEMCHK2(a,w); A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1];R CALL1IP(FAV(fs)->valencefns[0],FAV(self)->fgh[1],FAV(self)->fgh[0]);}  // pass inplaceability through
 
 // x u&v y
 FORK2(on2cell,0x148)
@@ -245,7 +245,7 @@ static DF2(on20){DF12IP;R jtrank2ex0(jtfg,a,w,self,on2cell);}  // pass inplaceab
 // handler for comparison compounds including ones that go through i.
 // We have to look at the ranks to decide what function to execute or whether to revert
 DF2(atcomp){DF12IP;A z;AF f;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  // call analysis routine with the arguments.  Low 2 bits of return are postprocessing flags
  f=atcompf(a,w,self);
  I postflags=(I)f&3;  // extract postprocessing from return
@@ -290,7 +290,7 @@ DF2(atcomp){DF12IP;A z;AF f;
 // tzhe items, which is valuable if the result is larger than cache.
 //
 // u@v
-F2(jtatop){F12IP;A f,g,h=0,x;AF f1=on1,f2=jtupon2;B b=0,j;C c,d,e;I flag, flag2=0,m=-1;V*av,*wv;
+F2(jtatop){F12IP; MEMCHK2(a,w); A f,g,h=0,x;AF f1=on1,f2=jtupon2;B b=0,j;C c,d,e;I flag, flag2=0,m=-1;V*av,*wv;
  ASSERTVVn(a,w);
  av=FAV(a); c=av->id;
  A z; fdefallo(z)
@@ -424,7 +424,7 @@ F2(jtatop){F12IP;A f,g,h=0,x;AF f1=on1,f2=jtupon2;B b=0,j;C c,d,e;I flag, flag2=
 }
 
 // u@:v
-F2(jtatco){F12IP;A f,g;AF f1=on1cell,f2=jtupon2cell;C c,d,e;I flag, flag2=0,m=-1;V*av,*wv;
+F2(jtatco){F12IP; MEMCHK2(a,w); A f,g;AF f1=on1cell,f2=jtupon2cell;C c,d,e;I flag, flag2=0,m=-1;V*av,*wv;
  ASSERTVV(a,w);
  av=FAV(a); c=av->id; f=av->fgh[0]; g=av->fgh[1]; e=ID(f);   // c=op for a, d=op for w   if a is compound r m [s], f is r and e is its id; and g is s
  wv=FAV(w); d=wv->id;
@@ -522,7 +522,7 @@ F2(jtatco){F12IP;A f,g;AF f1=on1cell,f2=jtupon2cell;C c,d,e;I flag, flag2=0,m=-1
 }
 
 // u&:v
-F2(jtampco){F12IP;AF f1=on1cell,f2=on2cell;C c,d;I flag,flag2=0,linktype=0;V*wv;
+F2(jtampco){F12IP; MEMCHK2(a,w); AF f1=on1cell,f2=on2cell;C c,d;I flag,flag2=0,linktype=0;V*wv;
  ASSERTVV(a,w);
  A z; fdefallo(z)
  c=FAV(a)->id; wv=FAV(w); d=wv->id;  // c=pseudochar for u, d=pseudochar for v
@@ -556,29 +556,29 @@ F2(jtampco){F12IP;AF f1=on1cell,f2=on2cell;C c,d;I flag,flag2=0,linktype=0;V*wv;
 // be repeated; preserve the inplacing of the argument given (i. e. move w to a for u&n).  Bit 1 of jtfg is always 0 for monad.
 // We marked the derived verb inplaceable only if the dyad of u/v was inplaceable
 // We pass the WILLOPEN flags through.
-static DF1(withl){DF12IP;AF f2=FAV(self)->localuse.lu1.bondfn; A z=f2(jtfg,FAV(self)->fgh[0],w,FAV(self)->fgh[1]); RETF(z);}  // m&v.  Leave inplacing of w
-static DF1(withr){DF12IP;AF f2=FAV(self)->localuse.lu1.bondfn; jtfg=(J)(intptr_t)((I)jtfg+((I)jtfg&JTINPLACEW)); A z=f2(jtfg,w,FAV(self)->fgh[1],FAV(self)->fgh[0]); RETF(z);}  // u&n.  Move inplacing of w to a
+static DF1(withl){DF12IP; MEMCHK1(w); AF f2=FAV(self)->localuse.lu1.bondfn; A z=f2(jtfg,FAV(self)->fgh[0],w,FAV(self)->fgh[1]); RETF(z);}  // m&v.  Leave inplacing of w
+static DF1(withr){DF12IP; MEMCHK1(w); AF f2=FAV(self)->localuse.lu1.bondfn; jtfg=(J)(intptr_t)((I)jtfg+((I)jtfg&JTINPLACEW)); A z=f2(jtfg,w,FAV(self)->fgh[1],FAV(self)->fgh[0]); RETF(z);}  // u&n.  Move inplacing of w to a
 
 
 // a.&i., {&a.
 
 // a. i. w when  w is LIT
 // Now, support for the primitives that use indexof
-F1(jtadotidot){F12IP;
+F1(jtadotidot){F12IP; MEMCHK1(w);
  A z; I wn=AN(w), wr=AR(w); GATV(z,INT,wn,wr,AS(w)); C *wv=CAV(w); I *zv=IAVn(wr,z);
  DO(wn, zv[i]=wv[i];)  // copy each atom
  RETF(z);
 }
 // a. i. w for general w.  Test for LIT then revert
 static DF1(jtadotidotifchar){DF12IP;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(unlikely(!(ISDENSETYPE(AT(w),LIT))))R withl(jt,w,self);  // revert if arg not LIT
  RETF(jtadotidot(jt,w))
 }
 
 // y {"r a. for general w.  Convert to integer type
 static DF1(jtfromadotifchar){DF12IP;
- ARGCHK1(w); I wt=AT(w);
+ ARGCHK1(w); MEMCHK1(w); I wt=AT(w);
  if(unlikely((SGNIF(wt,BOXX)|SGNIFSPARSE(wt))<0))R withr(jt,w,self);  // revert if arg sparse or boxed
  if(unlikely(!(wt&INT+INT1+INT2+INT4))){RZ(w=cvt(INT2,w)) wt=INT2;}    // ensure integer form, the smaller the better.  INT1 should just copy
  A z; I wn=AN(w), wr=AR(w); GATV(z,LIT,wn,wr,AS(w)) if(unlikely(wn==0))RETF(z); C *zv=CAVn(wr,z);   // allocate result, exit if empty, point to data
@@ -593,13 +593,13 @@ static DF1(jtfromadotifchar){DF12IP;
 
 // Here for m&i. and m&i:, computing a prehashed table from a.  Make sure we use the precision in effect when the hash was made
 // v->fgh[2] is the info/hash/bytemask result from calculating the prehash
-static DF1(ixfixedleft){DF12IP;V*v=FAV(self); PUSHCCT(v->localuse.lu1.cct) A z=jtindexofprehashed(jtfg,v->fgh[0],w,v->fgh[2],self); POPCCT R z;}  // must use the ct when table was created  pass inplaceability through
+static DF1(ixfixedleft){DF12IP; MEMCHK1(w); V*v=FAV(self); PUSHCCT(v->localuse.lu1.cct) A z=jtindexofprehashed(jtfg,v->fgh[0],w,v->fgh[2],self); POPCCT R z;}  // must use the ct when table was created  pass inplaceability through
 // Here for compounds like (i.&0@:e.)&n  e.&n -.&n that compute a prehashed table from w
-static DF1(ixfixedright){DF12IP;V*v=FAV(self); PUSHCCT(v->localuse.lu1.cct) A z=jtindexofprehashed(jtfg,v->fgh[1],w,v->fgh[2],self); POPCCT R z;}  // must use the ct when table was created  pass inplaceability through
+static DF1(ixfixedright){DF12IP; MEMCHK1(w); V*v=FAV(self); PUSHCCT(v->localuse.lu1.cct) A z=jtindexofprehashed(jtfg,v->fgh[1],w,v->fgh[2],self); POPCCT R z;}  // must use the ct when table was created  pass inplaceability through
 
 // u&v
 F2(jtamp){F12IP;A h=0;AF f1,f2;B b;C c;I flag,flag2=0,linktype=0,mode=-1,p,r;V*v;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  D cct;  // cct that was used for this comparison compound, if any
  A z; fdefallo(z)
  if(AT(a)&AT(w)&VERB){

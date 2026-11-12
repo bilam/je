@@ -371,7 +371,7 @@ REDUCEPFX(  mininsX, X, X, XMIN, minXX, minXX  )
 // +/!.0"r, compensated summation
 static DF1(jtreduce);  // forward declaration
 DFI1(jtcompsum){
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  I *ws=AS(w);
  // Create  wcr: the cell rank; f: length of frame; n: # items in a CELL of w
  I f=wr-wcr; I n; SETICFR(w,f,wcr,n);
@@ -503,14 +503,14 @@ DFI1(jtcompsum){
 
 // w is an array with 0 items, self is f, result is frame $ ,: identity-verb cell-shape $ atom-of-type
 static DFI1(jtred0){A x,z;I f,*s;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  f=wr-wcr; s=AS(w);
  if(likely(!ISSPARSE(AT(w)))){GA(x,AT(w),0L,wcr,f+s);}else{GASPARSE(x,AT(w),1,wcr,f+s);}  // x exists only for type and shape
  R reitem(vec(INT,f,s),lamin1(dfv1(z,x,iden(self))));
 }    /* f/"r w identity case */
 
 // general reduce.  We inplace the results into the next iteration.  This routine cannot inplace its inputs.
-static DFI1(jtredg){IARG1CR DF12IP;PROLOG(0020);A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; AD * RESTRICT a;I i,n;
+static DFI1(jtredg){IARG1CR DF12IP; MEMCHK1(w); PROLOG(0020);A fs=FAV(self)->fgh[0]; AF f2=FAV(fs)->valencefns[1]; AD * RESTRICT a;I i,n;
  ASSERT(!ISSPARSE(AT(w)),EVNONCE);
  // loop over rank
  if(wcr<wr)R rank1ex(w,self,wcr,jtredg);
@@ -580,18 +580,18 @@ static A jtredsp1a(J jt,C id,A z,A e,I n,I r,I*s){A t;B b,p=0;D d=1;
 }}   /* f/w on sparse vector w, post processing */
 
 static A jtredsp1(J jt,A w,A self,C id,VARPSF ado,I cv,I f,I r,I zt){A e,x,z;I m,n;P*wp;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  wp=PAV(w); e=SPA(wp,e); x=SPA(wp,x); n=AN(x); m=AS(w)[0];
  GA00(z,zt,1,0);
  if(n){I rc=((AHDRRFN*)ado)(1L,n,1L,AV(x),AV(z),jt); if(255&rc)jsignal(rc); RE(0); if(m==n)R z;}
  R redsp1a(id,z,e,n,AR(w),AS(w));
 }    /* f/"r w for sparse vector w */
 
-DF1(jtredravel){DF12IP;A f,x,z;I n;P*wp;
+DF1(jtredravel){DF12IP; MEMCHK1(w); A f,x,z;I n;P*wp;
  PROLOG(0000);
  if(likely(!ISSPARSE(AT(w)))){RZ(z=on1cell(jtfg,w,self));  // reversion is the normal path
  }else{
-  ARGCHK1(w);
+  ARGCHK1(w); MEMCHK1(w);
   f=FAV(self)->fgh[0];  // f/
   // The rest is sparse
   wp=PAV(w); x=SPA(wp,x); n=AN(x);
@@ -608,7 +608,7 @@ DF1(jtredravel){DF12IP;A f,x,z;I n;P*wp;
 }  /* f/@, w */
 
 static A jtredspd(J jt,A w,A self,C id,VARPSF ado,I cv,I f,I r,I zt){A a,e,x,z,zx;I c,m,n,*s,t,*v,wr,*ws,xf,xr;P*wp,*zp;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(strchr(fca,id),EVNONCE);
  wp=PAV(w); a=SPA(wp,a); e=SPA(wp,e); x=SPA(wp,x); s=AS(x);
  xr=r; v=AV(a); DO(AN(a), if(f<v[i])--xr;); xf=AR(x)-xr;
@@ -679,7 +679,7 @@ static B jtredspse(J jt,C id,I wm,I xt,A e,A zx,A sn,A*ze,A*zzx){A b;B nz;I t,zt
 
 static A jtredsps(J jt,A w,A self,C id,VARPSF ado,I cv,I f,I r,I zt){A a,a1,e,sn,x,x1=0,y,z,zx,zy;B*pv;
      C*xv,*xxv,*zv;I*dv,i,m,n,*qv,*sv,*v,wr,xk,xt,wm,*ws,xc,yc,yr,*yu,*yv,zk;P*wp,*zp;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(strchr(fca,id),EVNONCE);
  wr=AR(w); ws=AS(w); wm=ws[f];
  wp=PAV(w); a=SPA(wp,a); e=SPA(wp,e); 
@@ -710,7 +710,7 @@ static A jtredsps(J jt,A w,A self,C id,VARPSF ado,I cv,I f,I r,I zt){A a,a1,e,sn
 }    /* f/"r w for sparse w, rank > 1, sparse axis */
 
 static DFI1(jtreducesp){A a,g,z;B b;I f,n,*v,wn,*ws,wt,zt;P*wp;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  f=wr-wcr; wn=AN(w); ws=AS(w); n=wcr?ws[f]:1;
  wt=AT(w); wt=wn?DTYPE(wt):B01;
  g=FAV(self)->fgh[0];  // g is the f in f/
@@ -815,7 +815,7 @@ TW3(B01X,CSTARCO)+TW3(LITX,CEQ)+TW3(LITX,CNE)+TW3(C2TX,CEQ)+TW3(C2TX,CNE)+TW3(C4
 TW3(INTX,CEQ)+TW3(INTX,CLT)+TW3(INTX,CLE)+TW3(INTX,CGT)+TW3(INTX,CGE)+TW3(INTX,CNE)+TW3(FLX, CEQ)+TW3(FLX, CLT)+TW3(FLX, CLE)+TW3(FLX, CGT)+TW3(FLX, CGE)+TW3(FLX, CNE)
 #endif
 static DFI1(jtreduce){A z;I d,f,m,n,t,*ws,zt;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  if(unlikely(ISSPARSE(AT(w))))RETF(reducesp(wfg,self));  // If sparse, go handle it, preserving rank
  // Create  r: the effective rank; f: length of frame; n: # items in a CELL of w
  ws=AS(w); f=wr-wcr; SETICFR(w,f,wcr,n);
@@ -901,7 +901,7 @@ static A jtredcatsp(J jt,A w,A z,I r){A a,q,x,y;B*b;I c,d,e,f,j,k,m,n,n1,p,*u,*v
 // ,&.:(<"r)  run together all axes above the last r.  r must not exceed AR(w)-1
 // w must not be sparse or empty
 A jtredcatcell(J jtfg,A w,I r){F12IP;A z;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  I wr=AR(w);  // get original rank, which may change if we inplace into the same block
  if(r>=wr-1)R RETARG(w);  // if only 1 axis left to run together, return the input
  if((ASGNINPLACESGN(SGNIF(jtfg,JTINPLACEWX)&(-r),w) && !(AFLAG(w)&AFUNINCORPABLE))){  // inplace allowed, usecount is right
@@ -919,7 +919,7 @@ A jtredcatcell(J jtfg,A w,I r){F12IP;A z;
 
 
 DFI1(jtredcat){A z;B b;I f,*s,*v;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  f=wr-wcr; s=AS(w);
  b=1==wcr&&1==s[f];  // special case: ,/ on last axis which has length 1: in that case, the rules say the axis disappears (because of the way ,/ works on length-1 lists)
  if(2>wcr&&!b)RCA(w);  // in all OTHER cases, result=input for ranks<2
@@ -936,7 +936,7 @@ DFI1(jtredcat){A z;B b;I f,*s,*v;
 }    /* ,/"r w */
 
 static DFI1(jtredsemi){I f,n;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  f=wr-wcr; SETICFR(w,f,wcr,n);   //    n=#items in a cell of w
  if(2>n){ASSERT(n!=0,EVDOMAIN); R tail(wfg);}  // pass IRS into tail
  if(BOX&AT(w))R jtredg(jt,wfg,self);  // the old way failed because it did not mimic scalar replication; revert to the long way.  ranks are still set
@@ -944,7 +944,7 @@ static DFI1(jtredsemi){I f,n;
 }    /* ;/"r w */
 
 static DFI1(jtredstitch){A c,y;I f,n,*s,*v;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  f=wr-wcr; s=AS(w); SETICFR(w,f,wcr,n);
  ASSERT(n!=0,EVDOMAIN);
  if(1==n)R IRS1(jthead,jt,w,wcr,0L);
@@ -963,7 +963,7 @@ static DFI1(jtredstitch){A c,y;I f,n,*s,*v;
 }}   /* ,./"r w */
 
 static DF1(jtredstiteach){DF12IP;A*wv,y;I n,p,r,t;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  n=AN(w);
  if(!(2<n&&1==AR(w)&&BOX&AT(w)))R reduce(w,self);
  wv=AAV(w);  y=C(wv[0]); SETIC(y,p); t=AT(y);
@@ -972,7 +972,7 @@ static DF1(jtredstiteach){DF12IP;A*wv,y;I n,p,r,t;
 }    /* ,.&.>/ w */
 
 static DFI1(jtredcateach){A*u,*v,*wv,x,*xv,z,*zv;I m,mn,n,zm,zn;I n1=0,n2=0;
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  I f=wr-wcr, *ws=AS(w); 
  SETICFR(w,f,wcr,n);
  if(!wcr||1>=n)R reshape(repeat(ne(sc(f),IX(wr)),shape(w)),n?w:ds(CACE));
@@ -987,11 +987,11 @@ static DFI1(jtredcateach){A*u,*v,*wv,x,*xv,z,*zv;I m,mn,n,zm,zn;I n1=0,n2=0;
  RETF(z);
 }    /* ,&.>/"r w */
 
-static DF2(jtoprod){DF12IP;A z; R dfv2(z,a,w,FAV(self)->fgh[2]);}  // x u/ y - transfer to the u"lr,_ verb (precalculated)
+static DF2(jtoprod){DF12IP; MEMCHK2(a,w); A z; R dfv2(z,a,w,FAV(self)->fgh[2]);}  // x u/ y - transfer to the u"lr,_ verb (precalculated)
 
 
 F1(jtslash){F12IP;A h;AF f1;C c;V*v;
- ARGCHK1(w);
+ ARGCHK1(w); MEMCHK1(w);
  if(NOUN&AT(w))R evger(w,sc(GINSERT));  // treat m/ as m;.6.  This means that a node with CSLASH never contains gerund u
  // falling through w is a verb
  A z; fdefallo(z)
@@ -1012,10 +1012,10 @@ F1(jtslash){F12IP;A h;AF f1;C c;V*v;
 
 A jtaslash (J jt,C c,    A w){RZ(   w); A z; R dfv1(z,  w,   slash(ds(c))     );}
 A jtaslash1(J jt,C c,    A w){RZ(   w); A z; R dfv1(z,  w,qq(slash(ds(c)),zeroionei(1)));}
-A jtatab   (J jt,C c,A a,A w){ARGCHK2(a,w); A z; R dfv2(z,a,w,   slash(ds(c))     );}
+A jtatab   (J jt,C c,A a,A w){ARGCHK2(a,w); MEMCHK2(a,w); A z; R dfv2(z,a,w,   slash(ds(c))     );}
 
 DFI1(jtmean){
- IARG1CR F12IP;
+ IARG1CR F12IP; MEMCHK1(w);
  I n=AS(w)[wr-wcr]; n=wcr?n:1;
  A sum=reduce(wfg,FAV(self)->fgh[0]);  // calculate +/"r
  RZ(sum);
@@ -1025,7 +1025,7 @@ DFI1(jtmean){
 
 #if 0     // obsolete but keep as example of coding a primitive as an addon
 // entry point to execute monad/dyad Fold after the noun arguments are supplied
-static DF2(jtfoldx){DF12IP;  // this stands in place of jtxdefn, which inplaces
+static DF2(jtfoldx){DF12IP; MEMCHK2(a,w);  // this stands in place of jtxdefn, which inplaces
  // see if this is monad or dyad
  I foldflag=((~AT(w))>>(VERBX-3))&8;  // flags: dyad mult fwd rev  if w is not conj, this must be a dyad call
  self=foldflag?self:w; w=foldflag?w:a; a=foldflag?a:mtv; // if monad, it's w self garbage,  move to '' w self
@@ -1041,7 +1041,7 @@ static DF2(jtfoldx){DF12IP;  // this stands in place of jtxdefn, which inplaces
 }
 
 // u F. F.. F.: F: F:. F:: v
-DF2(jtfold){DF12IP;
+DF2(jtfold){DF12IP; MEMCHK2(a,w);
  // Apply Fold_j_ to the input arguments, creating a derived verb to do the work
  ASSERTVV(a,w)   // nouns not allowed
  A foldconj; ASSERT(foldconj=jtfindnameinscript(jt,"~addons/dev/fold/foldr.ijs","Foldr_j_",CONJ),EVNONCE);
@@ -1059,7 +1059,7 @@ DF2(jtfold){DF12IP;
 }
 
 // [x] Z: y, bivalent.  Must use ASSERTGOTO/RZGOTO everywhere
-DF2(jtfoldZ){DF12IP;
+DF2(jtfoldZ){DF12IP; MEMCHK2(a,w);
  ASSERT(jt->foldrunning,EVSYNTAX);  // If fold not running, fail.  Should be a semantic error rather than syntax
  // The name FoldZ_j_ should have been loaded at startup.  If not, fail
  A foldvb; ASSERT(foldvb=jtfindnameinscript(jt,"~addons/dev/fold/foldr.ijs","FoldZ_j_",VERB),EVNONCE)   // error if undefined or not verb
@@ -1083,9 +1083,9 @@ DF2(jtfoldZ){DF12IP;
 #define STATEMULT BIT(STATEMULTX)
 #define STATEDYADX 29   // call is dyadic.  Must be the MSB of the flags
 #define STATEDYAD BIT(STATEDYADX)
-static DF2(jtfold12){DF12IP;A z,vz;
+static DF2(jtfold12){DF12IP; MEMCHK2(a,w); A z,vz;
  struct foldstatus foldinfo={{0,0,0},0};  // fold status shared between F: and Z: exestatus[3] followed by zstatus mask: fold limit; abort; abort iteration; quiet iteration; halt after current
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  I dyad=EPDYAD; w=EPDYAD?w:a; A uself=FAV(self)->fgh[0]; A vself=FAV(self)->fgh[1];
  if(unlikely(((UI)a^(UI)w)<(UI)dyad))jtfg=(J)((I)jtfg&~(JTINPLACEA|JTINPLACEW));  // can't inplace equal args
 #define ZZFLAGWORD dmfr
@@ -1240,7 +1240,7 @@ exitpop:;   // here to abort on error, after popping stack
  zz=0; goto abortexit;  // otherwise, must be error in u or v, which will have been previously signaled - keep the error
 }
 // u F. F.. F.: F: F:. F:: v
-DF2(jtfold){DF12IP;
+DF2(jtfold){DF12IP; MEMCHK2(a,w);
  ASSERTVV(a,w);  // must be verb ops
  A z; fdefallo(z);   // allocate verb result
  fdeffillall(z,0,FAV(self)->id,VERB, jtfold12,jtfold12, a,w,0L, FAV(a)->flag&FAV(w)->flag&VNOLOCCHG+VNONAME+VNOSELF, RMAX,RMAX,RMAX,FAV(z)->lu2.lc=FAV(self)->id,);
@@ -1249,7 +1249,7 @@ DF2(jtfold){DF12IP;
 
 // Z: y
 DF1(jtfoldZ1){DF12IP;
- ARGCHK1(w)
+ ARGCHK1(w); MEMCHK1(w);
  ASSERT(jt->afoldinfo,EVUNTIMELY);  // If fold not running, fail.
  I type; type=rei0(w);  // verify atomic integer
  ASSERT(BETWEENC(type,0,2),EVINDEX)  //  requested stat index must be in range
@@ -1257,7 +1257,7 @@ DF1(jtfoldZ1){DF12IP;
 }
 // x Z: y
 DF2(jtfoldZ2){DF12IP;
- ARGCHK2(a,w)
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ASSERT(jt->afoldinfo,EVUNTIMELY);  // If fold not running, fail.
  I type; type=rei0(a);  // verify atomic integer
  ASSERT(BETWEENC(type,-3,1),EVINDEX)  //  requested action index must be in range

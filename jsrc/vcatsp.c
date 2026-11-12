@@ -7,7 +7,7 @@
 
 
 DF2(jtstitchsp2){DF12IP;I ar,wr;
- ARGCHK2(a,w);
+ ARGCHK2(a,w); MEMCHK2(a,w);
  ar=AR(a); wr=AR(w);
  R irs2(a,w,self,ar?ar-1:0,wr?wr-1:0,jtover);
 }    /* sparse arrays with rank 2 or less */
