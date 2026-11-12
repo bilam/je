@@ -50,7 +50,7 @@ DF2(jtcharfn2){DF12IP;A z;B b;C c;I an,ar,*as,m,n,wn,wr,*ws,zn,zt;V*v;VF ado=0;
  wn=AN(w); wr=AR(w); ws=AS(w);
  ASSERTAGREE(as,ws,MIN(ar,wr))
  b=ar<=wr; zn=b?wn:an; m=b?an:wn; I r=b?wr:ar; I *s=b?ws:as; I rs=b?ar:wr; PROD(n,r-rs,s+rs);
- GA(z,zt,zn,r,s); if(!zn)R z;
+ GA(z,zt,zn,r,s); if(!zn)RETF (z);
  ((AHDR2FN*)ado)(n==1?~m:2*n+b,CAVn(r,z),CAV(a),CAV(w),m,jt);
  RETF(z);
 }

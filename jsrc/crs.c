@@ -21,7 +21,7 @@ static A jtsprinit(J jt,I f,I r,I*s,I t,P*p){A a,a1,z;I n,*u,*v;P*zp;
  SPB(zp,e,ca(SPA(p,e)));
  SPB(zp,i,iota(v2(0L,n)));  // empty so cannot be readonly
  SPB(zp,x,repeat(num(0),SPA(p,x)));
- R z;
+ RETF (z);
 }    /* initialize an argument cell */
 
 static B*jtspredge(J jt,A y,I f,I*zm){A q;B*b;I c,m,n,*v;
@@ -38,7 +38,7 @@ static B*jtspredge(J jt,A y,I f,I*zm){A q;B*b;I c,m,n,*v;
 static A jtsprz(J jt,A z0,A y,A e,I f,I*s){A a,a0,q,y0,z;B d;I c,et,h,m,n,r,t,*u,*v,zt;P*ep,*zp,*zq;
  RZ(z0&&y&&e);
  ASSERT(AN(e),EVDOMAIN);
- if(AN(z0)&&!(AT(z0)&SPARSABLE))R z0;  // no backdoor to sparse boxes.  If non-sparsable type, leave dense
+ if(AN(z0)&&!(AT(z0)&SPARSABLE))RETF (z0);  // no backdoor to sparse boxes.  If non-sparsable type, leave dense
  if(ISSPARSE(AT(e))){ep=PAV(e); ASSERT(all1(eq(SPA(ep,e),SPA(ep,x))),EVSPARSE); q=SPA(ep,e);}  // 'sparse' sparse element comes from boxing.  If all elements identical, replace with sparse atom
  else{RZ(q=reshape(mtv,e)); ASSERT(all1(eq(q,e)),EVSPARSE);}
  if(!AS(z0)[0]){
@@ -48,7 +48,7 @@ static A jtsprz(J jt,A z0,A y,A e,I f,I*s){A a,a0,q,y0,z;B d;I c,et,h,m,n,r,t,*u
   zp=PAV(z); SPB(zp,e,q); SPB(zp,a,mtv); 
   GATR(q,INT,0,2,(I*)&zeroZ); SPB(zp,i,q);   // zeroZ is a pun for 0 0!!
   GA00(q,t,0L,1+AR(z)); AS(q)[0]=0; ICPY(1+AS(q),AS(z),AR(z)); SPB(zp,x,q);
-  R z;
+  RETF (z);
  }
  e=q;
  zt=t=AT(z0); d=!ISSPARSE(t); if(d)zt=STYPE(t); else t=DTYPE(zt);
@@ -56,7 +56,7 @@ static A jtsprz(J jt,A z0,A y,A e,I f,I*s){A a,a0,q,y0,z;B d;I c,et,h,m,n,r,t,*u
  r=AR(z0);
  GASPARSE(z,zt,1,f+r-1,s); ICPY(AS(z)+f,AS(z0)+1,r-1);
  zp=PAV(z); SPB(zp,e,TYPESEQ(m,et)?e:cvt(m,e));
- if(d){SPB(zp,a,apvwr(f,0L,1L)); SPB(zp,i,y); SPB(zp,x,TYPESEQ(m,t)?z0:cvt(m,z0)); R z;}
+ if(d){SPB(zp,a,apvwr(f,0L,1L)); SPB(zp,i,y); SPB(zp,x,TYPESEQ(m,t)?z0:cvt(m,z0)); RETF (z);}
  zq=PAV(z0); y0=SPA(zq,i); v=AS(y0); n=v[0]; c=v[1]; v=AV(y0);
  ASSERT(equ(e,SPA(zq,e)),EVNONCE);
  h=AS(y)[0]; GATV0(q,INT,h,1); u=AV1(q); mvc(h*SZI,u,MEMSET00LEN,MEMSET00); 
@@ -67,7 +67,7 @@ static A jtsprz(J jt,A z0,A y,A e,I f,I*s){A a,a0,q,y0,z;B d;I c,et,h,m,n,r,t,*u
  SPB(zp,a,a);
 // memory leak if(TYPESEQ(m,t))ras(SPA(zq,x));
  SPB(zp,x,TYPESEQ(m,t)?SPA(zq,x):cvt(m,SPA(zq,x)));
- R z;
+ RETF (z);
 }    /* result processing */
 
 A jtsprank1(J jt,A w,A fs,I mr,AF f1){PROLOG(0043);A q,wx,wy,wy1,ww,z,ze,zi,*zv;B*wb;

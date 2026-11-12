@@ -81,7 +81,7 @@ DF2(jtaes2){DF12IP; MEMCHK2(a,w);
   ASSERT(0==(n%16),EVDOMAIN);
   GATV0(z,LIT,n,1);
   out=UAV1(z);
-  if(!n)R z;
+  if(!n)RETF (z);
   MC(out,CAV(w),AN(w));
   if(!decrypt) {
     if(padding) {
@@ -127,7 +127,7 @@ DF2(jtaes2){DF12IP; MEMCHK2(a,w);
     AS(z)[0]=AN(z)=n-n1;
     mvc(n1,out+n-n1,MEMSET00LEN,MEMSET00);
   }
-  R z;
+  RETF (z);
 }
 
 /*

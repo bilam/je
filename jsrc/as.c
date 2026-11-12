@@ -306,7 +306,7 @@ A jtscansp(J jt,A wfg,A self,AF sf){A e,ee,x,z;B*b;I f,m,j,t;P*wp,*zp;
  SPB(zp,x,x); 
  SPB(zp,i,ca(SPA(wp,i))); 
  SPB(zp,a,ca(SPA(wp,a)));
- R z;
+ RETF (z);
 }    /* f/\"r or f/\."r on sparse w */
 
 static DFI1(jtsscan){A y,z;I d,m,n,t,wn,*ws,wt;
@@ -324,7 +324,7 @@ static DFI1(jtsscan){A y,z;I d,m,n,t,wn,*ws,wt;
  if(unlikely(isatype(adocv.cv))&&(t=atype(adocv.cv))&&TYPESNE(t,wt))RZ(w=cvt(t,w));
  if(ASGNINPLACESGN(SGNIF(jtfg,JTINPLACEWX)&SGNIF(adocv.cv,VIPOKWX),w))z=w; else GA(z,rtype(adocv.cv),wn,wr,ws);
  I rc=((AHDRSFN*)adocv.f)(d,n,m,AV(w),AV(z),jt);
- if(unlikely((255&~EVNOCONV)&rc)){if(unlikely(rc==EVNOCONV))R z; jsignal(rc); R jt->jerr>=EWOV?z=IRS1(jtsscan,jt,w,wcr,self):0;} else RETF(unlikely(((adocv.cv+VRD)&VRI))&&likely(rc!=EVNOCONV)?cvz(adocv.cv,z):z);
+ if(unlikely((255&~EVNOCONV)&rc)){if(unlikely(rc==EVNOCONV))RETF (z); jsignal(rc); R jt->jerr>=EWOV?z=IRS1(jtsscan,jt,w,wcr,self):0;} else RETF(unlikely(((adocv.cv+VRD)&VRI))&&likely(rc!=EVNOCONV)?cvz(adocv.cv,z):z);
 }    /* f/\."r w main control */
 
 
@@ -354,7 +354,7 @@ static DF2(jtofxinv){DF12IP; MEMCHK2(a,w); A f,fs,z;C c;I t;V*v;
  if(!(c==CPLUS||c==CBDOT&&t&INT||((c&-2)==CEQ)&&t&B01))R outfix(a,w,self);  // if not +/\. or m b./\. or =/\. or ~:/\.
  A z0; RZ(dfv1(z0,w,fs)) if(t&FL&&unlikely(!all0(jtisnan(jt,z0)))){RESETERR; R outfix(a,w,self);}  // take u/ y; if FL, see if result contains NaN, failover if so to slow version
  A z1; z=irs2(z0,dfv2(z1,a,w,bslash(fs)),c==CPLUS?ds(CMINUS):f, RMAX,-1L,jtatomic2);  // x u/\. y = (u/ y) uinv"(_ _1) x u/\ y   this rank is 0 for atomics; causes loop migration
- if(jt->jerr==EVNAN){RESETERR; R outfix(a,w,self);}else R z;  // failover if NaN
+ if(jt->jerr==EVNAN){RESETERR; R outfix(a,w,self);}else RETF (z);  // failover if NaN
 }    /* a f/\. w where f has an "undo" */
 
 static DF2(jtofxassoc){DF12IP; MEMCHK2(a,w); A f,i,j,p,s,x,z;C id,*zv;I c,d,k,kc,m,r,t;V*v;VA2 adocv;
@@ -387,7 +387,7 @@ static DF2(jtofxassoc){DF12IP; MEMCHK2(a,w); A f,i,j,p,s,x,z;C id,*zv;I c,d,k,kc
  }
  if((rc&255)>=EWOV){R ofxassoc(a,ccvt(FL,w,0),self);}
  if(rc&255)jsignal(rc);  // if there was an error, signal it
- R z;
+ RETF (z);
 }    /* a f/\. w where f is an atomic associative fn */
 
 static DF1(jtiota1rev){DF12IP; MEMCHK1(w); I j; SETIC(w,j); R apv(j,j,-1L);}

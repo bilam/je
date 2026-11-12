@@ -288,18 +288,18 @@ static DF2(jtcut2bx){DF12IP;A*av,b,t,x,*xv,y,*yv;B*bv;I an,bn,i,j,m,p,q,*u,*v,*w
 #define CUTSWITCH(EACHC)  \
  switch(id){A z,*za;C id1,*v1,*zc;I d,i,j,ke,q,*zi,*zs;                 \
  case CPOUND:                                                               \
-  GATV0(z,INT,m,1); zi=AV1(z); EACHC(*zi++=d;); R z;                          \
+  GATV0(z,INT,m,1); zi=AV1(z); EACHC(*zi++=d;); RETF (z);                          \
  case CDOLLAR:                                                              \
   GATV0(z,INT,m,1); zi=AV1(z); EACHC(*zi++=d;);                               \
   A zw; RZ(zw=vec(INT,MAX(0,r-1),1+s)); RETF(IRS2(jtover,jt,z,0L,zw,1L,NOEMSGSELF));  \
  case CHEAD:                                                                \
   GA(z,t,m*c,r,s); zc=CAVn(r,z); AS(z)[0]=m;                                     \
   EACHC(ASSERT(d!=0,EVINDEX); MC(zc,v1,k); zc+=k;);                            \
-  R z;                                                                      \
+  RETF (z);                                                                      \
  case CTAIL:                                                                \
   GA(z,t,m*c,r,s); zc=CAVn(r,z); AS(z)[0]=m;                                     \
   EACHC(ASSERT(d!=0,EVINDEX); MC(zc,v1+k*(d-1),k); zc+=k;);                    \
-  R z;                                                                      \
+  RETF (z);                                                                      \
  case CCOMMA:                                                               \
  case CLEFT:                                                                \
  case CRIGHT:                                                               \
@@ -307,16 +307,16 @@ static DF2(jtcut2bx){DF12IP;A*av,b,t,x,*xv,y,*yv;B*bv;I an,bn,i,j,m,p,q,*u,*v,*w
   GA(z,t,d,id==CCOMMA?2:1+r,s-1); zc=CAVn(id==CCOMMA?2:1+r,z); fillv0(t), mvc(d<<bplg(t),zc,jt->fillvlen,jt->fillv);                 \
   zs=AS(z); zs[0]=m; zs[1]=id==CCOMMA?e*c:e; ke=k*e;                        \
   EACHC(MC(zc,v1,d*k);  zc+=ke;);                                           \
-  R z;                                                                      \
+  RETF (z);                                                                      \
  case CBOX:                                                                 \
   GA10(z,m?BOX:B01,m); za=AAV(z);                                         \
   EACHC(GA(y,t,d*c,r,s); AS(y)[0]=d; MC(AVn(r,y),v1,d*k); *za++=incorp(y););             \
-  R z;                                                                      \
+  RETF (z);                                                                      \
  case CAT: case CATCO: case CAMP: case CAMPCO:                              \
   if(CBOX==ID(vf->fgh[0])&&(id1=ID(vf->fgh[1]),((id1&~1)==CBEHEAD))){           \
    GA10(z,m?BOX:B01,m); za=AAV(z);                                        \
    EACHC(d=d?d-1:0; GA(y,t,d*c,r,s); AS(y)[0]=d; MC(AVn(r,y),id1==CBEHEAD?v1+k:v1,d*k); *za++=incorp(y););               \
-   R z;                                                                     \
+   RETF (z);                                                                     \
   }                                                                         \
   /* note: fall through */                                                  \
  default:                                                                   \
@@ -340,14 +340,14 @@ static F1(jtcps){F12IP; MEMCHK1(w); A z;P*wp,*zp;
  SPB(zp,a,SPA(wp,a)); 
  SPB(zp,e,SPA(wp,e));
  SPB(zp,i,SPA(wp,i));
- R z;
+ RETF (z);
 }
 
 static A jtselx(J jt,A x,I r,I i){MEMCHK1(x); A z;I c,k;
  PROD(c,AR(x)-1,AS(x)+1) k=c<<bplg(AT(x));
  GA(z,AT(x),r*c,AR(x),AS(x)); AS(z)[0]=r;
  MC(CAV(z),CAV(x)+i*k,r*k);
- R z;
+ RETF (z);
 }    /* (i+i.r){x */
 
 static A jtsely(J jt,A y,I r,I i,I j){MEMCHK1(y); A z;I c,*s,*v;
@@ -356,7 +356,7 @@ static A jtsely(J jt,A y,I r,I i,I j){MEMCHK1(y); A z;I c,*s,*v;
  v=AV(z);
  ICPY(v,AV(y)+i*c,r*c);
  DQ(r, *v-=j; v+=c;);
- R z;
+ RETF (z);
 }    /* ((i+i.r){y)-"1 ({:$y){.j */
 
 static DF2(jtcut2sx){DF12IP; MEMCHK2(a,w); V* RESTRICT sv=FAV(self); A fs=sv->fgh[0]; AF f1=FAV(fs)->valencefns[0]; PROLOG(0024);A h=0,*hv,y,yy;B b,neg,pfx,*u,*v;C id;I d,e,hn,m,n,p,t,yn,*yu,*yv;P*ap;V*vf;
@@ -554,7 +554,7 @@ static A jtgetnewpd(J jt, UC* pd, A pd0){A new;
  CUTFRETCHAIN(pd0)=new;  // chain the new block to the old
  pd0=new;  // step pd0 to new block
  CUTFRETEND(pd0)=(I)(CUTFRETFRETS(pd0)+(FRETALLOSIZE*SZI)-10);  // return value: endptr of new buffer
- R pd0;  // return address of data in the new block
+ RETF (pd0);  // return address of data in the new block
 }
 
 // copy n atoms of type wt to type zt
@@ -869,7 +869,7 @@ DF2(jtcut2){DF12IP; /*MEMCHK1(a);*/ MEMCHK1(w); PROLOG(0025);A fs,z,zz;I neg,pfx
    // so we allocate one extra word just in case
    GA(zz,zt,m*wcn+1,r,AS(w)); AS(zz)[0]=m; AN(zz)=m*wcn;
 #endif
-   if(!AN(zz))R zz;  // don't run function on empty arg
+   if(!AN(zz))RETF (zz);  // don't run function on empty arg
    I atomsize=bpnoun(zt);
    zc=CAV(zz); zk=wcn*atomsize;
    if(unlikely(isatype(adocv.cv))&&(t=atype(adocv.cv))&&TYPESNE(t,wt)){RZ(w=cvt(t,w)); wv=CAV(w);}
@@ -1019,7 +1019,7 @@ static A jttesos(J jt,A a,A w,I n, I *pv){A p;I*av,c,axisct,k,m,s,*ws;
  }else{GATV0(p,INT,c,1); pv=AV1(p); AS(p)[0]=c;}  // all requested, make an A block for it
  if(n>0)DO(axisct, m=av[i]; s=ws[i]; if(!((I)p|(m = m?(s+m-1)/m:1&&s)))pv[0]=0; if(i<c)pv[i]=m;)  // ;.3, calculate # sections
  else   DO(axisct, m=av[i]; k=av[axisct+i]; s=ws[i]-ABS(k); if(!((I)p|(m = 0>s?0:m?(I )(k||s%m)+s/m:1)))pv[0]=0; if(i<c)pv[i]=m;);
- R p;
+ RETF (p);
 }    /* tesselation result outer shape */
 
 
@@ -1395,18 +1395,18 @@ F2(jtcut){F12IP;A h=0;I flag=0,k;
  case 0: 
   if(FAV(a)->id==CBOX){   // <;.0
    fdeffillall(z,0,CCUT,VERB, jtcut01,jtboxcut0, a,w,h, flag, RMAX,2L,RMAX,FAV(z)->localuse.boxcut0.parm=~0, FAV(z)->localuse.boxcut0.func=jtcut02);
-   R z;
+   RETF (z);
   }
-  fdeffillall(z,0,CCUT,VERB, jtcut01,(FAV(a)->id&~1)==CLEFT?jtrightcut0:jtcut02, a,w,h, flag, RMAX,2L,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.gercut.cutn=k); R z;
+  fdeffillall(z,0,CCUT,VERB, jtcut01,(FAV(a)->id&~1)==CLEFT?jtrightcut0:jtcut02, a,w,h, flag, RMAX,2L,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.gercut.cutn=k); RETF (z);
  case 2: case -2:
 #if 0 && C_AVX2 && PYXES //temp. disabled; broken scaf
   if(FAV(a)->id==CBOX){ //<;._2
-   fdeffillall(z,0,CCUT,VERB,jtboxcutm21,jtcut2, flag&VGERL?h:a,w,0, flag,RMAX,1,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.gercut.cutn=k); R z;
+   fdeffillall(z,0,CCUT,VERB,jtboxcutm21,jtcut2, flag&VGERL?h:a,w,0, flag,RMAX,1,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.gercut.cutn=k); RETF (z);
   }
 #endif
 // fall through to...
- case 1: case -1: fdeffillall(z,0,CCUT,VERB, jtcut1, jtcut2,  flag&VGERL?h:a,w,0, flag, RMAX,1L,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.gercut.cutn=k); R z;
- case 3: case -3: case 259: case -259: fdeffillall(z,0,CCUT,VERB, jttess1,jttess2, a,w,0, flag, RMAX,2L,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.gercut.cutn=k); R z;
+ case 1: case -1: fdeffillall(z,0,CCUT,VERB, jtcut1, jtcut2,  flag&VGERL?h:a,w,0, flag, RMAX,1L,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.gercut.cutn=k); RETF (z);
+ case 3: case -3: case 259: case -259: fdeffillall(z,0,CCUT,VERB, jttess1,jttess2, a,w,0, flag, RMAX,2L,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.gercut.cutn=k); RETF (z);
  default:         ASSERT(0,EVDOMAIN);
  }
 }

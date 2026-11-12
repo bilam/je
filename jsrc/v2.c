@@ -95,7 +95,7 @@ static F1(jtprime1){F12IP;A d,t,y,z;B*b,*u;I c,*dv,e,i,j,k,m,n,p,q,*wv,x,*zv;
   JBREAK0; q=MIN(MM,m-p); sieve(p,q,b,u); c=j+q/3;
   if(x>c)for(i=1-(p&1);i<q;i+=2)j+=b[i];
   else   for(i=1-(p&1);i<q;i+=2)
-   if(b[i]){while(j==x){zv[dv[k++]]=i+p; if(n==k)R z; x=wv[dv[k]];} ++j;}
+   if(b[i]){while(j==x){zv[dv[k++]]=i+p; if(n==k)RETF (z); x=wv[dv[k]];} ++j;}
  }
  while(n>k)zv[dv[k++]]=p; RETF(z);
 }
@@ -160,7 +160,7 @@ static F1(jtprime1d){F12IP;A d,z;D*wv,x,*zv;I*dv,k,n;
   RZ(y=prime1(cvt(INT,from(take(sc(k),d),ravel(w))))); yv=AV(y);
   DO(k, zv[dv[i]]=(D)*yv++;);
  }
- if(k==n)R z;
+ if(k==n)RETF (z);
  DO(n-k, x=wv[dv[i]]; ASSERT(0<=x&&x!=inf,EVDOMAIN););
  ASSERT(0,EVLIMIT);
 }
@@ -563,7 +563,7 @@ static XF1(jtpollard_p_1){A om=jt->xmod;X z=X1;
   c=(X)gc((A)c,old);
  }
  jt->xmod=om; 
- R z;
+ RETF (z);
 }
 
 static XF1(jtpollard_rho){
@@ -574,10 +574,10 @@ static XF1(jtpollard_rho){
   RZ(y1=xrem(w,xplus(X1,xsq(y1))));
   RZ(y2=xrem(w,xplus(X1,xsq(xplus(X1,xsq(y2))))));
   X g;RZ(g=xgcd(w,xrem(w,xminus(y2,y1))));
-  if(!ISX1(g)&&!equ(g,w))R g;
+  if(!ISX1(g)&&!equ(g,w))RETF (g);
   if(!gc3(&y1,&y2,0L,old))R0;
  }
- R X1;
+ RETF (X1);
 }
 
 static B jtranec(J jt,X w,X*zg,X*za,X*zb,X*zx,X*zy){A mm,t;I*tv;X a,aa,b,bb,g,x,y;
@@ -603,7 +603,7 @@ static A jtdb1b2(J jt,I n,X w){A t,z;D c,d,lg,n1=(D)n-1,p,r;I m,s[3],*v,*zv;
  DO(n, c=lg*pow(r,i/n1); p=c*log(c); if(p>=2147483647)break; *v++=(I)jfloor(c); *v++=(I)p;);
  m=(v-zv)>>1; ASSERT(m!=0,EVLIMIT);
  AS(z)[0]=m; AN(z)=2*m;
- R z;
+ RETF (z);
 }
 
 static B jtecd(J jt,X n,X a,X b,X*q,X*z){X m,s,x2,y2,yy,z2;
@@ -699,18 +699,18 @@ static XF1(jtfac_ecm){A tt;I b1,b2,*b1b2,i,m;X a,b,g,q[3];
  for(i=0;i<m;++i){
   b1=b1b2[0]; b2=b1b2[1]; b1b2+=2;
   ranec(w,&g,&a,&b,q,q+1); q[2]=X1;
-  if(!ISX1(g)&&xcompare(g,w))R g;
+  if(!ISX1(g)&&xcompare(g,w))RETF (g);
   RZ(ecm_s1(w,a,b,b1,q,q));
   RZ(g=xgcd(w,q[2]));
-  if(!ISX1(g)&&xcompare(g,w))R g;
+  if(!ISX1(g)&&xcompare(g,w))RETF (g);
   if(ISX1(g)){
    RZ(ecm_s2(w,a,b,b1,b2,q,q));
    RZ(g=xgcd(w,q[2]));
-   if(!ISX1(g)&&xcompare(g,w))R g;
+   if(!ISX1(g)&&xcompare(g,w))RETF (g);
   }
   tpop(old);
  }
- R X1;
+ RETF (X1);
 }
 
 // q: on extended numbers

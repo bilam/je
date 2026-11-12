@@ -65,7 +65,7 @@ static F2(jtpdtspmv){F12IP;A ax,b,g,x,wx,y,yi,yj,z;B*bv;I m,n,s[2],*u,*v,*yv;P*a
  SPB(zp,e,scf(0.0));
  SPB(zp,i,from(g,y));
  SPB(zp,x,from(g,x));
- R z;
+ RETF (z);
 }    /* (sparse matrix) +/ .* vector; non-complex */
 
 static F2(jtpdtspvm){F12IP;A ax,b,g,x,wx,y,yi,yj,z;B*bv;D*av,c,d,*wv,*xv;I m,n,s[2],*u,*v,*yv;P*ap,*wp,*zp;
@@ -94,7 +94,7 @@ static F2(jtpdtspvm){F12IP;A ax,b,g,x,wx,y,yi,yj,z;B*bv;D*av,c,d,*wv,*xv;I m,n,s
  SPB(zp,e,scf(0.0));
  SPB(zp,i,from(g,y));
  SPB(zp,x,from(g,x));
- R z;
+ RETF (z);
 }    /* vector +/ .* (sparse matrix); non-complex */
 
 /* p  - ptr to sparse array value part   */
@@ -165,7 +165,7 @@ static F2(jtpdtspmm){F12IP;A z,zi,zj,zx,zy,*old;D*axv,c,d,*dv,*wxv,*zyv;
  AS(zx)[0]=AN(zx)=AS(zi)[0]=n; AN(zi)=n<<1;
  GASPARSE(z,FL,1,2,AS(a)); AS(z)[1]=AS(w)[1];
  zp=PAV(z); SPB(zp,a,apvwr(2,0L,1L)); SPB(zp,e,scf(0.0)); SPB(zp,i,zi); SPB(zp,x,zx);
- R z;
+ RETF (z);
 }
 
 

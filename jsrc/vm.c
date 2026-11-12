@@ -549,7 +549,7 @@ F2(jtlogar2){F12IP;A z;I t;
  RE(t=maxtype(AT(a),AT(w)));
  if(!(t&XNUM)||jt->xmode==XMEXACT){jt->xmode=XMEXACT; R jtatomic2(JTIPAW,logar1(w),logar1(a),ds(CDIV));}  // better to multiply by recip, but not much, & it makes 0 ^. 0 not fail
  z=rank2ex0(cvt(XNUM,a),cvt(XNUM,w),DUMMYSELF,jtxlog2a); 
- if(z)R z;
+ if(z)RETF (z);
  if(jt->jerr==EWIMAG||jt->jerr==EWIRR){RESETERR; jt->xmode=XMEXACT; R divideAW(logar1(w),logar1(a));}
  R 0;
 }
@@ -565,7 +565,7 @@ F2(jtroot){F12IP;A z;I t;
  case EWIMAG: RESETERR; R expn2(ccvt(CMPX,w,0),recip(ccvt(CMPX,a,0)));
  case EWRAT: 
  case EWIRR:  RESETERR; R expn2(ccvt(FL,  w,0),recip(ccvt(FL,  a,0)));
- default:     R z;
+ default:     RETF (z);
  }
 }
 
@@ -578,7 +578,7 @@ F2(jtjdot2){F12IP;
   ASSERTAGREE(AS(a),AS(w),MIN(ar,wr))  // verify agreement
   if(!(at&FL))RZ(a=ccvt(FL,a,0)) if(!(wt&FL))RZ(w=ccvt(FL,w,0))  // convert to FL if needed
   RZ(z=IRS2(jtover,jt,a,0,w,0,DUMMYSELF)) makewritable(z) AN(z)>>=1; AR(z)=MAX(AR(a),AR(w)); AT(z)=CMPX;  // z=a ,"0 w, then switch to CMPX
-  R z;
+  RETF (z);
  }
  R plus(a,tymes(a0j1,w));
 }
@@ -593,7 +593,7 @@ DF1(jtrect){DF12IP;A e,z;B b;I r,t;P*wp,*zp;Z c;
  ARGCHK1(w); MEMCHK1(w);
  t=AT(w); r=AR(w);
  ASSERT(!AN(w)||t&NUMERIC,EVDOMAIN);
- if(ISDENSETYPE(t,CMPX)){GATV0(z,FL,2*AN(w),1+r); MCISH(AS(z),AS(w),r) AS(z)[r]=2; MC(AVn(1+r,z),AV(w),AN(z)*sizeof(D)); R z;}
+ if(ISDENSETYPE(t,CMPX)){GATV0(z,FL,2*AN(w),1+r); MCISH(AS(z),AS(w),r) AS(z)[r]=2; MC(AVn(1+r,z),AV(w),AN(z)*sizeof(D)); RETF (z);}
  else if(unlikely(ISSPARSE(t))){
   b=1&&t&CMPX;
   GASPARSE(z,b?FL:t,1,1+r,AS(w)); AS(z)[r]=2;
@@ -603,6 +603,6 @@ DF1(jtrect){DF12IP;A e,z;B b;I r,t;P*wp,*zp;Z c;
   SPB(zp,a,ca(SPA(wp,a)));
   SPB(zp,i,ca(SPA(wp,i)));
   SPB(zp,x,rect(SPA(wp,x)));
-  R z;
+  RETF (z);
  }else R IRS2(jtover,jt,w,0,num(0),0,self);
 }

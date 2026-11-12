@@ -83,7 +83,7 @@ F1(jtwordil){F12IP;A z;I s,i,m,n,*x;UC*v;
  *x=i;
  m=((x-AV(z))+1)>>1; AS(z)[0]=m; AM(z)=m-(SHMSK(BIT(SNZ)|BIT(SZ),s>>4,1)); AN(z)=m<<1; // Calculate & install count; if last field is NB., subtract 1 from word count
  if(unlikely((s>>4)==SQ))AM(z)=-1;  // error if open quote, indicated by neg AM
- R z;
+ RETF (z);
 }    // word index & end+1; z is m 2 1$(i0,e0),(i1,e1),... AM(z) is # words not including any final NB, or -1 if quote error
 
 // Turn word list back into string
@@ -118,7 +118,7 @@ static A jtconstr(J jt,I n,C*s){A z;C b,c,p,*t,*x;I m=0;
  if(1==m){if(s[0]==' ')R chrspace; if(s[0]==':')R chrcolon;}  // if we have a block for a single character, use it
  GATV0(z,LIT,m,1!=m); x=CAVn(1!=m,z);
  p=0; t=s; DQ(n-2, *x=c=*++t; b=c==CQUOTE; x+=(b^1)|p; p=((b^1)|p)^1;);  // This may overstore by 1 character but that's OK because LIT types have allocated space at the end
- R z;
+ RETF (z);
 }
 
 #define TNAME(i)    (NAME&AT(QCWORD(v[i])))
@@ -225,12 +225,12 @@ A jtenqueue(J jt,A a,A w,I env){A*v,*x,y,z;B b;C d,e,p,*s,*wi;I i,n,*u,wl;UC c;
     yv[m]=QCWORD(v[2]); RZ(yv[m+1]=incorp(sc(c))); yv[m+2]=incorp(z);    // add the 3 ending elements
     x[0]=v[0]; x[1]=v[1]; x[2]=QCINSTALLTYPE(ds(CCASEV),QCVERB); x[3]=QCINSTALLTYPE(incorp(y),QCNOUN);  // build the sentence
     MEMCHK1(QCWORD(z1));
-    RETF(z1);  // that's what we'll execute
+    RETFA(z1);  // that's what we'll execute
    }
   }
  }
  MEMCHK1(QCWORD(z));
- RETF(z);
+ RETFA(z);
 }    /* produce boxed list of words suitable for parsing */
                                                             
 /* locals in enqueue:                                           */
@@ -330,7 +330,7 @@ static A jtfsmdo(J jt,I f,A s,A m,I*ijrd,A w,A w0){A x,z;C*cc,*wv0;
  case 12+4: {UC*wv=UAV(w); FSMF(I *u=(I*)AV(z); I*uu=u+AN(z);,I,1,INT,2, 3,mv[wv[i]],EMIT4, ZVAx);} break;
  case 12+5: {UC*wv=UAV(w); FSMF(I *u=(I*)AV(z); I*uu=u+AN(z);,I,1,INT,2, 6,mv[wv[i]],EMIT5, ZVA5);} break;
  }
- R z;
+ RETF (z);
 }
 
 F1(jtfsmvfya){F12IP; MEMCHK1(w); PROLOG(0099);A a,*av,m,s,x,z,*zv;I an,c,e,f,ijrd[4],k,p,q,*sv,*v;

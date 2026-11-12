@@ -324,7 +324,7 @@ F1(jtparse){F12IP;A z;I stackallo=0;
  z=jtparsea(jtfg,queue,m);
  jt->sitop->dcm=oexct; if(unlikely(stackallo))debz();   // remove the exec count, pop stack if pushed
  // It is vital that we NOT issue EPILOG here, in case there are deleted values on the stack that need protection
- R z;
+ RETFA (z);
 }
 
 
@@ -340,7 +340,7 @@ A virtifnonip(J jt, I ipok, A buf) {
   I* RESTRICT s=AS(buf); I* RESTRICT os=AS(oldbuf); DO(AR(oldbuf), s[i]=os[i];);  // shape of virtual matches shape of w except for #items
     AN(buf)=AN(oldbuf);  // install # atoms
  }
- R buf;
+ RETF (buf);
 }
 
 // We intercept all the function calls, for this file only
@@ -1242,7 +1242,7 @@ rdglob1:;
    }  // any single-word sentence from enqueue must be a name or a CAVN
   }else y=mark;  // empty input - return with 'mark' as the value, which means nothing to parse.  This result must not be passed into a sentence
 gotlocalval1:;  // local fetches can skip the tpush.  Value in y
-  R y;  // indicate not a final assignment - and may be 0
+  RETF (y);  // indicate not a final assignment - and may be 0
  }
 
 }

@@ -138,22 +138,22 @@ cycfound:;  // cycle found, running from cyci to cycn; now back it down to find 
    // self-recursion check finished.  Now replace the name with its value
    A x; ASSERTN(QCWORD(x=syrd(f,jt->locsyms))!=0,EVVALUE,f);  // read name, returning QCFAOWED semantics.  Error if not defined
    I isglobal; if(isglobal=ISFAOWED(x))tpush(QCWORD(x)); x=QCWORD(x);  // remember if name was public (it can't be sparse, since it is not a noun).  If fa owed, use the tstack for it; remove QC flags
-   if(unlikely(FUNC&AT(x)&&(jt->glock||FAV(x)->flag&VLOCK)))R w;  // if value is locked, don't replace it - leave the original name
+   if(unlikely(FUNC&AT(x)&&(jt->glock||FAV(x)->flag&VLOCK)))RETF (w);  // if value is locked, don't replace it - leave the original name
    // since the name is supposed to be executable, we have to guard against a type pun on the name
    ASSERT(PARTOFSPEECHEQACV(AT(w),AT(x)),EVTYPECHG);   // make sure its part of speech has not changed since the name was parsed
-   if(unlikely(AFLAG(x)&AFRO))R w;  // If name has readonly value (like cocurrent), leave it as a reference
+   if(unlikely(AFLAG(x)&AFRO))RETF (w);  // If name has readonly value (like cocurrent), leave it as a reference
    // See if we should replace the name with its value, based on operation type; and see if we should stop
-   if(unlikely(aif&FIXAFIRSTIMPLOCONLY)&&NAV(f)->flag&NMIMPLOC)R x;  // In the special mode where we are looking for 1 locative, stop after we have found it
+   if(unlikely(aif&FIXAFIRSTIMPLOCONLY)&&NAV(f)->flag&NMIMPLOC)RETF (x);  // In the special mode where we are looking for 1 locative, stop after we have found it
    if(!isglobal){
      // private name (including u./v.) is always replaced
    }else if((NAV(f)->flag&NMLOC+NMILOC+NMIMPLOC)==0){  // name was global but not locative
-    if(!(aif&FIXAFCOPUBLIC))R w;  // if private name and we are not replacing private names, leave unreplaced
+    if(!(aif&FIXAFCOPUBLIC))RETF (w);  // if private name and we are not replacing private names, leave unreplaced
    }else{   // some kind of locative
     if(NAV(f)->flag&NMILOC){  // name was indirect locative
      if(!(aif&FIXAFCOLOCATIVE)){C wkarea[258];  // if not fixing locatives...
       // we have name__ind, but we are not replacing locatives.  Turn the locative into a direct locative, replacing ind with its value (if it is replaceable)
       if(!(aif&FIXAFCOPUBLIC)){   // if we are not replacing public names, we must check the status of ind
-       C *ind=&NAV(f)->s[NAV(f)->n]; while(ind[-1]!='_')--ind; if(!jtprobelocal(SYMORIGIN,nfs(&NAV(f)->s[NAV(f)->n]-ind,ind,0),jt->locsyms))R w;  // convert ind to name; if not private, leave the locative unchanged
+       C *ind=&NAV(f)->s[NAV(f)->n]; while(ind[-1]!='_')--ind; if(!jtprobelocal(SYMORIGIN,nfs(&NAV(f)->s[NAV(f)->n]-ind,ind,0),jt->locsyms))RETF (w);  // convert ind to name; if not private, leave the locative unchanged
       }
       // ind is a replaceable name.  Turn the reference into name_valofind_.  There may be many inds
       A baseloc; RZ(baseloc=jtsybaseloc(jt,f))   // resolve the indirects to the defining locale
@@ -161,9 +161,9 @@ cycfound:;  // cycle found, running from cyci to cycn; now back it down to find 
       R namerefacv(nfs(stglen,wkarea,0),x);  // a reference to that name becomes the result
      }
     }
-    if(!(aif&FIXAFCOLOCATIVE))R w;  // if name is locative and we are not replacing locatives, leave unreplaced
+    if(!(aif&FIXAFCOLOCATIVE))RETF (w);  // if name is locative and we are not replacing locatives, leave unreplaced
    }
-   if(!(aif&FIXAFCORECUR))R x;  // if we are replacing only the top name, stop after we have its value
+   if(!(aif&FIXAFCORECUR))RETF (x);  // if we are replacing only the top name, stop after we have its value
    // here we decided to keep looking for names, in the new value x
    // if this is an implicit locative, we have to switch the environment before we recur on the name for subsequent lookups.
    A savloc=jt->locsyms, savglob=jt->global;  // push the current locales, whether we change them or not
@@ -183,12 +183,12 @@ cycfound:;  // cycle found, running from cyci to cycn; now back it down to find 
    }else if(z!=0){  // cycle found
     if(initn>=(I)z)R z;     // we found a cycle, which started at z-1.  If this call is the start of the cycle, have it return w to close the cycle.  Keep the cycle up until that happens
     z=w;
-   }else R z;  // error, abort
-   R z;  // good return
+   }else RETF (z);  // error, abort
+   RETF (z);  // good return
   }else{f=REFIXA(2,f); R255(f)  R df1(z,f,wf);}
 // bug ^: and m} should process gerund args
  case COBVERSE:
-  if(aif&FIXASTOPATINV)R w;  // stop at obverse if told to
+  if(aif&FIXASTOPATINV)RETF (w);  // stop at obverse if told to
   // otherwise fall through to normal processing
  default:
   ASSERTSYS(((I)f|(I)g),"f and g both 0, but VNONAME not set")     // should not occur.  f and g are both off only in primitives, where VNONAME+VNOSELF should be set (except u./v.)

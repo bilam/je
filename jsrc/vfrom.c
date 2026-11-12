@@ -49,7 +49,7 @@ static INLINE A jtget1cell(J jtfg,A w,I wcr,I j,I wt,I wr){F12IP; MEMCHK1(w);  A
   AN(z)=m; MCISH(AS(z),ws+wr-wcr,wcr)
   // When we create a virtual block we do not actually copy anything out of w, so it remains pristine.  The virtual block is not.
  }
- R z;
+ RETF (z);
 }
 
 // block used to hold axis info, leading axis first
@@ -272,7 +272,7 @@ novirtual:;  // abort to here if virtual not allowed because indexes are not con
   for(j=hasr;j<=r;++j){  // for each axis coming from a
    if(axes[j].sels!=0){I al=axes[j].lenaxis; DO(axes[j].nsel, I sel=axes[j].sels[i]; sel+=REPSGN(sel)&al; ASSERT((UI)sel<(UI)al,EVINDEX)) }
   }
-  R z;
+  RETF (z);
  }
 
  axes+=nunitsels; r-=nunitsels;  // Now that initial selectors are rolled into base, we can delete the consecutive leading single-selector axes.  When they start to roll over we can quit
@@ -435,7 +435,7 @@ A jtfrombu(J jtfg,A a,A w,I wf){F12IP;
   I *ad=IAV(a); DO(nia, DO(naxa, ASSERT((*ad^REPSGN(*ad))<ws[i],EVINDEX); ++ad;) ) 
   // allocate empty result, move in shape: frame of w, frame of a, shape of item
   GA00(z,AT(w),0,wf+(wcr-naxa)+af); MCISH(AS(z),AS(w),wf) MCISH(AS(z)+wf,AS(a),af)  MCISH(AS(z)+wf+af,AS(w)+wf+naxa,wcr-naxa)
-  R z;
+  RETF (z);
  }
  // fast case: a is an atom or a list (now not empty).  Select the single cell, which may be virtual or pristine
  if(af+wf==0){I jj=0, *av=IAV(a); DONOUNROLL(naxa, I j; SETNDX(j,av[i],ws[i]) jj*=ws[i]; jj+=j;) R jtget1cell(jtfg,w,wr-naxa,jj,AT(w),wr);}
@@ -715,7 +715,7 @@ DF2(jtfetch){DF12IP; MEMCHK2(a,w); A*av, z;I n;
   RETF(z); 
  }
  n=AN(a); av=AAV(a); 
- if(!n)R w; z=w;
+ if(!n)RETF (w); z=w;
  DO(n, A next=C(av[i]); if(PEXT0(AT(z),BOXX,1)>=(2*(AR(next)+(AT(next)&BOX))+AR(z))){RZ(z=jtquicksel(jt,next,z))}  // next is unboxed atom, z is boxed atom or list, use fast indexing  AR(next)==0 && !(AT(next)&BOX) && (AR(z)==0 || (AR(z)==1 && AT(z)&BOX))
       else{RZ(z=afrom(box(next),z)); ASSERT(((i+1-n)&-AR(z))>=0,EVRANK); if(((AR(z)-1)&SGNIF(AT(z),BOXX))<0)RZ(z=ope(z));}  // Rank must be 0 unless last; open if boxed atom
    );

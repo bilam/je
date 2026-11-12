@@ -79,7 +79,7 @@
    case IIFBEPS: { I *zi=zv; XDOP##ALG(T,TH,hash,exp,stride,{*zi++=i;},{},0,ALG); ZISHAPE; }   break; /* I.@:e. */  \
    } \
   }                                                                                 \
-  R h;                                                                               \
+  RETF (h);                                                                               \
  }
 
 // jtioa* BOX

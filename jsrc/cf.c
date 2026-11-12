@@ -197,7 +197,7 @@ A jtfolk(J jtfg,A f,A g,A h){F12IP; MEMCHK3(f,g,h); A p,q,x,y;AF f1=0,f2=0;B b;C
 
  fdeffillall(z,flag2,CFORK,VERB, f1,f2, f,g,h, flag, RMAX,RMAX,RMAX,fffv->localuse.lu0.cct=cct,if(hcol<0)FAV(z)->localuse.lu1.cct=cct;else FAV(z)->localuse.lu1.fork2hfn=hcol<=2?hv->valencefns[1]:FAV(hv->fgh[0])->valencefns[0]);
     // set localuse: for intersect or comparison combination, cct; for echt fork, the h routine to call
- R z;
+ RETF (z);
 }
 
 // Handlers for trains
@@ -361,7 +361,7 @@ A jthook(J jt,A a,A w,A h){AF f1=0,f2=0;C c,d,id;I flag=VFLAGNONE,linktype=0;V*u
 
    // Return the derived verb
    fdeffillall(z,flag2,CHOOK, VERB, f1,f2, a,w,0L, flag, RMAX,RMAX,RMAX,fffv->localuse.lu0.cachedloc=0,FAV(z)->localuse.lu1.linkvb=linktype)
-   R z;
+   RETF (z);
   // All other cases produce a modifier unless they are immediately executable (V N or N/V A)
   }else{
   // we might enter here with an executable: V N or N/V A, as a result of executing an invisible modifier.  V V was handled above
@@ -383,7 +383,7 @@ A jthook(J jt,A a,A w,A h){AF f1=0,f2=0;C c,d,id;I flag=VFLAGNONE,linktype=0;V*u
 
   I flag2=VF2NAMELESS, ffix=VNOLOCCHG+VNONAME+VNOSELF; A ta=a; ta=AT(a)&NOUN?ds(CPLUS):ta; flag2&=(FAV(ta)->flag2<<(VF2NAMELESSX-VF2PRIMX)); ffix&=FAV(ta)->flag;  // CPLUS to make nouns look primitive
                          ta=w; ta=AT(w)&NOUN?ds(CPLUS):ta; flag2&=(FAV(ta)->flag2<<(VF2NAMELESSX-VF2PRIMX)); ffix&=FAV(ta)->flag;
-  fdeffill(z,flag2,CADVF, t, rtn,rtn, a,w,0, flag+ffix, 0L,0L,0L) R z;  // only one of the rtns is ever used.  h=0 to indicate bident
+  fdeffill(z,flag2,CADVF, t, rtn,rtn, a,w,0, flag+ffix, 0L,0L,0L) RETF (z);  // only one of the rtns is ever used.  h=0 to indicate bident
 
   }
  }else{
@@ -406,6 +406,6 @@ A jthook(J jt,A a,A w,A h){AF f1=0,f2=0;C c,d,id;I flag=VFLAGNONE,linktype=0;V*u
   I flag2=VF2NAMELESS; A ta=a; ta=AT(a)&NOUN?ds(CPLUS):ta; flag2&=(FAV(ta)->flag2<<(VF2NAMELESSX-VF2PRIMX)); flag&=FAV(ta)->flag;  // CPLUS to make nouns look primitive
                          ta=w; ta=AT(w)&NOUN?ds(CPLUS):ta; flag2&=(FAV(ta)->flag2<<(VF2NAMELESSX-VF2PRIMX)); flag&=FAV(ta)->flag;
                          ta=h; ta=AT(h)&NOUN?ds(CPLUS):ta; flag2&=(FAV(ta)->flag2<<(VF2NAMELESSX-VF2PRIMX)); flag&=FAV(ta)->flag;
-  fdeffill(z,flag2,CADVF, t, rtn,rtn, a,w,h, flag, 0L,0L,0L) R z;  // only one of the rtns is ever used
+  fdeffill(z,flag2,CADVF, t, rtn,rtn, a,w,h, flag, 0L,0L,0L) RETF (z);  // only one of the rtns is ever used
  }
 }

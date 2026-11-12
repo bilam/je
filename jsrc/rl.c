@@ -40,7 +40,7 @@ static I jtlp(J jtfg,A w){F12JT; MEMCHK1(w); B b=1,p=0;C c,d,q=CQUOTE,*v;I j=0,n
 static A jtlcpa(J jtfg,B b,A w){F12JT;A z=w;C*zv;I n;
  ARGCHK1(w); MEMCHK1(w);
  if(b){n=AN(w); GATV0(z,LIT,2+n,1); zv=CAV1(z); *zv='('; MC(1+zv,AV(w),n); zv[1+n]=')';}
- R z;
+ RETF (z);
 }    /* if b then (w) otherwise just w */
 
 // add (), when user asks for full ()
@@ -55,7 +55,7 @@ static A jtlcpb(J jtfg,B b,A w){F12JT;A z=w;B p;C c,*v,*wv,*zv;I n;
   if(b&&vnm(n,wv))b=0;
  }
  if(b){GATV0(z,LIT,2+n,1); zv=CAV1(z); *zv='('; MC(1+zv,wv,n); zv[1+n]=')';}
- R z;
+ RETF (z);
 }
 
 static A jtlcpx(J jtfg,A w){F12JT;ARGCHK1(w); MEMCHK1(w); R parfn(jtfg,lp(w)>0,w);}
@@ -164,7 +164,7 @@ A jtdecorate(J jtfg,A w,I t){F12JT; MEMCHK1(w);
   // float: make sure there is a . somewhere, or infinity/indefinite ('_' followed by space/end/.), else put '.' at end, floated back over exponent if any
   B needdot = !memchr(CAV(w),'.',AN(w));  // check for decimal point
   if(needdot){DO(AN(w), if(CAV(w)[i]=='_' && (i==AN(w)-1 || CAV(w)[i+1]==' ')){needdot=0; break;} )}  // check for infinity
-  if(needdot){w=over(w,scc('.')); RZ(w=mkwris(w)); DQ(AN(w) , if(CAV(w)[i]==' ')R w;  if(CAV(w)[i]=='e'){C f='.'; C *s=&CAV(w)[i]; DO(AN(w)-i, C ff=s[i]; s[i]=f; f=ff;)}) }
+  if(needdot){w=over(w,scc('.')); RZ(w=mkwris(w)); DQ(AN(w) , if(CAV(w)[i]==' ')RETF (w);  if(CAV(w)[i]=='e'){C f='.'; C *s=&CAV(w)[i]; DO(AN(w)-i, C ff=s[i]; s[i]=f; f=ff;)}) }
  }else if(t&INT+INT2+INT4){
  // integer: if the string contains nothing but one-digit 0/1 values, insert '0' before last number
   I l=AN(w); C *s=CAV(w); NOUNROLL do{if((*s&-2)!='0')break; ++s; if(--l==0)break; if(*s!=' ')break; ++s;}while(--l);
@@ -174,7 +174,7 @@ A jtdecorate(J jtfg,A w,I t){F12JT; MEMCHK1(w);
   char *rep="x"; rep=t&RAT?"r1":rep; rep=t&CMPX?"j0":rep; rep=t&QP?"fq":rep; rep=t&SP?"fs":rep;
   if(!memchr(CAV(w),srch,AN(w)))w=over(w,cstr(rep));
  }
- R w;
+ RETF (w);
 }
 
 
@@ -222,7 +222,7 @@ static F1X(jtlsparse){F12JT;A a,e,q,t,x,y,z;B ba,be,bn;I j,r,*v;P*p;
   RZ(z=   over(lcpx(lnoun(shape(w))),over(scc(';'),z))         );
  }else RZ(z=lnoun(shape(w))); 
  RZ(z=over(cstr("1$."),z));
- if(bn||!AS(y)[0])R z;
+ if(bn||!AS(y)[0])RETF (z);
  if(AN(a)){
   RZ(x=lcpx(lnoun(x)));
   RZ(y=1==r?lnoun(ravel(y)):over(cstr("(<)"),lnoun(y)));
@@ -261,7 +261,7 @@ static F1X(jtlnoun0){F12JT;A s,x;B r1;
 static F1X(jtlnoun){F12JT;I t;
  ARGCHK1(w); MEMCHK1(w);
  t=AT(w);
- if(unlikely(t&FUNC+SYMB))R aqq;  // empty string for nondisplayable contents
+ if(unlikely(t&FUNC+SYMB))RETF (aqq);  // empty string for nondisplayable contents
  if(unlikely(ISSPARSE(t)))R lsparse(w);
  if(!AN(w))R lnoun0(w);
  switch(CTTZ(t)){
@@ -319,7 +319,7 @@ static F2X(jtlinsert){F12JT; MEMCHK2(a,w); A*av,f,g,h,t,t0,t1,t2,*u,y;B b,ft,gt,
   t0=parfn(jtfg,ft||NOUN&AT(fs)&&!(VGERL&v->flag)&&(lp(f)>0),f);
   t1=lsymb(id,w);
   y=over(t0,laa(t0,t1)?over(chrspace,t1):t1);
-  if(1==n)R y;
+  if(1==n)RETF (y);
   t2=lcpx(g);
   R over(y,laa(y,t2)?over(chrspace,t2):t2);
  }
@@ -373,7 +373,7 @@ static DF1X(jtlrr){F12JT;A hs,t,*tv;C id;I fl,m;V*v;
  if(fl&VXOPCALL)R lrr(hs);   // pseudo-named entity created during debug of operator.  The defn is in h
  m=(I)!!fs+(I)(gs&&id!=CBOX)+(I)(BETWEENC(id,CFORK,CADVF)&&hs)+(I)(hs&&id==CCOLONE&&VXOP&fl);  // BOX has g for BOXATOP; ignore it; get # nonzero values in f g h
  if(!m)R lsymb(id,w);  // if none, it's a primitive, out it
- if(evoke(w)){RZ(w=sfne(w)); if(FUNC&AT(w))w=lrr(w); R w;}  // keep named verb as a string, UNLESS it is NMMNUVXY, in which case use the (f.'d) verb value
+ if(evoke(w)){RZ(w=sfne(w)); if(FUNC&AT(w))w=lrr(w); RETF (w);}  // keep named verb as a string, UNLESS it is NMMNUVXY, in which case use the (f.'d) verb value
  if(!(VXOP&fl)&&hs&&BOX&AT(hs)&&id==CCOLONE)R jtlcolon(jtfg,w,ltext);  // x : with boxed h - must be explicit defn, for which we might suppress a valence
  // display of a single valence applies only to an explicit definition.  It wouldn't be a bad idea for others, but that would require inspecting the op to see
  // which valences are active on each side.  For the nonce we display everything

@@ -105,83 +105,83 @@ FILLREG(aiv) FILLREG(wiv) FILLREG(adv) FILLREG(wdv)  // instruct compiler to get
  // Huge switch statement to handle every case.  Lump all the booleans together at 0.  In the testcases this is a pipeline break 80% of the time
 takestats(stats[0xd]+=caseno==statsoldcaseno; statsoldcaseno=caseno;)  // predictable fns
  switch(caseno){
- case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv+(B)wiv,z,INT,I) R z;  // NV because B01 is never virtual inplace
- case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGBD): SSSTORENV((B)aiv+wdv,z,FL,D) R z;
- case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGDB): SSSTORENV(adv+(B)wiv,z,FL,D) R z;
- case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGID): SSSTORE(aiv+wdv,z,FL,D) R z;
- case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGDI): SSSTORE(adv+wiv,z,FL,D) R z;
+ case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv+(B)wiv,z,INT,I) RETF (z);  // NV because B01 is never virtual inplace
+ case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGBD): SSSTORENV((B)aiv+wdv,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGDB): SSSTORENV(adv+(B)wiv,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGID): SSSTORE(aiv+wdv,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGDI): SSSTORE(adv+wiv,z,FL,D) RETF (z);
  case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGBI): 
-  {if(unlikely(__builtin_add_overflow((B)aiv,wiv,&ziv)))SSSTORE((D)(B)aiv+(D)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) R z;}
+  {if(unlikely(__builtin_add_overflow((B)aiv,wiv,&ziv)))SSSTORE((D)(B)aiv+(D)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) RETF (z);}
  case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGIB):
-  {if(unlikely(__builtin_add_overflow(aiv,(B)wiv,&ziv)))SSSTORE((D)aiv+(D)(B)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) R z;}
+  {if(unlikely(__builtin_add_overflow(aiv,(B)wiv,&ziv)))SSSTORE((D)aiv+(D)(B)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) RETF (z);}
  case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGII):
-  {if(unlikely(__builtin_add_overflow(aiv,wiv,&ziv)))SSSTORE((D)aiv+(D)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) R z;}
+  {if(unlikely(__builtin_add_overflow(aiv,wiv,&ziv)))SSSTORE((D)aiv+(D)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) RETF (z);}
  case SSINGCASE(VA2CPLUS-VA2CBW1111,SSINGDD):
-  {EXECNAN(adv+wdv); SSSTORENVFL(zdv,z,FL,D) R z;}
+  {EXECNAN(adv+wdv); SSSTORENVFL(zdv,z,FL,D) RETF (z);}
 
- case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv-(B)wiv,z,INT,I) R z;
- case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGBD): SSSTORENV((B)aiv-wdv,z,FL,D) R z;
- case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGDB): SSSTORENV(adv-(B)wiv,z,FL,D) R z;
- case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGID): SSSTORE(aiv-wdv,z,FL,D) R z;
- case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGDI): SSSTORE(adv-wiv,z,FL,D) R z;
+ case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv-(B)wiv,z,INT,I) RETF (z);
+ case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGBD): SSSTORENV((B)aiv-wdv,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGDB): SSSTORENV(adv-(B)wiv,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGID): SSSTORE(aiv-wdv,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGDI): SSSTORE(adv-wiv,z,FL,D) RETF (z);
  case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGBI): 
-  {if(unlikely(__builtin_sub_overflow((B)aiv,wiv,&ziv)))SSSTORE((D)(B)aiv-(D)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) R z;}
+  {if(unlikely(__builtin_sub_overflow((B)aiv,wiv,&ziv)))SSSTORE((D)(B)aiv-(D)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) RETF (z);}
  case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGIB):
-  {if(unlikely(__builtin_sub_overflow(aiv,(B)wiv,&ziv)))SSSTORE((D)aiv-(D)(B)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) R z;}
+  {if(unlikely(__builtin_sub_overflow(aiv,(B)wiv,&ziv)))SSSTORE((D)aiv-(D)(B)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) RETF (z);}
  case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGII):
-  {if(unlikely(__builtin_sub_overflow(aiv,wiv,&ziv)))SSSTORE((D)aiv-(D)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) R z;}
+  {if(unlikely(__builtin_sub_overflow(aiv,wiv,&ziv)))SSSTORE((D)aiv-(D)wiv,z,FL,D) else SSSTORENV(ziv,z,INT,I) RETF (z);}
  case SSINGCASE(VA2CMINUS-VA2CBW1111,SSINGDD):
-  {EXECNAN(adv-wdv); SSSTORENVFL(zdv,z,FL,D) R z;}
+  {EXECNAN(adv-wdv); SSSTORENVFL(zdv,z,FL,D) RETF (z);}
 
- case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv&(B)wiv,z,B01,B) R z;
- case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGBD): SSSTORENV(MIN((B)aiv,wdv),z,FL,D) R z;
- case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGDB): SSSTORENV(MIN(adv,(B)wiv),z,FL,D) R z;
- case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGID): SSSTORE(MIN(aiv,wdv),z,FL,D) R z;
- case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGDI): SSSTORE(MIN(adv,wiv),z,FL,D) R z;
- case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGBI): SSSTORENV(MIN((B)aiv,wiv),z,INT,I) R z;
- case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGIB): SSSTORENV(MIN(aiv,(B)wiv),z,INT,I) R z;
- case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGII): SSSTORENV(MIN(aiv,wiv),z,INT,I) R z;
- case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGDD): SSSTORENVFL(MIN(adv,wdv),z,FL,D) R z;
-
-
- case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv|(B)wiv,z,B01,B) R z;
- case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGBD): SSSTORENV(MAX((B)aiv,wdv),z,FL,D) R z;
- case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGDB): SSSTORENV(MAX(adv,(B)wiv),z,FL,D) R z;
- case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGID): SSSTORE(MAX(aiv,wdv),z,FL,D) R z;
- case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGDI): SSSTORE(MAX(adv,wiv),z,FL,D) R z;
- case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGBI): SSSTORENV(MAX((B)aiv,wiv),z,INT,I) R z;
- case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGIB): SSSTORENV(MAX(aiv,(B)wiv),z,INT,I) R z;
- case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGII): SSSTORENV(MAX(aiv,wiv),z,INT,I) R z;
- case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGDD): SSSTORENVFL(MAX(adv,wdv),z,FL,D) R z;
+ case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv&(B)wiv,z,B01,B) RETF (z);
+ case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGBD): SSSTORENV(MIN((B)aiv,wdv),z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGDB): SSSTORENV(MIN(adv,(B)wiv),z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGID): SSSTORE(MIN(aiv,wdv),z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGDI): SSSTORE(MIN(adv,wiv),z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGBI): SSSTORENV(MIN((B)aiv,wiv),z,INT,I) RETF (z);
+ case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGIB): SSSTORENV(MIN(aiv,(B)wiv),z,INT,I) RETF (z);
+ case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGII): SSSTORENV(MIN(aiv,wiv),z,INT,I) RETF (z);
+ case SSINGCASE(VA2CMIN-VA2CBW1111,SSINGDD): SSSTORENVFL(MIN(adv,wdv),z,FL,D) RETF (z);
 
 
- case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv&(B)wiv,z,B01,B) R z;
- case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGBD): SSSTORENV((B)aiv?wdv:0.0,z,FL,D) R z;
- case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGDB): SSSTORENV((B)wiv?adv:0.0,z,FL,D) R z;
- case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGID): SSSTORE(aiv?aiv*wdv:0.0,z,FL,D) R z;
- case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGDI): SSSTORE(wiv?wiv*adv:0.0,z,FL,D) R z;
- case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGBI): SSSTORENV((B)aiv?wiv:0,z,INT,I) R z;
- case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGIB): SSSTORENV((B)wiv?aiv:0,z,INT,I) R z;
+ case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv|(B)wiv,z,B01,B) RETF (z);
+ case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGBD): SSSTORENV(MAX((B)aiv,wdv),z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGDB): SSSTORENV(MAX(adv,(B)wiv),z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGID): SSSTORE(MAX(aiv,wdv),z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGDI): SSSTORE(MAX(adv,wiv),z,FL,D) RETF (z);
+ case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGBI): SSSTORENV(MAX((B)aiv,wiv),z,INT,I) RETF (z);
+ case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGIB): SSSTORENV(MAX(aiv,(B)wiv),z,INT,I) RETF (z);
+ case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGII): SSSTORENV(MAX(aiv,wiv),z,INT,I) RETF (z);
+ case SSINGCASE(VA2CMAX-VA2CBW1111,SSINGDD): SSSTORENVFL(MAX(adv,wdv),z,FL,D) RETF (z);
+
+
+ case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv&(B)wiv,z,B01,B) RETF (z);
+ case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGBD): SSSTORENV((B)aiv?wdv:0.0,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGDB): SSSTORENV((B)wiv?adv:0.0,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGID): SSSTORE(aiv?aiv*wdv:0.0,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGDI): SSSTORE(wiv?wiv*adv:0.0,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGBI): SSSTORENV((B)aiv?wiv:0,z,INT,I) RETF (z);
+ case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGIB): SSSTORENV((B)wiv?aiv:0,z,INT,I) RETF (z);
  case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGII): {
    DPMULDDECLS DPMULD(aiv,wiv,ziv,SSSTORE((D)aiv*(D)wiv,z,FL,D))  // overflow
    else SSSTORENV(ziv,z,INT,I)  // normal
-   R z;}
+   RETF (z);}
  case SSINGCASE(VA2CSTAR-VA2CBW1111,SSINGDD): {
-   SSSTORENVFL(TYMES(adv,wdv),z,FL,D) R z;}
+   SSSTORENVFL(TYMES(adv,wdv),z,FL,D) RETF (z);}
 
 
- case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGBB): {SSSTORENV((B)wiv?(B)aiv:(B)aiv?inf:0.0,z,FL,D) R z;}
- case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGBD): {SSSTORENV(((B)aiv||wdv)?(B)aiv/wdv:0.0,z,FL,D) R z;}
- case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGDB): {SSSTORENV((adv||(B)wiv)?adv/(B)wiv:0.0,z,FL,D) R z;}
- case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGID): {SSSTORE((aiv||wdv)?aiv/wdv:0.0,z,FL,D) R z;}
- case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGDI): {SSSTORE((adv||wiv)?adv/wiv:0.0,z,FL,D) R z;}
- case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGBI): {SSSTORE(((B)aiv||wiv)?(B)aiv/(D)wiv:0.0,z,FL,D) R z;}
- case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGIB): {SSSTORE((aiv||(B)wiv)?aiv/(D)(B)wiv:0.0,z,FL,D) R z;}
- case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGII): {SSSTORE((aiv||wiv)?aiv/(D)wiv:0.0,z,FL,D) R z;}
- case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGDD): {EXECNAN(DIV(adv,wdv)); SSSTORENVFL(zdv,z,FL,D) R z;}
+ case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGBB): {SSSTORENV((B)wiv?(B)aiv:(B)aiv?inf:0.0,z,FL,D) RETF (z);}
+ case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGBD): {SSSTORENV(((B)aiv||wdv)?(B)aiv/wdv:0.0,z,FL,D) RETF (z);}
+ case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGDB): {SSSTORENV((adv||(B)wiv)?adv/(B)wiv:0.0,z,FL,D) RETF (z);}
+ case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGID): {SSSTORE((aiv||wdv)?aiv/wdv:0.0,z,FL,D) RETF (z);}
+ case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGDI): {SSSTORE((adv||wiv)?adv/wiv:0.0,z,FL,D) RETF (z);}
+ case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGBI): {SSSTORE(((B)aiv||wiv)?(B)aiv/(D)wiv:0.0,z,FL,D) RETF (z);}
+ case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGIB): {SSSTORE((aiv||(B)wiv)?aiv/(D)(B)wiv:0.0,z,FL,D) RETF (z);}
+ case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGII): {SSSTORE((aiv||wiv)?aiv/(D)wiv:0.0,z,FL,D) RETF (z);}
+ case SSINGCASE(VA2CDIV-VA2CBW1111,SSINGDD): {EXECNAN(DIV(adv,wdv)); SSSTORENVFL(zdv,z,FL,D) RETF (z);}
 
 
- case SSINGCASE(VA2CPLUSDOT-VA2CBW1111,SSINGBB): {SSSTORENV((B)aiv|(B)wiv,z,B01,B) R z;}
+ case SSINGCASE(VA2CPLUSDOT-VA2CBW1111,SSINGBB): {SSSTORENV((B)aiv|(B)wiv,z,B01,B) RETF (z);}
  case SSINGCASE(VA2CPLUSDOT-VA2CBW1111,SSINGBD): {adv=(D)(B)aiv; goto gcdflresult;}
  case SSINGCASE(VA2CPLUSDOT-VA2CBW1111,SSINGDB): {wdv=(D)(B)wiv; goto gcdflresult;}
  case SSINGCASE(VA2CPLUSDOT-VA2CBW1111,SSINGID): {adv=(D)aiv; goto gcdflresult;}
@@ -192,7 +192,7 @@ takestats(stats[0xd]+=caseno==statsoldcaseno; statsoldcaseno=caseno;)  // predic
  case SSINGCASE(VA2CPLUSDOT-VA2CBW1111,SSINGDD): {goto gcdflresult;}
 
 
- case SSINGCASE(VA2CSTARDOT-VA2CBW1111,SSINGBB): {SSSTORENV((B)aiv&(B)wiv,z,B01,B) R z;}
+ case SSINGCASE(VA2CSTARDOT-VA2CBW1111,SSINGBB): {SSSTORENV((B)aiv&(B)wiv,z,B01,B) RETF (z);}
  case SSINGCASE(VA2CSTARDOT-VA2CBW1111,SSINGBD): {adv=(B)aiv; goto lcmflresult;}
  case SSINGCASE(VA2CSTARDOT-VA2CBW1111,SSINGDB): {wdv=(B)wiv; goto lcmflresult;}
  case SSINGCASE(VA2CSTARDOT-VA2CBW1111,SSINGID): {adv=aiv; goto lcmflresult;}
@@ -225,7 +225,7 @@ takestats(stats[0xd]+=caseno==statsoldcaseno; statsoldcaseno=caseno;)  // predic
  case SSINGCASE(VA2CPLUSCO-VA2CBW1111,SSINGDD): ASSERT((adv==0.0 || TEQ(adv,1.0)) && (wdv==0.0 || TEQ(wdv,1.0)),EVDOMAIN); wiv=wdv!=0.0; aiv=adv!=0.0; goto norresult;
 
 
- case SSINGCASE(VA2CBANG-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv<=(B)wiv,z,B01,B) R z;
+ case SSINGCASE(VA2CBANG-VA2CBW1111,SSINGBB): SSSTORENV((B)aiv<=(B)wiv,z,B01,B) RETF (z);
  case SSINGCASE(VA2CBANG-VA2CBW1111,SSINGBD): adv=(B)aiv; goto outofresult;
  case SSINGCASE(VA2CBANG-VA2CBW1111,SSINGDB): wdv=(B)wiv;  goto outofresult;
  case SSINGCASE(VA2CBANG-VA2CBW1111,SSINGID): adv=(D)aiv; goto outofresult;
@@ -236,15 +236,15 @@ takestats(stats[0xd]+=caseno==statsoldcaseno; statsoldcaseno=caseno;)  // predic
  case SSINGCASE(VA2CBANG-VA2CBW1111,SSINGDD): goto outofresult;
 
 
- case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGBB): SSSTORENV((I)(B)aiv|(I)!(B)wiv,z,B01,B) R z;
- case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGBD): SSSTORE((B)aiv?1.0:(zdv=wdv)<0?inf:zdv==0?1:0,z,FL,D) R z;
- case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGDB): SSSTORE((B)wiv?adv:1.0,z,FL,D) R z;
- case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGID): RE(zdv=pospow((D)aiv,wdv)) SSSTORE(zdv,z,FL,D) R z;
- case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGDI): RE(zdv=intpow(adv,wiv)) SSSTORE(zdv,z,FL,D) R z;
- case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGBI): SSSTORE((B)aiv?1.0:(zdv=(D)wiv)<0?inf:zdv==0?1:0,z,FL,D) R z;
- case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGIB): SSSTORE((B)wiv?aiv:1,z,INT,I) R z;
- case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGII): RE(zdv=intpow((D)aiv,wiv)) SSSTORE(zdv,z,FL,D) R z;
- case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGDD): RE(zdv=pospow(adv,wdv)) SSSTORENVFL(zdv,z,FL,D) R z;
+ case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGBB): SSSTORENV((I)(B)aiv|(I)!(B)wiv,z,B01,B) RETF (z);
+ case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGBD): SSSTORE((B)aiv?1.0:(zdv=wdv)<0?inf:zdv==0?1:0,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGDB): SSSTORE((B)wiv?adv:1.0,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGID): RE(zdv=pospow((D)aiv,wdv)) SSSTORE(zdv,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGDI): RE(zdv=intpow(adv,wiv)) SSSTORE(zdv,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGBI): SSSTORE((B)aiv?1.0:(zdv=(D)wiv)<0?inf:zdv==0?1:0,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGIB): SSSTORE((B)wiv?aiv:1,z,INT,I) RETF (z);
+ case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGII): RE(zdv=intpow((D)aiv,wiv)) SSSTORE(zdv,z,FL,D) RETF (z);
+ case SSINGCASE(VA2CEXP-VA2CBW1111,SSINGDD): RE(zdv=pospow(adv,wdv)) SSSTORENVFL(zdv,z,FL,D) RETF (z);
 
 
  case SSINGCASE(VA2CBW1111-VA2CBW1111,SSINGBB): aiv=(B)aiv; wiv=(B)wiv; goto bitwiseresult;
@@ -385,16 +385,16 @@ takestats(stats[0xd]+=caseno==statsoldcaseno; statsoldcaseno=caseno;)  // predic
  case SSINGCASE(VA2CSTILE-VA2CBW1111,SSINGII): 
   intresidue: ;
    ziv=((aiv&(aiv-1))==0&&likely(aiv>=0))?wiv&(aiv-1):remii(aiv,wiv);  // if positive power of 2 (or 0), just AND; otherwise divide
-   SSSTORE(ziv,z,INT,I); R z;
+   SSSTORE(ziv,z,INT,I); RETF (z);
  case SSINGCASE(VA2CSTILE-VA2CBW1111,SSINGID): 
-   ziv=jtremid(jt,aiv,wdv); if(!jt->jerr){SSSTORE(ziv,z,INT,I);}else z=0; R z;  // Since this can retry, we must not modify the input block if there is an error
+   ziv=jtremid(jt,aiv,wdv); if(!jt->jerr){SSSTORE(ziv,z,INT,I);}else z=0; RETF (z);  // Since this can retry, we must not modify the input block if there is an error
 
  case SSINGCASE(VA2CSTILE-VA2CBW1111,SSINGBD): adv=(D)(B)aiv; goto floatresidue;
  case SSINGCASE(VA2CSTILE-VA2CBW1111,SSINGDB): wdv=(D)(B)wiv; goto floatresidue;
  case SSINGCASE(VA2CSTILE-VA2CBW1111,SSINGDI): wdv=(D)wiv;  goto floatresidue;
  case SSINGCASE(VA2CSTILE-VA2CBW1111,SSINGDD): 
   floatresidue: ;
-   zdv=jtremdd(jt,adv,wdv); if(!jt->jerr){SSSTORE(zdv,z,FL,D);}else z=0; R z;  // Since this can retry, we must not modify the input block if there is an error
+   zdv=jtremdd(jt,adv,wdv); if(!jt->jerr){SSSTORE(zdv,z,FL,D);}else z=0; RETF (z);  // Since this can retry, we must not modify the input block if there is an error
 
  case SSINGBB*32+VA2CRES0-VA2CBW1111: case SSINGBI*32+VA2CRES0-VA2CBW1111: case SSINGBD*32+VA2CRES0-VA2CBW1111: case SSINGIB*32+VA2CRES0-VA2CBW1111: case SSINGII*32+VA2CRES0-VA2CBW1111:
     case SSINGID*32+VA2CRES0-VA2CBW1111: case SSINGDB*32+VA2CRES0-VA2CBW1111: case SSINGDI*32+VA2CRES0-VA2CBW1111: case SSINGDD*32+VA2CRES0-VA2CBW1111:
@@ -404,26 +404,26 @@ takestats(stats[0xd]+=caseno==statsoldcaseno; statsoldcaseno=caseno;)  // predic
  }
  // The only thing left is exit processing for the different functions
  gcdintresult:
- ziv=igcd(aiv,wiv); if(ziv||!jt->jerr){SSSTORE(ziv,z,INT,I) R z;}  // if no error, store an int
+ ziv=igcd(aiv,wiv); if(ziv||!jt->jerr){SSSTORE(ziv,z,INT,I) RETF (z);}  // if no error, store an int
  if(jt->jerr<EWOV)R 0;  // If not overflow, what can it be?
  RESETERR; adv=(D)aiv; wdv=(D)wiv;  // Rack em up again; Convert int args to float, and fall through to float case
  gcdflresult:
- if((zdv=dgcd(adv,wdv))||!jt->jerr){SSSTORE(zdv,z,FL,D) R z;}  // float result is the last fallback
+ if((zdv=dgcd(adv,wdv))||!jt->jerr){SSSTORE(zdv,z,FL,D) RETF (z);}  // float result is the last fallback
  R 0;  // if there was an error, fail, jerr is set
 
  lcmintresult:
- ziv=ilcm(aiv,wiv); if(!jt->jerr){SSSTORE(ziv,z,INT,I) R z;}  // if no error, store an int
+ ziv=ilcm(aiv,wiv); if(!jt->jerr){SSSTORE(ziv,z,INT,I) RETF (z);}  // if no error, store an int
  if(jt->jerr<EWOV)R 0;  // If not overflow, what can it be?
  RESETERR; adv=(D)aiv; wdv=(D)wiv;  // Rack em up again; Convert int args to float, and fall through to float case
  lcmflresult:
- zdv=dlcm(adv,wdv); if(!jt->jerr){SSSTORE(zdv,z,FL,D) R z;}  // float result is the last fallback
+ zdv=dlcm(adv,wdv); if(!jt->jerr){SSSTORE(zdv,z,FL,D) RETF (z);}  // float result is the last fallback
  R 0;  // if there was an error, fail, jerr is set
 
  nandresult:
- SSSTORE((B)(1^(aiv&wiv)),z,B01,B) R z;
+ SSSTORE((B)(1^(aiv&wiv)),z,B01,B) RETF (z);
 
  norresult:
- SSSTORE((B)(1^(aiv|wiv)),z,B01,B) R z;
+ SSSTORE((B)(1^(aiv|wiv)),z,B01,B) RETF (z);
 
  outofresult:
   // Kludge.  The calls to NAN0 and NAN1 (_clearfp or fetestexcept) are not known to the compiler, which assumes they clear ymm0-5.
@@ -433,20 +433,20 @@ takestats(stats[0xd]+=caseno==statsoldcaseno; statsoldcaseno=caseno;)  // predic
   {((D*)jt->shapesink)[0]=adv, ((D*)jt->shapesink)[1]=wdv; NAN0; zdv=bindd(((D*)jt->shapesink)[0],((D*)jt->shapesink)[1]); }
   SSSTORE(zdv,z,FL,D) if(unlikely(jt->jerr==EVNOCONV))jt->jerr=0;
   if(unlikely(zdv==0))if(jt->jerr!=0)R 0; NAN1;   // NaN error picked up in the routine sets result=0
-  R z;  // Return the value if valid
+  RETF (z);  // Return the value if valid
 
  outofresultcvti:
   {((D*)jt->shapesink)[0]=adv, ((D*)jt->shapesink)[1]=wdv; NAN0; zdv=bindd(((D*)jt->shapesink)[0],((D*)jt->shapesink)[1]); }
   if(zdv>=(D)IMIN&&zdv<=(D)IMAX&&jt->jerr!=EVNOCONV){SSSTORE((I)zdv,z,INT,I)}else{SSSTORE(zdv,z,FL,D) if(unlikely(jt->jerr==EVNOCONV))jt->jerr=0;}
   if(unlikely(zdv==0))if(jt->jerr!=0)R 0; NAN1;   // NaN error picked up in the routine sets result=0
-  R z;  // Return the value if valid, as integer if possible
+  RETF (z);  // Return the value if valid, as integer if possible
 
  bitwiseresult:
  ziv=opcode-VA2CBW0000;  // mask describing operation.
  RE(0);  // if error on D arg, make sure we abort
  ziv=((aiv&wiv)&REPSGN(SGNIF(ziv,0)))|((aiv&~wiv)&REPSGN(SGNIF(ziv,1)))|((~aiv&wiv)&REPSGN(SGNIF(ziv,2)))|((~aiv&~wiv)&REPSGN(SGNIF(ziv,3)));
 bitwiseexit:;
- SSSTORE(ziv,z,INT,I) R z;
+ SSSTORE(ziv,z,INT,I) RETF (z);
 
  rotateresult:
  RE(0);  // if error on D arg, make sure we abort
@@ -465,12 +465,12 @@ bitwiseexit:;
 
  compareresult:
  if(likely(!z))R num(ziv);  // Don't store into num[], even though it wouldn't change the value - it would invalidate caches.  Only fallthrough is for nonzero rank
- SSSTORE((B)ziv,z,B01,B) R z;  // OK to store into allocated/inplace area.
+ SSSTORE((B)ziv,z,B01,B) RETF (z);  // OK to store into allocated/inplace area.
 
  circleresult: ;
  D cirvals[3]={adv,wdv,0.0};  // put ops into memory (0.0 to avoid asan warnings)
  I rc=cirDD(~1,cirvals+2,cirvals,cirvals+1,0,jt); rc=rc<0?EWOVIP+EWOVIPMULII:rc;  // run the routine
- if(rc==EVOK){SSSTORE(cirvals[2],z,FL,D);}else{jsignal(rc); z=0;} R z;  // Don't change the input block if there is an error.  If there is, post it to the return area
+ if(rc==EVOK){SSSTORE(cirvals[2],z,FL,D);}else{jsignal(rc); z=0;} RETF (z);  // Don't change the input block if there is an error.  If there is, post it to the return area
 }
 
 
@@ -959,11 +959,11 @@ A jtcvz(J jt,I cv,A w){I t;
   // conversion to D is needed when we took the real/int/mag of a complex number and we want a FL result from that.
   // unfortunately it's hard to tell when that's what we did; rather than converting intolerantly (which would work but allocates
   // a block always), we scan here to see if all the imaginary parts are 0; if so, then we convert
-  Z *wv=ZAV(w); DQ(AN(w), if((*wv).im!=0)R w; ++wv;)
+  Z *wv=ZAV(w); DQ(AN(w), if((*wv).im!=0)RETF (w); ++wv;)
   // imaginaries all 0, can demote to float
   R ccvt(FL,w,0);  // convert - must be possible
  }else if(cv&VRI&&!(t&INT))R icvt(w);  // convert to integer if possible.  Only 1 conversion allowed
- R w;
+ RETF (w);
 }    /* convert result */
 
 #if 0 // for debug, to display info about a sparse block
@@ -1388,7 +1388,7 @@ retrylrc:;  // exit to here with lrc set to error code when there is an error
      NOUNROLL while(1){(repairfn)(m,zzv,av,zv,n,jt); if((I)zv==mend)break; aawwzknfxrz[7]=--jj; jj=REPSGN(jj); zv+=aawwzknfxrz[4]; zzv+=zzk; av+=aawwzknfxrz[2*nipw+1+jj]; jj=aawwzknfxrz[7+jj];}  // jj1 is -1 on the last inner iter, where we use outer incr
     }
    }
-   R zz;  // Return the repaired result after overflow has been corrected
+   RETF (zz);  // Return the repaired result after overflow has been corrected
   }else{
    // retry required, not inplaceable.  Signal the error code to the caller.  If the error is not retryable, set the error message.
    // For retry, the caller will call again with the error set, which will change our selection of processing routines
@@ -1640,7 +1640,7 @@ DFI2(jtsumattymes1){
   if(unlikely(fit==2)){
    if((((AN(a)-1)|(AN(w)-1))&~((acr-1)^(wcr-1)))<0){  // if there is an empty and both ranks are 0 or both >0
     ASSERT(unlikely(acr==0)||as[ar-1]==ws[wr-1],EVLENGTH)  // ensure last axis agrees
-    A z; dfv2(z,a,w,eval("0 0\"1")); R z;  // !.2 with an empty argument.  Implement as 0 0"1
+    A z; dfv2(z,a,w,eval("0 0\"1")); RETF (z);  // !.2 with an empty argument.  Implement as 0 0"1
    }
    ASSERT(0,EVNONCE)  // user expected 2 atoms per result, but we don't support that for repeated atomic arg.
   }

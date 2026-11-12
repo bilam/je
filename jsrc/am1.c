@@ -26,13 +26,13 @@ static A jtistd1(J jt,A z,A ind){A*iv,j,*jv,x;I d,i,n,r,*s;
    RZ(jv[i]=!AN(x)&&1==r?ds(CACE):less(IX(d),pind(d,x)));
   }else {RZ(x=pind(d,x)); jv[i]=x;}  // INCORP not needed probably, since this use is transient
  }
- R j;
+ RETF (j);
 }    /* convert index list ind into standard form */
 
 static A jtastd1(J jt,A a,A z,A ind){A*iv,q,r,s,s1,*sv,x;B b;I ar,*as,d,j,m,n,*rv,zr,*zs;P*zp;
  ar=AR(a); as=AS(a);
  zr=AR(z); zs=AS(z); zp=PAV(z);
- if(!ar)R a;
+ if(!ar)RETF (a);
  n=AN(ind); iv=AAV(ind); 
  GATV0(r,INT,zr,1); rv= AV1(r);
  GATV0(s,BOX,zr,1); sv=AAV1(s);
@@ -60,7 +60,7 @@ static A jtssel(J jt,A z,A ind){A a,*iv,p,q,x,y;B*b;I*av,c,i,j,m,n,*u,*v,*yv;P*z
    u=yv+i; DO(m, v[i]=b[i]?*u:-1; u+=c;);
    RZ(p=eps(q,1<AR(x)?ravel(x):x)); b=BAV(p);
  }}
- R p;
+ RETF (p);
 }    /* which rows of the index matrix of z are selected by index list ind? */
 
 static B jtipart(J jt,A z,A ind,A*i1,A*i2){A*iv,p,*pv,q,*qv,x;B*b;I c,d,n;P*zp;
@@ -83,7 +83,7 @@ static A jtdcube(J jt,A z,A i2){A*iv,x,y;I i,m,n,*s;P*zp;
   A t; RZ(t=tymes(sc(m),x==ds(CACE)?IX(s[i]):x));
   RZ(y=ATOMIC2(jt,t,0L,y, RMAX,ds(CPLUS)));
  }
- R y;
+ RETF (y);
 }    /* index cube relative to dense axes */
 
 static A jtscuba(J jt,A z,A i1,B u){A*iv,q=0,x;I c,d,j,n,*s,*v;P*zp;
@@ -97,7 +97,7 @@ static A jtscuba(J jt,A z,A i1,B u){A*iv,q=0,x;I c,d,j,n,*s,*v;P*zp;
   if(q){d=AS(q)[0]; RZ(q=stitch(repeat(sc(d),x),reitem(sc(c*d),q)));}
   else RZ(q=reshape(v2(c,1L),x));
  }
- R q;
+ RETF (q);
 }    /* index cube relative to sparse axes; 1=u iff unique (remove duplicates) */
 
 static A jtscubb(J jt,A z,A i1){A a,q,x,y;I c,d,h,j,*s,*v,*xv;P*zp;
@@ -148,7 +148,7 @@ static A jtiindx(J jt,A z,A i1){A q,j,j1,y;I c,d,e,h,i,*jv,m,n,*qv,*v,*yv;P*zp;
  }
  GATV0(j1,INT,h,1); v=AV1(j1);
  DO(n, e=qv[i]; d=jv[i]; DQ(e, *v++=d++;););
- R j1;
+ RETF (j1);
 }    /* index of index list in the index matrix of z */
 
 static A jtzpad1(J jt,A z,A t,B ip){A q,s,x,x0,y,y0;I m;P*zp;
@@ -164,7 +164,7 @@ static A jtzpad1(J jt,A z,A t,B ip){A q,s,x,x0,y,y0;I m;P*zp;
   if(jt->zombieval==z){RZ(ras(y)); RZ(ras(x)); fa(y0); fa(x0);}
   SPB(zp,i,y); SPB(zp,x,x);
  }
- R z;
+ RETF (z);
 }    /* pad z with new rows t for its index matrix */
 
 static B mtind(J jt,A ind){A*iv,x;
@@ -185,13 +185,13 @@ A jtam1e(J jt,A a,A z,A ind,B ip){A e,i1,i2,p,x;B*pv;C*u,*v;I*iv,k,m,n,r,*s,vk,x
   RZ(i2=dcube(z,i2)); iv=AV(i2); n=AN(i2);
   DO(m, if(pv[i])DO(n, mvc(xk,v+iv[i]*xk,k,u);); v+=vk;);
  }
- R z;
+ RETF (z);
 }    /* a (<ind)}z; sparse z; ind is index list; sparse element a replacement */
 
 A jtam1a(J jt,A a,A z,A ind,B ip){A a0=a,a1,e,i1,i2,t,x;C*u,*v,*xv;I ar,c,*iv,*jv,k,m,n,r,*s,uk,vk,xk;P*zp;
  RZ(a&&(ind=istd1(z,ind)));
  RZ(a=astd1(a,z,ind));
- if(mtind(jt,ind))R z;
+ if(mtind(jt,ind))RETF (z);
  RZ(ipart(z,ind,&i1,&i2));
  RZ(z=zpad1(z,scube(z,i1,ssel(z,ind)),ip));
  zp=PAV(z); x=SPA(zp,x); e=SPA(zp,e);
@@ -204,7 +204,7 @@ A jtam1a(J jt,A a,A z,A ind,B ip){A a0=a,a1,e,i1,i2,t,x;C*u,*v,*xv;I ar,c,*iv,*j
  if(!n)    DO(m,                           mvc(vk,v+vk*iv[i],uk,u); if(ar)u+=uk;  )
  else if(m)DO(m,      v=xv+vk*iv[i]; DO(c, mvc(xk,v+xk*jv[i],uk,u); if(ar)u+=uk;);)
  else      DO(AS(x)[0], v+=vk;         DO(c, mvc(xk,v+xk*jv[i],uk,u); if(ar)u+=uk;););
- R z;
+ RETF (z);
 }    /* a (<ind)}z; sparse z; ind is index list; arbitrary dense array a replacement */
 
 A jtam1sp(J jt,A a,A z,A ind,B ip){R amnsp(a,z,ope(catalog(istd1(z,ind))),ip);}

@@ -169,7 +169,7 @@ A jtsystemlock(J jt,I priority,A (*lockedfunction)(J)){A z;
  }
  // here a request was processed at the level we requested.  We have the value to return; error
  // is available but has been signaled to the executor only
- R z;  // return to requester
+ R z;  // return to requester  /* RETF (z); */
 }
 
 // Allow a system lock to proceed.  Called by a running thread when it notices the broadcast system-lock request at its priority or higher
@@ -283,7 +283,7 @@ static A jtcreatepyx(J jt, I thread,D timeout){A pyx;
  AT(pyx)=BOX+PYX; AFLAG(pyx)=BOX; ACINIT(pyx,ACUC1); AN(pyx)=1; ((PYXBLOK*)AAV0(pyx))->pyxvalue=0; ((PYXBLOK*)AAV0(pyx))->pyxorigthread=thread; ((PYXBLOK*)AAV0(pyx))->errcode=0;  ((PYXBLOK*)AAV0(pyx))->pyxmaxwt=timeout;
  // The pyx's usecount must be raised before it is sent to a task, because there are nominally 2 owners: one for the task thread and one for the current thread, which has something - either a tpop for the pyx
  // or an enclosing box - that protects it until it is put into its box.  When the pyx is filled in the owner will remove the protection (by fa() for either the pyx or the enclosing box)
- R pyx;
+ RETF (pyx);
 }
 
 // w is an A holding a pyx value.  Return its value when it has been resolved, otherwise 0
@@ -673,7 +673,7 @@ UI forcetask=REPSGN((taskflags&0x500)-1);  // 0 if the user wants to force this 
     if(unlikely(z==0)){fail: z=0; errcode=jt->jerr; errcode=(errcode==0)?EVSYSTEM:errcode;}else{realizeifvirtualERR(z,goto fail;);}  // realize virtual result before returning it
     jtsetpyxval(jt,pyx,z,errcode);  // install completion info into pyx 0
    }
-   R ppyx;
+   RETF (ppyx);
 
  // No thread for the job.  Run it here
   }else{JOBUNLOCK(jobq,oldjob); fa(ploc)}  // return lock if there is no task to take the job, and undo the increment of the locale.  ppyx was not raised
@@ -684,7 +684,7 @@ UI forcetask=REPSGN((taskflags&0x500)-1);  // 0 if the user wants to force this 
 A uself=FAV(self)->fgh[0], uarg2=arg2!=self?arg2:uself;  // args to u, with monad flagging
  // u always starts a recursion point, whether in a new task or not
  A s=jt->parserstackframe.sf; jt->parserstackframe.sf=self; A z=(FAV(uself)->valencefns[arg2!=self])(jt,arg1,uarg2,uself); jt->parserstackframe.sf=s;
- R z;
+ RETF (z);
  // error exits, to free things we raised
 errfaarg1: fa(arg1);
 errfajobA: mf(jobA);
@@ -775,7 +775,7 @@ static A jttaskrun(J jt,A arg1, A arg2, A arg3){A pyx;
  A uarg3=FAV(self)->fgh[0], uarg2=dyad?arg2:uarg3;   // get self, positioned after the last noun arg
  // u always starts a recursion point, whether in a new task or not
  A s=jt->parserstackframe.sf; jt->parserstackframe.sf=self; pyx=(FAV(FAV(self)->fgh[0])->valencefns[dyad])(jt,arg1,uarg2,uarg3); jt->parserstackframe.sf=s;
- R pyx;
+ RETF (pyx);
 }
 static I jtthreadcreate(J jt,I n,void *threadattrs){ASSERT(0,EVFACE)}
 C jtjobrun(J jt,unsigned char(*f)(J,void*,UI4),void *ctx,UI4 n,I poolno){

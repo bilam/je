@@ -441,7 +441,7 @@ A jtsyrd1(J jtfg,C *string,UI4 hash,A g){F12JT; MEMCHK1(g); A*v,x,y;
 #else
                           res=(A)(((I)res&~QCNAMEDLOC)+(((I)AR(g)&ARNAMED)<<(QCNAMEDLOCX-ARNAMEDX)));
 #endif
-                          READUNLOCK(ALOCK(g)) R res;  // return QCNAMEDLOC semantics
+                          READUNLOCK(ALOCK(g)) RETFA (res);  // return QCNAMEDLOC semantics
                          }
                          READUNLOCK(ALOCK(g))} g=gn;  // not found, advance to next in path
             }while(g);  // return when name found.
@@ -451,7 +451,7 @@ A jtsyrd1(J jtfg,C *string,UI4 hash,A g){F12JT; MEMCHK1(g); A*v,x,y;
 A jtsyrd1forlocale(J jtfg,C *string,UI4 hash,A g){F12JT; MEMCHK1(g);
  RZ(g);   // make sure there is a locale...
  A *v=LOCPATH(g); NOUNROLL do{A gn=*v--; A y; I chainno=SYMHASH((UI4)hash,AN(g)-SYMLINFOSIZE); if(BLOOMTEST(BLOOMBASE(g),chainno)){READLOCK(ALOCK(g)) y=(probe)((I)jtfg&255,string,SYMORIGIN,((UI8)(hash)<<32)+(UI4)LXAV0(g)[chainno]); READUNLOCK(ALOCK(g)) if(y){break;}} g=gn;}while(g);  // return when name found.
- R g;
+ RETF (g);
 }
 
 
@@ -504,7 +504,7 @@ numloc: ;  // integer locale whether boxed or not
    RZGOTO(g=stfindcre(xn,xv,bucketx),exitfa);  // find st for the name
  }
  }
- g=g?g:locsym; R g;  // if we get here, good return.  If we stayed in the local table, return it
+ g=g?g:locsym; RETF (g);  // if we get here, good return.  If we stayed in the local table, return it
 exitfa: ;
  fa(y);
  R 0;
@@ -527,15 +527,15 @@ A jtsyrd(J jt,A a,A locsyms){MEMCHK1C(locsyms); A g;
  ARGCHK1(a); MEMCHK1(a);
  if(likely(!(NAV(a)->flag&(NMLOC|NMILOC)))){A val;
   // If there is a local symbol table, search it first
-  if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,locsyms)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); R val;}  // return flagging the result if local.  Value pointers in symbols have QCSYMVAL semantics
+  if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,locsyms)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); RETFA (val);}  // return flagging the result if local.  Value pointers in symbols have QCSYMVAL semantics
   g=jt->global;  // Continue with the current locale
  }else{A val;  // locative
   RZ(g=sybaseloc(a));  // find the starting locale for the name lookup
-  if(unlikely(AR(g)&ARLOCALTABLE)){if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,g)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); R val;} g=AKGST(g);}  // if locative ended with a local table, it must be from debug locative __nn.  Search as local first to avoid Bloom filter, then pick up with that frame's globals
+  if(unlikely(AR(g)&ARLOCALTABLE)){if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,g)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); RETFA (val);} g=AKGST(g);}  // if locative ended with a local table, it must be from debug locative __nn.  Search as local first to avoid Bloom filter, then pick up with that frame's globals
  }
  A res=jtsyrd1((J)((I)jt+NAV(a)->m),NAV(a)->s,NAV(a)->hash,g);  // Not local: look up the name starting in locale g, returning NAMEDLOC semantics which we discard
  if(likely(res!=0))res=SETNAMEDFAOWED(res);  // mark found in global, if found
- R res;
+ RETFA (res);
 }
 // same, but return locale in which found.  No ra(), 0 if symbol not found.  Takes & releases readlock on searched locales
 A jtsyrdforlocale(J jt,A a){A g;
@@ -555,15 +555,15 @@ A jtsyrdnobuckets(J jt,A a,A locsyms){MEMCHK1C(locsyms); A g,val;
  ARGCHK1(a); MEMCHK1(a);
  if(likely(!(NAV(a)->flag&(NMLOC|NMILOC)))){
   // If there is a local symbol table, search it first - but only if there is no bucket info.  If there is bucket info we have checked already
-  if(unlikely(NAV(a)->bucket)<=0)if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,locsyms)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); R val;}  // return if found locally from name
+  if(unlikely(NAV(a)->bucket)<=0)if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,locsyms)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); RETFA (val);}  // return if found locally from name
   g=jt->global;  // Start with the current locale
  }else{  // if locative, start in locative locale & remember table type
   RZ(g=sybaseloc(a));
-  if(unlikely(AR(g)&ARLOCALTABLE)){if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,g)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); R val;} g=AKGST(g);}  // if locative ended with a local table, it must be from debug locative __nn.  Search as local first to avoid Bloom filter, then pick up with that frame's globals
+  if(unlikely(AR(g)&ARLOCALTABLE)){if(val=probex(NAV(a)->m,NAV(a)->s,SYMORIGIN,NAV(a)->hash,g)){if(unlikely(ISRAREQD(val)))raposlocalqcgsv(QCWORD(val),QCPTYPE(val),val); RETFA (val);} g=AKGST(g);}  // if locative ended with a local table, it must be from debug locative __nn.  Search as local first to avoid Bloom filter, then pick up with that frame's globals
  }
  val=jtsyrd1((J)((I)jt+NAV(a)->m),NAV(a)->s,NAV(a)->hash,g);  // Not local: look up the name starting in locale g, returning NAMEDLOC semantics which we discard
  if(likely(val!=0))val=SETNAMEDFAOWED(val);  // mark found in global, if found, which switches to QCFAOWED semantics
- R val;
+ RETFA (val);
 }
 
 // return symbol address for name, or 0 if not found
@@ -670,7 +670,7 @@ F1(jtsymbrdlock){F12IP; MEMCHK1(w); A y;
 // If the modified name is executing higher on the stack, fail
 // returns v for OK to allow the assignment to proceed, 0 if error (which never happens - we set sidamage and proceed with the assignment)
 A jtredef(J jt,A w,A v){MEMCHK1(w); MEMCHK1(QCWORD(v)); A f;DC c,d;
- d=jt->sitop; NOUNROLL while(d&&!(DCCALL==d->dctype&&d->dcj))d=d->dclnk; if(!(d&&DCCALL==d->dctype&&d->dcj))R v;   // find the most recent DCCALL with error, exit if none
+ d=jt->sitop; NOUNROLL while(d&&!(DCCALL==d->dctype&&d->dcj))d=d->dclnk; if(!(d&&DCCALL==d->dctype&&d->dcj))RETFA (v);   // find the most recent DCCALL with error, exit if none
  // Now d->stack entry of executing entity, which is in suspension at an error
  if(v==(A)d->dcn){  // if we reassign any name whose value equals the executing value, we treat it as a reassignment of the executing name.  This is for comp ease
   // attempted reassignment of the executing name
@@ -688,7 +688,7 @@ A jtredef(J jt,A w,A v){MEMCHK1(w); MEMCHK1(QCWORD(v)); A f;DC c,d;
 
  // Don't allow redefinition of a name that is suspended higher up on the stack, possibly many times.   If the definition doesn't change, that's OK but we must point the stack to the new value
  c=d; NOUNROLL while(c=c->dclnk){if(DCCALL==c->dctype&&v==(A)c->dcn){c->dcn=(I)w; if(!jteqf(jt,w,v))JT(jt,sidamage)=1;}}
- R v;   // good return: recycle v to save a register
+ RETF (v);   // good return: recycle v to save a register
 }    /* check for changes to stack */
 
 // find symbol entry for name a in its global symbol table; this is known to be in service of global assignment

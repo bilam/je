@@ -69,7 +69,7 @@ F1(jtdbstopq){F12IP; MEMCHK1(w);
  // we must read & protect the sentence under lock in case another thread is changing it
  READLOCK(JT(jt,dblock)) A stops=JT(jt,dbstops); if(stops)ras(stops); READUNLOCK(JT(jt,dblock))  // must ra() while under lock
  if(stops){tpushnr(stops);}else stops=mtv;  // if we did ra(), stack a fa() on the tpop stack
- R stops;
+ RETF (stops);
 }
 
 // 13!:3, set stops

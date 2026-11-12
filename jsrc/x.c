@@ -48,7 +48,7 @@ static DF1(jthdrinfo){DF12IP;A z;
  ARGCHK1(w); MEMCHK1(w);
  GAT0(z,INT,7,1);
  IAV1(z)[0]=AK(w); IAV1(z)[1]=AFLAG(w); IAV1(z)[2]=AM(w); IAV1(z)[3]=AT(w); IAV1(z)[4]=AC(w); IAV1(z)[5]=AN(w); IAV1(z)[6]=AR(w);
- R z;
+ RETF (z);
 }
 
 // 15!:24 <'name', query/set anchored.  name must be a global name found in the starting locale

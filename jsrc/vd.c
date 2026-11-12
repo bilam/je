@@ -90,7 +90,7 @@ static A jtrinvip(J jt,A w,I n,I ncomp){PROLOG(0066);A ai,bx,di,z;I m;
    // w10 is already 0
   }
   NAN1;
-  R w;
+  RETF (w);
   // Don't bother marking so small a matrix as uppertri
  }
  // fall through for other types & shapes
@@ -204,7 +204,7 @@ static F1(jtltqip){F12IP;PROLOG(0067);A l0,l1,y,z;
    A t; RZ(t=norm(q0));  // norm of row
    ASSERT(!equ(t,num(0)),EVDOMAIN);  // norm must not be 0
    A z; RZ(z=tymesA(w,recip(t))); verifyinplace(w,z);
-   RZ(t=table(t)); realizeifvirtual(t); R t; // this is real, so it is also the adjoint of L
+   RZ(t=table(t)); realizeifvirtual(t); RETF (t); // this is real, so it is also the adjoint of L
   }
  }
  // continue for blocks that must be subdivided
@@ -366,9 +366,9 @@ static A jticor(J jt,A w,D d){D *v;
  d=jround(ABS(d));  // force determinant to integer
  D recipd=1/d;
  v=DAV(w);
- DQ(AN(w), D p=d*v[i]; if(ABS(p-jround(p))>0.25)R w;); // not close to multiples of 1/d: correction would be a guess
+ DQ(AN(w), D p=d*v[i]; if(ABS(p-jround(p))>0.25)RETF (w);); // not close to multiples of 1/d: correction would be a guess
  DQ(AN(w), v[i]=jround(d*v[i])*recipd;);  // force each value to multiple of recip of determinant, then divide
- R w;
+ RETF (w);
 }
 
 // anorm = ||w||, the largest absolute row sum of w (the 1-norm of the transpose LAPACK sees)
@@ -669,7 +669,7 @@ static A jtgesv(J jtfg,A a,A w){F12IP; MEMCHK2(a,w); A z;
  if(at&(B01+INT2+INT4+INT) && wt&(B01+INT2+INT4+INT)) RZ(z=icor(z,ludet(w,ipiv)));
  RZ(z=cant1(z)); // transpose z
  RZ(z=reshape(shape(a),z)); // result has the shape of a: (}.$w),}.$a with #w = #a
- R z;
+ RETF (z);
 }
 
 // Solve (w+/ .*z)-:a for non-square w using LAPACK.
@@ -773,7 +773,7 @@ static F2(jtmdivsp){F12IP; MEMCHK2(a,w); A a1,x,y;I at,d,m,n,t,*v,xt;P*wp;
  at=AT(a); xt=AT(x); RE(t=maxtype(at,xt)); RE(t=maxtype(t,FL));
  RZ(a=cvt(t,a)); RZ(x=cvt(t,x));
  if(t&CMPX)RZ(ztridiag(n,a,x)) else RZ(tridiag(n,a,x));
- R a;
+ RETF (a);
 }    /* currently only handles tridiagonal sparse w */
 
 // a %. w  for all types

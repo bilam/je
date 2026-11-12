@@ -480,7 +480,7 @@ static A jtspallthreadsx(J jt){I grandtotal;
 F1(jtspallthreads){F12IP; MEMCHK1(w); A z;
  ASSERTMTV(w);  // no args allowed
  do{z=jtsystemlock(jt,LOCK78MEM,jtspallthreadsx);}while(z==(A)1);  // call a lock, and repeat if another thread got the same lock request
- R z;  // return value/err from call
+ RETF (z);  // return value/err from call
 }
 
 
@@ -671,7 +671,7 @@ F2(jtauditpyx){F12IP;I mindepth;
      if(AAV(np)[0]!=0 && AC(AAV(np)[0])<0)R num(4);  // dead contents
     }else{
      A z=jtauditpyx(jt,a,np);
-     if(BIV0(z)!=0)R z;  // if recursion found error, pass it up
+     if(BIV0(z)!=0)RETF (z);  // if recursion found error, pass it up
     }
    }
   }
@@ -740,7 +740,7 @@ NOINLINE A jtfreesymtab(J jt,A w,I arw){MEMCHK1(w);  // don't make this static -
   }
  }
  // continue to free the table itself
- R w;
+ RETF (w);
 }
 
 // overview of the usecount routines
@@ -792,7 +792,7 @@ ASSERT(RMAX>=r,EVLIMIT);
   // We leave the usecount unchanged, so the block still shows as inplaceable
   AK(w)+=offset; AR(w)=(RANKT)r;
   // No change to pristinity; and anyway non-DIRECT doesn't come through here.  Inplaceability is inherited
-  R w;
+  RETF (w);
  }else{
   // not self-virtual block: allocate a new one
   RZ(z=gafv(SZI*(NORMAH+r)-1));  // allocate the block
@@ -811,7 +811,7 @@ ASSERT(RMAX>=r,EVLIMIT);
   // It is not necessary to remove pristinity from the backer, because the backer is not inplaceable and never will be, and pristinity applies only to abandoned blocks
 
   // As a result of the above we can say that all backers must have recursive usecount
-  R z;
+  RETF (z);
  }
 }  
 
@@ -829,7 +829,7 @@ A jtrealize(J jt, A w){A z; I t;
  // new block is not VIRTUAL, not RECURSIBLE
 // copy the contents.
  MC(AVn(zr,z),AV(w),AN(w)<<bplg(t));
- R z;
+ RETF (z);
 }
 
 // Free temporary buffers, while preventing the result from being freed
@@ -893,7 +893,7 @@ A jtgc(J jt,A w,A* old){
    // we would end up trying to free the faux block in the code above.  All we need to do is free the stack.
    tpop(old);
   }
-  R w;  // if realize() failed, this could be returning 0
+  RETF (w);  // if realize() failed, this could be returning 0
  }
  // non-VIRTUAL path
  // calls where w is the oldest thing on the tpush stack are not uncommon.  In that case we don't need to do ra/tpop/fa/repair-inplacing.  We can also save the repair if we KNOW w will be freed during the tpop
@@ -936,7 +936,7 @@ general:;
   I cafter=AC(w); if((c&(1-cafter))>=0){A **amptr=(c<0?&AZAPLOC(w):(A**)&jt->shapesink); *amptr=jt->tnextpushp; tpush(w);}  // push unless was inplaceable and was not freed during tpop
   I *cptr=&AC(w); cptr=c<0?cptr:(I*)&jt->shapesink; *cptr=c; // make inplaceable if it was originally
  }
- R w;
+ RETF (w);
 }
 // EPILOGZAP: ra00; zap; tpop; AM=t->tnextpushp; tpush(w); ACRESET(, ACINPLACE|ACUC1)
 // similar to jtgc, but done the simple way, by ra/pop/push always.  This is the thing to use if the argument
@@ -1226,18 +1226,18 @@ void jttpop(J jt,A *old,A *pushp){A *endingtpushp;
 // If the noun is assigned as part of a named derived verb, protection is not needed (but harmless) because if the same value is
 // assigned to another name, the usecount will be >1 and therefore not inplaceable.  Likewise, the the noun is non-DIRECT we need
 // only protect the top level, because if the named value is incorporated at a lower level its usecount must be >1.
-F1(jtrat){F12IP;ARGCHK1(w); MEMCHK1(w); ras(w); tpush(w); R w;}  // recursive.  w can be zero only if explicit definition had a failing sentence
+F1(jtrat){F12IP;ARGCHK1(w); MEMCHK1(w); ras(w); tpush(w); RETF (w);}  // recursive.  w can be zero only if explicit definition had a failing sentence
 
-A jtras(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); realizeifvirtual(w); ra(w); R w; }  // subroutine version of ra() to save space
-A jtra00s(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); ra00(w,AT(w)); R w; }  // subroutine version of ra00() to save space
-A jtrifvs(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); realizeifvirtual(w); R w; }  // subroutine version of rifv() to save space and be an rvalue
-A jtmkwris(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); makewritable(w); R w; }  // subroutine version of makewritable() to save space and be an rvalue
+A jtras(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); realizeifvirtual(w); ra(w); RETF (w); }  // subroutine version of ra() to save space
+A jtra00s(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); ra00(w,AT(w)); RETF (w); }  // subroutine version of ra00() to save space
+A jtrifvs(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); realizeifvirtual(w); RETF (w); }  // subroutine version of rifv() to save space and be an rvalue
+A jtmkwris(J jt, AD * RESTRICT w) { ARGCHK1(w); MEMCHK1(w); makewritable(w); RETF (w); }  // subroutine version of makewritable() to save space and be an rvalue
 
 #if MEMAUDIT&8
 static I lfsr=(I)0xfeeefeee00000000LL;  // holds varying memory pattern
 #endif
 // call tp, but return the value passed in as z.  Used to save a register in caller
-__attribute__((noinline)) A jttgz(J jt,A *tp, A z){RZ(tp=tg(tp)); jt->tnextpushp=tp; R z;}
+__attribute__((noinline)) A jttgz(J jt,A *tp, A z){RZ(tp=tg(tp)); jt->tnextpushp=tp; RETF (z);}
 
 __attribute__((noinline)) A jtgafallopool(J jt){
  I blockx=(I)jt&QCMASK; jt=(J)((I)jt&~QCMASK);
@@ -1371,7 +1371,7 @@ if((I)jt&3)SEGFAULT;
 #if SHOWALLALLOC
 printf("%p+\n",z);
 #endif
- R z;
+ RETF (z);
 }
 
 // bytes is total #bytes needed including headers, -1
@@ -1447,7 +1447,7 @@ RESTRICTF A jtga0(J jt,I type,I rank,I atoms){A z;
  RZ(z=jtgafv(jt, bytes));   // allocate the block, filling in AC and AFLAG
  AT(z)=type; ARINIT(z,rank); AK(z)=AKXR(rank);  // UI to prevent reusing the value from before the call
  if(unlikely(!((type&DIRECT)>0))){z=zfillind(z,bytes);}
- R z;
+ RETF (z);
 }
 #endif
 
@@ -1610,7 +1610,7 @@ RESTRICTF A jtgah(J jt,I r,A w){A z;
   AT(z)=AT(w); AN(z)=AN(w); ARINIT(z,(RANKT)r); AK(z)=CAV(w)-(C*)z; AC(z)=ACUC1;
   if(1==r)AS(z)[0]=AN(w);
  }
- R z;
+ RETF (z);
 }    /* allocate header */ 
 
 // clone noun w, returning the address of the cloned area.  Result is NOT recursive, not AFRO, not virtual
@@ -1638,7 +1638,7 @@ F1(jtca){F12IP;A z;P*wp,*zp;
   MC(zv,wv,(n*bpt)+(t&NAME?sizeof(NM):0));
   if(t&FUNC+NAME){AK(z)=AK(w); AN(z)=AN(w);}  // FUNC/NAME use AK/AN as localuse, preserve them
  }
- R z;
+ RETF (z);
 }
 // clone block only if it is read-only
 F1(jtcaro){F12IP; MEMCHK1(w);  if(AFLAG(w)&AFRO){RETF(ca(w));} RETF(w); }
@@ -1647,7 +1647,7 @@ F1(jtcaro){F12IP; MEMCHK1(w);  if(AFLAG(w)&AFRO){RETF(ca(w));} RETF(w); }
 F1(jtclonevirtual){F12IP; MEMCHK1(w);
  A z; RZ(z=virtual(w,0,AR(w)));  // allocate a new virtual block
  AN(z)=AN(w); MCISH(AS(z),AS(w),(I)AR(w));  // copy AN and shape; leave AC alone
- R z;
+ RETF (z);
 }
 
 B jtspc(J jt){A z; RZ(z=MALLOC(1000)); FREECHK(z); R 1; }  // see if 1000 bytes are available before we embark on error display
@@ -1670,7 +1670,7 @@ A jtext(J jt,B b,A w){A z;I c,k,m,m1,t;
  if(b){ACINITUNPUSH(z); mf(w);}          // 1=b iff w is permanent.  This frees up the old block but not the contents, which were transferred as is
  AS(z)[0]=m1; AN(z)=m1*c;       /* "optimal" use of space */
  if(!((t&DIRECT)>0))mvc(k*(m1-m),CAV(z)+m*k,MEMSET00LEN,MEMSET00);  // if non-DIRECT type, zero out new values to make them NULL
- R z;
+ RETF (z);
 }
 
 A jtexta(J jt,I t,I r,I c,I m){A z;I m1; 
@@ -1678,7 +1678,7 @@ A jtexta(J jt,I t,I r,I c,I m){A z;I m1;
  I k=bp(t); AS(z)[0]=m1=allosize(z)/(c*k); AN(z)=m1*c;
  if(2==r)*(1+AS(z))=c;
  if(!((t&DIRECT)>0))mvc(k*AN(z),AVn(r,z),MEMSET00LEN,MEMSET00);
- R z;
+ RETF (z);
 }    /* "optimal" allocation for type t rank r, c atoms per item, >=m items */
 
 // forcetomemory does nothing, but it does take an array as argument.  This will spook the compiler out of trying to assign parts of the array to registers.

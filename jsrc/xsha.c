@@ -178,5 +178,5 @@ DF2(jtshasum2){DF12IP; MEMCHK2(a,w);
   default:
     ASSERT(0,EVDOMAIN);
   }
-  R z;
+  RETF (z);
 }

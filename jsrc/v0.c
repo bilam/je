@@ -274,7 +274,7 @@ static A jtmnomx(J jt,I m,A w){A s,*wv,x,z=w,*zv;I i,n,r;
   RE(z); RZ(z=ope(z));
  }
  ASSERT(NUMERIC&AT(z),EVDOMAIN);
- R z;
+ RETF (z);
 }    /* standardize multinomial right arg */
 
 static F2(jtpoly2a){F12IP;A c,e,x;I m;

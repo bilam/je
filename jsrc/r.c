@@ -57,7 +57,7 @@ F1(jtaro){F12IP;A fs,gs,hs,s,*u,*x,y,z;B ex,xop;C id;I*hv,m;V*v;
   ex=hs&&id==CCOLONE&&!xop;   // ex = this is a non-operator explicit defn
   m=BETWEENC(id,CFORK,CADVF)&&hs?3:!!fs+(ex||xop&&hs||!xop&&gs);  // number of components: if invisible, 2 or 3; otherwise count f g h
   if(!m)R spella(w);
-  if(evoke(w)){RZ(w=sfne(w)); if(FUNC&AT(w)){A wi=w; if(wi==(w=aro(w)))ASSERT(0,EVVALUE)} R w;}  // keep nameref as a string, UNLESS it is NMMNUVXY, in which case use the (f.'d) verb value
+  if(evoke(w)){RZ(w=sfne(w)); if(FUNC&AT(w)){A wi=w; if(wi==(w=aro(w)))ASSERT(0,EVVALUE)} RETF (w);}  // keep nameref as a string, UNLESS it is NMMNUVXY, in which case use the (f.'d) verb value
      // taking AR of undefined uv results in an infinite loop.  We break it here, with an error
  }
  GAT0(z,BOX,2,1); x=AAV1(z);
@@ -68,7 +68,7 @@ F1(jtaro){F12IP;A fs,gs,hs,s,*u,*x,y,z;B ex,xop;C id;I*hv,m;V*v;
  if(2<m)RZ(u[2]=incorp(aro(hs)));
  s=xop?aro(gs):spellout(id);
  RZ(x[0]=incorp(s)); RZ(x[1]=INCORPNA(y));
- R z;
+ RETF (z);
 }
 
 F1(jtarep){F12IP; R box(aro(w));}
@@ -84,7 +84,7 @@ static DF1(jtfxchar){DF12IP; MEMCHK1(w); A y;C c,d,id,*s;I m,n;
  ASSERT(id=spellin(n,s),EVSPELL);  // not name, must be control word or primitive.  Also classify string 
  if(id!=CFCONS)y=ds(id); else{m=s[n-2]-'0'; y=FCONS(s[0]!=CSIGN?scib(m):2==n?ainf:s[1]==CSIGN?ainfm:scib(-m));} // normal prim uses ds block; [0-9_]: uses numeric block
  ASSERT(y&&RHS&AT(y),EVDOMAIN);   // make sure it's a noun/verb/adv/conj
- if(!self || AT(y)&NOUN+VERB)R y;  // return any NV, or AC as well if it's not the top level
+ if(!self || AT(y)&NOUN+VERB)RETF (y);  // return any NV, or AC as well if it's not the top level
  R box(w);  // If top level, we have to make sure (<,'&')`  doesn't replace the left part with bare &
 }
 
@@ -131,7 +131,7 @@ DF1(jtfx){DF12IP;A f,fs,g,h,p,q,*wv,y,*yv;C id;I m,n=0;
  default:
   if(id)fs=ds(id);
   ASSERT(fs&&RHS&AT(fs),EVDOMAIN);
-  if(!n)R fs;
+  if(!n)RETF (fs);
   ASSERT(1==n&&ADV&AT(fs)||2==n&&CONJ&AT(fs),EVLENGTH);  // after this test, yv is known set
   if(0<n){RZ(p=fx(CPYX(yv[0]))); ASSERT(AT(p)&NOUN+VERB,EVDOMAIN);}
   if(1<n){RZ(q=fx(CPYX(yv[1]))); ASSERT(AT(q)&NOUN+VERB,EVDOMAIN);}
@@ -282,7 +282,7 @@ static A jtunparse1(J jt,CW*c,A x,I j,A y){A q,z;C*s;I t;
   MC(s,CAV(y),AN(y)); s+=AN(y); *s++=' '; MC(s,CAV(z),AN(z)); 
   z=q;
  }
- R z;
+ RETF (z);
 }    /* unparse a single line */
 
 // unparse a definition, by going through the control words
@@ -332,7 +332,7 @@ F2(jtunparsem){F12IP;A h,*hv,dc,ds,mc,ms,z,*zu,*zv;I dn,m,mn,n,p;V*wv;
   DO(dn, *zv++=jtunDD(jt,AAV(ds)[i]););
  }
  if(a==num(0)){RZ(z=ope(z)); if(1==AR(z))z=table(z);}
- R z;
+ RETF (z);
 }    /* convert h parameter for : definitions; open if a is 0 */
 
 // Create 5!:7 form for the given control-word block x
@@ -348,7 +348,7 @@ A cw57rep(J jt, A x){I i, q[3];
   q[0]=u->tcesx>>TCESXTYPEX; q[1]=u->go; q[1]=q[1]>=CWMAX?65535:q[1]; q[2]=u->source; RZ(*zv++=incorp(vec(INT,3L,q)));  // Box 1: cwtype, go, source line.  65535 for testcases
   RZ(*zv++=incorp(unparse1(u,vec(BOX,(u[1].tcesx-u[0].tcesx)&TCESXSXMSK,&v[u[0].tcesx&TCESXSXMSK]),-1L,0L)));  // box 2: line text
  }
- R z;
+ RETF (z);
 }
 
 // 5!:7
