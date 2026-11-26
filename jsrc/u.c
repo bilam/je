@@ -781,12 +781,12 @@ void chkapx(J jt, A w, int recur, int mode){
   DO(NORMAHN-1,if(w->p[i]!=(I)XHEADERFILL){fprintf(stderr,"XHEADERFILL %p: ",w);dump_ADheader(w);SEGFAULT;})
 #endif
 //  if(ACISPERM(AC(w)))R; // permanent need not audit
-  if(ISGMP(w))R;        // component not allocated by J
-  if(AFLAG(w)&AFNJA)R;  // component not allocated by J
-  if(AFLAG(w)&PYX)R;    // no need to open PYXES
+//  if(ISGMP(w))R;        // component not allocated by J
+//  if(AFLAG(w)&AFNJA)R;  // component not allocated by J
+//  if(AFLAG(w)&PYX)R;    // no need to open PYXES
   if(AFLAG(w)&AFUNAUDITABLE)R;  // block has gaps and cannot be audited
   if(AFLAG(w)&AFVIRTUAL+BOX)R;  // workaround xdic
-  if(recur&&AN(w)&&(AFLAG(w)&RECURSIBLE)){A* wv=AAV(w); DO(AN(w), chkapx(jt,QCWORD(wv[i]),recur,mode);)}
+  if(recur&&AN(w)&&(!AT(w)&SYMB)&&((AT(w)&BOX)||(AFLAG(w)&TRAVERSIBLE+RECURSIBLE))){A* wv=AAV(w); DO(AN(w), chkapx(jt,QCWORD(wv[i]),recur,mode);)}
  }
 }
 #endif
