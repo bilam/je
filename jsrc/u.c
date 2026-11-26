@@ -786,7 +786,7 @@ void chkapx(J jt, A w, int recur, int mode){
   if(AFLAG(w)&PYX)R;    // no need to open PYXES
   if(AFLAG(w)&AFUNAUDITABLE)R;  // block has gaps and cannot be audited
   if(AFLAG(w)&AFVIRTUAL+BOX)R;  // workaround xdic
-  if(recur&&AN(w)&&(AT(w)&BOX)){A* wv=AAV(w); DO(AN(w), chkapx(jt,QCWORD(wv[i]),recur,mode);)}
+  if(recur&&AN(w)&&(AFLAG(w)&RECURSIBLE)){A* wv=AAV(w); DO(AN(w), chkapx(jt,QCWORD(wv[i]),recur,mode);)}
  }
 }
 #endif
